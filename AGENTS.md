@@ -7,8 +7,20 @@
 - Crie exatamente um commit Git por mudança OpenSpec concluída, incluindo a implementação e o `tasks.md` final. Se um apply já concluído não produzir novo diff, não crie commit vazio.
 - Adicione somente arquivos ou hunks da mudança aplicada. Preserve alterações preexistentes e não use `git add .` para capturar todo o working tree.
 - Revise o diff staged e execute `git diff --cached --check` antes do commit.
-- Use a mensagem `Apply OpenSpec change: <nome-da-mudança>`. Após o commit, confirme e informe o hash e os arquivos incluídos.
+- Após o commit, confirme e informe o hash e os arquivos incluídos.
 - Não crie tag, versão SemVer ou push como parte desta convenção. Arquivar uma mudança OpenSpec requer uma ação separada.
+
+## Mensagens de commit
+
+- Use o formato `[tipo] descrição objetiva da alteração` em cada commit.
+- Tipos permitidos: `feat` para nova funcionalidade, `make` para criação ou configuração inicial, `fix` para correção, `update` para alteração de algo existente e `delete` para remoção.
+- Cada commit deve representar uma alteração lógica. Um apply OpenSpec concluído é versionado pelo commit único definido acima.
+- Exemplos:
+  - `[make] configurar monorepo com pnpm`
+  - `[feat] adicionar endpoint de health check`
+  - `[fix] corrigir validação das variáveis de ambiente`
+  - `[update] ajustar configuração do TypeScript`
+  - `[delete] remover configuração obsoleta`
 
 ## Arquitetura da plataforma
 

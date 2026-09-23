@@ -36,4 +36,4 @@ operations:
     guidance:
       - Ao concluir todas as tarefas de um apply e aprovar as verificações exigidas, crie exatamente um commit Git para a mudança; não crie commit de conclusão para apply pausado, com falha ou sem diff novo.
       - Antes de editar, registre o estado do Git. Preserve alterações preexistentes; adicione ao commit somente arquivos ou hunks da mudança aplicada, incluindo o tasks.md final. Revise o diff staged e execute git diff --cached --check antes do commit. Não use git add . para capturar o working tree inteiro.
-      - 'Use a mensagem "Apply OpenSpec change: <nome-da-mudança>". Após o commit, verifique e informe o hash e os arquivos incluídos. Não crie tag, versão SemVer ou push, nem arquive a mudança OpenSpec automaticamente.'
+      - 'Use em cada commit o formato "[tipo] descrição objetiva da alteração", com um dos tipos feat, make, fix, update ou delete conforme AGENTS.md. Após o commit, verifique e informe o hash e os arquivos incluídos. Não crie tag, versão SemVer ou push, nem arquive a mudança OpenSpec automaticamente.'
