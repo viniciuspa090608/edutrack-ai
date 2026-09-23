@@ -18,14 +18,15 @@
 
 body {
   margin: 0;
-  min-width: 320px;
+  min-width: 0;
 }
 
 button {
   font: inherit;
 }
 
-button:focus-visible {
+button:focus-visible,
+a:focus-visible {
   outline: 3px solid #2a61d6;
   outline-offset: 3px;
 }

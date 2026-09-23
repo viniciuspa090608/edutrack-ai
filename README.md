@@ -1,6 +1,6 @@
-# Study Platform
+# EduTrack
 
-Fundação técnica de uma plataforma de estudos. Esta versão contém uma página técnica React, uma API Express com `GET /health`, contratos compartilhados e conexão MySQL. Funcionalidades de estudo e autenticação serão mudanças OpenSpec separadas.
+Plataforma de estudos em construção. A página inicial apresenta os recursos planejados; a página técnica React continua em `/status`. A API Express oferece `GET /health`, com contratos compartilhados e conexão MySQL. Funcionalidades de estudo e autenticação serão mudanças OpenSpec separadas.
 
 ## Pré-requisitos
 
@@ -35,7 +35,9 @@ pnpm dev:api
 pnpm dev:web
 ```
 
-A página técnica abre em <http://localhost:5173>. A API abre em <http://localhost:3001>; `GET http://localhost:3001/health` responde `{"status":"ok"}` após a conexão com o banco. A web mostra o estado da API e oferece nova tentativa se ela estiver indisponível. Para executar o build da API, use `pnpm build` e depois `pnpm --filter @study-platform/api start`.
+A landing abre em <http://localhost:5173/> sem depender da API. A página provisória de acesso fica em `/acesso` e o diagnóstico técnico em `/status`. A API abre em <http://localhost:3001>; `GET http://localhost:3001/health` responde `{"status":"ok"}` após a conexão com o banco. A página técnica mostra o estado da API e oferece nova tentativa se ela estiver indisponível. Para executar o build da API, use `pnpm build` e depois `pnpm --filter @study-platform/api start`.
+
+Para publicar a web em hospedagem estática, configure o servidor para devolver `index.html` nas aberturas diretas de `/acesso` e `/status` (fallback de SPA). Arquivos em `/illustrations/` devem continuar servidos diretamente. O servidor de desenvolvimento e o preview do Vite já oferecem esse fallback.
 
 ## Verificações
 

@@ -1,26 +1,22 @@
-import { ApiStatus } from '../features/system/ApiStatus.js';
+import { AccessPage } from '../features/landing/AccessPage.js';
+import { PublicLanding } from '../features/landing/PublicLanding.js';
+import { SystemPage } from '../features/system/SystemPage.js';
 
 export function App() {
-  return (
-    <div className="app-shell">
-      <header className="site-header">
-        <span className="brand">Study Platform</span>
-        <span className="technical-badge">Fundação técnica</span>
-      </header>
-
-      <main id="main-content" className="content">
-        <div className="eyebrow">Ambiente de desenvolvimento</div>
-        <h1 className="animate__animated animate__fadeInUp">
-          A base para estudar com clareza.
-        </h1>
-        <p className="lead">
-          O monorepo, a interface React e a API estão sendo preparados para
-          receber os módulos de estudo.
-        </p>
-        <ApiStatus />
-      </main>
-
-      <footer className="site-footer">Versão técnica inicial</footer>
-    </div>
-  );
+  switch (window.location.pathname) {
+    case '/':
+      return <PublicLanding />;
+    case '/acesso':
+      return <AccessPage />;
+    case '/status':
+      return <SystemPage />;
+    default:
+      return (
+        <main className="route-fallback">
+          <h1>Página não encontrada</h1>
+          <p>Este caminho ainda não existe na EduTrack.</p>
+          <a href="/">Voltar à página inicial</a>
+        </main>
+      );
+  }
 }
