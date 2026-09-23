@@ -1,0 +1,10 @@
+node_modules/
+.local-mysql/
+.pnpm-store/
+.env
+.env.local
+dist/
+coverage/
+.vite/
+*.tsbuildinfo
+*.log
