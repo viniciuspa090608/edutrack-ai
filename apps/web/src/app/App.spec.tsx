@@ -117,11 +117,14 @@ describe('public routes', () => {
     unmount();
     window.history.replaceState({}, '', '/acesso');
     render(<App />);
-    expect(screen.getByRole('heading', { name: 'Em breve' })).toBeTruthy();
     expect(
-      screen.getByText(/login e o cadastro ainda não estão disponíveis/),
+      screen.getByRole('heading', { name: 'Entre na sua conta' }),
     ).toBeTruthy();
-    expect(screen.queryByRole('textbox')).toBeNull();
+    expect(screen.getByRole('textbox', { name: 'E-mail' })).toBeTruthy();
+    expect(screen.getByLabelText('Senha')).toBeTruthy();
+    expect(
+      screen.getByRole('link', { name: 'Continuar com Google' }),
+    ).toBeTruthy();
     expect(
       screen
         .getByRole('link', { name: /Voltar à landing/ })

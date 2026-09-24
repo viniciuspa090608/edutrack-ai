@@ -11,6 +11,7 @@ const validEnv = {
   DB_NAME: 'study_platform_dev',
   TEST_DB_NAME: 'study_platform_test',
   WEB_ORIGIN: 'http://localhost:5173',
+  API_PUBLIC_ORIGIN: 'http://localhost:3001',
 };
 
 describe('API environment', () => {
@@ -47,5 +48,40 @@ describe('API environment', () => {
     expect(() =>
       parseEnv({ ...validEnv, WEB_ORIGIN: 'ftp://localhost:5173' }),
     ).toThrow('WEB_ORIGIN');
+  });
+
+  it('rejects split Google credentials without exposing values', () => {
+    expect(() =>
+      parseEnv({ ...validEnv, GOOGLE_CLIENT_ID: 'private-client-id' }),
+    ).toThrow('GOOGLE_CLIENT_SECRET');
+    try {
+      parseEnv({ ...validEnv, GOOGLE_CLIENT_ID: 'private-client-id' });
+    } catch (error) {
+      expect((error as Error).message).not.toContain('private-client-id');
+    }
+  });
+
+  it('requires HTTPS and same-site origins in production', () => {
+    const production = {
+      ...validEnv,
+      NODE_ENV: 'production',
+      GOOGLE_CLIENT_ID: 'client',
+      GOOGLE_CLIENT_SECRET: 'secret',
+    };
+    expect(() => parseEnv(production)).toThrow('API_PUBLIC_ORIGIN');
+    expect(() =>
+      parseEnv({
+        ...production,
+        WEB_ORIGIN: 'https://web.example.com',
+        API_PUBLIC_ORIGIN: 'https://api.other.com',
+      }),
+    ).toThrow('API_PUBLIC_ORIGIN');
+    expect(
+      parseEnv({
+        ...production,
+        WEB_ORIGIN: 'https://web.example.com',
+        API_PUBLIC_ORIGIN: 'https://api.example.com',
+      }).API_PUBLIC_ORIGIN,
+    ).toBe('https://api.example.com');
   });
 });

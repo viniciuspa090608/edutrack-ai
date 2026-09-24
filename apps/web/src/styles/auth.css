@@ -1,0 +1,158 @@
+.auth-card {
+  max-width: 540px;
+  overflow-wrap: anywhere;
+}
+.auth-card h1 {
+  font-size: clamp(1.8rem, 7vw, 2.7rem);
+}
+.auth-tabs {
+  display: flex;
+  gap: 8px;
+  margin: 18px 0 24px;
+}
+.auth-tabs button {
+  flex: 1;
+  border: 1px solid #c7d9cd;
+  background: #f5faf5;
+  border-radius: 10px;
+  padding: 10px;
+  cursor: pointer;
+}
+.auth-tabs button[aria-pressed='true'] {
+  background: #185b45;
+  color: #fff;
+}
+.auth-card form {
+  display: grid;
+  gap: 8px;
+}
+.auth-card label {
+  font-weight: 700;
+  color: #24473b;
+}
+.auth-card input {
+  width: 100%;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #9ab6a6;
+  border-radius: 10px;
+  font: inherit;
+}
+.auth-card input:focus-visible {
+  outline: 3px solid #2a61d6;
+  outline-offset: 2px;
+}
+.auth-card label:not(:first-child) {
+  margin-top: 10px;
+}
+.auth-hint {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #516b5e;
+}
+.auth-alert {
+  padding: 12px;
+  border-radius: 10px;
+  color: #7b2525 !important;
+  background: #fff1ef;
+  overflow-wrap: anywhere;
+}
+.auth-submit {
+  width: 100%;
+  justify-content: center;
+  margin-top: 14px;
+  cursor: pointer;
+}
+.auth-submit:disabled,
+.private-page button:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+.auth-google {
+  display: block;
+  text-align: center;
+  margin-top: 14px;
+  padding: 12px;
+  border: 1px solid #a8beae;
+  border-radius: 10px;
+  color: #234f3b;
+  text-decoration: none;
+  font-weight: 700;
+}
+.auth-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 24px;
+  color: #285d49;
+}
+.private-page {
+  min-height: 100vh;
+  background: #f0f5ed;
+  overflow-wrap: anywhere;
+}
+.private-header {
+  width: min(100% - 32px, 980px);
+  margin: auto;
+  padding: 20px 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.private-header nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.private-header a {
+  color: #225d49;
+}
+.private-brand {
+  font-weight: 800;
+  text-decoration: none;
+}
+.private-header button,
+.private-content button {
+  border: 0;
+  border-radius: 10px;
+  background: #185b45;
+  color: white;
+  padding: 10px 16px;
+  cursor: pointer;
+  font: inherit;
+}
+.private-content {
+  width: min(100% - 32px, 980px);
+  margin: 24px auto;
+  padding: clamp(20px, 5vw, 48px);
+  border: 1px solid #dce9dc;
+  border-radius: 20px;
+  background: #fff;
+}
+.private-content h1 {
+  font-size: clamp(1.8rem, 7vw, 3rem);
+}
+.private-content p {
+  line-height: 1.6;
+}
+.private-page > main[role],
+.private-page > main {
+  padding: 24px;
+}
+@media (max-width: 380px) {
+  .access-page {
+    padding-inline: 10px;
+  }
+  .auth-card {
+    padding: 20px 16px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .auth-card *,
+  .private-page * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

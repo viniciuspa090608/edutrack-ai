@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { errorResponseSchema, healthResponseSchema } from './index.js';
+import {
+  authErrorCodeSchema,
+  errorResponseSchema,
+  healthResponseSchema,
+  loginRequestSchema,
+  meResponseSchema,
+  registerRequestSchema,
+} from './index.js';
 
 describe('shared HTTP contracts', () => {
   it('accepts expected payloads', () => {
@@ -23,5 +30,39 @@ describe('shared HTTP contracts', () => {
       errorResponseSchema.safeParse({ error: { code: '', message: '' } })
         .success,
     ).toBe(false);
+  });
+});
+
+describe('authentication contracts', () => {
+  it('normalizes email and preserves password bytes', () => {
+    expect(
+      registerRequestSchema.parse({
+        email: '  Example@Example.COM ',
+        password: '  abcdefghij  ',
+      }),
+    ).toEqual({ email: 'example@example.com', password: '  abcdefghij  ' });
+  });
+
+  it('rejects invalid input and accepts a public account response', () => {
+    expect(
+      registerRequestSchema.safeParse({ email: 'invalid', password: 'short' })
+        .success,
+    ).toBe(false);
+    expect(
+      loginRequestSchema.safeParse({ email: 'a@example.com', password: '' })
+        .success,
+    ).toBe(false);
+    expect(
+      meResponseSchema.parse({
+        user: {
+          id: '00000000-0000-4000-8000-000000000000',
+          email: 'a@example.com',
+          googleLinked: false,
+        },
+      }).user.email,
+    ).toBe('a@example.com');
+    expect(authErrorCodeSchema.safeParse('INTERNAL_SECRET').success).toBe(
+      false,
+    );
   });
 });

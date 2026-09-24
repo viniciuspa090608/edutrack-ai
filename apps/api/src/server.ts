@@ -9,7 +9,7 @@ async function main(): Promise<void> {
   const source = createDataSource(env);
   await source.initialize();
 
-  const app = createApp({ logger, webOrigin: env.WEB_ORIGIN });
+  const app = createApp({ logger, webOrigin: env.WEB_ORIGIN, source, env });
   let server: Server;
   try {
     server = await new Promise<Server>((resolve, reject) => {

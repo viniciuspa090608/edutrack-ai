@@ -20,7 +20,9 @@
     "dotenv": "18.0.3",
     "express": "5.2.1",
     "mysql2": "3.24.4",
+    "openid-client": "^6.8.8",
     "pino": "10.3.1",
+    "tldts": "7.4.14",
     "typeorm": "1.1.1",
     "zod": "4.6.5"
   },
