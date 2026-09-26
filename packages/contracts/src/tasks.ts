@@ -67,6 +67,9 @@ export const taskSchema = z
     ...taskFields,
     createdAt: z.iso.datetime(),
     updatedAt: z.iso.datetime(),
+    subtaskTotal: z.number().int().nonnegative(),
+    subtaskCompleted: z.number().int().nonnegative(),
+    progressPercent: z.number().min(0).max(100).nullable(),
   })
   .strict();
 export const taskListSchema = z
@@ -83,3 +86,44 @@ export type CreateTask = z.infer<typeof createTaskSchema>;
 export type UpdateTask = z.infer<typeof updateTaskSchema>;
 export type TaskFilters = z.infer<typeof taskFiltersSchema>;
 export type TaskList = z.infer<typeof taskListSchema>;
+
+export const createSubtaskSchema = z
+  .object({ title: taskFields.title })
+  .strict();
+export const updateSubtaskSchema = z
+  .object({
+    title: taskFields.title.optional(),
+    isCompleted: z.boolean().optional(),
+  })
+  .strict()
+  .refine(
+    (input) => Object.values(input).some((value) => value !== undefined),
+    'Envie ao menos um campo.',
+  );
+export const subtaskSchema = z
+  .object({
+    id: z.uuid(),
+    taskId: z.uuid(),
+    title: taskFields.title,
+    isCompleted: z.boolean(),
+    position: z.number().int().nonnegative(),
+    createdAt: z.iso.datetime(),
+    updatedAt: z.iso.datetime(),
+  })
+  .strict();
+export const subtaskOrderSchema = z
+  .object({ ids: z.array(z.uuid()) })
+  .strict()
+  .refine(
+    (input) => new Set(input.ids).size === input.ids.length,
+    'Não repita IDs.',
+  );
+export const completeSubtasksSchema = z
+  .object({ confirm: z.literal(true) })
+  .strict();
+export const subtasksResponseSchema = z
+  .object({ items: z.array(subtaskSchema), task: taskSchema })
+  .strict();
+export type Subtask = z.infer<typeof subtaskSchema>;
+export type UpdateSubtask = z.infer<typeof updateSubtaskSchema>;
+export type SubtasksResponse = z.infer<typeof subtasksResponseSchema>;

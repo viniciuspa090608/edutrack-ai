@@ -32,6 +32,57 @@ export function tasksRoutes(
     return parsed.data;
   };
   const write = requireOrigin(env.WEB_ORIGIN);
+  router.get('/:taskId/subtasks', async (req, res) => {
+    res.json(await service.listSubtasks(owner(res), id(req.params.taskId)));
+  });
+  router.post('/:taskId/subtasks', write, async (req, res) => {
+    res
+      .status(201)
+      .json(
+        await service.createSubtask(
+          owner(res),
+          id(req.params.taskId),
+          req.body,
+        ),
+      );
+  });
+  router.put('/:taskId/subtasks/order', write, async (req, res) => {
+    res.json(
+      await service.reorderSubtasks(
+        owner(res),
+        id(req.params.taskId),
+        req.body,
+      ),
+    );
+  });
+  router.patch('/:taskId/subtasks/:subtaskId', write, async (req, res) => {
+    res.json(
+      await service.updateSubtask(
+        owner(res),
+        id(req.params.taskId),
+        id(req.params.subtaskId),
+        req.body,
+      ),
+    );
+  });
+  router.delete('/:taskId/subtasks/:subtaskId', write, async (req, res) => {
+    res.json(
+      await service.deleteSubtask(
+        owner(res),
+        id(req.params.taskId),
+        id(req.params.subtaskId),
+      ),
+    );
+  });
+  router.post('/:taskId/complete-subtasks', write, async (req, res) => {
+    res.json(
+      await service.completeSubtasks(
+        owner(res),
+        id(req.params.taskId),
+        req.body,
+      ),
+    );
+  });
   router.post('/', write, async (req, res) => {
     res.status(201).json(await service.create(owner(res), req.body));
   });

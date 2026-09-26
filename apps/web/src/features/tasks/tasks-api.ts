@@ -4,6 +4,11 @@ import {
   taskListSchema,
   taskSchema,
   updateTaskSchema,
+  subtasksResponseSchema,
+  createSubtaskSchema,
+  updateSubtaskSchema,
+  subtaskOrderSchema,
+  completeSubtasksSchema,
 } from '@study-platform/contracts';
 import type { TaskFilters, UpdateTask } from '@study-platform/contracts';
 import { send } from '../auth/auth-api.js';
@@ -37,4 +42,35 @@ export async function deleteTask(id: string) {
     headers: { 'Content-Type': 'application/json' },
     body: '{}',
   });
+}
+export async function listSubtasks(taskId: string) {
+  return subtasksResponseSchema.parse(
+    await (await send(`/tasks/${taskId}/subtasks`)).json(),
+  );
+}
+export async function mutateSubtask(
+  taskId: string,
+  path: string,
+  method: 'POST' | 'PATCH' | 'PUT' | 'DELETE',
+  body: object,
+) {
+  const input =
+    path === '/complete-subtasks'
+      ? completeSubtasksSchema.parse(body)
+      : path === '/subtasks/order'
+        ? subtaskOrderSchema.parse(body)
+        : method === 'POST'
+          ? createSubtaskSchema.parse(body)
+          : method === 'PATCH'
+            ? updateSubtaskSchema.parse(body)
+            : {};
+  return subtasksResponseSchema.parse(
+    await (
+      await send(`/tasks/${taskId}${path}`, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+      })
+    ).json(),
+  );
 }

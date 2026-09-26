@@ -1,4 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { SubtasksSection } from './SubtasksSection.js';
+import { TaskProgress } from './TaskProgress.js';
 import { createTaskSchema, taskFiltersSchema } from '@study-platform/contracts';
 import type {
   StudyTask,
@@ -89,7 +91,15 @@ function TaskForm({
         setError('');
         setInvalid({});
         try {
-          onSaved(await saveTask(task?.id ?? null, parsed.data));
+          const input = task?.subtaskTotal
+            ? {
+                title: parsed.data.title,
+                description: parsed.data.description,
+                priority: parsed.data.priority,
+                dueDate: parsed.data.dueDate,
+              }
+            : parsed.data;
+          onSaved(await saveTask(task?.id ?? null, input));
         } catch (cause) {
           setError(failure(cause));
         } finally {
@@ -152,20 +162,29 @@ function TaskForm({
           onChange={(event) => setDueDate(event.target.value)}
         />
         {invalid.dueDate && <p id="task-dueDate-error">{invalid.dueDate}</p>}
-        <label htmlFor="task-status">Status</label>
-        <select
-          id="task-status"
-          value={status}
-          onChange={(event) =>
-            setStatus(event.target.value as StudyTask['status'])
-          }
-        >
-          {Object.entries(statuses).map(([value, label]) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
-        </select>
+        {task?.subtaskTotal ? (
+          <p>
+            Status calculado pelas subtarefas. Conclua ou reabra os passos no
+            detalhe da tarefa.
+          </p>
+        ) : (
+          <>
+            <label htmlFor="task-status">Status</label>
+            <select
+              id="task-status"
+              value={status}
+              onChange={(event) =>
+                setStatus(event.target.value as StudyTask['status'])
+              }
+            >
+              {Object.entries(statuses).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </>
+        )}
         <div className="task-actions">
           <button type="submit">{busy ? 'Salvando…' : 'Salvar tarefa'}</button>
           <button type="button" onClick={onCancel}>
@@ -268,6 +287,10 @@ export function TasksPage() {
   const [deleting, setDeleting] = useState<StudyTask | null>(null);
   const newButton = useRef<HTMLButtonElement>(null);
   const detailHeading = useRef<HTMLHeadingElement>(null);
+  const onSubtasksChanged = useCallback((value: StudyTask) => {
+    setDetail(value);
+    setRevision((revision) => revision + 1);
+  }, []);
   useEffect(() => {
     let active = true;
     setLoading(true);
@@ -288,8 +311,8 @@ export function TasksPage() {
     };
   }, [filters, revision]);
   useEffect(() => {
-    if (detail) detailHeading.current?.focus();
-  }, [detail]);
+    if (detail && !editor) detailHeading.current?.focus();
+  }, [detail?.id, !!editor]);
   const filtered = !!(
     filters.status ||
     filters.priority ||
@@ -299,7 +322,7 @@ export function TasksPage() {
   const refresh = () => setRevision((value) => value + 1);
   return (
     <div className="tasks-page">
-      <p>Organize seus estudos com prazos e status manuais.</p>
+      <p>Organize seus estudos com prazos, subtarefas e progresso.</p>
       <button
         ref={newButton}
         id="task-create"
@@ -435,6 +458,7 @@ export function TasksPage() {
           <h2 id="task-detail-heading" ref={detailHeading} tabIndex={-1}>
             {detail.title}
           </h2>
+          <TaskProgress task={detail} />
           <p className="task-description">
             {detail.description || 'Sem descrição'}
           </p>
@@ -479,6 +503,13 @@ export function TasksPage() {
               Fechar detalhe
             </button>
           </div>
+          {!editor && (
+            <SubtasksSection
+              key={detail.id}
+              task={detail}
+              onTaskChanged={onSubtasksChanged}
+            />
+          )}
         </section>
       )}
       {result && (
@@ -494,6 +525,7 @@ export function TasksPage() {
               {result.items.map((task) => (
                 <li key={task.id} className="task-card">
                   <h2>{task.title}</h2>
+                  <TaskProgress task={task} />
                   <p>
                     {statuses[task.status]} · Importância{' '}
                     {priorities[task.priority].toLowerCase()} ·{' '}

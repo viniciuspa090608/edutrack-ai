@@ -1,7 +1,14 @@
 import type { StudyTask } from '@study-platform/contracts';
 import { EntitySchema } from 'typeorm';
 
-export interface TaskEntity extends Omit<StudyTask, 'createdAt' | 'updatedAt'> {
+export interface TaskEntity extends Omit<
+  StudyTask,
+  | 'createdAt'
+  | 'updatedAt'
+  | 'subtaskTotal'
+  | 'subtaskCompleted'
+  | 'progressPercent'
+> {
   userId: string;
   createdAt: Date;
   updatedAt: Date;

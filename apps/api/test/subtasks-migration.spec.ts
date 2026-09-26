@@ -7,10 +7,10 @@ import { CreateAuthentication20260924221500 } from '../src/database/migrations/2
 import { CreateEmailVerification20260924230000 } from '../src/database/migrations/20260924230000-CreateEmailVerification.js';
 import { CreateProfilePreferences20260926160000 } from '../src/database/migrations/20260926160000-CreateProfilePreferences.js';
 import { CreateStudyTasks20260926180000 } from '../src/database/migrations/20260926180000-CreateStudyTasks.js';
-
-it('applies study tasks once, preserves DATE/defaults/FK/indexes and rolls back on isolated MySQL', async () => {
+import { CreateTaskSubtasks20260926190000 } from '../src/database/migrations/20260926190000-CreateTaskSubtasks.js';
+it('applies/reverses subtasks once, has no stored percentage/counters and cascades on task deletion', async () => {
   const env = loadEnv();
-  const database = `${env.TEST_DB_NAME}_tasksmig_${randomBytes(4).toString('hex')}`;
+  const database = `${env.TEST_DB_NAME}_submig_${randomBytes(4).toString('hex')}`;
   const admin = createDataSource({ ...env, DB_NAME: env.TEST_DB_NAME });
   const source = new DataSource({
     ...createDataSource({ ...env, DB_NAME: database }).options,
@@ -19,6 +19,7 @@ it('applies study tasks once, preserves DATE/defaults/FK/indexes and rolls back 
       CreateEmailVerification20260924230000,
       CreateProfilePreferences20260926160000,
       CreateStudyTasks20260926180000,
+      CreateTaskSubtasks20260926190000,
     ],
   });
   const original = new DataSource({
@@ -27,6 +28,7 @@ it('applies study tasks once, preserves DATE/defaults/FK/indexes and rolls back 
       CreateAuthentication20260924221500,
       CreateEmailVerification20260924230000,
       CreateProfilePreferences20260926160000,
+      CreateStudyTasks20260926180000,
     ],
   });
   await admin.initialize();
@@ -34,52 +36,59 @@ it('applies study tasks once, preserves DATE/defaults/FK/indexes and rolls back 
   try {
     await original.initialize();
     await original.runMigrations();
+    const userId = randomUUID();
+    const taskId = randomUUID();
+    await original.query('INSERT INTO users (id,email) VALUES (?,?)', [
+      userId,
+      `${userId}@example.com`,
+    ]);
+    await original.query(
+      "INSERT INTO study_tasks (id,user_id,title,status) VALUES (?,?,'Original','COMPLETED')",
+      [taskId, userId],
+    );
     await original.destroy();
     await source.initialize();
     expect(source.options.synchronize).toBe(false);
     expect(await source.runMigrations()).toHaveLength(1);
     expect(await source.runMigrations()).toHaveLength(0);
-    const userId = randomUUID();
-    const id = randomUUID();
-    await source.query('INSERT INTO users (id, email) VALUES (?, ?)', [
-      userId,
-      `${userId}@example.com`,
+    expect(
+      (
+        await source.query('SELECT status FROM study_tasks WHERE id = ?', [
+          taskId,
+        ])
+      )[0].status,
+    ).toBe('COMPLETED');
+    const columns = await source.query<Array<{ Field: string }>>(
+      'SHOW COLUMNS FROM task_subtasks',
+    );
+    expect(columns.map((item) => item.Field)).toEqual([
+      'id',
+      'task_id',
+      'title',
+      'is_completed',
+      'position',
+      'created_at',
+      'updated_at',
     ]);
-    await source.query(
-      'INSERT INTO study_tasks (id, user_id, title, due_date) VALUES (?, ?, ?, ?)',
-      [id, userId, 'Data', '2024-02-29'],
-    );
-    const rows = await source.query(
-      "SELECT priority, status, DATE_FORMAT(due_date, '%Y-%m-%d') AS dueDate FROM study_tasks WHERE id = ?",
-      [id],
-    );
-    expect(rows[0]).toEqual({
-      priority: 'MEDIUM',
-      status: 'PENDING',
-      dueDate: '2024-02-29',
-    });
     await expect(
       source.query(
-        'INSERT INTO study_tasks (id, user_id, title) VALUES (?, ?, ?)',
-        [randomUUID(), randomUUID(), 'Órfã'],
+        "INSERT INTO task_subtasks (id,task_id,title,position) VALUES (?,?,'Órfã',0)",
+        [randomUUID(), randomUUID()],
       ),
     ).rejects.toThrow();
-    const indexes = await source.query<Array<{ Key_name: string }>>(
-      'SHOW INDEX FROM study_tasks',
+    await source.query(
+      "INSERT INTO task_subtasks (id,task_id,title,position) VALUES (?,?,'Passo',0)",
+      [randomUUID(), taskId],
     );
-    expect(indexes.map((index) => index.Key_name)).toContain(
-      'ix_tasks_owner_due',
-    );
-    expect(indexes.map((index) => index.Key_name)).toContain(
-      'ix_tasks_owner_created',
-    );
+    await source.query('DELETE FROM study_tasks WHERE id = ? AND user_id = ?', [
+      taskId,
+      userId,
+    ]);
+    expect(await source.query('SELECT * FROM task_subtasks')).toHaveLength(0);
     await source.undoLastMigration();
-    expect(await source.query("SHOW TABLES LIKE 'study_tasks'")).toHaveLength(
+    expect(await source.query("SHOW TABLES LIKE 'task_subtasks'")).toHaveLength(
       0,
     );
-    expect(
-      await source.query('SELECT id FROM users WHERE id = ?', [userId]),
-    ).toHaveLength(1);
     expect(await source.runMigrations()).toHaveLength(1);
   } finally {
     if (original.isInitialized) await original.destroy();

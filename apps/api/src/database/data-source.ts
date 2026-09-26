@@ -2,6 +2,7 @@ import { fileURLToPath } from 'node:url';
 import { DataSource } from 'typeorm';
 import type { ApiEnv } from '../config/env.js';
 import { taskEntity } from '../modules/tasks/task.entity.js';
+import { subtaskEntity } from '../modules/tasks/subtask.entity.js';
 
 export function createDataSource(env: ApiEnv): DataSource {
   return new DataSource({
@@ -11,7 +12,7 @@ export function createDataSource(env: ApiEnv): DataSource {
     username: env.DB_USER,
     password: env.DB_PASSWORD,
     database: env.DB_NAME,
-    entities: [taskEntity],
+    entities: [taskEntity, subtaskEntity],
     timezone: 'Z',
     dateStrings: ['DATE'],
     migrations: [

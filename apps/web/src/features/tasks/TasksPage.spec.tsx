@@ -23,6 +23,9 @@ const originalTask: StudyTask = {
   dueDate: '2026-10-01',
   createdAt: '2026-09-26T12:00:00.000Z',
   updatedAt: '2026-09-26T12:00:00.000Z',
+  subtaskTotal: 0,
+  subtaskCompleted: 0,
+  progressPercent: null,
 };
 let items: StudyTask[];
 let failed: string;
@@ -101,6 +104,8 @@ beforeEach(() => {
           totalPages: Math.ceil(total / 20),
         });
       }
+      if (method === 'GET' && url.pathname.endsWith('/subtasks'))
+        return Response.json({ items: [], task: items[0] });
       if (method === 'GET') return Response.json(items[0]);
       if (method === 'POST' || method === 'PATCH') {
         if (pendingSave) return pendingSave;
