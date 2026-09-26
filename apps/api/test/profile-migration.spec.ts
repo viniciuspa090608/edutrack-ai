@@ -5,12 +5,20 @@ import { loadEnv } from '../src/config/env.js';
 import { createDataSource } from '../src/database/data-source.js';
 import { CreateAuthentication20260924221500 } from '../src/database/migrations/20260924221500-CreateAuthentication.js';
 import { CreateEmailVerification20260924230000 } from '../src/database/migrations/20260924230000-CreateEmailVerification.js';
+import { CreateProfilePreferences20260926160000 } from '../src/database/migrations/20260926160000-CreateProfilePreferences.js';
 
 it('backfills profiles/preferences once on real MySQL and can roll back/reapply', async () => {
   const env = loadEnv();
   const database = `${env.TEST_DB_NAME}_profilemig_${randomBytes(4).toString('hex')}`;
   const admin = createDataSource({ ...env, DB_NAME: env.TEST_DB_NAME });
-  const upgraded = createDataSource({ ...env, DB_NAME: database });
+  const upgraded = new DataSource({
+    ...createDataSource({ ...env, DB_NAME: database }).options,
+    migrations: [
+      CreateAuthentication20260924221500,
+      CreateEmailVerification20260924230000,
+      CreateProfilePreferences20260926160000,
+    ],
+  });
   const original = new DataSource({
     ...upgraded.options,
     migrations: [

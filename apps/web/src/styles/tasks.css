@@ -1,0 +1,91 @@
+.tasks-page {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+.task-card {
+  padding: clamp(12px, 3vw, 24px);
+  border: 1px solid #dce9dc;
+  border-radius: 12px;
+  min-width: 0;
+}
+.task-card h2 {
+  margin-top: 0;
+  font-size: 1.2rem;
+  overflow-wrap: anywhere;
+}
+.task-form fieldset,
+.task-filters {
+  display: grid;
+  gap: 0.6rem;
+  min-width: 0;
+}
+.task-form fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+.tasks-page input,
+.tasks-page textarea,
+.tasks-page select {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  padding: 10px;
+  border: 1px solid #8aab96;
+  border-radius: 6px;
+  font: inherit;
+  background: white;
+  color: #193b2c;
+}
+.tasks-page textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+.task-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: center;
+}
+.task-actions > * {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.task-list {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 1rem;
+}
+.task-description {
+  white-space: pre-wrap;
+}
+.tasks-page dd {
+  margin-inline-start: 1rem;
+  overflow-wrap: anywhere;
+}
+.tasks-page dt {
+  font-weight: 700;
+  margin-top: 0.5rem;
+}
+.task-dialog {
+  width: min(440px, calc(100% - 32px));
+  max-width: calc(100% - 32px);
+  padding: 20px;
+  border: 1px solid #8aab96;
+  border-radius: 12px;
+  overflow-wrap: anywhere;
+}
+.task-dialog::backdrop {
+  background: #102d2266;
+}
+.tasks-page :focus-visible,
+.task-dialog :focus-visible {
+  outline: 3px solid #b47924;
+  outline-offset: 3px;
+}
+.tasks-page [role='alert'],
+.task-dialog [role='alert'] {
+  color: #9b2525;
+}

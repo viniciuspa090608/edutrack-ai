@@ -4,6 +4,7 @@ import type { ModulePreferences } from '@study-platform/contracts';
 import { ProfilePage } from '../profile/ProfilePage.js';
 import { preferences } from '../profile/profile-api.js';
 import { availableModules, moduleAtPath } from '../profile/module-catalog.js';
+import { TasksPage } from '../tasks/TasksPage.js';
 import {
   AuthApiError,
   currentUser,
@@ -29,6 +30,12 @@ export function PrivatePage({ page }: { page: 'app' | 'conta' | 'module' }) {
   );
 
   const check = useCallback(async () => {
+    const returnTo =
+      window.location.pathname === '/app/tarefas'
+        ? '/app/tarefas'
+        : page === 'conta'
+          ? '/conta'
+          : '/app';
     setChecking(true);
     setError('');
     try {
@@ -38,7 +45,7 @@ export function PrivatePage({ page }: { page: 'app' | 'conta' | 'module' }) {
         cause instanceof AuthApiError &&
         (cause.status === 401 || cause.code === 'EMAIL_VERIFICATION_REQUIRED')
       ) {
-        navigate(`/acesso?returnTo=/${page}`);
+        navigate(`/acesso?returnTo=${encodeURIComponent(returnTo)}`);
         return;
       }
       setError('Não foi possível verificar sua sessão. Tente novamente.');
@@ -172,6 +179,8 @@ export function PrivatePage({ page }: { page: 'app' | 'conta' | 'module' }) {
                 Este módulo está desativado.{' '}
                 <a href="/conta">Reativar nas preferências</a>
               </p>
+            ) : window.location.pathname === '/app/tarefas' ? (
+              <TasksPage />
             ) : (
               <p>
                 Esta funcionalidade ainda não está disponível.{' '}

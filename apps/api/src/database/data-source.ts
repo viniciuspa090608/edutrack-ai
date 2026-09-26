@@ -1,6 +1,7 @@
 import { fileURLToPath } from 'node:url';
 import { DataSource } from 'typeorm';
 import type { ApiEnv } from '../config/env.js';
+import { taskEntity } from '../modules/tasks/task.entity.js';
 
 export function createDataSource(env: ApiEnv): DataSource {
   return new DataSource({
@@ -10,7 +11,9 @@ export function createDataSource(env: ApiEnv): DataSource {
     username: env.DB_USER,
     password: env.DB_PASSWORD,
     database: env.DB_NAME,
-    entities: [],
+    entities: [taskEntity],
+    timezone: 'Z',
+    dateStrings: ['DATE'],
     migrations: [
       fileURLToPath(new URL('./migrations/*.{js,ts}', import.meta.url)),
     ],

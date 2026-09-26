@@ -6,7 +6,12 @@ export const moduleCatalog: ReadonlyArray<{
   label: string;
   delivered: boolean;
 }> = [
-  { capability: 'tasks', path: '/tarefas', label: 'Tarefas', delivered: false },
+  {
+    capability: 'tasks',
+    path: '/app/tarefas',
+    label: 'Tarefas',
+    delivered: true,
+  },
   {
     capability: 'subjects',
     path: '/materias',

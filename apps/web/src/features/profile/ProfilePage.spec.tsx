@@ -137,11 +137,13 @@ describe('profile page', () => {
       expect(screen.getByRole('checkbox', { name })).toBeTruthy();
     expect(
       screen.getAllByText(/Funcionalidade ainda não disponível/),
-    ).toHaveLength(4);
+    ).toHaveLength(3);
     expect(
       screen.queryByRole('button', { name: 'Aprimorar com IA' }),
     ).toBeNull();
-    expect(screen.queryByRole('link', { name: 'Tarefas' })).toBeNull();
+    expect(
+      screen.getByRole('link', { name: 'Tarefas' }).getAttribute('href'),
+    ).toBe('/app/tarefas');
     const toggle = screen.getByRole('checkbox', { name: 'Tarefas' });
     toggle.focus();
     await userEvent.setup().keyboard(' ');
@@ -327,27 +329,27 @@ describe('profile page', () => {
     expect(profile.email).toBe('ana@example.com');
   });
   it('revalidates direct module pages after changes in another tab', async () => {
-    prefs.tasks = false;
-    window.history.replaceState({}, '', '/tarefas/123');
+    prefs.subjects = false;
+    window.history.replaceState({}, '', '/materias/123');
     render(<App />);
     expect(await screen.findByText(/Este módulo está desativado/)).toBeTruthy();
-    prefs.tasks = true;
+    prefs.subjects = true;
     act(() => {
       fireEvent(window, new Event('focus'));
     });
     expect(
       await screen.findByText(/Esta funcionalidade ainda não está disponível/),
     ).toBeTruthy();
-    prefs.tasks = false;
+    prefs.subjects = false;
     act(() => {
       fireEvent(window, new Event('focus'));
     });
     expect(
       await screen.findByRole('link', { name: 'Reativar nas preferências' }),
     ).toBeTruthy();
-    expect(availableModules(prefs)).toHaveLength(0);
-    expect(canUseAI(prefs, 'subjects', true)).toBe(false);
-    expect(canUseAI({ ...prefs, ai: true }, 'subjects', true)).toBe(true);
-    expect(canUseAI({ ...prefs, ai: true }, 'tasks', true)).toBe(false);
+    expect(availableModules(prefs)).toHaveLength(1);
+    expect(canUseAI(prefs, 'tasks', true)).toBe(false);
+    expect(canUseAI({ ...prefs, ai: true }, 'tasks', true)).toBe(true);
+    expect(canUseAI({ ...prefs, ai: true }, 'subjects', true)).toBe(false);
   });
 });

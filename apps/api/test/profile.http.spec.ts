@@ -337,7 +337,7 @@ describe('own profile and module preferences on MySQL', () => {
     ).toBe(true);
     expect(
       (await request(app).get('/tasks').set('Cookie', a.cookie)).status,
-    ).toBe(404);
+    ).toBe(200);
   });
   it('guards reads/writes and AI before any data/provider work and fails closed', async () => {
     const a = await account();

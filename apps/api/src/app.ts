@@ -20,6 +20,9 @@ import type { AppLogger } from './shared/logger.js';
 import { ProfileService } from './modules/auth/profile.service.js';
 import { profileRoutes } from './modules/auth/profile.routes.js';
 import { PreferencesService } from './modules/preferences/preferences.service.js';
+import { tasksRoutes } from './modules/tasks/tasks.routes.js';
+import { TasksService } from './modules/tasks/tasks.service.js';
+import { TasksRepository } from './modules/tasks/tasks.repository.js';
 
 export interface AppOptions {
   logger: AppLogger;
@@ -74,6 +77,15 @@ export function createApp({
       oidcFetch,
     );
     app.use('/auth', authRoutes(service, google, env));
+    app.use(
+      '/tasks',
+      tasksRoutes(
+        service,
+        new TasksService(new TasksRepository(source)),
+        new PreferencesService(source),
+        env,
+      ),
+    );
     app.use(
       '/profile',
       profileRoutes(
