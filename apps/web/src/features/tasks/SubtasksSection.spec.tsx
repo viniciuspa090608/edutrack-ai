@@ -53,6 +53,7 @@ function envelope() {
 beforeEach(() => {
   task = {
     id: idFor(1),
+    subjectId: null,
     title: 'Prova',
     description: null,
     dueDate: null,

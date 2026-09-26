@@ -11,6 +11,8 @@ import { AuthApiError, navigate } from '../auth/auth-api.js';
 import { deleteTask, listTasks, saveTask, taskDetail } from './tasks-api.js';
 import '../../styles/tasks.css';
 
+import { SubjectSelect } from '../subjects/SubjectSelect.js';
+import { subjectDetail } from '../subjects/subjects-api.js';
 const statuses = {
   PENDING: 'Pendente',
   IN_PROGRESS: 'Em andamento',
@@ -39,11 +41,14 @@ function TaskForm({
   task,
   onSaved,
   onCancel,
+  subjectsEnabled,
 }: {
+  subjectsEnabled: boolean;
   task: StudyTask | null;
   onSaved: (task: StudyTask) => void;
   onCancel: () => void;
 }) {
+  const [subjectId, setSubjectId] = useState(task?.subjectId ?? '');
   const [title, setTitle] = useState(task?.title ?? '');
   const [description, setDescription] = useState(task?.description ?? '');
   const [priority, setPriority] = useState(task?.priority ?? 'MEDIUM');
@@ -66,6 +71,11 @@ function TaskForm({
         event.preventDefault();
         if (submitting.current) return;
         const parsed = createTaskSchema.safeParse({
+          ...(subjectsEnabled
+            ? { subjectId: subjectId || null }
+            : task
+              ? { subjectId: task.subjectId }
+              : {}),
           title,
           description: description || null,
           priority,
@@ -93,12 +103,21 @@ function TaskForm({
         try {
           const input = task?.subtaskTotal
             ? {
+                ...(subjectsEnabled
+                  ? { subjectId: parsed.data.subjectId }
+                  : {}),
                 title: parsed.data.title,
                 description: parsed.data.description,
                 priority: parsed.data.priority,
                 dueDate: parsed.data.dueDate,
               }
-            : parsed.data;
+            : subjectsEnabled
+              ? parsed.data
+              : Object.fromEntries(
+                  Object.entries(parsed.data).filter(
+                    ([key]) => key !== 'subjectId',
+                  ),
+                );
           onSaved(await saveTask(task?.id ?? null, input));
         } catch (cause) {
           setError(failure(cause));
@@ -110,6 +129,13 @@ function TaskForm({
     >
       <h2>{task ? 'Editar tarefa' : 'Nova tarefa'}</h2>
       <fieldset disabled={busy}>
+        {subjectsEnabled && (
+          <SubjectSelect
+            value={subjectId}
+            onChange={setSubjectId}
+            disabled={busy}
+          />
+        )}
         <label htmlFor="task-title">Título</label>
         <input
           ref={titleRef}
@@ -267,7 +293,12 @@ function DeleteConfirmation({
   );
 }
 
-export function TasksPage() {
+export function TasksPage({
+  subjectsEnabled = false,
+}: {
+  subjectsEnabled?: boolean;
+}) {
+  const [subjectName, setSubjectName] = useState('');
   const [filters, setFilters] = useState<TaskFilters>(initialFilters);
   const [draft, setDraft] = useState({
     status: '',
@@ -313,6 +344,21 @@ export function TasksPage() {
   useEffect(() => {
     if (detail && !editor) detailHeading.current?.focus();
   }, [detail?.id, !!editor]);
+  useEffect(() => {
+    let active = true;
+    setSubjectName('');
+    if (subjectsEnabled && detail?.subjectId)
+      void subjectDetail(detail.subjectId)
+        .then((value) => {
+          if (active) setSubjectName(value.name);
+        })
+        .catch(() => {
+          if (active) setSubjectName('Matéria indisponível');
+        });
+    return () => {
+      active = false;
+    };
+  }, [subjectsEnabled, detail?.subjectId]);
   const filtered = !!(
     filters.status ||
     filters.priority ||
@@ -340,6 +386,7 @@ export function TasksPage() {
         <TaskForm
           key={editor.task?.id ?? 'new'}
           task={editor.task}
+          subjectsEnabled={subjectsEnabled}
           onCancel={() => {
             setEditor(null);
             newButton.current?.focus();
@@ -463,6 +510,16 @@ export function TasksPage() {
             {detail.description || 'Sem descrição'}
           </p>
           <dl>
+            {subjectsEnabled && (
+              <>
+                <dt>Matéria</dt>
+                <dd>
+                  {detail.subjectId
+                    ? subjectName || 'Carregando matéria…'
+                    : 'Sem matéria'}
+                </dd>
+              </>
+            )}
             <dt>Status</dt>
             <dd>{statuses[detail.status]}</dd>
             <dt>Importância</dt>

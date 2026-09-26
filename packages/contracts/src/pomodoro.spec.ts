@@ -28,6 +28,7 @@ describe('Pomodoro contracts', () => {
     const row = {
       id: '00000000-0000-4000-8000-000000000001',
       taskId: null,
+      subjectId: null,
       state: 'PAUSED',
       activeSeconds: 600,
       completedBlocks: 0,

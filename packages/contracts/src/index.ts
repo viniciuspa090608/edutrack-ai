@@ -136,3 +136,5 @@ export type ModulePreferences = z.infer<typeof preferencesSchema>;
 export type Capability = keyof ModulePreferences;
 export * from './pomodoro.js';
 export * from './routines.js';
+
+export * from './subjects.js';

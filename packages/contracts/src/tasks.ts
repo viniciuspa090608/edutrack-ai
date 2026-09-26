@@ -15,6 +15,7 @@ export const calendarDateSchema = z
     );
   }, 'Informe uma data de calendário válida.');
 const taskFields = {
+  subjectId: z.uuid().nullable(),
   title: z.string().trim().min(1).max(160),
   description: z.string().max(2000).nullable(),
   priority: taskPrioritySchema,
@@ -24,6 +25,7 @@ const taskFields = {
 export const createTaskSchema = z
   .object({
     ...taskFields,
+    subjectId: taskFields.subjectId.optional().default(null),
     description: taskFields.description.optional().default(null),
     dueDate: taskFields.dueDate.optional().default(null),
     priority: taskPrioritySchema.default('MEDIUM'),
@@ -49,6 +51,7 @@ const pageNumber = z
   .pipe(z.number().int().positive().max(Number.MAX_SAFE_INTEGER));
 export const taskFiltersSchema = z
   .object({
+    subjectId: z.uuid().optional(),
     status: taskStatusSchema.optional(),
     priority: taskPrioritySchema.optional(),
     dueFrom: calendarDateSchema.optional(),

@@ -36,6 +36,10 @@ export class TasksRepository {
         .getRepository(taskEntity)
         .createQueryBuilder('task')
         .where('task.userId = :userId', { userId });
+      if (filters.subjectId)
+        query.andWhere('task.subjectId = :subjectId', {
+          subjectId: filters.subjectId,
+        });
       if (filters.status)
         query.andWhere('task.status = :status', { status: filters.status });
       if (filters.priority)

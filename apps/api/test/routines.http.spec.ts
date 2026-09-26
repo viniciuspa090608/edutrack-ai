@@ -68,11 +68,13 @@ it('applies once, reverses routine tables and reapplies without synchronization'
   expect(source.options.synchronize).toBe(false);
   expect(await source.runMigrations()).toEqual([]);
   await source.undoLastMigration();
+  await source.undoLastMigration();
+  await source.undoLastMigration();
   await expect(source.query('SELECT * FROM study_routines')).rejects.toThrow();
   await expect(
     source.query('SELECT * FROM study_routine_slots'),
   ).rejects.toThrow();
-  expect((await source.runMigrations()).length).toBe(1);
+  expect((await source.runMigrations()).length).toBe(3);
 });
 it('protects every route and write origin and never accepts client ownership', async () => {
   const a = await account();

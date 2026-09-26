@@ -16,12 +16,12 @@ export async function currentPomodoro() {
     await (await send('/pomodoro/sessions/current')).json(),
   ).session;
 }
-export async function pomodoroHistory(page = 1) {
-  const input = pomodoroPageSchema.parse({ page });
+export async function pomodoroHistory(page = 1, subjectId?: string) {
+  const input = pomodoroPageSchema.parse({ page, subjectId });
   return pomodoroHistorySchema.parse(
     await (
       await send(
-        `/pomodoro/sessions?page=${input.page}&pageSize=${input.pageSize}`,
+        `/pomodoro/sessions?page=${input.page}&pageSize=${input.pageSize}${input.subjectId ? `&subjectId=${input.subjectId}` : ''}`,
       )
     ).json(),
   );
@@ -42,10 +42,13 @@ async function post(path: string, body: object) {
     ).json(),
   );
 }
-export function startPomodoro(taskId?: string) {
+export function startPomodoro(taskId?: string, subjectId?: string) {
   return post(
     '/pomodoro/sessions',
-    startPomodoroSchema.parse(taskId ? { taskId } : {}),
+    startPomodoroSchema.parse({
+      ...(taskId ? { taskId } : {}),
+      ...(subjectId ? { subjectId } : {}),
+    }),
   );
 }
 export function commandPomodoro(

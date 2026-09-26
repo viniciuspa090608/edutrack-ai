@@ -14,9 +14,9 @@ export const moduleCatalog: ReadonlyArray<{
   },
   {
     capability: 'subjects',
-    path: '/materias',
+    path: '/app/materias',
     label: 'Matérias',
-    delivered: false,
+    delivered: true,
   },
   {
     capability: 'flashcards',

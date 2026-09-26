@@ -6,6 +6,7 @@ import { preferences } from '../profile/profile-api.js';
 import { availableModules, moduleAtPath } from '../profile/module-catalog.js';
 import { TasksPage } from '../tasks/TasksPage.js';
 import { PomodoroPage } from '../pomodoro/PomodoroPage.js';
+import { SubjectsPage } from '../subjects/SubjectsPage.js';
 import { RoutinesPage } from '../routines/RoutinesPage.js';
 import {
   AuthApiError,
@@ -36,9 +37,12 @@ export function PrivatePage({
   );
 
   const check = useCallback(async () => {
-    const returnTo = ['/app/tarefas', '/app/pomodoro', '/app/rotinas'].includes(
-      window.location.pathname,
-    )
+    const returnTo = [
+      '/app/tarefas',
+      '/app/pomodoro',
+      '/app/rotinas',
+      '/app/materias',
+    ].includes(window.location.pathname)
       ? window.location.pathname
       : page === 'conta'
         ? '/conta'
@@ -168,7 +172,10 @@ export function PrivatePage({
         {page === 'rotinas' ? (
           <RoutinesPage />
         ) : page === 'pomodoro' ? (
-          <PomodoroPage tasksEnabled={prefs?.tasks ?? false} />
+          <PomodoroPage
+            tasksEnabled={prefs?.tasks ?? false}
+            subjectsEnabled={prefs?.subjects ?? false}
+          />
         ) : page === 'app' ? (
           <>
             <p className="section-kicker">Seu espaço</p>
@@ -193,7 +200,9 @@ export function PrivatePage({
                 <a href="/conta">Reativar nas preferências</a>
               </p>
             ) : window.location.pathname === '/app/tarefas' ? (
-              <TasksPage />
+              <TasksPage subjectsEnabled={prefs.subjects} />
+            ) : window.location.pathname === '/app/materias' ? (
+              <SubjectsPage tasksEnabled={prefs.tasks} />
             ) : (
               <p>
                 Esta funcionalidade ainda não está disponível.{' '}

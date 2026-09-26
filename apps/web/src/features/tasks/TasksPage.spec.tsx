@@ -15,6 +15,7 @@ import { App } from '../../app/App.js';
 import { TasksPage } from './TasksPage.js';
 
 const originalTask: StudyTask = {
+  subjectId: null,
   id: '00000000-0000-4000-8000-000000000001',
   title: 'Revisar álgebra',
   description: 'Capítulo 1',
@@ -87,6 +88,27 @@ beforeEach(() => {
           subjects: true,
           flashcards: true,
           ai: false,
+        });
+      if (method === 'GET' && url.pathname === '/subjects')
+        return Response.json({
+          items: [
+            {
+              id: originalTask.id,
+              name: 'Matemática',
+              currentLevel: 'BEGINNER',
+              objective: 'Aprender',
+              dueDate: '2026-10-01',
+              weeklyHours: 1,
+              knownTopics: [],
+              planItems: [],
+              createdAt: originalTask.createdAt,
+              updatedAt: originalTask.updatedAt,
+            },
+          ],
+          page: 1,
+          pageSize: 100,
+          total: 1,
+          totalPages: 1,
         });
       if (method === 'GET' && url.pathname === '/tasks') {
         const filtered = items.filter(
@@ -262,6 +284,7 @@ it('creates using keyboard/defaults, validates whitespace and retains input afte
   await screen.findByText('Tarefa salva.');
   expect(requests.filter((r) => r.method === 'POST').at(-1)!.body).toEqual({
     title: 'Revisar álgebra',
+    subjectId: null,
     description: null,
     dueDate: null,
     priority: 'MEDIUM',
@@ -350,4 +373,44 @@ it('cancels deletion, keeps records on failure, then confirms deletion by keyboa
   expect(screen.queryByRole('dialog')).toBeNull();
   await screen.findByText(/Você ainda não tem tarefas/);
   expect(items).toHaveLength(0);
+});
+
+it('associates and clears an optional subject and omits its controls when disabled', async () => {
+  const interaction = userEvent.setup();
+  const view = render(<TasksPage subjectsEnabled />);
+  await screen.findByText(/Você ainda não tem tarefas/);
+  await interaction.click(screen.getByRole('button', { name: 'Criar tarefa' }));
+  await screen.findByRole('option', { name: 'Matemática' });
+  await interaction.selectOptions(
+    screen.getByLabelText('Matéria (opcional)'),
+    originalTask.id,
+  );
+  await interaction.type(screen.getByLabelText('Título'), 'Revisar');
+  await interaction.click(
+    screen.getByRole('button', { name: 'Salvar tarefa' }),
+  );
+  await screen.findByText('Tarefa salva.');
+  expect(
+    requests.filter((call) => call.method === 'POST').at(-1)!.body.subjectId,
+  ).toBe(originalTask.id);
+  await interaction.click(
+    screen.getByRole('button', { name: 'Editar tarefa' }),
+  );
+  await screen.findByRole('option', { name: 'Matemática' });
+  await interaction.selectOptions(
+    screen.getByLabelText('Matéria (opcional)'),
+    '',
+  );
+  await interaction.click(
+    screen.getByRole('button', { name: 'Salvar tarefa' }),
+  );
+  await waitFor(() =>
+    expect(
+      requests.filter((call) => call.method === 'PATCH').at(-1)!.body.subjectId,
+    ).toBeNull(),
+  );
+  view.unmount();
+  render(<TasksPage subjectsEnabled={false} />);
+  await interaction.click(screen.getByRole('button', { name: 'Criar tarefa' }));
+  expect(screen.queryByLabelText('Matéria (opcional)')).toBeNull();
 });

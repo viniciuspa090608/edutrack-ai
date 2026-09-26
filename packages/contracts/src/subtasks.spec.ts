@@ -50,6 +50,7 @@ it('validates subtask titles, partial updates, ordering and explicit confirmatio
 });
 it('requires calculated counters and progress in the public task response', () => {
   const task = {
+    subjectId: null,
     id: randomUUID(),
     title: 'a',
     description: null,

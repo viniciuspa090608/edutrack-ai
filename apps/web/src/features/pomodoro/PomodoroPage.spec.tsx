@@ -10,6 +10,7 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import type { PomodoroSession } from '@study-platform/contracts';
 import { PomodoroPage } from './PomodoroPage.js';
 import * as api from './pomodoro-api.js';
+import { listSubjects } from '../subjects/subjects-api.js';
 import { listTasks } from '../tasks/tasks-api.js';
 import { App } from '../../app/App.js';
 import { AuthApiError, currentUser } from '../auth/auth-api.js';
@@ -21,9 +22,11 @@ vi.mock('../auth/auth-api.js', async (original) => ({
 vi.mock('../profile/profile-api.js');
 vi.mock('./pomodoro-api.js');
 vi.mock('../tasks/tasks-api.js');
+vi.mock('../subjects/subjects-api.js');
 const row: PomodoroSession = {
   id: '00000000-0000-4000-8000-000000000001',
   taskId: null,
+  subjectId: null,
   state: 'RUNNING',
   activeSeconds: 600,
   completedBlocks: 0,
@@ -37,6 +40,13 @@ let current: PomodoroSession | null;
 beforeEach(() => {
   vi.resetAllMocks();
   current = null;
+  vi.mocked(listSubjects).mockResolvedValue({
+    items: [],
+    page: 1,
+    pageSize: 100,
+    total: 0,
+    totalPages: 0,
+  });
   vi.mocked(api.currentPomodoro).mockImplementation(async () => current);
   vi.mocked(api.pomodoroHistory).mockResolvedValue({
     items: [],
@@ -102,7 +112,7 @@ it('starts without tasks and uses keyboard cancel confirmation while preserving 
   start.focus();
   await user.keyboard('{Enter}');
   await screen.findByRole('button', { name: 'Pausar' });
-  expect(api.startPomodoro).toHaveBeenCalledWith(undefined);
+  expect(api.startPomodoro).toHaveBeenCalledWith(undefined, undefined);
   expect(screen.queryByRole('button', { name: 'Concluir' })).toBeNull();
   await user.click(screen.getByRole('button', { name: 'Cancelar sessão' }));
   const keep = screen.getByRole('button', { name: 'Manter sessão' });
@@ -185,6 +195,7 @@ it('offers own task selection and terminal history totals', async () => {
     items: [
       {
         id: row.id,
+        subjectId: null,
         title: 'Álgebra',
         description: null,
         priority: 'MEDIUM',
@@ -217,7 +228,60 @@ it('offers own task selection and terminal history totals', async () => {
   await screen.findByRole('option', { name: 'Álgebra' });
   fireEvent.change(screen.getByRole('combobox'), { target: { value: row.id } });
   fireEvent.click(screen.getByRole('button', { name: 'Iniciar sessão' }));
-  await waitFor(() => expect(api.startPomodoro).toHaveBeenCalledWith(row.id));
+  await waitFor(() =>
+    expect(api.startPomodoro).toHaveBeenCalledWith(row.id, undefined),
+  );
   expect(screen.getByText(/Total estudado: 10:00/)).toBeTruthy();
   expect(screen.getByText(/Cancelada · 10:00/)).toBeTruthy();
+});
+
+it('selects a subject without a task, filters history and hides selectors when disabled', async () => {
+  vi.mocked(listSubjects).mockResolvedValue({
+    items: [
+      {
+        id: row.id,
+        name: 'Matemática',
+        currentLevel: 'BEGINNER',
+        objective: 'Aprender',
+        dueDate: '2026-10-01',
+        weeklyHours: 1,
+        knownTopics: [],
+        planItems: [],
+        createdAt: row.startedAt,
+        updatedAt: row.startedAt,
+      },
+    ],
+    page: 1,
+    pageSize: 100,
+    total: 1,
+    totalPages: 1,
+  });
+  const interaction = userEvent.setup();
+  const view = render(<PomodoroPage tasksEnabled={false} subjectsEnabled />);
+  await waitFor(() =>
+    expect(
+      (screen.getByLabelText('Matéria (opcional)') as HTMLSelectElement)
+        .disabled,
+    ).toBe(false),
+  );
+  await interaction.selectOptions(
+    screen.getByLabelText('Matéria (opcional)'),
+    row.id,
+  );
+  await interaction.click(
+    screen.getByRole('button', { name: 'Iniciar sessão' }),
+  );
+  await waitFor(() =>
+    expect(api.startPomodoro).toHaveBeenCalledWith(undefined, row.id),
+  );
+  await interaction.selectOptions(
+    screen.getByLabelText('Filtrar histórico por matéria'),
+    row.id,
+  );
+  await waitFor(() =>
+    expect(api.pomodoroHistory).toHaveBeenCalledWith(1, row.id),
+  );
+  view.unmount();
+  render(<PomodoroPage tasksEnabled={false} subjectsEnabled={false} />);
+  expect(screen.queryByLabelText('Filtrar histórico por matéria')).toBeNull();
 });

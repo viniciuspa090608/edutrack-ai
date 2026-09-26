@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const startPomodoroSchema = z
-  .object({ taskId: z.uuid().optional() })
+  .object({ taskId: z.uuid().optional(), subjectId: z.uuid().optional() })
   .strict();
 export const pomodoroCommandSchema = z
   .object({ version: z.number().int().nonnegative() })
@@ -15,6 +15,7 @@ export const pomodoroActionSchema = z.enum([
 ]);
 export const pomodoroPageSchema = z
   .object({
+    subjectId: z.uuid().optional(),
     page: z.coerce.number().int().min(1).default(1),
     pageSize: z.coerce.number().int().min(1).max(100).default(20),
   })
@@ -23,6 +24,7 @@ export const pomodoroSessionSchema = z
   .object({
     id: z.uuid(),
     taskId: z.uuid().nullable(),
+    subjectId: z.uuid().nullable(),
     state: z.enum([
       'RUNNING',
       'PAUSED',

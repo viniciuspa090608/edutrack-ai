@@ -31,6 +31,10 @@ import { routinesRoutes } from './modules/routines/routines.routes.js';
 import { RoutinesService } from './modules/routines/routines.service.js';
 import { RoutinesRepository } from './modules/routines/routines.repository.js';
 
+import { SubjectsRepository } from './modules/subjects/subjects.repository.js';
+import { SubjectsService } from './modules/subjects/subjects.service.js';
+import { subjectsRoutes } from './modules/subjects/subjects.routes.js';
+
 export interface AppOptions {
   logger: AppLogger;
   webOrigin: string;
@@ -86,6 +90,9 @@ export function createApp({
       oidcFetch,
     );
     app.use('/auth', authRoutes(service, google, env));
+    const prefs = new PreferencesService(source);
+    const subjects = new SubjectsService(new SubjectsRepository(source), prefs);
+    app.use('/subjects', subjectsRoutes(service, subjects, prefs, env));
     app.use(
       '/routines',
       routinesRoutes(
@@ -100,8 +107,9 @@ export function createApp({
         service,
         new PomodoroService(
           new PomodoroRepository(source, pomodoroClock),
-          new TasksService(new TasksRepository(source)),
-          new PreferencesService(source),
+          new TasksService(new TasksRepository(source), subjects),
+          prefs,
+          subjects,
         ),
         env,
       ),
@@ -110,7 +118,7 @@ export function createApp({
       '/tasks',
       tasksRoutes(
         service,
-        new TasksService(new TasksRepository(source)),
+        new TasksService(new TasksRepository(source), subjects),
         new PreferencesService(source),
         env,
       ),

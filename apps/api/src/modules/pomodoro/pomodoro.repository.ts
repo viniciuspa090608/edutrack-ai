@@ -6,6 +6,7 @@ export interface SessionRecord {
   id: string;
   user_id: string;
   task_id: string | null;
+  subject_id: string | null;
   state: PomodoroSession['state'];
   active_ms: number;
   completed_blocks: number;
@@ -54,12 +55,13 @@ export class PomodoroRepository {
     manager: EntityManager,
     userId: string,
     taskId: string | null,
+    subjectId: string | null,
     now: Date,
   ) {
     const id = randomUUID();
     await manager.query(
-      "INSERT INTO pomodoro_sessions (id,user_id,task_id,state,running_since,started_at) VALUES (?,?,?,'RUNNING',?,?)",
-      [id, userId, taskId, now, now],
+      "INSERT INTO pomodoro_sessions (id,user_id,task_id,subject_id,state,running_since,started_at) VALUES (?,?,?,?,'RUNNING',?,?)",
+      [id, userId, taskId, subjectId, now, now],
     );
     await manager.query(
       'INSERT INTO pomodoro_open_sessions (user_id,session_id) VALUES (?,?)',
@@ -92,14 +94,20 @@ export class PomodoroRepository {
     userId: string,
     page: number,
     pageSize: number,
+    subjectId?: string,
   ) {
     const items = (await manager.query(
-      "SELECT * FROM pomodoro_sessions WHERE user_id=? AND state IN ('COMPLETED','CANCELED') ORDER BY started_at DESC,id DESC LIMIT ? OFFSET ?",
-      [userId, pageSize, (page - 1) * pageSize],
+      `SELECT * FROM pomodoro_sessions WHERE user_id=? AND state IN ('COMPLETED','CANCELED') ${subjectId ? 'AND subject_id=?' : ''} ORDER BY started_at DESC,id DESC LIMIT ? OFFSET ?`,
+      [
+        userId,
+        ...(subjectId ? [subjectId] : []),
+        pageSize,
+        (page - 1) * pageSize,
+      ],
     )) as SessionRecord[];
     const rows = (await manager.query(
-      "SELECT COUNT(*) AS total FROM pomodoro_sessions WHERE user_id=? AND state IN ('COMPLETED','CANCELED')",
-      [userId],
+      `SELECT COUNT(*) AS total FROM pomodoro_sessions WHERE user_id=? AND state IN ('COMPLETED','CANCELED') ${subjectId ? 'AND subject_id=?' : ''}`,
+      [userId, ...(subjectId ? [subjectId] : [])],
     )) as { total: number }[];
     return { items, total: Number(rows[0]!.total) };
   }

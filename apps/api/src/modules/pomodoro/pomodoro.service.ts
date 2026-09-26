@@ -17,6 +17,7 @@ import type { PreferencesService } from '../preferences/preferences.service.js';
 import { PomodoroRepository } from './pomodoro.repository.js';
 import type { SessionRecord } from './pomodoro.repository.js';
 
+import type { SubjectsService } from '../subjects/subjects.service.js';
 const BLOCK = 1_500_000;
 export class PomodoroConflict extends Error {
   constructor(public readonly session: PomodoroSession) {
@@ -45,6 +46,7 @@ function dto(row: SessionRecord, now: Date) {
   return pomodoroSessionSchema.parse({
     id: value.id,
     taskId: value.task_id,
+    subjectId: value.subject_id,
     state: value.state,
     activeSeconds: Math.floor(value.active_ms / 1000),
     completedBlocks: value.completed_blocks,
@@ -65,14 +67,27 @@ export class PomodoroService {
     private readonly repository: PomodoroRepository,
     private readonly tasks: Pick<TasksService, 'detail'>,
     private readonly prefs: Pick<PreferencesService, 'requireEnabled'>,
+    private readonly subjects: Pick<SubjectsService, 'requireOwned'>,
   ) {}
   async start(userId: string, input: unknown) {
     const parsed = startPomodoroSchema.safeParse(input);
     if (!parsed.success)
       throw new HttpError(400, 'INVALID_INPUT', 'Dados de sessão inválidos.');
+    if (parsed.data.subjectId)
+      await this.subjects.requireOwned(userId, parsed.data.subjectId);
     if (parsed.data.taskId) {
       await this.prefs.requireEnabled(userId, 'tasks');
-      await this.tasks.detail(userId, parsed.data.taskId);
+      const task = await this.tasks.detail(userId, parsed.data.taskId);
+      if (
+        parsed.data.subjectId &&
+        task.subjectId &&
+        parsed.data.subjectId !== task.subjectId
+      )
+        throw new HttpError(
+          400,
+          'SUBJECT_MISMATCH',
+          'Escolha a matéria vinculada à tarefa.',
+        );
     }
     try {
       return await this.repository.transaction(async (manager) => {
@@ -85,6 +100,7 @@ export class PomodoroService {
             manager,
             userId,
             parsed.data.taskId ?? null,
+            parsed.data.subjectId ?? null,
             now,
           ),
           now,
@@ -131,10 +147,12 @@ export class PomodoroService {
       ),
     );
   }
-  history(userId: string, input: unknown) {
+  async history(userId: string, input: unknown) {
     const parsed = pomodoroPageSchema.safeParse(input);
     if (!parsed.success)
       throw new HttpError(400, 'INVALID_INPUT', 'Paginação inválida.');
+    if (parsed.data.subjectId)
+      await this.subjects.requireOwned(userId, parsed.data.subjectId);
     return this.repository.transaction(async (manager) => {
       const { page, pageSize } = parsed.data;
       const { items, total } = await this.repository.history(
@@ -142,6 +160,7 @@ export class PomodoroService {
         userId,
         page,
         pageSize,
+        parsed.data.subjectId,
       );
       const now = await this.repository.now(manager);
       return pomodoroHistorySchema.parse({

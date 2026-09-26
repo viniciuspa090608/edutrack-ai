@@ -17,6 +17,8 @@ import type { TaskRecord } from './tasks.repository.js';
 import type { SubtaskEntity } from './subtask.entity.js';
 import { TasksRepository } from './tasks.repository.js';
 
+import type { SubjectsService } from '../subjects/subjects.service.js';
+
 function derivedStatus(
   total: number,
   completed: number,
@@ -45,6 +47,7 @@ function dto(row: TaskRecord | null) {
   } = row;
   return taskSchema.parse({
     id,
+    subjectId: row.subjectId,
     title,
     description,
     priority,
@@ -60,11 +63,16 @@ function dto(row: TaskRecord | null) {
   });
 }
 export class TasksService {
-  constructor(private readonly repository: TasksRepository) {}
+  constructor(
+    private readonly repository: TasksRepository,
+    private readonly subjects: Pick<SubjectsService, 'requireOwned'>,
+  ) {}
   async create(userId: string, input: unknown) {
     const parsed = createTaskSchema.safeParse(input);
     if (!parsed.success)
       throw new HttpError(400, 'INVALID_INPUT', 'Dados de tarefa inválidos.');
+    if (parsed.data.subjectId)
+      await this.subjects.requireOwned(userId, parsed.data.subjectId);
     return dto(await this.repository.create(userId, parsed.data));
   }
   async detail(userId: string, id: string) {
@@ -74,6 +82,8 @@ export class TasksService {
     const parsed = taskFiltersSchema.safeParse(input);
     if (!parsed.success)
       throw new HttpError(400, 'INVALID_INPUT', 'Filtros inválidos.');
+    if (parsed.data.subjectId)
+      await this.subjects.requireOwned(userId, parsed.data.subjectId);
     const [items, total] = await this.repository.list(userId, parsed.data);
     return taskListSchema.parse({
       items: items.map(dto),
@@ -87,6 +97,8 @@ export class TasksService {
     const parsed = updateTaskSchema.safeParse(input);
     if (!parsed.success)
       throw new HttpError(400, 'INVALID_INPUT', 'Dados de tarefa inválidos.');
+    if (parsed.data.subjectId)
+      await this.subjects.requireOwned(userId, parsed.data.subjectId);
     return this.repository.locked(userId, id, async (manager, task) => {
       const subtasks = await this.repository.subtasks(manager, userId, id);
       if (subtasks.length && parsed.data.status) {

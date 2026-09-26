@@ -137,7 +137,7 @@ describe('profile page', () => {
       expect(screen.getByRole('checkbox', { name })).toBeTruthy();
     expect(
       screen.getAllByText(/Funcionalidade ainda não disponível/),
-    ).toHaveLength(3);
+    ).toHaveLength(2);
     expect(
       screen.queryByRole('button', { name: 'Aprimorar com IA' }),
     ).toBeNull();
@@ -330,7 +330,7 @@ describe('profile page', () => {
   });
   it('revalidates direct module pages after changes in another tab', async () => {
     prefs.subjects = false;
-    window.history.replaceState({}, '', '/materias/123');
+    window.history.replaceState({}, '', '/app/materias/123');
     render(<App />);
     expect(await screen.findByText(/Este módulo está desativado/)).toBeTruthy();
     prefs.subjects = true;

@@ -19,6 +19,7 @@ export const taskEntity = new EntitySchema<TaskEntity>({
   columns: {
     id: { type: 'char', length: 36, primary: true },
     userId: { name: 'user_id', type: 'char', length: 36 },
+    subjectId: { name: 'subject_id', type: 'char', length: 36, nullable: true },
     title: { type: 'varchar', length: 160 },
     description: { type: 'text', nullable: true },
     priority: {

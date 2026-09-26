@@ -13,6 +13,8 @@ import { PomodoroRepository } from '../src/modules/pomodoro/pomodoro.repository.
 import { TasksService } from '../src/modules/tasks/tasks.service.js';
 import { TasksRepository } from '../src/modules/tasks/tasks.repository.js';
 
+import { SubjectsService } from '../src/modules/subjects/subjects.service.js';
+import { SubjectsRepository } from '../src/modules/subjects/subjects.repository.js';
 const env = loadEnv();
 const database = `${env.TEST_DB_NAME}_pomo_${randomBytes(4).toString('hex')}`;
 const admin = createDataSource({ ...env, DB_NAME: env.TEST_DB_NAME });
@@ -284,7 +286,13 @@ describe('Pomodoro HTTP on isolated real MySQL', () => {
     ).toMatchObject({ taskId: null, activeSeconds: 1500, completedBlocks: 1 });
     const racingTask = (await write('/tasks', a.cookie, { title: 'Excluir' }))
       .body;
-    const tasks = new TasksService(new TasksRepository(source));
+    const tasks = new TasksService(
+      new TasksRepository(source),
+      new SubjectsService(
+        new SubjectsRepository(source),
+        new PreferencesService(source),
+      ),
+    );
     const service = new PomodoroService(
       new PomodoroRepository(source),
       {
@@ -295,6 +303,10 @@ describe('Pomodoro HTTP on isolated real MySQL', () => {
         },
       },
       new PreferencesService(source),
+      new SubjectsService(
+        new SubjectsRepository(source),
+        new PreferencesService(source),
+      ),
     );
     await expect(
       service.start(a.id, { taskId: racingTask.id }),
@@ -309,12 +321,19 @@ describe('Pomodoro HTTP on isolated real MySQL', () => {
   });
   it('uses the database UTC clock in production and persists across repository recreation', async () => {
     const a = await account();
-    const tasks = new TasksService(new TasksRepository(source));
+    const tasks = new TasksService(
+      new TasksRepository(source),
+      new SubjectsService(
+        new SubjectsRepository(source),
+        new PreferencesService(source),
+      ),
+    );
     const prefs = new PreferencesService(source);
     const service = new PomodoroService(
       new PomodoroRepository(source),
       tasks,
       prefs,
+      new SubjectsService(new SubjectsRepository(source), prefs),
     );
     const row = await service.start(a.id, {});
     expect(Math.abs(Date.parse(row.serverTime) - Date.now())).toBeLessThan(
@@ -324,6 +343,7 @@ describe('Pomodoro HTTP on isolated real MySQL', () => {
       new PomodoroRepository(source),
       tasks,
       prefs,
+      new SubjectsService(new SubjectsRepository(source), prefs),
     );
     expect((await recreated.current(a.id)).session?.id).toBe(row.id);
   });

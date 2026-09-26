@@ -12,10 +12,20 @@ import {
 } from './pomodoro-api.js';
 import { listTasks } from '../tasks/tasks-api.js';
 import '../../styles/pomodoro.css';
+import { SubjectSelect } from '../subjects/SubjectSelect.js';
+import { SubjectName } from '../subjects/SubjectName.js';
 
 const format = (seconds: number) =>
   `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
-export function PomodoroPage({ tasksEnabled }: { tasksEnabled: boolean }) {
+export function PomodoroPage({
+  tasksEnabled,
+  subjectsEnabled = false,
+}: {
+  tasksEnabled: boolean;
+  subjectsEnabled?: boolean;
+}) {
+  const [subjectId, setSubjectId] = useState('');
+  const [historySubject, setHistorySubject] = useState('');
   const [session, setSession] = useState<PomodoroSession | null>(null);
   const [history, setHistory] = useState<Awaited<
     ReturnType<typeof pomodoroHistory>
@@ -50,13 +60,16 @@ export function PomodoroPage({ tasksEnabled }: { tasksEnabled: boolean }) {
     accept(value);
     setReady(true);
     const [items, totals] = await Promise.all([
-      pomodoroHistory(page),
+      pomodoroHistory(
+        page,
+        subjectsEnabled && historySubject ? historySubject : undefined,
+      ),
       pomodoroSummary(),
     ]);
     if (version !== readVersion.current) return;
     setHistory(items);
     setSummary(totals);
-  }, [page, accept]);
+  }, [page, accept, subjectsEnabled, historySubject]);
   useEffect(() => {
     let active = true;
     setBusy(true);
@@ -140,7 +153,10 @@ export function PomodoroPage({ tasksEnabled }: { tasksEnabled: boolean }) {
       const value =
         action && session
           ? await commandPomodoro(session.id, action, session.version)
-          : await startPomodoro(tasksEnabled && taskId ? taskId : undefined);
+          : await startPomodoro(
+              tasksEnabled && taskId ? taskId : undefined,
+              subjectsEnabled && subjectId ? subjectId : undefined,
+            );
       accept(value.endedAt ? null : value);
       setMessage(
         action === 'cancel'
@@ -229,6 +245,13 @@ export function PomodoroPage({ tasksEnabled }: { tasksEnabled: boolean }) {
               )}
             </>
           )}
+          {subjectsEnabled && (
+            <SubjectSelect
+              value={subjectId}
+              onChange={setSubjectId}
+              disabled={busy}
+            />
+          )}
           <button disabled={busy} onClick={() => void act()}>
             Iniciar sessão
           </button>
@@ -314,6 +337,22 @@ export function PomodoroPage({ tasksEnabled }: { tasksEnabled: boolean }) {
         </div>
       )}
       <h2>Histórico</h2>
+      {subjectsEnabled && (
+        <SubjectSelect
+          label="Filtrar histórico por matéria"
+          value={historySubject}
+          onChange={(value) => {
+            setHistorySubject(value);
+            setPage(1);
+          }}
+          disabled={busy}
+        />
+      )}
+      {session && subjectsEnabled && (
+        <p>
+          <SubjectName id={session.subjectId} />
+        </p>
+      )}
       {summary && (
         <p>
           Total estudado: {format(summary.activeSeconds)} ·{' '}
@@ -329,6 +368,12 @@ export function PomodoroPage({ tasksEnabled }: { tasksEnabled: boolean }) {
                 {item.state === 'COMPLETED' ? 'Concluída' : 'Cancelada'} ·{' '}
                 {format(item.activeSeconds)} · {item.completedBlocks} blocos ·{' '}
                 {item.taskId ? `Tarefa ${item.taskId}` : 'Sem tarefa'}
+                {subjectsEnabled && (
+                  <>
+                    {' '}
+                    · <SubjectName id={item.subjectId} />
+                  </>
+                )}
               </li>
             ))}
           </ul>

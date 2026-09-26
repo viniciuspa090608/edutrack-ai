@@ -10,6 +10,7 @@ describe('study task contracts', () => {
   it('trims titles, defaults fields and accepts explicit clearing', () => {
     expect(createTaskSchema.parse({ title: '  Revisar  ' })).toEqual({
       title: 'Revisar',
+      subjectId: null,
       description: null,
       dueDate: null,
       priority: 'MEDIUM',

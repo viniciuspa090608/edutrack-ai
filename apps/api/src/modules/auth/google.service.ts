@@ -18,6 +18,7 @@ export type GoogleOutcome =
 export function allowedReturnTo(value: unknown): string {
   if (value === '/app/rotinas') return value;
   if (value === '/app/pomodoro') return value;
+  if (value === '/app/materias') return value;
   if (value === '/app/tarefas') return value;
   return value === '/conta' ? '/conta' : '/app';
 }
