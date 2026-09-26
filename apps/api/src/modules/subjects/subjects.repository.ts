@@ -8,6 +8,7 @@ import type {
   UpdatePlanItem,
 } from '@study-platform/contracts';
 import { HttpError } from '../../shared/http-error.js';
+import { RoadmapsRepository } from './roadmaps.repository.js';
 
 interface SubjectRecord {
   id: string;
@@ -31,7 +32,10 @@ interface ItemRecord {
 const missing = () =>
   new HttpError(404, 'SUBJECT_NOT_FOUND', 'Matéria não encontrada.');
 export class SubjectsRepository {
-  constructor(private readonly source: DataSource) {}
+  readonly roadmaps: RoadmapsRepository;
+  constructor(private readonly source: DataSource) {
+    this.roadmaps = new RoadmapsRepository(source);
+  }
   private async owned(
     manager: EntityManager,
     userId: string,

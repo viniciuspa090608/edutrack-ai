@@ -20,6 +20,34 @@ const validEnv = {
 };
 
 describe('API environment', () => {
+  it('keeps AI optional and validates grouped credentials and bounded limits safely', () => {
+    expect(parseEnv(validEnv).AI_API_KEY).toBeUndefined();
+    const ai = {
+      ...validEnv,
+      AI_API_KEY: 'private-ai-key',
+      AI_MODEL: 'configured-model',
+      AI_RECEIPT_KEY: 'c'.repeat(64),
+    };
+    expect(parseEnv(ai).AI_TIMEOUT_MS).toBe(30000);
+    for (const patch of [
+      { AI_MODEL: undefined },
+      { AI_RECEIPT_KEY: 'private-secret' },
+      { AI_TIMEOUT_MS: '0' },
+      { AI_TIMEOUT_MS: '120001' },
+      { AI_MAX_RESPONSE_BYTES: '1023' },
+      { AI_MAX_RESPONSE_BYTES: '1048577' },
+    ]) {
+      try {
+        parseEnv({ ...ai, ...patch });
+        throw new Error('should reject');
+      } catch (error) {
+        expect(error).toBeInstanceOf(EnvValidationError);
+        expect((error as Error).message).not.toMatch(
+          /private-ai-key|private-secret/,
+        );
+      }
+    }
+  });
   it('parses typed values', () => {
     const parsed = parseEnv(validEnv);
     expect(parsed.API_PORT).toBe(3001);

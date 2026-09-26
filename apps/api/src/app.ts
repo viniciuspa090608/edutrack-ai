@@ -34,6 +34,10 @@ import { RoutinesRepository } from './modules/routines/routines.repository.js';
 import { SubjectsRepository } from './modules/subjects/subjects.repository.js';
 import { SubjectsService } from './modules/subjects/subjects.service.js';
 import { subjectsRoutes } from './modules/subjects/subjects.routes.js';
+import { roadmapAIRoutes } from './modules/ai/roadmap-ai.routes.js';
+import { RoadmapAIService } from './modules/ai/roadmap-ai.service.js';
+import { OpenAIRoadmapProvider } from './modules/ai/roadmap-provider.js';
+import { RoadmapReceipt } from './modules/ai/roadmap-receipt.js';
 
 export interface AppOptions {
   logger: AppLogger;
@@ -42,6 +46,8 @@ export interface AppOptions {
   env?: ApiEnv;
   oidcFetch?: CustomFetch;
   pomodoroClock?: PomodoroClock;
+  aiFetch?: typeof fetch;
+  aiClock?: () => Date;
 }
 
 export function createApp({
@@ -51,6 +57,8 @@ export function createApp({
   env,
   oidcFetch,
   pomodoroClock,
+  aiFetch,
+  aiClock,
 }: AppOptions) {
   const app = express();
 
@@ -92,6 +100,21 @@ export function createApp({
     app.use('/auth', authRoutes(service, google, env));
     const prefs = new PreferencesService(source);
     const subjects = new SubjectsService(new SubjectsRepository(source), prefs);
+    app.use(
+      '/subjects',
+      roadmapAIRoutes(
+        service,
+        new RoadmapAIService(
+          subjects,
+          prefs,
+          new OpenAIRoadmapProvider(env, aiFetch),
+          new RoadmapReceipt(env.AI_RECEIPT_KEY, aiClock),
+          aiClock,
+        ),
+        prefs,
+        env,
+      ),
+    );
     app.use('/subjects', subjectsRoutes(service, subjects, prefs, env));
     app.use(
       '/routines',

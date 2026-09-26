@@ -19,6 +19,7 @@ import {
   mutatePlan,
 } from './subjects-api.js';
 import '../../styles/subjects.css';
+import { RoadmapsSection } from './RoadmapsSection.js';
 const levels = {
   BEGINNER: 'Iniciante',
   INTERMEDIATE: 'Intermediário',
@@ -404,8 +405,10 @@ function LinkedRecords({
 }
 export function SubjectsPage({
   tasksEnabled = false,
+  aiEnabled = false,
 }: {
   tasksEnabled?: boolean;
+  aiEnabled?: boolean;
 }) {
   const [page, setPage] = useState(1);
   const [revision, setRevision] = useState(0);
@@ -578,6 +581,11 @@ export function SubjectsPage({
           )}
           {!editor && (
             <>
+              <RoadmapsSection
+                key={`roadmaps-${detail.id}`}
+                subject={detail}
+                aiEnabled={aiEnabled}
+              />
               <PlanEditor
                 key={detail.id}
                 subject={detail}

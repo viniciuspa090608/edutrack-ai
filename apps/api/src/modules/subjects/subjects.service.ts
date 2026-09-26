@@ -7,6 +7,9 @@ import {
   createPlanItemSchema,
   updatePlanItemSchema,
   planOrderSchema,
+  roadmapContentSchema,
+  roadmapSchema,
+  roadmapListSchema,
 } from '@study-platform/contracts';
 import type { z } from 'zod';
 import type { PreferencesService } from '../preferences/preferences.service.js';
@@ -26,6 +29,58 @@ export class SubjectsService {
   async requireOwned(userId: string, id: string) {
     await this.prefs.requireEnabled(userId, 'subjects');
     await this.repository.detail(userId, id);
+  }
+  async listRoadmaps(userId: string, id: string, input: unknown) {
+    await this.requireOwned(userId, id);
+    const pagination = parse(subjectPaginationSchema, input);
+    const result = await this.repository.roadmaps.list(userId, id, pagination);
+    return roadmapListSchema.parse({
+      ...result,
+      ...pagination,
+      totalPages: Math.ceil(result.total / pagination.pageSize),
+    });
+  }
+  async roadmapDetail(userId: string, id: string, roadmapId: string) {
+    await this.requireOwned(userId, id);
+    return roadmapSchema.parse(
+      await this.repository.roadmaps.detail(userId, id, roadmapId),
+    );
+  }
+  async saveRoadmap(
+    userId: string,
+    id: string,
+    input: unknown,
+    generationId: string | null = null,
+  ) {
+    await this.requireOwned(userId, id);
+    return roadmapSchema.parse(
+      await this.repository.roadmaps.create(
+        userId,
+        id,
+        parse(roadmapContentSchema, input),
+        generationId,
+      ),
+    );
+  }
+  async editRoadmap(
+    userId: string,
+    id: string,
+    roadmapId: string,
+    input: unknown,
+  ) {
+    await this.requireOwned(userId, id);
+    return roadmapSchema.parse(
+      await this.repository.roadmaps.update(
+        userId,
+        id,
+        roadmapId,
+        parse(roadmapContentSchema, input),
+      ),
+    );
+  }
+  async deleteRoadmap(userId: string, id: string, roadmapId: string) {
+    await this.requireOwned(userId, id);
+    await this.repository.roadmaps.delete(userId, id, roadmapId);
   }
   async create(userId: string, input: unknown) {
     return subjectSchema.parse(

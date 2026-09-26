@@ -31,6 +31,43 @@ export function subjectsRoutes(
     return result.data;
   };
   const write = requireOrigin(env.WEB_ORIGIN);
+  router.get('/:id/roadmaps', async (req, res) => {
+    res.json(
+      await service.listRoadmaps(owner(res), id(req.params.id), req.query),
+    );
+  });
+  router.post('/:id/roadmaps', write, async (req, res) => {
+    res
+      .status(201)
+      .json(await service.saveRoadmap(owner(res), id(req.params.id), req.body));
+  });
+  router.get('/:id/roadmaps/:roadmapId', async (req, res) => {
+    res.json(
+      await service.roadmapDetail(
+        owner(res),
+        id(req.params.id),
+        id(req.params.roadmapId),
+      ),
+    );
+  });
+  router.patch('/:id/roadmaps/:roadmapId', write, async (req, res) => {
+    res.json(
+      await service.editRoadmap(
+        owner(res),
+        id(req.params.id),
+        id(req.params.roadmapId),
+        req.body,
+      ),
+    );
+  });
+  router.delete('/:id/roadmaps/:roadmapId', write, async (req, res) => {
+    await service.deleteRoadmap(
+      owner(res),
+      id(req.params.id),
+      id(req.params.roadmapId),
+    );
+    res.status(204).end();
+  });
   router.get('/', async (req, res) => {
     res.json(await service.list(owner(res), req.query));
   });

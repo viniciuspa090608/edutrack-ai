@@ -77,6 +77,19 @@ it('applies and reverses both migrations on real MySQL with foreign keys and ind
       `ix_${table}_owner_subject`,
     );
   }
+  const applied = await source.query<Array<{ name: string }>>(
+    'SELECT name FROM migrations ORDER BY id DESC',
+  );
+  const later = applied.slice(
+    0,
+    applied.findIndex(
+      (migration) => migration.name === 'AddSubjectAssociations20260926221000',
+    ),
+  );
+  for (const _migration of later) {
+    void _migration;
+    await source.undoLastMigration();
+  }
   await source.undoLastMigration();
   expect(
     await source.query("SHOW COLUMNS FROM study_tasks LIKE 'subject_id'"),
@@ -88,7 +101,7 @@ it('applies and reverses both migrations on real MySQL with foreign keys and ind
     'subject_plan_items',
   ])
     expect(await source.query(`SHOW TABLES LIKE '${table}'`)).toEqual([]);
-  expect(await source.runMigrations()).toHaveLength(2);
+  expect(await source.runMigrations()).toHaveLength(2 + later.length);
   await expect(
     source.query(
       'INSERT INTO subject_plan_items (id,subject_id,title,position) VALUES (?,?,?,0)',

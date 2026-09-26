@@ -49,6 +49,14 @@ beforeEach(() => {
         typeof init?.body === 'string' ? init.body : '{}',
       );
       calls.push({ path, method, body });
+      if (path === `/subjects/${id}/roadmaps` && method === 'GET')
+        return Response.json({
+          items: [],
+          page: 1,
+          pageSize: 20,
+          total: 0,
+          totalPages: 0,
+        });
       if (failed === method) throw new Error('network');
       if (path === '/auth/me')
         return Response.json({
@@ -247,7 +255,9 @@ it('persists manual order and status by keyboard with AI disabled, edits and con
   );
   await screen.findByText('Matéria excluída.');
   expect(items).toHaveLength(0);
-  expect(calls.some((call) => /ai|roadmap/i.test(call.path))).toBe(false);
+  expect(
+    calls.some((call) => /roadmap-generations|confirm-ai/i.test(call.path)),
+  ).toBe(false);
 });
 it('guards direct routes, hides navigation while disabled and restores data after reactivation', async () => {
   items = [structuredClone(base)];

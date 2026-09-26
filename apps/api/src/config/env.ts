@@ -52,12 +52,32 @@ const envSchema = z
     ),
     EMAIL_HMAC_KEY: optionalKey,
     EMAIL_ENCRYPTION_KEY: optionalKey,
+    AI_API_KEY: optionalCredential,
+    AI_MODEL: optionalCredential,
+    AI_RECEIPT_KEY: optionalKey,
+    AI_TIMEOUT_MS: z.coerce.number().int().min(100).max(120000).default(30000),
+    AI_MAX_RESPONSE_BYTES: z.coerce
+      .number()
+      .int()
+      .min(1024)
+      .max(1048576)
+      .default(524288),
   })
   .refine((value) => value.DB_NAME !== value.TEST_DB_NAME, {
     path: ['TEST_DB_NAME'],
     message: 'must differ from DB_NAME',
   })
   .superRefine((value, context) => {
+    const aiKeys = ['AI_API_KEY', 'AI_MODEL', 'AI_RECEIPT_KEY'] as const;
+    if (aiKeys.some((key) => value[key] !== undefined)) {
+      for (const key of aiKeys)
+        if (!value[key])
+          context.addIssue({
+            code: 'custom',
+            path: [key],
+            message: 'AI credentials must be configured together',
+          });
+    }
     const emailKeys = [
       'SMTP_HOST',
       'SMTP_PORT',

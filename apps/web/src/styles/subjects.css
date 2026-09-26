@@ -62,3 +62,17 @@
 .subject-card li {
   margin-block: 0.75rem;
 }
+.roadmaps-section {
+  display: grid;
+  gap: 0.75rem;
+  min-width: 0;
+}
+.subject-card fieldset.roadmap-block,
+.subject-card fieldset.roadmap-step {
+  border: 1px solid #cbd5e1;
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+}
+.roadmaps-section dd {
+  margin-left: 0;
+}

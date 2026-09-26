@@ -138,3 +138,5 @@ export * from './pomodoro.js';
 export * from './routines.js';
 
 export * from './subjects.js';
+
+export * from './roadmaps.js';
