@@ -8,7 +8,12 @@ import {
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
-import type { RoadmapContent, StudySubject } from '@study-platform/contracts';
+import type {
+  RoadmapContent,
+  RoadmapDraft,
+  Roadmap,
+  StudySubject,
+} from '@study-platform/contracts';
 import { RoadmapsSection } from './RoadmapsSection.js';
 const id = '00000000-0000-4000-8000-000000000001';
 const subject: StudySubject = {
@@ -48,14 +53,33 @@ const calls: Array<{
   method: string;
   body: Record<string, unknown>;
 }> = [];
-let saved: Array<
-  RoadmapContent & {
-    id: string;
-    subjectId: string;
-    createdAt: string;
-    updatedAt: string;
-  }
->;
+let saved: Roadmap[];
+function persisted(
+  input: RoadmapDraft,
+  roadmapId: string,
+  revision = 1,
+): Roadmap {
+  let counter = 10;
+  return {
+    title: input.title,
+    description: input.description,
+    blocks: input.blocks.map((block) => ({
+      ...block,
+      steps: block.steps.map((step) => ({
+        ...step,
+        id:
+          step.id ??
+          `00000000-0000-4000-8000-${String(counter++).padStart(12, '0')}`,
+        completed: step.completed ?? false,
+      })),
+    })),
+    id: roadmapId,
+    subjectId: id,
+    revision,
+    createdAt: subject.createdAt,
+    updatedAt: subject.updatedAt,
+  };
+}
 let failed = '';
 let invalid = false;
 beforeEach(() => {
@@ -104,13 +128,10 @@ beforeEach(() => {
             { error: { code: 'RECEIPT_EXPIRED' } },
             { status: 400 },
           );
-        const row = {
-          ...(body.content as RoadmapContent),
-          id: '00000000-0000-4000-8000-000000000002',
-          subjectId: id,
-          createdAt: subject.createdAt,
-          updatedAt: subject.updatedAt,
-        };
+        const row = persisted(
+          body.content as RoadmapDraft,
+          '00000000-0000-4000-8000-000000000002',
+        );
         saved = [...saved, row];
         return Response.json(row, { status: 201 });
       }
@@ -120,13 +141,11 @@ beforeEach(() => {
       }
       if (method === 'POST' || method === 'PATCH') {
         if (failed === 'save') throw new Error('network');
-        const row = {
-          ...body,
-          id: '00000000-0000-4000-8000-000000000003',
-          subjectId: id,
-          createdAt: subject.createdAt,
-          updatedAt: subject.updatedAt,
-        };
+        const row = persisted(
+          body as RoadmapDraft,
+          '00000000-0000-4000-8000-000000000003',
+          method === 'PATCH' ? Number(body.baseRevision) + 1 : 1,
+        );
         saved = [row];
         return Response.json(row, { status: 201 });
       }

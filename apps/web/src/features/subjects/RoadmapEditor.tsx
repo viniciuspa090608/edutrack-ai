@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
-import type { RoadmapContent } from '@study-platform/contracts';
+import type { RoadmapDraft } from '@study-platform/contracts';
 const blankStep = () => ({ title: '', description: '' });
-export const blankRoadmap = (): RoadmapContent => ({
+export const blankRoadmap = (): RoadmapDraft => ({
   title: '',
   description: '',
   blocks: [{ ...blankStep(), steps: [blankStep()] }],
@@ -17,8 +17,8 @@ export function RoadmapEditor({
   onChange,
   disabled,
 }: {
-  value: RoadmapContent;
-  onChange: (value: RoadmapContent) => void;
+  value: RoadmapDraft;
+  onChange: (value: RoadmapDraft) => void;
   disabled: boolean;
 }) {
   const first = useRef<HTMLInputElement>(null);
@@ -27,7 +27,7 @@ export function RoadmapEditor({
   }, []);
   const blockChange = (
     index: number,
-    patch: Partial<RoadmapContent['blocks'][number]>,
+    patch: Partial<RoadmapDraft['blocks'][number]>,
   ) =>
     onChange({
       ...value,
@@ -35,6 +35,15 @@ export function RoadmapEditor({
         i === index ? { ...block, ...patch } : block,
       ),
     });
+  const flat = value.blocks.flatMap((block) => block.steps);
+  const boundary = flat.reduce(
+    (last, step, index) => (step.completed ? index + 1 : last),
+    0,
+  );
+  const offset = (index: number) =>
+    value.blocks
+      .slice(0, index)
+      .reduce((sum, block) => sum + block.steps.length, 0);
   return (
     <fieldset disabled={disabled} aria-label="Conteúdo do roadmap">
       <label>
@@ -69,6 +78,7 @@ export function RoadmapEditor({
               required
               maxLength={120}
               value={block.title}
+              readOnly={offset(index) < boundary}
               onChange={(e) => blockChange(index, { title: e.target.value })}
             />
           </label>
@@ -78,6 +88,7 @@ export function RoadmapEditor({
               required
               maxLength={1000}
               value={block.description}
+              readOnly={offset(index) < boundary}
               onChange={(e) =>
                 blockChange(index, { description: e.target.value })
               }
@@ -86,7 +97,7 @@ export function RoadmapEditor({
           <div className="subject-actions">
             <button
               type="button"
-              disabled={index === 0}
+              disabled={index === 0 || offset(index - 1) < boundary}
               onClick={() =>
                 onChange({ ...value, blocks: move(value.blocks, index, -1) })
               }
@@ -95,7 +106,9 @@ export function RoadmapEditor({
             </button>
             <button
               type="button"
-              disabled={index === value.blocks.length - 1}
+              disabled={
+                index === value.blocks.length - 1 || offset(index) < boundary
+              }
               onClick={() =>
                 onChange({ ...value, blocks: move(value.blocks, index, 1) })
               }
@@ -104,7 +117,7 @@ export function RoadmapEditor({
             </button>
             <button
               type="button"
-              disabled={value.blocks.length === 1}
+              disabled={value.blocks.length === 1 || offset(index) < boundary}
               onClick={() =>
                 onChange({
                   ...value,
@@ -118,11 +131,13 @@ export function RoadmapEditor({
           {block.steps.map((step, stepIndex) => (
             <fieldset
               className="roadmap-step"
-              key={stepIndex}
+              key={step.id ?? stepIndex}
+              disabled={offset(index) + stepIndex < boundary}
               aria-label={`Passo ${index + 1}.${stepIndex + 1}`}
             >
               <legend>
                 Passo {index + 1}.{stepIndex + 1}
+                {offset(index) + stepIndex < boundary ? ' — preservado' : ''}
               </legend>
               <label>
                 Título do passo {index + 1}.{stepIndex + 1}
@@ -159,7 +174,9 @@ export function RoadmapEditor({
               <div className="subject-actions">
                 <button
                   type="button"
-                  disabled={stepIndex === 0}
+                  disabled={
+                    stepIndex === 0 || offset(index) + stepIndex - 1 < boundary
+                  }
                   onClick={() =>
                     blockChange(index, {
                       steps: move(block.steps, stepIndex, -1),
@@ -195,7 +212,10 @@ export function RoadmapEditor({
           ))}
           <button
             type="button"
-            disabled={block.steps.length >= 20}
+            disabled={
+              block.steps.length >= 20 ||
+              offset(index) + block.steps.length < boundary
+            }
             onClick={() =>
               blockChange(index, { steps: [...block.steps, blankStep()] })
             }

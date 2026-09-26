@@ -38,6 +38,9 @@ import { roadmapAIRoutes } from './modules/ai/roadmap-ai.routes.js';
 import { RoadmapAIService } from './modules/ai/roadmap-ai.service.js';
 import { OpenAIRoadmapProvider } from './modules/ai/roadmap-provider.js';
 import { RoadmapReceipt } from './modules/ai/roadmap-receipt.js';
+import { RevisionReceipt } from './modules/subjects/revision-receipt.js';
+import { RoadmapRevisionsService } from './modules/subjects/roadmap-revisions.service.js';
+import { roadmapRevisionRoutes } from './modules/subjects/roadmap-revisions.routes.js';
 
 export interface AppOptions {
   logger: AppLogger;
@@ -100,21 +103,28 @@ export function createApp({
     app.use('/auth', authRoutes(service, google, env));
     const prefs = new PreferencesService(source);
     const subjects = new SubjectsService(new SubjectsRepository(source), prefs);
+    const roadmapAI = new RoadmapAIService(
+      subjects,
+      prefs,
+      new OpenAIRoadmapProvider(env, aiFetch),
+      new RoadmapReceipt(env.AI_RECEIPT_KEY, aiClock),
+      aiClock,
+    );
     app.use(
       '/subjects',
-      roadmapAIRoutes(
+      roadmapRevisionRoutes(
         service,
-        new RoadmapAIService(
+        new RoadmapRevisionsService(
           subjects,
           prefs,
-          new OpenAIRoadmapProvider(env, aiFetch),
-          new RoadmapReceipt(env.AI_RECEIPT_KEY, aiClock),
-          aiClock,
+          roadmapAI,
+          new RevisionReceipt(env.EMAIL_HMAC_KEY, aiClock),
         ),
         prefs,
         env,
       ),
     );
+    app.use('/subjects', roadmapAIRoutes(service, roadmapAI, prefs, env));
     app.use('/subjects', subjectsRoutes(service, subjects, prefs, env));
     app.use(
       '/routines',

@@ -4,7 +4,12 @@ import type {
   RoadmapContent,
   Roadmap,
   SubjectPagination,
+  RoadmapDraft,
+  PersistedRoadmapContent,
+  RoadmapRevision,
 } from '@study-platform/contracts';
+import { roadmapRevisionSchema } from '@study-platform/contracts';
+import { manualContent, revisionConflict } from './roadmap-sequence.js';
 import { HttpError } from '../../shared/http-error.js';
 interface Row {
   id: string;
@@ -13,6 +18,7 @@ interface Row {
   description: string;
   created_at: Date;
   updated_at: Date;
+  revision: number;
 }
 interface Child {
   id: string;
@@ -53,7 +59,9 @@ export class RoadmapsRepository {
       'SELECT b.* FROM subject_roadmap_blocks b JOIN subject_roadmaps r ON r.id=b.roadmap_id JOIN study_subjects s ON s.id=r.subject_id WHERE s.user_id=? AND s.id=? AND r.id=? ORDER BY b.position,b.id',
       [userId, subjectId, id],
     );
-    const steps = await manager.query<Array<Child & { block_id: string }>>(
+    const steps = await manager.query<
+      Array<Child & { block_id: string; completed: number }>
+    >(
       'SELECT p.* FROM subject_roadmap_steps p JOIN subject_roadmap_blocks b ON b.id=p.block_id JOIN subject_roadmaps r ON r.id=b.roadmap_id JOIN study_subjects s ON s.id=r.subject_id WHERE s.user_id=? AND s.id=? AND r.id=? ORDER BY b.position,p.position,p.id',
       [userId, subjectId, id],
     );
@@ -64,12 +72,15 @@ export class RoadmapsRepository {
       description: row.description,
       createdAt: row.created_at.toISOString(),
       updatedAt: row.updated_at.toISOString(),
+      revision: row.revision,
       blocks: blocks.map((block) => ({
         title: block.title,
         description: block.description,
         steps: steps
           .filter((step) => step.block_id === block.id)
           .map((step) => ({
+            id: step.id,
+            completed: Boolean(step.completed),
             title: step.title,
             description: step.description,
           })),
@@ -114,7 +125,7 @@ export class RoadmapsRepository {
     userId: string,
     subjectId: string,
     id: string,
-    input: RoadmapContent,
+    input: RoadmapDraft,
   ) {
     await manager.query(
       'DELETE b FROM subject_roadmap_blocks b JOIN subject_roadmaps r ON r.id=b.roadmap_id JOIN study_subjects s ON s.id=r.subject_id WHERE s.user_id=? AND s.id=? AND r.id=?',
@@ -136,12 +147,13 @@ export class RoadmapsRepository {
       );
       for (const [stepPosition, step] of block.steps.entries())
         await manager.query(
-          'INSERT INTO subject_roadmap_steps (id,block_id,title,description,position) SELECT ?,b.id,?,?,? FROM subject_roadmap_blocks b JOIN subject_roadmaps r ON r.id=b.roadmap_id JOIN study_subjects s ON s.id=r.subject_id WHERE s.user_id=? AND s.id=? AND r.id=? AND b.id=?',
+          'INSERT INTO subject_roadmap_steps (id,block_id,title,description,position,completed) SELECT ?,b.id,?,?,?,? FROM subject_roadmap_blocks b JOIN subject_roadmaps r ON r.id=b.roadmap_id JOIN study_subjects s ON s.id=r.subject_id WHERE s.user_id=? AND s.id=? AND r.id=? AND b.id=?',
           [
-            randomUUID(),
+            step.id ?? randomUUID(),
             step.title,
             step.description,
             stepPosition,
+            step.completed ?? false,
             userId,
             subjectId,
             id,
@@ -172,19 +184,213 @@ export class RoadmapsRepository {
         [id, input.title, input.description, generationId, userId, subjectId],
       );
       await this.children(manager, userId, subjectId, id, input);
+      const saved = await this.detailIn(manager, userId, subjectId, id);
+      await this.snapshotIn(
+        manager,
+        userId,
+        subjectId,
+        saved,
+        generationId ? 'ia' : 'manual',
+        null,
+        null,
+      );
+      return saved;
+    });
+  }
+  update(
+    userId: string,
+    subjectId: string,
+    id: string,
+    input: RoadmapDraft & { baseRevision: number },
+  ) {
+    return this.source.transaction(async (manager) => {
+      await this.own(manager, userId, subjectId, true);
+      const current = await this.detailIn(manager, userId, subjectId, id);
+      if (current.revision !== input.baseRevision) throw revisionConflict();
+      await this.replaceIn(
+        manager,
+        userId,
+        subjectId,
+        current,
+        manualContent(current, input),
+        'manual',
+        null,
+        null,
+      );
       return this.detailIn(manager, userId, subjectId, id);
     });
   }
-  update(userId: string, subjectId: string, id: string, input: RoadmapContent) {
+  private async snapshotIn(
+    manager: EntityManager,
+    userId: string,
+    subjectId: string,
+    current: Roadmap,
+    origin: RoadmapRevision['origin'],
+    sourceRevision: number | null,
+    actionId: string | null,
+  ) {
+    const content = {
+      title: current.title,
+      description: current.description,
+      blocks: current.blocks,
+    };
+    await manager.query(
+      'INSERT INTO subject_roadmap_revisions (roadmap_id,revision,origin,source_revision,content,action_id) SELECT r.id,?,?,?,?,? FROM subject_roadmaps r JOIN study_subjects s ON s.id=r.subject_id WHERE s.user_id=? AND s.id=? AND r.id=?',
+      [
+        current.revision,
+        origin,
+        sourceRevision,
+        JSON.stringify(content),
+        actionId,
+        userId,
+        subjectId,
+        current.id,
+      ],
+    );
+  }
+  private async revisionIn(
+    manager: EntityManager,
+    userId: string,
+    subjectId: string,
+    id: string,
+    revision: number,
+  ) {
+    const rows = await manager.query<
+      Array<{
+        revision: number;
+        origin: RoadmapRevision['origin'];
+        source_revision: number | null;
+        content: unknown;
+        created_at: Date;
+      }>
+    >(
+      'SELECT v.* FROM subject_roadmap_revisions v JOIN subject_roadmaps r ON r.id=v.roadmap_id JOIN study_subjects s ON s.id=r.subject_id WHERE s.user_id=? AND s.id=? AND r.id=? AND v.revision=?',
+      [userId, subjectId, id, revision],
+    );
+    const row = rows[0];
+    if (!row)
+      throw new HttpError(404, 'REVISION_NOT_FOUND', 'Revisão não encontrada.');
+    return roadmapRevisionSchema.parse({
+      roadmapId: id,
+      revision: row.revision,
+      origin: row.origin,
+      sourceRevision: row.source_revision,
+      createdAt: row.created_at.toISOString(),
+      content:
+        typeof row.content === 'string' ? JSON.parse(row.content) : row.content,
+    });
+  }
+  revision(userId: string, subjectId: string, id: string, revision: number) {
+    return this.source.transaction(async (manager) => {
+      await this.own(manager, userId, subjectId);
+      return this.revisionIn(manager, userId, subjectId, id, revision);
+    });
+  }
+  history(
+    userId: string,
+    subjectId: string,
+    id: string,
+    { page, pageSize }: SubjectPagination,
+  ) {
+    return this.source.transaction(async (manager) => {
+      await this.own(manager, userId, subjectId);
+      await this.detailIn(manager, userId, subjectId, id);
+      const rows = await manager.query<Array<{ revision: number }>>(
+        'SELECT v.revision FROM subject_roadmap_revisions v JOIN subject_roadmaps r ON r.id=v.roadmap_id JOIN study_subjects s ON s.id=r.subject_id WHERE s.user_id=? AND s.id=? AND r.id=? ORDER BY v.revision DESC LIMIT ? OFFSET ?',
+        [userId, subjectId, id, pageSize, (page - 1) * pageSize],
+      );
+      const counts = await manager.query<Array<{ total: number }>>(
+        'SELECT COUNT(*) AS total FROM subject_roadmap_revisions v JOIN subject_roadmaps r ON r.id=v.roadmap_id JOIN study_subjects s ON s.id=r.subject_id WHERE s.user_id=? AND s.id=? AND r.id=?',
+        [userId, subjectId, id],
+      );
+      const items: RoadmapRevision[] = [];
+      for (const row of rows)
+        items.push(
+          await this.revisionIn(manager, userId, subjectId, id, row.revision),
+        );
+      return {
+        items,
+        ...{ page, pageSize },
+        total: Number(counts[0]!.total),
+        totalPages: Math.ceil(Number(counts[0]!.total) / pageSize),
+      };
+    });
+  }
+  private async replaceIn(
+    manager: EntityManager,
+    userId: string,
+    subjectId: string,
+    current: Roadmap,
+    content: PersistedRoadmapContent,
+    origin: RoadmapRevision['origin'],
+    sourceRevision: number | null,
+    actionId: string | null,
+  ) {
+    await manager.query(
+      'UPDATE subject_roadmaps r JOIN study_subjects s ON s.id=r.subject_id SET r.title=?,r.description=?,r.revision=r.revision+1,r.updated_at=UTC_TIMESTAMP(3) WHERE s.user_id=? AND s.id=? AND r.id=?',
+      [content.title, content.description, userId, subjectId, current.id],
+    );
+    await this.children(manager, userId, subjectId, current.id, content);
+    const saved = await this.detailIn(manager, userId, subjectId, current.id);
+    await this.snapshotIn(
+      manager,
+      userId,
+      subjectId,
+      saved,
+      origin,
+      sourceRevision,
+      actionId,
+    );
+    return this.revisionIn(
+      manager,
+      userId,
+      subjectId,
+      current.id,
+      saved.revision,
+    );
+  }
+  confirm(
+    userId: string,
+    subjectId: string,
+    id: string,
+    baseRevision: number,
+    actionId: string | null,
+    origin: RoadmapRevision['origin'],
+    sourceRevision: number | null,
+    compose: (current: Roadmap) => PersistedRoadmapContent,
+  ) {
     return this.source.transaction(async (manager) => {
       await this.own(manager, userId, subjectId, true);
-      await this.detailIn(manager, userId, subjectId, id);
       await manager.query(
-        'UPDATE subject_roadmaps r JOIN study_subjects s ON s.id=r.subject_id SET r.title=?,r.description=?,r.updated_at=UTC_TIMESTAMP(3) WHERE s.user_id=? AND s.id=? AND r.id=?',
-        [input.title, input.description, userId, subjectId, id],
+        'SELECT r.id FROM subject_roadmaps r JOIN study_subjects s ON s.id=r.subject_id WHERE s.user_id=? AND s.id=? AND r.id=? FOR UPDATE',
+        [userId, subjectId, id],
       );
-      await this.children(manager, userId, subjectId, id, input);
-      return this.detailIn(manager, userId, subjectId, id);
+      const current = await this.detailIn(manager, userId, subjectId, id);
+      if (actionId) {
+        const existing = await manager.query<Array<{ revision: number }>>(
+          'SELECT v.revision FROM subject_roadmap_revisions v JOIN subject_roadmaps r ON r.id=v.roadmap_id JOIN study_subjects s ON s.id=r.subject_id WHERE s.user_id=? AND s.id=? AND r.id=? AND v.action_id=?',
+          [userId, subjectId, id, actionId],
+        );
+        if (existing[0])
+          return this.revisionIn(
+            manager,
+            userId,
+            subjectId,
+            id,
+            existing[0].revision,
+          );
+      }
+      if (current.revision !== baseRevision) throw revisionConflict();
+      return this.replaceIn(
+        manager,
+        userId,
+        subjectId,
+        current,
+        compose(current),
+        origin,
+        sourceRevision,
+        actionId,
+      );
     });
   }
   delete(userId: string, subjectId: string, id: string) {

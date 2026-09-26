@@ -2,10 +2,11 @@ import { useEffect, useRef, useState } from 'react';
 import {
   generationParametersSchema,
   roadmapContentSchema,
+  roadmapDraftSchema,
 } from '@study-platform/contracts';
 import type {
   Roadmap,
-  RoadmapContent,
+  RoadmapDraft,
   RoadmapList,
   RoadmapParameters,
   RoadmapPreview,
@@ -13,6 +14,7 @@ import type {
 } from '@study-platform/contracts';
 import { AuthApiError, navigate } from '../auth/auth-api.js';
 import { blankRoadmap, RoadmapEditor } from './RoadmapEditor.js';
+import { RoadmapRevisionTools } from './RoadmapRevisionTools.js';
 import {
   confirmRoadmap,
   deleteRoadmap,
@@ -35,6 +37,10 @@ function failure(cause: unknown) {
       AI_INVALID_RESPONSE:
         'A IA retornou uma resposta inválida. Tente gerar novamente.',
       INVALID_RECEIPT: 'A prévia não é válida. Gere novamente.',
+      REVISION_CONFLICT:
+        'O roadmap mudou. Cancele a edição e atualize a lista para editar a versão atual.',
+      DUPLICATE_STEPS: 'Corrija os títulos repetidos no roadmap.',
+      PROTECTED_STEPS: 'O trecho até o último passo concluído está protegido.',
       RECEIPT_EXPIRED: 'A prévia expirou. Gere novamente.',
     };
     if (errors[cause.code]) return errors[cause.code]!;
@@ -207,7 +213,10 @@ export function RoadmapsSection({
   const [mode, setMode] = useState<'manual' | 'parameters' | 'preview' | null>(
     null,
   );
-  const [content, setContent] = useState<RoadmapContent>(blankRoadmap);
+  const [content, setContent] = useState<RoadmapDraft>(blankRoadmap);
+  const [editingRevision, setEditingRevision] = useState<number | undefined>(
+    undefined,
+  );
   const [editingId, setEditingId] = useState<string | null>(null);
   const [preview, setPreview] = useState<RoadmapPreview | null>(null);
   const [deleting, setDeleting] = useState<Roadmap | null>(null);
@@ -217,6 +226,15 @@ export function RoadmapsSection({
   const saving = useRef(false);
   const newButton = useRef<HTMLButtonElement>(null);
   const aiButton = useRef<HTMLButtonElement>(null);
+  const previousMode = useRef(mode);
+  useEffect(() => {
+    if (previousMode.current && !mode)
+      (previousMode.current === 'manual'
+        ? newButton
+        : aiButton
+      ).current?.focus();
+    previousMode.current = mode;
+  }, [mode]);
   useEffect(() => {
     active.current = true;
     return () => {
@@ -305,7 +323,9 @@ export function RoadmapsSection({
   };
   const save = async () => {
     if (saving.current || busy || expired) return;
-    const parsed = roadmapContentSchema.safeParse(content);
+    const parsed = (
+      mode === 'manual' && editingId ? roadmapDraftSchema : roadmapContentSchema
+    ).safeParse(content);
     if (!parsed.success) {
       setError(
         'Preencha títulos e descrições. Use de 1 a 20 blocos e de 1 a 20 passos por bloco.',
@@ -319,7 +339,8 @@ export function RoadmapsSection({
     try {
       if (mode === 'preview' && preview)
         await confirmRoadmap(subject.id, preview.receipt, parsed.data);
-      else await saveRoadmap(subject.id, editingId, parsed.data);
+      else
+        await saveRoadmap(subject.id, editingId, parsed.data, editingRevision);
       if (active.current) {
         close();
         setSuccess('Roadmap salvo.');
@@ -510,6 +531,7 @@ export function RoadmapsSection({
               disabled={!!mode || !!busy || !!deleting}
               onClick={() => {
                 setEditingId(roadmap.id);
+                setEditingRevision(roadmap.revision);
                 setContent({
                   title: roadmap.title,
                   description: roadmap.description,
@@ -533,6 +555,16 @@ export function RoadmapsSection({
               Excluir roadmap {roadmap.title}
             </button>
           </div>
+          <RoadmapRevisionTools
+            roadmap={roadmap}
+            aiEnabled={aiEnabled}
+            disabled={!!mode || !!busy || !!deleting}
+            onChanged={() => {
+              setSuccess('Roadmap atualizado.');
+              setRevision((value) => value + 1);
+              newButton.current?.focus();
+            }}
+          />
         </article>
       ))}
       {deleting && (

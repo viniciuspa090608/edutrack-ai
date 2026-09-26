@@ -76,3 +76,21 @@
 .roadmaps-section dd {
   margin-left: 0;
 }
+.roadmap-revisions {
+  min-width: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+.subject-card label.roadmap-progress {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.subject-card .roadmap-progress input {
+  width: auto;
+  flex: 0 0 auto;
+}
+.roadmap-revisions h5[tabindex='-1']:focus {
+  outline: 3px solid #2563eb;
+  outline-offset: 3px;
+}

@@ -31,6 +31,51 @@ export function subjectsRoutes(
     return result.data;
   };
   const write = requireOrigin(env.WEB_ORIGIN);
+  router.get('/:id/roadmaps/:roadmapId/revisions', async (req, res) => {
+    res.json(
+      await service.roadmapHistory(
+        owner(res),
+        id(req.params.id),
+        id(req.params.roadmapId),
+        req.query,
+      ),
+    );
+  });
+  router.get(
+    '/:id/roadmaps/:roadmapId/revisions/:revision',
+    async (req, res) => {
+      const revision = Number(req.params.revision);
+      if (!Number.isSafeInteger(revision) || revision < 1)
+        throw new HttpError(
+          404,
+          'REVISION_NOT_FOUND',
+          'Revisão não encontrada.',
+        );
+      res.json(
+        await service.roadmapRevision(
+          owner(res),
+          id(req.params.id),
+          id(req.params.roadmapId),
+          revision,
+        ),
+      );
+    },
+  );
+  router.patch(
+    '/:id/roadmaps/:roadmapId/steps/:stepId',
+    write,
+    async (req, res) => {
+      res.json(
+        await service.stepProgress(
+          owner(res),
+          id(req.params.id),
+          id(req.params.roadmapId),
+          id(req.params.stepId),
+          req.body,
+        ),
+      );
+    },
+  );
   router.get('/:id/roadmaps', async (req, res) => {
     res.json(
       await service.listRoadmaps(owner(res), id(req.params.id), req.query),

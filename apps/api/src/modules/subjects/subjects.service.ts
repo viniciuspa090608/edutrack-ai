@@ -10,6 +10,9 @@ import {
   roadmapContentSchema,
   roadmapSchema,
   roadmapListSchema,
+  updateRoadmapSchema,
+  stepProgressSchema,
+  revisionListSchema,
 } from '@study-platform/contracts';
 import type { z } from 'zod';
 import type { PreferencesService } from '../preferences/preferences.service.js';
@@ -74,13 +77,84 @@ export class SubjectsService {
         userId,
         id,
         roadmapId,
-        parse(roadmapContentSchema, input),
+        parse(updateRoadmapSchema, input),
       ),
     );
   }
   async deleteRoadmap(userId: string, id: string, roadmapId: string) {
     await this.requireOwned(userId, id);
     await this.repository.roadmaps.delete(userId, id, roadmapId);
+  }
+  async roadmapHistory(
+    userId: string,
+    id: string,
+    roadmapId: string,
+    input: unknown,
+  ) {
+    await this.requireOwned(userId, id);
+    return revisionListSchema.parse(
+      await this.repository.roadmaps.history(
+        userId,
+        id,
+        roadmapId,
+        parse(subjectPaginationSchema, input),
+      ),
+    );
+  }
+  async roadmapRevision(
+    userId: string,
+    id: string,
+    roadmapId: string,
+    revision: number,
+  ) {
+    await this.requireOwned(userId, id);
+    return this.repository.roadmaps.revision(userId, id, roadmapId, revision);
+  }
+  async confirmRoadmapRevision(
+    ...args: Parameters<SubjectsRepository['roadmaps']['confirm']>
+  ) {
+    await this.requireOwned(args[0], args[1]);
+    return this.repository.roadmaps.confirm(...args);
+  }
+  async stepProgress(
+    userId: string,
+    id: string,
+    roadmapId: string,
+    stepId: string,
+    input: unknown,
+  ) {
+    await this.requireOwned(userId, id);
+    const parsed = parse(stepProgressSchema, input);
+    await this.repository.roadmaps.confirm(
+      userId,
+      id,
+      roadmapId,
+      parsed.baseRevision,
+      null,
+      'manual',
+      null,
+      (current) => {
+        if (
+          !current.blocks.some((block) =>
+            block.steps.some((step) => step.id === stepId),
+          )
+        )
+          throw new HttpError(404, 'STEP_NOT_FOUND', 'Passo não encontrado.');
+        return {
+          title: current.title,
+          description: current.description,
+          blocks: current.blocks.map((block) => ({
+            ...block,
+            steps: block.steps.map((step) =>
+              step.id === stepId
+                ? { ...step, completed: parsed.completed }
+                : step,
+            ),
+          })),
+        };
+      },
+    );
+    return this.roadmapDetail(userId, id, roadmapId);
   }
   async create(userId: string, input: unknown) {
     return subjectSchema.parse(

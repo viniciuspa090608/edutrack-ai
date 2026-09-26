@@ -3,7 +3,9 @@ import {
   generationParametersSchema,
   roadmapContentSchema,
   roadmapPreviewSchema,
+  suffixSchema,
 } from '@study-platform/contracts';
+import type { SequenceStep } from '@study-platform/contracts';
 import type { SubjectsService } from '../subjects/subjects.service.js';
 import type { PreferencesService } from '../preferences/preferences.service.js';
 import type { RoadmapProvider } from './roadmap-provider.js';
@@ -21,6 +23,41 @@ export class RoadmapAIService {
     await this.prefs.requireEnabled(userId, 'subjects');
     await this.prefs.requireEnabled(userId, 'ai');
     await this.subjects.requireOwned(userId, subjectId);
+  }
+  async generateSuffix(
+    userId: string,
+    subjectId: string,
+    prefix: SequenceStep[],
+    suffix: SequenceStep[],
+  ) {
+    await this.allowed(userId, subjectId);
+    if (!suffix.length) return [];
+    const subject = await this.subjects.detail(userId, subjectId);
+    const text = (step: SequenceStep) => ({
+      title: step.title,
+      description: step.description,
+      blockTitle: step.blockTitle,
+      blockDescription: step.blockDescription,
+    });
+    const raw = await this.provider.regenerate({
+      subjectName: subject.name,
+      currentLevel: subject.currentLevel,
+      objective: subject.objective,
+      dueDate: subject.dueDate,
+      weeklyHours: subject.weeklyHours,
+      knownTopics: subject.knownTopics,
+      preservedPrefix: prefix.map(text),
+      previousSuffix: suffix.map(text),
+    });
+    const parsed = suffixSchema.safeParse(raw);
+    if (!parsed.success)
+      throw new HttpError(
+        502,
+        'AI_INVALID_RESPONSE',
+        'A IA retornou uma continuação inválida. Tente novamente.',
+      );
+    await this.allowed(userId, subjectId);
+    return parsed.data.steps;
   }
   async generate(userId: string, subjectId: string, input: unknown) {
     await this.allowed(userId, subjectId);

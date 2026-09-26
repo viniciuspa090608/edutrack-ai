@@ -12,12 +12,46 @@ export const roadmapBlockSchema = z
 export const roadmapContentSchema = z
   .object({ ...textFields, blocks: z.array(roadmapBlockSchema).min(1).max(20) })
   .strict();
-export const roadmapSchema = roadmapContentSchema
+export const roadmapDraftStepSchema = roadmapStepSchema
+  .extend({ id: z.uuid().optional(), completed: z.boolean().optional() })
+  .strict();
+export const roadmapDraftSchema = roadmapContentSchema
+  .extend({
+    blocks: z
+      .array(
+        roadmapBlockSchema
+          .extend({ steps: z.array(roadmapDraftStepSchema).min(1).max(20) })
+          .strict(),
+      )
+      .min(1)
+      .max(20),
+  })
+  .strict();
+export const updateRoadmapSchema = roadmapDraftSchema
+  .extend({ baseRevision: z.number().int().positive() })
+  .strict();
+export const persistedRoadmapStepSchema = roadmapStepSchema
+  .extend({ id: z.uuid(), completed: z.boolean() })
+  .strict();
+export const persistedRoadmapContentSchema = roadmapContentSchema
+  .extend({
+    blocks: z
+      .array(
+        roadmapBlockSchema
+          .extend({ steps: z.array(persistedRoadmapStepSchema).min(1).max(20) })
+          .strict(),
+      )
+      .min(1)
+      .max(20),
+  })
+  .strict();
+export const roadmapSchema = persistedRoadmapContentSchema
   .extend({
     id: z.uuid(),
     subjectId: z.uuid(),
     createdAt: z.iso.datetime(),
     updatedAt: z.iso.datetime(),
+    revision: z.number().int().positive(),
   })
   .strict();
 export const roadmapListSchema = z
@@ -71,3 +105,7 @@ export type Roadmap = z.infer<typeof roadmapSchema>;
 export type RoadmapParameters = z.infer<typeof roadmapParametersSchema>;
 export type RoadmapPreview = z.infer<typeof roadmapPreviewSchema>;
 export type RoadmapList = z.infer<typeof roadmapListSchema>;
+export type RoadmapDraft = z.infer<typeof roadmapDraftSchema>;
+export type PersistedRoadmapContent = z.infer<
+  typeof persistedRoadmapContentSchema
+>;

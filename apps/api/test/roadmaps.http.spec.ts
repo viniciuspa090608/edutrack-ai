@@ -101,7 +101,11 @@ const write = (
     [method](path)
     .set('Cookie', cookie)
     .set('Origin', env.WEB_ORIGIN)
-    .send(body);
+    .send(
+      method === 'patch' && /\/roadmaps\/[^/]+$/.test(path)
+        ? { baseRevision: 1, ...body }
+        : body,
+    );
 const read = (path: string, cookie: string) =>
   request(app).get(path).set('Cookie', cookie);
 async function subject(cookie: string) {
@@ -147,6 +151,7 @@ it('applies and rolls back both migrations with preserved manual content and sim
     content,
   );
   expect(roadmap.status).toBe(201);
+  await source.undoLastMigration(); // version/progress migration
   await source.undoLastMigration();
   expect(
     await source.query(
@@ -161,10 +166,11 @@ it('applies and rolls back both migrations with preserved manual content and sim
       )
     )[0]!.title,
   ).toBe('Plano');
-  expect(await source.runMigrations()).toHaveLength(1);
+  expect(await source.runMigrations()).toHaveLength(2);
   expect(
     (await read(`/subjects/${id}/roadmaps/${roadmap.body.id}`, a.cookie)).body,
   ).toEqual(roadmap.body);
+  await source.undoLastMigration();
   await source.undoLastMigration();
   await source.undoLastMigration();
   for (const table of [
@@ -176,7 +182,7 @@ it('applies and rolls back both migrations with preserved manual content and sim
   expect((await read(`/subjects/${id}`, a.cookie)).body.planItems).toHaveLength(
     1,
   );
-  expect(await source.runMigrations()).toHaveLength(2);
+  expect(await source.runMigrations()).toHaveLength(3);
   await expect(
     source.query(
       'INSERT INTO subject_roadmaps (id,subject_id,title,description) VALUES (?,?,?,?)',
@@ -276,7 +282,7 @@ it('provides manual CRUD and stable pagination without configured AI, including 
   expect(
     (await write('patch', `${path}/${first.body.id}`, a.cookie, changed)).body
       .blocks,
-  ).toEqual(changed.blocks);
+  ).toMatchObject(changed.blocks);
   expect(
     (
       await write('patch', `${path}/${first.body.id}`, a.cookie, {
@@ -287,7 +293,7 @@ it('provides manual CRUD and stable pagination without configured AI, including 
   ).toBe(400);
   expect(
     (await read(`${path}/${first.body.id}`, a.cookie)).body.blocks,
-  ).toEqual(changed.blocks);
+  ).toMatchObject(changed.blocks);
   expect(
     (await write('delete', `${path}/${first.body.id}`, a.cookie)).status,
   ).toBe(204);
