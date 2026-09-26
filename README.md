@@ -95,3 +95,11 @@ pnpm build
 - `openspec/changes`: planejamento e tarefas por mudança.
 
 Leia `AGENTS.md` para as regras de arquitetura e versionamento. O planejamento desta fundação está em `openspec/changes/bootstrap-study-platform`.
+
+## Rotinas de estudo
+
+A página protegida `/app/rotinas` permite criar, editar e excluir rotinas com nome de 1 a 120 caracteres, fuso IANA explícito e um ou mais horários semanais. Adicione linhas para dias e horas diferentes. A programação exibe segunda a domingo, ordenada pelo início local, com nome e fuso de cada rotina. O fuso do navegador é apenas a sugestão inicial: a leitura em outro dispositivo não converte os horários, e trocar o fuso da rotina preserva suas horas locais.
+
+Cada horário usa dia ISO de 1 (segunda) a 7 (domingo) e início/fim `HH:mm`, de `00:00` a `23:59`, com início anterior ao fim no mesmo dia. Os intervalos são `[início, fim)`: horários adjacentes são aceitos; sobreposição no mesmo dia da mesma rotina é rejeitada. Rotinas diferentes podem coincidir. Janelas que atravessam meia-noite devem ser planejadas em horários separados nos dois dias, respeitando os limites de cada dia. Não são criadas ocorrências datadas, lembretes, tarefas ou sessões Pomodoro.
+
+A API oferece `POST /routines` (201), `GET /routines`, `GET /routines/schedule`, `GET /routines/:id`, `PATCH /routines/:id` (200) e `DELETE /routines/:id` (204). Criação exige `name`, `timeZone` e `slots` com `weekday`, `startTime` e `endTime`. PATCH preserva campos omitidos; enviar `slots` substitui o conjunto inteiro em uma transação. A lista aceita `page` e `pageSize` (padrão 1/20, máximo 100). Todas as rotas exigem sessão; escritas exigem origem permitida e JSON. IDs alheios respondem 404. Rotinas funcionam independentemente das preferências e disponibilidade de tarefas, matérias e Pomodoro. Aplique a migration com `pnpm db:migration:run` antes de usar o módulo.

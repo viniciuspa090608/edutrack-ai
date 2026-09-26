@@ -27,6 +27,9 @@ import { PomodoroRepository } from './modules/pomodoro/pomodoro.repository.js';
 import type { PomodoroClock } from './modules/pomodoro/pomodoro.repository.js';
 import { PomodoroService } from './modules/pomodoro/pomodoro.service.js';
 import { pomodoroRoutes } from './modules/pomodoro/pomodoro.routes.js';
+import { routinesRoutes } from './modules/routines/routines.routes.js';
+import { RoutinesService } from './modules/routines/routines.service.js';
+import { RoutinesRepository } from './modules/routines/routines.repository.js';
 
 export interface AppOptions {
   logger: AppLogger;
@@ -83,6 +86,14 @@ export function createApp({
       oidcFetch,
     );
     app.use('/auth', authRoutes(service, google, env));
+    app.use(
+      '/routines',
+      routinesRoutes(
+        service,
+        new RoutinesService(new RoutinesRepository(source)),
+        env,
+      ),
+    );
     app.use(
       '/pomodoro',
       pomodoroRoutes(

@@ -1,0 +1,67 @@
+.routines-page {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.routines-page form,
+.routines-page fieldset {
+  min-width: 0;
+  margin: 1rem 0;
+  padding: 1rem;
+  border: 1px solid #bfcac5;
+  border-radius: 0.75rem;
+}
+.routines-page label {
+  display: block;
+  margin: 0.75rem 0;
+}
+.routines-page input,
+.routines-page select {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+.routine-actions,
+.routines-page nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.routines-page button {
+  max-width: 100%;
+  white-space: normal;
+}
+.routines-page :focus-visible {
+  outline: 3px solid #7355d8;
+  outline-offset: 3px;
+}
+.routine-list,
+.routine-week ul {
+  list-style: none;
+  padding: 0;
+}
+.routine-list > li,
+.routine-week > section {
+  border: 1px solid #bfcac5;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  margin: 1rem 0;
+  min-width: 0;
+}
+.routine-week {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+@media (min-width: 900px) {
+  .routine-week {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .routines-page * {
+    animation: none;
+    transition: none;
+  }
+}

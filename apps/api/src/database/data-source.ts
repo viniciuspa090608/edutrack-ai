@@ -3,6 +3,10 @@ import { DataSource } from 'typeorm';
 import type { ApiEnv } from '../config/env.js';
 import { taskEntity } from '../modules/tasks/task.entity.js';
 import { subtaskEntity } from '../modules/tasks/subtask.entity.js';
+import {
+  routineEntity,
+  routineSlotEntity,
+} from '../modules/routines/routine.entity.js';
 
 export function createDataSource(env: ApiEnv): DataSource {
   return new DataSource({
@@ -12,7 +16,7 @@ export function createDataSource(env: ApiEnv): DataSource {
     username: env.DB_USER,
     password: env.DB_PASSWORD,
     database: env.DB_NAME,
-    entities: [taskEntity, subtaskEntity],
+    entities: [taskEntity, subtaskEntity, routineEntity, routineSlotEntity],
     timezone: 'Z',
     dateStrings: ['DATE'],
     migrations: [

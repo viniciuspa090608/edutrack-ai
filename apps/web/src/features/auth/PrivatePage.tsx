@@ -6,6 +6,7 @@ import { preferences } from '../profile/profile-api.js';
 import { availableModules, moduleAtPath } from '../profile/module-catalog.js';
 import { TasksPage } from '../tasks/TasksPage.js';
 import { PomodoroPage } from '../pomodoro/PomodoroPage.js';
+import { RoutinesPage } from '../routines/RoutinesPage.js';
 import {
   AuthApiError,
   currentUser,
@@ -17,7 +18,7 @@ import {
 export function PrivatePage({
   page,
 }: {
-  page: 'app' | 'conta' | 'module' | 'pomodoro';
+  page: 'app' | 'conta' | 'module' | 'pomodoro' | 'rotinas';
 }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [checking, setChecking] = useState(true);
@@ -35,7 +36,7 @@ export function PrivatePage({
   );
 
   const check = useCallback(async () => {
-    const returnTo = ['/app/tarefas', '/app/pomodoro'].includes(
+    const returnTo = ['/app/tarefas', '/app/pomodoro', '/app/rotinas'].includes(
       window.location.pathname,
     )
       ? window.location.pathname
@@ -145,6 +146,7 @@ export function PrivatePage({
           <a href="/app">Início</a>
           <a href="/conta">Conta</a>
           <a href="/app/pomodoro">Pomodoro</a>
+          <a href="/app/rotinas">Rotinas</a>
           {prefs &&
             availableModules(prefs).map((item) => (
               <a key={item.capability} href={item.path}>
@@ -163,7 +165,9 @@ export function PrivatePage({
         </button>
       </header>
       <main className="private-content">
-        {page === 'pomodoro' ? (
+        {page === 'rotinas' ? (
+          <RoutinesPage />
+        ) : page === 'pomodoro' ? (
           <PomodoroPage tasksEnabled={prefs?.tasks ?? false} />
         ) : page === 'app' ? (
           <>

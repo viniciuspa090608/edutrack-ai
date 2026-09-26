@@ -311,7 +311,24 @@ describe('email verification and recovery HTTP with MySQL', () => {
           .send({ code: replacement }),
       ),
     );
-    expect(results.map((result) => result.status).sort()).toEqual([204, 400]);
+    // The losing request may resolve its context before consumption (400),
+    // or after the winner invalidates that context (401). Both deny reuse.
+    expect(results.filter((result) => result.status === 204)).toHaveLength(1);
+    const rejected = results.find((result) => result.status !== 204)!;
+    expect([400, 401]).toContain(rejected.status);
+    expect(rejected.body.error.code).toBe(
+      rejected.status === 400 ? 'INVALID_CODE' : 'UNAUTHENTICATED',
+    );
+    const consumed = await source.query(
+      "SELECT COUNT(*) AS total FROM email_challenges WHERE user_id = (SELECT id FROM users WHERE email = ?) AND purpose = 'verify_email' AND state = 'consumed'",
+      [target],
+    );
+    expect(Number(consumed[0].total)).toBe(1);
+    const activeContexts = await source.query(
+      'SELECT COUNT(*) AS total FROM verification_contexts WHERE user_id = (SELECT id FROM users WHERE email = ?) AND consumed_at IS NULL',
+      [target],
+    );
+    expect(Number(activeContexts[0].total)).toBe(0);
   });
 
   it('confirms a pending email during recovery and permits only one concurrent reset', async () => {
