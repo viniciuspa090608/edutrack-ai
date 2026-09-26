@@ -4,6 +4,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { loadEnv } from '../src/config/env.js';
 import { createDataSource } from '../src/database/data-source.js';
 import { CreateAuthentication20260924221500 } from '../src/database/migrations/20260924221500-CreateAuthentication.js';
+import { CreateEmailVerification20260924230000 } from '../src/database/migrations/20260924230000-CreateEmailVerification.js';
 import {
   AuthRepository,
   isDuplicateKey,
@@ -14,7 +15,10 @@ const database = `${env.TEST_DB_NAME}_repo_${randomBytes(4).toString('hex')}`;
 const admin = createDataSource({ ...env, DB_NAME: env.TEST_DB_NAME });
 const source = new DataSource({
   ...createDataSource({ ...env, DB_NAME: database }).options,
-  migrations: [CreateAuthentication20260924221500],
+  migrations: [
+    CreateAuthentication20260924221500,
+    CreateEmailVerification20260924230000,
+  ],
 });
 const repository = new AuthRepository(source);
 

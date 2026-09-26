@@ -48,11 +48,12 @@ describe('account access', () => {
     expect(document.activeElement).toBe(screen.getByLabelText('Senha'));
   });
 
-  it('switches to registration, sends credentials, and checks the new session', async () => {
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValueOnce(success)
-      .mockResolvedValueOnce(success);
+  it('switches to registration and opens the email confirmation flow', async () => {
+    const fetchMock = vi.fn().mockResolvedValueOnce({
+      ok: true,
+      status: 201,
+      json: async () => ({ pendingVerification: true }),
+    });
     vi.stubGlobal('fetch', fetchMock);
     render(<App />);
     const interaction = userEvent.setup();
@@ -74,7 +75,7 @@ describe('account access', () => {
       screen.getAllByRole('button', { name: 'Criar conta' }).at(-1)!,
     );
     expect(
-      await screen.findByRole('heading', { name: `Olá, ${user.email}` }),
+      await screen.findByRole('heading', { name: 'Confirme seu e-mail' }),
     ).toBeTruthy();
     expect(fetchMock.mock.calls[0]?.[0]).toBe(
       'http://localhost:3001/auth/register',
@@ -83,7 +84,7 @@ describe('account access', () => {
       credentials: 'include',
       method: 'POST',
     });
-    expect(fetchMock.mock.calls[1]?.[0]).toBe('http://localhost:3001/auth/me');
+    expect(window.location.pathname).toBe('/confirmar-email');
   });
 
   it('rejects external returnTo and displays a recoverable network error', async () => {

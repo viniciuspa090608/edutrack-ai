@@ -13,6 +13,7 @@ import { loadEnv } from '../src/config/env.js';
 import { createApp } from '../src/app.js';
 import { createDataSource } from '../src/database/data-source.js';
 import { CreateAuthentication20260924221500 } from '../src/database/migrations/20260924221500-CreateAuthentication.js';
+import { CreateEmailVerification20260924230000 } from '../src/database/migrations/20260924230000-CreateEmailVerification.js';
 import { AuthRepository } from '../src/modules/auth/auth.repository.js';
 import { GoogleService } from '../src/modules/auth/google.service.js';
 import { OAuthRepository } from '../src/modules/auth/oauth.repository.js';
@@ -27,7 +28,10 @@ const database = `${env.TEST_DB_NAME}_oidc_${randomBytes(4).toString('hex')}`;
 const admin = createDataSource({ ...env, DB_NAME: env.TEST_DB_NAME });
 const source = new DataSource({
   ...createDataSource({ ...env, DB_NAME: database }).options,
-  migrations: [CreateAuthentication20260924221500],
+  migrations: [
+    CreateAuthentication20260924221500,
+    CreateEmailVerification20260924230000,
+  ],
 });
 const users = new AuthRepository(source);
 const sessions = new SessionRepository(source);

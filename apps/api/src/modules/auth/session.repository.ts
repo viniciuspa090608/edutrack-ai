@@ -1,5 +1,6 @@
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
-import type { DataSource } from 'typeorm';
+import type { DataSource, EntityManager } from 'typeorm';
+import { HttpError } from '../../shared/http-error.js';
 
 export interface ActiveSession {
   id: string;
@@ -17,9 +18,30 @@ export function secretHash(secret: string): Buffer {
 export class SessionRepository {
   constructor(private readonly source: DataSource) {}
 
-  async create(userId: string, previousToken?: string): Promise<string> {
+  async create(
+    userId: string,
+    previousToken?: string,
+    expectedPasswordHash?: Buffer,
+  ): Promise<string> {
     const token = randomBytes(32).toString('base64url');
     await this.source.transaction(async (manager) => {
+      await manager.query('SELECT id FROM users WHERE id = ? FOR UPDATE', [
+        userId,
+      ]);
+      if (expectedPasswordHash) {
+        const credentials = await manager.query<
+          Array<{ password_hash: Buffer }>
+        >(
+          'SELECT password_hash FROM password_credentials WHERE user_id = ? FOR UPDATE',
+          [userId],
+        );
+        if (!credentials[0]?.password_hash.equals(expectedPasswordHash))
+          throw new HttpError(
+            401,
+            'INVALID_CREDENTIALS',
+            'E-mail ou senha inválidos.',
+          );
+      }
       if (previousToken) {
         await manager.query(
           'UPDATE sessions SET revoked_at = UTC_TIMESTAMP(3) WHERE token_hash = ? AND revoked_at IS NULL',
@@ -51,8 +73,8 @@ export class SessionRepository {
     return { id: row.id, userId: row.user_id };
   }
 
-  async revoke(token: string): Promise<void> {
-    await this.source.query(
+  async revoke(token: string, transaction?: EntityManager): Promise<void> {
+    await (transaction ?? this.source).query(
       'UPDATE sessions SET revoked_at = UTC_TIMESTAMP(3) WHERE token_hash = ? AND revoked_at IS NULL',
       [secretHash(token)],
     );

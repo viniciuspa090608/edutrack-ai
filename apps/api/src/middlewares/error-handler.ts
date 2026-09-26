@@ -24,6 +24,8 @@ export function errorHandler(logger: AppLogger): ErrorRequestHandler {
       status = error.status;
       code = error.code;
       message = error.message;
+      if (error.retryAfter !== undefined)
+        response.setHeader('Retry-After', String(error.retryAfter));
     } else if (isMalformedJson(error)) {
       status = 400;
       code = 'INVALID_JSON';

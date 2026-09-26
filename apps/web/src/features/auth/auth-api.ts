@@ -1,4 +1,7 @@
-import { meResponseSchema } from '@study-platform/contracts';
+import {
+  meResponseSchema,
+  pendingVerificationSchema,
+} from '@study-platform/contracts';
 import type { AuthUser } from '@study-platform/contracts';
 
 function apiBase(): string {
@@ -9,15 +12,24 @@ export class AuthApiError extends Error {
   constructor(
     readonly status: number,
     readonly code: string,
+    readonly retryAfter?: number,
   ) {
     super(
       status === 429
-        ? 'Muitas tentativas. Tente novamente mais tarde.'
-        : status === 401
-          ? 'E-mail ou senha inválidos.'
-          : status === 409
-            ? 'Não foi possível usar este e-mail.'
-            : 'Não foi possível concluir a ação. Tente novamente.',
+        ? `Aguarde ${retryAfter ?? 60} segundos antes de tentar novamente.`
+        : code === 'INVALID_CODE'
+          ? 'Código inválido ou expirado. Solicite outro se necessário.'
+          : code === 'INVALID_RESET_GRANT'
+            ? 'O prazo da redefinição terminou. Solicite outro código.'
+            : code === 'ALREADY_VERIFIED'
+              ? 'Seu e-mail já foi confirmado. Volte para a entrada.'
+              : code === 'UNAUTHENTICATED'
+                ? 'Seu acesso temporário expirou. Entre novamente para continuar.'
+                : status === 401
+                  ? 'E-mail ou senha inválidos.'
+                  : status === 409
+                    ? 'Não foi possível usar este e-mail.'
+                    : 'Não foi possível concluir a ação. Tente novamente.',
     );
   }
 }
@@ -42,9 +54,22 @@ async function send(
       typeof body.error.code === 'string'
         ? body.error.code
         : 'UNKNOWN';
-    throw new AuthApiError(response.status, code);
+    const retryHeader = response.headers?.get('Retry-After');
+    const retryAfter =
+      retryHeader && /^\d+$/.test(retryHeader)
+        ? Number(retryHeader)
+        : undefined;
+    throw new AuthApiError(response.status, code, retryAfter);
   }
   return response;
+}
+
+async function postJson(path: string, body: object): Promise<Response> {
+  return send(path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
 }
 
 export async function currentUser(): Promise<AuthUser> {
@@ -55,13 +80,42 @@ export async function localAccess(
   mode: 'register' | 'login',
   email: string,
   password: string,
-): Promise<AuthUser> {
-  const response = await send(`/auth/${mode}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password }),
-  });
-  return meResponseSchema.parse(await response.json()).user;
+): Promise<{ kind: 'active'; user: AuthUser } | { kind: 'pending' }> {
+  const body: unknown = await (
+    await postJson(`/auth/${mode}`, { email, password })
+  ).json();
+  if (pendingVerificationSchema.safeParse(body).success)
+    return { kind: 'pending' };
+  return { kind: 'active', user: meResponseSchema.parse(body).user };
+}
+
+export async function confirmEmail(code: string): Promise<void> {
+  await postJson('/auth/email-verification/confirm', { code });
+}
+export async function resendEmail(): Promise<void> {
+  await postJson('/auth/email-verification/resend', {});
+}
+export async function requestRecovery(email: string): Promise<string> {
+  const body: unknown = await (
+    await postJson('/auth/password-recovery/request', { email })
+  ).json();
+  if (
+    !body ||
+    typeof body !== 'object' ||
+    !('message' in body) ||
+    typeof body.message !== 'string'
+  )
+    throw new Error('Resposta inválida.');
+  return body.message;
+}
+export async function verifyRecovery(
+  email: string,
+  code: string,
+): Promise<void> {
+  await postJson('/auth/password-recovery/verify', { email, code });
+}
+export async function resetPassword(password: string): Promise<void> {
+  await postJson('/auth/password-recovery/reset', { password });
 }
 
 export async function logout(): Promise<void> {

@@ -31,6 +31,12 @@ jobs:
       DB_NAME: study_platform_dev
       TEST_DB_NAME: study_platform_test
       WEB_ORIGIN: http://localhost:5173
+      API_PUBLIC_ORIGIN: http://localhost:3001
+      SMTP_HOST: localhost
+      SMTP_PORT: 1025
+      SMTP_FROM: no-reply@example.test
+      EMAIL_HMAC_KEY: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+      EMAIL_ENCRYPTION_KEY: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
       VITE_API_BASE_URL: http://localhost:3001
     steps:
       - uses: actions/checkout@v4

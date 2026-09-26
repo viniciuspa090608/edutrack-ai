@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import type { DataSource } from 'typeorm';
+import type { DataSource, EntityManager } from 'typeorm';
 
 export interface AuthUser {
   id: string;
@@ -37,6 +37,14 @@ export class AuthRepository {
     return rows[0] ?? null;
   }
 
+  async isEmailVerified(userId: string): Promise<boolean> {
+    const rows = await this.source.query<Array<{ verified: number }>>(
+      'SELECT (email_verified_at IS NOT NULL) AS verified FROM users WHERE id = ? LIMIT 1',
+      [userId],
+    );
+    return Number(rows[0]?.verified) === 1;
+  }
+
   async userByEmail(email: string): Promise<AuthUser | null> {
     const rows = await this.source.query<UserRow[]>(
       'SELECT id, email FROM users WHERE email = ? LIMIT 1',
@@ -67,9 +75,10 @@ export class AuthRepository {
     email: string,
     hash: Buffer,
     salt: Buffer,
+    transaction?: EntityManager,
   ): Promise<AuthUser> {
     const id = randomUUID();
-    await this.source.transaction(async (manager) => {
+    const persist = async (manager: EntityManager) => {
       await manager.query('INSERT INTO users (id, email) VALUES (?, ?)', [
         id,
         email,
@@ -78,7 +87,9 @@ export class AuthRepository {
         'INSERT INTO password_credentials (user_id, password_hash, salt, hash_version) VALUES (?, ?, ?, 1)',
         [id, hash, salt],
       );
-    });
+    };
+    if (transaction) await persist(transaction);
+    else await this.source.transaction(persist);
     return { id, email };
   }
 
@@ -106,10 +117,10 @@ export class AuthRepository {
   ): Promise<AuthUser> {
     const id = randomUUID();
     await this.source.transaction(async (manager) => {
-      await manager.query('INSERT INTO users (id, email) VALUES (?, ?)', [
-        id,
-        email,
-      ]);
+      await manager.query(
+        'INSERT INTO users (id, email, email_verified_at) VALUES (?, ?, UTC_TIMESTAMP(3))',
+        [id, email],
+      );
       await manager.query(
         `INSERT INTO external_identities (id, user_id, provider, subject, provider_email)
          VALUES (?, ?, 'google', ?, ?)`,

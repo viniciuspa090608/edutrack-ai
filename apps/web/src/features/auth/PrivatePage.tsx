@@ -20,7 +20,10 @@ export function PrivatePage({ page }: { page: 'app' | 'conta' }) {
     try {
       setUser(await currentUser());
     } catch (cause) {
-      if (cause instanceof AuthApiError && cause.status === 401) {
+      if (
+        cause instanceof AuthApiError &&
+        (cause.status === 401 || cause.code === 'EMAIL_VERIFICATION_REQUIRED')
+      ) {
         navigate(`/acesso?returnTo=/${page}`);
         return;
       }

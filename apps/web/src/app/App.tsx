@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { PrivatePage } from '../features/auth/PrivatePage.js';
+import { EmailVerificationPage } from '../features/auth/EmailVerificationPage.js';
+import { PasswordRecoveryPage } from '../features/auth/PasswordRecoveryPage.js';
 import { AccessPage } from '../features/landing/AccessPage.js';
 import { PublicLanding } from '../features/landing/PublicLanding.js';
 import { SystemPage } from '../features/system/SystemPage.js';
@@ -16,6 +18,10 @@ export function App() {
       return <PublicLanding />;
     case '/acesso':
       return <AccessPage />;
+    case '/confirmar-email':
+      return <EmailVerificationPage />;
+    case '/recuperar-senha':
+      return <PasswordRecoveryPage />;
     case '/status':
       return <SystemPage />;
     case '/app':

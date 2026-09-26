@@ -31,6 +31,21 @@ export const loginRequestSchema = z
   })
   .strict();
 
+export const emailCodeSchema = z
+  .object({ code: z.string().regex(/^\d{6}$/) })
+  .strict();
+export const recoveryRequestSchema = z.object({ email: emailSchema }).strict();
+export const recoveryVerifySchema = recoveryRequestSchema
+  .extend({ code: emailCodeSchema.shape.code })
+  .strict();
+export const passwordResetSchema = z
+  .object({ password: registerRequestSchema.shape.password })
+  .strict();
+export const pendingVerificationSchema = z.object({
+  pendingVerification: z.literal(true),
+});
+export const recoveryRequestedSchema = z.object({ message: z.string() });
+
 export const authUserSchema = z.object({
   id: z.uuid(),
   email: z.email(),
@@ -38,7 +53,10 @@ export const authUserSchema = z.object({
 });
 
 export const meResponseSchema = z.object({ user: authUserSchema });
-export const authSuccessResponseSchema = meResponseSchema;
+export const authSuccessResponseSchema = z.union([
+  meResponseSchema,
+  pendingVerificationSchema,
+]);
 
 export const authErrorCodeSchema = z.enum([
   'INVALID_INPUT',
@@ -49,6 +67,10 @@ export const authErrorCodeSchema = z.enum([
   'GOOGLE_CONFLICT',
   'GOOGLE_FAILED',
   'ORIGIN_NOT_ALLOWED',
+  'EMAIL_VERIFICATION_REQUIRED',
+  'EMAIL_RATE_LIMITED',
+  'INVALID_CODE',
+  'INVALID_RESET_GRANT',
 ]);
 
 export type RegisterRequest = z.infer<typeof registerRequestSchema>;

@@ -8,13 +8,19 @@ import { createApp } from '../src/app.js';
 import { loadEnv } from '../src/config/env.js';
 import { createDataSource } from '../src/database/data-source.js';
 import { CreateAuthentication20260924221500 } from '../src/database/migrations/20260924221500-CreateAuthentication.js';
+import { CreateEmailVerification20260924230000 } from '../src/database/migrations/20260924230000-CreateEmailVerification.js';
+import { EmailCrypto } from '../src/modules/auth/email-crypto.js';
+import { EmailRepository } from '../src/modules/auth/email.repository.js';
 
 const env = loadEnv();
 const database = `${env.TEST_DB_NAME}_http_${randomBytes(4).toString('hex')}`;
 const admin = createDataSource({ ...env, DB_NAME: env.TEST_DB_NAME });
 const source = new DataSource({
   ...createDataSource({ ...env, DB_NAME: database }).options,
-  migrations: [CreateAuthentication20260924221500],
+  migrations: [
+    CreateAuthentication20260924221500,
+    CreateEmailVerification20260924230000,
+  ],
 });
 const lines: string[] = [];
 const stream = new Writable({
@@ -29,10 +35,40 @@ const origin = env.WEB_ORIGIN;
 const password = 'correct-horse-battery';
 const email = `auth-${randomBytes(5).toString('hex')}@example.com`;
 
-function issuedCookie(header: string | string[] | undefined): string {
-  const raw = Array.isArray(header) ? header[0] : header;
+function issuedCookie(
+  header: string | string[] | undefined,
+  name = 'edutrack_session',
+): string {
+  const raw = (Array.isArray(header) ? header : header ? [header] : []).find(
+    (value) => value.startsWith(`${name}=`) && !value.startsWith(`${name}=;`),
+  );
   if (!raw) throw new Error('Session cookie missing');
   return raw.split(';')[0]!;
+}
+
+const delivery = new EmailRepository(
+  source,
+  new EmailCrypto(env.EMAIL_HMAC_KEY!, env.EMAIL_ENCRYPTION_KEY!),
+);
+async function verifyRegistration(
+  verificationCookie: string,
+  targetEmail: string,
+): Promise<void> {
+  let code = '';
+  for (let attempt = 0; attempt < 20 && !code; attempt += 1)
+    if (
+      !(await delivery.deliverOne(async (address, sentCode) => {
+        if (address === targetEmail) code = sentCode;
+      }))
+    )
+      break;
+  expect(code).toMatch(/^\d{6}$/);
+  const confirmed = await request(app)
+    .post('/auth/email-verification/confirm')
+    .set('Origin', origin)
+    .set('Cookie', verificationCookie)
+    .send({ code });
+  expect(confirmed.status).toBe(204);
 }
 
 beforeAll(async () => {
@@ -59,15 +95,19 @@ describe('authentication HTTP with MySQL', () => {
       .set('Origin', origin)
       .send({ email: `  ${email.toUpperCase()}  `, password });
     expect(registered.status).toBe(201);
-    expect(registered.body.user.email).toBe(email);
-    cookie = issuedCookie(registered.headers['set-cookie']);
-    expect(registered.headers['set-cookie']?.[0]).toContain('HttpOnly');
-    expect(registered.headers['set-cookie']?.[0]).toContain('SameSite=Lax');
-    const sessionRows = await source.query('SELECT token_hash FROM sessions');
-    expect(sessionRows).toHaveLength(1);
-    expect(JSON.stringify(sessionRows)).not.toContain(
-      cookie.split('=')[1] ?? 'missing-token',
+    expect(registered.body.pendingVerification).toBe(true);
+    const verificationCookie = issuedCookie(
+      registered.headers['set-cookie'],
+      'edutrack_verify',
     );
+    expect(String(registered.headers['set-cookie'])).toContain('HttpOnly');
+    expect(String(registered.headers['set-cookie'])).toContain('SameSite=Lax');
+    const sessionRows = await source.query('SELECT token_hash FROM sessions');
+    expect(sessionRows).toHaveLength(0);
+    expect(
+      (await request(app).get('/auth/me').set('Cookie', verificationCookie))
+        .status,
+    ).toBe(401);
     const rows = await source.query(
       'SELECT password_hash, salt FROM password_credentials',
     );
@@ -79,6 +119,16 @@ describe('authentication HTTP with MySQL', () => {
       .send({ email, password });
     expect(duplicate.status).toBe(409);
     expect(duplicate.body.error.code).toBe('EMAIL_UNAVAILABLE');
+    await verifyRegistration(verificationCookie, email);
+    const firstLogin = await request(app)
+      .post('/auth/login')
+      .set('Origin', origin)
+      .send({ email, password });
+    expect(firstLogin.status).toBe(200);
+    cookie = issuedCookie(firstLogin.headers['set-cookie']);
+    expect(
+      JSON.stringify(await source.query('SELECT token_hash FROM sessions')),
+    ).not.toContain(cookie.split('=')[1]);
   });
 
   it('uses generic login failure, persists the session, and revokes on logout', async () => {
@@ -239,17 +289,38 @@ describe('authentication HTTP with MySQL', () => {
       .post('/auth/register')
       .set('Origin', origin)
       .send({ email: otherEmail, password });
-    const otherCookie = issuedCookie(other.headers['set-cookie']);
+    const verificationCookie = issuedCookie(
+      other.headers['set-cookie'],
+      'edutrack_verify',
+    );
+    await verifyRegistration(verificationCookie, otherEmail);
+    const otherLogin = await request(app)
+      .post('/auth/login')
+      .set('Origin', origin)
+      .send({ email: otherEmail, password });
+    const otherCookie = issuedCookie(otherLogin.headers['set-cookie']);
     await source.query(
       'UPDATE sessions SET last_used_at = DATE_SUB(UTC_TIMESTAMP(3), INTERVAL 1 HOUR) WHERE user_id = ?',
-      [other.body.user.id],
+      [
+        (
+          await source.query('SELECT id FROM users WHERE email = ?', [
+            otherEmail,
+          ])
+        )[0].id,
+      ],
     );
     const me = await request(app).get('/auth/me').set('Cookie', otherCookie);
     expect(me.body.user.email).toBe(otherEmail);
     expect(me.body.user.email).not.toBe(email);
     const rows = await source.query(
       'SELECT last_used_at > DATE_SUB(UTC_TIMESTAMP(3), INTERVAL 1 MINUTE) AS fresh FROM sessions WHERE user_id = ?',
-      [other.body.user.id],
+      [
+        (
+          await source.query('SELECT id FROM users WHERE email = ?', [
+            otherEmail,
+          ])
+        )[0].id,
+      ],
     );
     expect(Number(rows[0].fresh)).toBe(1);
   });

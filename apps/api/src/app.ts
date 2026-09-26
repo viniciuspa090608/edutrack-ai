@@ -13,6 +13,8 @@ import { GoogleService } from './modules/auth/google.service.js';
 import { OAuthRepository } from './modules/auth/oauth.repository.js';
 import { RateLimitRepository } from './modules/auth/rate-limit.repository.js';
 import { SessionRepository } from './modules/auth/session.repository.js';
+import { EmailCrypto } from './modules/auth/email-crypto.js';
+import { EmailRepository } from './modules/auth/email.repository.js';
 import { HttpError } from './shared/http-error.js';
 import type { AppLogger } from './shared/logger.js';
 
@@ -49,10 +51,17 @@ export function createApp({
   app.use(express.json({ limit: '1mb' }));
   app.use('/health', healthRoutes);
   if (source && env) {
+    if (!env.EMAIL_HMAC_KEY || !env.EMAIL_ENCRYPTION_KEY)
+      throw new Error('Email keys are not configured');
+    const email = new EmailRepository(
+      source,
+      new EmailCrypto(env.EMAIL_HMAC_KEY, env.EMAIL_ENCRYPTION_KEY),
+    );
     const service = new AuthService(
       new AuthRepository(source),
       new SessionRepository(source),
       new RateLimitRepository(source),
+      email,
     );
     const google = new GoogleService(
       env,

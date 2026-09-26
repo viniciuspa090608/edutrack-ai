@@ -12,7 +12,8 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run",
     "migration:show": "tsx src/database/show-migrations.ts",
-    "migration:run": "tsx src/database/run-migrations.ts"
+    "migration:run": "tsx src/database/run-migrations.ts",
+    "email:worker": "tsx src/email-worker.ts"
   },
   "dependencies": {
     "@study-platform/contracts": "workspace:*",
@@ -20,6 +21,7 @@
     "dotenv": "18.0.3",
     "express": "5.2.1",
     "mysql2": "3.24.4",
+    "nodemailer": "10.0.8",
     "openid-client": "^6.8.8",
     "pino": "10.3.1",
     "tldts": "7.4.14",

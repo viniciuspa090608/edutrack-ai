@@ -12,6 +12,11 @@ const validEnv = {
   TEST_DB_NAME: 'study_platform_test',
   WEB_ORIGIN: 'http://localhost:5173',
   API_PUBLIC_ORIGIN: 'http://localhost:3001',
+  SMTP_HOST: 'localhost',
+  SMTP_PORT: '1025',
+  SMTP_FROM: 'no-reply@example.test',
+  EMAIL_HMAC_KEY: 'a'.repeat(64),
+  EMAIL_ENCRYPTION_KEY: 'b'.repeat(64),
 };
 
 describe('API environment', () => {
@@ -67,6 +72,11 @@ describe('API environment', () => {
       NODE_ENV: 'production',
       GOOGLE_CLIENT_ID: 'client',
       GOOGLE_CLIENT_SECRET: 'secret',
+      SMTP_HOST: 'smtp.example.com',
+      SMTP_PORT: '587',
+      SMTP_FROM: 'mail@example.com',
+      EMAIL_HMAC_KEY: 'a'.repeat(64),
+      EMAIL_ENCRYPTION_KEY: 'b'.repeat(64),
     };
     expect(() => parseEnv(production)).toThrow('API_PUBLIC_ORIGIN');
     expect(() =>
@@ -83,5 +93,22 @@ describe('API environment', () => {
         API_PUBLIC_ORIGIN: 'https://api.example.com',
       }).API_PUBLIC_ORIGIN,
     ).toBe('https://api.example.com');
+  });
+
+  it('validates mail settings and distinct keys without printing secrets', () => {
+    expect(() => parseEnv({ ...validEnv, SMTP_PORT: undefined })).toThrow(
+      'SMTP_PORT',
+    );
+    expect(() =>
+      parseEnv({ ...validEnv, EMAIL_HMAC_KEY: 'private-key' }),
+    ).toThrow('EMAIL_HMAC_KEY');
+    expect(() => parseEnv({ ...validEnv, SMTP_USER: 'private-user' })).toThrow(
+      'SMTP_PASSWORD',
+    );
+    try {
+      parseEnv({ ...validEnv, EMAIL_HMAC_KEY: 'private-key' });
+    } catch (error) {
+      expect((error as Error).message).not.toContain('private-key');
+    }
   });
 });

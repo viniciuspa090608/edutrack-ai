@@ -17,6 +17,13 @@ const optionalCredential = z.preprocess(
   (value) => (value === '' ? undefined : value),
   z.string().min(1).optional(),
 );
+const optionalKey = z.preprocess(
+  (value) => (value === '' ? undefined : value),
+  z
+    .string()
+    .regex(/^[0-9a-fA-F]{64}$/)
+    .optional(),
+);
 
 const envSchema = z
   .object({
@@ -32,12 +39,64 @@ const envSchema = z
     API_PUBLIC_ORIGIN: origin,
     GOOGLE_CLIENT_ID: optionalCredential,
     GOOGLE_CLIENT_SECRET: optionalCredential,
+    SMTP_HOST: optionalCredential,
+    SMTP_PORT: z.preprocess(
+      (value) => (value === '' ? undefined : value),
+      port.optional(),
+    ),
+    SMTP_USER: optionalCredential,
+    SMTP_PASSWORD: optionalCredential,
+    SMTP_FROM: z.preprocess(
+      (value) => (value === '' ? undefined : value),
+      z.email().optional(),
+    ),
+    EMAIL_HMAC_KEY: optionalKey,
+    EMAIL_ENCRYPTION_KEY: optionalKey,
   })
   .refine((value) => value.DB_NAME !== value.TEST_DB_NAME, {
     path: ['TEST_DB_NAME'],
     message: 'must differ from DB_NAME',
   })
   .superRefine((value, context) => {
+    const emailKeys = [
+      'SMTP_HOST',
+      'SMTP_PORT',
+      'SMTP_FROM',
+      'EMAIL_HMAC_KEY',
+      'EMAIL_ENCRYPTION_KEY',
+    ] as const;
+    for (const key of emailKeys) {
+      if (value[key] === undefined)
+        context.addIssue({
+          code: 'custom',
+          path: [key],
+          message: 'required for email delivery',
+        });
+    }
+    if (Boolean(value.SMTP_USER) !== Boolean(value.SMTP_PASSWORD)) {
+      context.addIssue({
+        code: 'custom',
+        path: ['SMTP_USER'],
+        message: 'SMTP credentials must be configured together',
+      });
+      context.addIssue({
+        code: 'custom',
+        path: ['SMTP_PASSWORD'],
+        message: 'SMTP credentials must be configured together',
+      });
+    }
+    if (
+      value.EMAIL_HMAC_KEY &&
+      value.EMAIL_ENCRYPTION_KEY &&
+      value.EMAIL_HMAC_KEY.toLowerCase() ===
+        value.EMAIL_ENCRYPTION_KEY.toLowerCase()
+    ) {
+      context.addIssue({
+        code: 'custom',
+        path: ['EMAIL_ENCRYPTION_KEY'],
+        message: 'email keys must differ',
+      });
+    }
     if (
       Boolean(value.GOOGLE_CLIENT_ID) !== Boolean(value.GOOGLE_CLIENT_SECRET)
     ) {

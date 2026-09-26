@@ -1,6 +1,10 @@
 import {
   loginRequestSchema,
   registerRequestSchema,
+  emailCodeSchema,
+  recoveryRequestSchema,
+  recoveryVerifySchema,
+  passwordResetSchema,
 } from '@study-platform/contracts';
 import { Router } from 'express';
 import type { Request, RequestHandler, Response } from 'express';
@@ -48,6 +52,47 @@ function clearSessionCookie(response: Response, env: ApiEnv): void {
   });
 }
 
+function shortCookie(
+  response: Response,
+  env: ApiEnv,
+  name: string,
+  token: string,
+  minutes: number,
+): void {
+  response.cookie(
+    env.NODE_ENV === 'production' ? `__Host-${name}` : name,
+    token,
+    {
+      httpOnly: true,
+      secure: env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: minutes * 60_000,
+    },
+  );
+}
+function clearShortCookie(response: Response, env: ApiEnv, name: string): void {
+  response.clearCookie(
+    env.NODE_ENV === 'production' ? `__Host-${name}` : name,
+    {
+      httpOnly: true,
+      secure: env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+    },
+  );
+}
+function shortToken(
+  request: Request,
+  env: ApiEnv,
+  name: string,
+): string | undefined {
+  return readCookie(
+    request,
+    env.NODE_ENV === 'production' ? `__Host-${name}` : name,
+  );
+}
+
 export function requireOrigin(webOrigin: string): RequestHandler {
   return (request, _response, next) => {
     if (request.headers.origin !== webOrigin) {
@@ -73,6 +118,12 @@ export function requireSession(
       const session = token ? await service.sessions.resolve(token) : null;
       if (!session)
         throw new HttpError(401, 'UNAUTHENTICATED', 'Entre para continuar.');
+      if (!(await service.users.isEmailVerified(session.userId)))
+        throw new HttpError(
+          403,
+          'EMAIL_VERIFICATION_REQUIRED',
+          'Confirme seu e-mail para continuar.',
+        );
       response.locals.session = session;
       response.locals.userId = session.userId;
       next();
@@ -104,8 +155,9 @@ export function authRoutes(
       request.ip ?? 'unknown',
       readCookie(request, sessionCookieName(env)),
     );
-    setSessionCookie(response, env, result.token);
-    response.status(201).json({ user: result.user });
+    clearSessionCookie(response, env);
+    shortCookie(response, env, 'edutrack_verify', result.verificationToken, 15);
+    response.status(201).json({ pendingVerification: true });
   });
 
   router.post('/login', write, async (request, response) => {
@@ -117,8 +169,92 @@ export function authRoutes(
       request.ip ?? 'unknown',
       readCookie(request, sessionCookieName(env)),
     );
-    setSessionCookie(response, env, result.token);
-    response.json({ user: result.user });
+    if (result.kind === 'pending') {
+      clearSessionCookie(response, env);
+      shortCookie(
+        response,
+        env,
+        'edutrack_verify',
+        result.verificationToken,
+        15,
+      );
+      response.json({ pendingVerification: true });
+    } else {
+      clearShortCookie(response, env, 'edutrack_verify');
+      setSessionCookie(response, env, result.token);
+      response.json({ user: result.user });
+    }
+  });
+
+  router.post(
+    '/email-verification/resend',
+    write,
+    async (request, response) => {
+      const token = shortToken(request, env, 'edutrack_verify');
+      await service.resendConfirmation(token, request.ip ?? 'unknown');
+      response.status(202).json({
+        message: 'Se o endereço estiver pendente, enviaremos um código.',
+      });
+    },
+  );
+
+  router.post(
+    '/email-verification/confirm',
+    write,
+    async (request, response) => {
+      await service.limitEmailValidation(
+        'verify_email',
+        request.ip ?? 'unknown',
+      );
+      const parsed = emailCodeSchema.safeParse(request.body);
+      if (!parsed.success)
+        throw new HttpError(400, 'INVALID_INPUT', 'Código inválido.');
+      const token = shortToken(request, env, 'edutrack_verify');
+      await service.confirmEmail(token, parsed.data.code);
+      clearShortCookie(response, env, 'edutrack_verify');
+      response.status(204).end();
+    },
+  );
+
+  const recoveryMessage =
+    'Se houver uma conta com senha local, enviaremos um código. Você também pode entrar com Google ou recuperar o acesso à sua conta Google.';
+  router.post(
+    '/password-recovery/request',
+    write,
+    async (request, response) => {
+      const parsed = recoveryRequestSchema.safeParse(request.body);
+      if (!parsed.success)
+        throw new HttpError(400, 'INVALID_INPUT', 'E-mail inválido.');
+      await service.requestRecovery(parsed.data.email, request.ip ?? 'unknown');
+      response.status(202).json({ message: recoveryMessage });
+    },
+  );
+
+  router.post('/password-recovery/verify', write, async (request, response) => {
+    await service.limitEmailValidation(
+      'reset_password',
+      request.ip ?? 'unknown',
+    );
+    const parsed = recoveryVerifySchema.safeParse(request.body);
+    if (!parsed.success)
+      throw new HttpError(400, 'INVALID_INPUT', 'Dados inválidos.');
+    const grant = await service.verifyRecovery(
+      parsed.data.email,
+      parsed.data.code,
+    );
+    shortCookie(response, env, 'edutrack_reset', grant, 5);
+    response.status(204).end();
+  });
+
+  router.post('/password-recovery/reset', write, async (request, response) => {
+    const parsed = passwordResetSchema.safeParse(request.body);
+    if (!parsed.success)
+      throw new HttpError(400, 'INVALID_INPUT', 'Senha inválida.');
+    const token = shortToken(request, env, 'edutrack_reset');
+    await service.resetPassword(token, parsed.data.password);
+    clearShortCookie(response, env, 'edutrack_reset');
+    clearSessionCookie(response, env);
+    response.status(204).end();
   });
 
   router.get('/me', secure, async (_request, response) => {

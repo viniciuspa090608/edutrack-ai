@@ -23,8 +23,8 @@ export function AccessPage() {
     setError('');
     setBusy(true);
     try {
-      await localAccess(mode, email, password);
-      navigate(returnTo);
+      const result = await localAccess(mode, email, password);
+      navigate(result.kind === 'pending' ? '/confirmar-email' : returnTo);
     } catch (cause) {
       setError(
         cause instanceof Error
@@ -122,6 +122,9 @@ export function AccessPage() {
         </form>
         <a className="auth-google" href={googleLoginUrl(returnTo)}>
           Continuar com Google
+        </a>
+        <a className="auth-back" href="/recuperar-senha">
+          Esqueci minha senha
         </a>
         <a className="auth-back" href="/">
           <ArrowLeft size={18} aria-hidden="true" /> Voltar à landing
