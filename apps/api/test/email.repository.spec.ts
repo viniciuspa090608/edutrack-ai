@@ -1,3 +1,4 @@
+import { CreateProfilePreferences20260926160000 } from '../src/database/migrations/20260926160000-CreateProfilePreferences.js';
 import { randomBytes } from 'node:crypto';
 import { DataSource } from 'typeorm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -17,6 +18,7 @@ const source = new DataSource({
   migrations: [
     CreateAuthentication20260924221500,
     CreateEmailVerification20260924230000,
+    CreateProfilePreferences20260926160000,
   ],
 });
 const crypto = new EmailCrypto('a'.repeat(64), 'b'.repeat(64));

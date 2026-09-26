@@ -23,6 +23,15 @@ export function createSmtpSender(env: ApiEnv) {
     purpose: EmailPurpose,
   ): Promise<void> => {
     const recovery = purpose === 'reset_password';
+    if (purpose === 'email_changed') {
+      await transporter.sendMail({
+        from: env.SMTP_FROM,
+        to: email,
+        subject: 'O e-mail da sua conta EduTrack foi alterado',
+        text: 'O endereço da sua conta EduTrack foi alterado. As sessões anteriores foram encerradas. Se você não fez esta alteração, procure o suporte da EduTrack.',
+      });
+      return;
+    }
     await transporter.sendMail({
       from: env.SMTP_FROM,
       to: email,
@@ -31,7 +40,9 @@ export function createSmtpSender(env: ApiEnv) {
         : 'Confirme seu e-mail na EduTrack',
       text: recovery
         ? `Seu código para redefinir a senha é ${code}. Ele vale por 10 minutos após o envio. Se você não solicitou a redefinição, ignore este e-mail.`
-        : `Seu código de confirmação da EduTrack é ${code}. Ele vale por 10 minutos após o envio. Se você não criou a conta, ignore este e-mail.`,
+        : purpose === 'change_email'
+          ? `Seu código para alterar o e-mail na EduTrack é ${code}. Ele vale por 10 minutos após o envio. Se você não solicitou a alteração, ignore este e-mail.`
+          : `Seu código de confirmação da EduTrack é ${code}. Ele vale por 10 minutos após o envio. Se você não criou a conta, ignore este e-mail.`,
     });
   };
 }

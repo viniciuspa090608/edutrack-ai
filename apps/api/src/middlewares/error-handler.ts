@@ -24,12 +24,26 @@ export function errorHandler(logger: AppLogger): ErrorRequestHandler {
       status = error.status;
       code = error.code;
       message = error.message;
+      if (code === 'PREFERENCES_MISSING')
+        logger.error({
+          event: 'preferences.missing',
+          requestId: response.locals.requestId,
+        });
       if (error.retryAfter !== undefined)
         response.setHeader('Retry-After', String(error.retryAfter));
     } else if (isMalformedJson(error)) {
       status = 400;
       code = 'INVALID_JSON';
       message = 'JSON inválido.';
+    } else if (
+      typeof error === 'object' &&
+      error !== null &&
+      'type' in error &&
+      error.type === 'entity.too.large'
+    ) {
+      status = 413;
+      code = 'PAYLOAD_TOO_LARGE';
+      message = 'O arquivo excede o tamanho permitido.';
     } else {
       logger.error({
         event: 'http.error',

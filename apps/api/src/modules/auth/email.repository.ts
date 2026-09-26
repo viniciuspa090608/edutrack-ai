@@ -94,6 +94,8 @@ export class EmailRepository {
       await this.rate(manager, `${purpose}:email`, email, 3, true);
       await this.rate(manager, `${purpose}:ip`, ip, 30);
       if (!userId) return false;
+      if (purpose === 'change_email')
+        await this.rate(manager, 'change_email:user', userId, 3, true);
       const users = await manager.query<
         Array<{ email_verified_at: Date | null }>
       >('SELECT email_verified_at FROM users WHERE id = ? FOR UPDATE', [
@@ -161,6 +163,29 @@ export class EmailRepository {
     return token;
   }
 
+  async notifyChanged(
+    manager: EntityManager,
+    userId: string,
+    email: string,
+  ): Promise<void> {
+    const id = this.crypto.id();
+    const payload = this.crypto.encrypt({
+      email,
+      code: '',
+      purpose: 'email_changed',
+    });
+    await manager.query(
+      `INSERT INTO email_challenges (id, user_id, purpose, code_hmac, state)
+      VALUES (?, ?, 'email_changed', ?, 'queued')`,
+      [id, userId, this.crypto.digest(`code:${id}`, '')],
+    );
+    await manager.query(
+      `INSERT INTO email_outbox (id, challenge_id, ciphertext, nonce, auth_tag, state)
+      VALUES (?, ?, ?, ?, ?, 'queued')`,
+      [this.crypto.id(), id, payload.ciphertext, payload.nonce, payload.tag],
+    );
+  }
+
   async contextUser(token: string): Promise<string | null> {
     const rows = await this.source.query<ContextRow[]>(
       `SELECT user_id FROM verification_contexts
@@ -174,6 +199,7 @@ export class EmailRepository {
     userId: string,
     purpose: EmailPurpose,
     code: string,
+    onConfirmed?: (manager: EntityManager) => Promise<void>,
   ): Promise<string | null> {
     return this.source
       .transaction(async (manager) => {
@@ -205,6 +231,11 @@ export class EmailRepository {
         consumed_at = UTC_TIMESTAMP(3) WHERE id = ?`,
           [row.id],
         );
+        if (purpose === 'change_email') {
+          if (!onConfirmed) throw invalidCode();
+          await onConfirmed(manager);
+          return null;
+        }
         if (purpose === 'verify_email') {
           await manager.query(
             'UPDATE users SET email_verified_at = UTC_TIMESTAMP(3) WHERE id = ? AND email_verified_at IS NULL',
@@ -272,6 +303,14 @@ export class EmailRepository {
         'UPDATE sessions SET revoked_at = UTC_TIMESTAMP(3) WHERE user_id = ? AND revoked_at IS NULL',
         [userId],
       );
+      await manager.query(
+        'DELETE FROM email_change_reservations WHERE user_id = ?',
+        [userId],
+      );
+      await manager.query(
+        'DELETE p FROM identity_proofs p JOIN sessions s ON s.id = p.session_id WHERE s.user_id = ?',
+        [userId],
+      );
       return true;
     });
     if (!used)
@@ -293,6 +332,20 @@ export class EmailRepository {
         ORDER BY o.available_at LIMIT 1 FOR UPDATE SKIP LOCKED`);
       const row = rows[0];
       if (!row) return null;
+      if (row.purpose === 'change_email') {
+        const reservations = await manager.query<Array<{ user_id: string }>>(
+          `SELECT r.user_id FROM email_change_reservations r JOIN email_challenges c ON c.user_id = r.user_id
+          WHERE c.id = ? AND r.expires_at > UTC_TIMESTAMP(3)`,
+          [row.challenge_id],
+        );
+        if (!reservations[0]) {
+          await manager.query(
+            "UPDATE email_challenges SET state = 'revoked', active_marker = NULL WHERE id = ? AND state = 'queued'",
+            [row.challenge_id],
+          );
+          row.challenge_state = 'revoked';
+        }
+      }
       const leaseToken = this.crypto.id();
       await manager.query(
         `UPDATE email_outbox SET state = 'leased', lease_until = DATE_ADD(UTC_TIMESTAMP(3), INTERVAL 2 MINUTE),
@@ -323,6 +376,12 @@ export class EmailRepository {
           expires_at = DATE_ADD(UTC_TIMESTAMP(3), INTERVAL 10 MINUTE) WHERE id = ?`,
           [row.challenge_id],
         );
+        if (row.purpose === 'change_email')
+          await manager.query(
+            `UPDATE email_change_reservations r JOIN email_challenges c ON c.user_id = r.user_id
+            SET r.expires_at = c.expires_at WHERE c.id = ?`,
+            [row.challenge_id],
+          );
         await manager.query(
           `UPDATE email_outbox SET state = 'sent', ciphertext = NULL, nonce = NULL,
           auth_tag = NULL, lease_until = NULL, lease_token = NULL, delivered_at = UTC_TIMESTAMP(3) WHERE id = ?`,

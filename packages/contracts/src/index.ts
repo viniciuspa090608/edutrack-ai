@@ -50,6 +50,7 @@ export const authUserSchema = z.object({
   id: z.uuid(),
   email: z.email(),
   googleLinked: z.boolean(),
+  displayName: z.string().optional(),
 });
 
 export const meResponseSchema = z.object({ user: authUserSchema });
@@ -77,3 +78,58 @@ export type RegisterRequest = z.infer<typeof registerRequestSchema>;
 export type LoginRequest = z.infer<typeof loginRequestSchema>;
 export type AuthUser = z.infer<typeof authUserSchema>;
 export type MeResponse = z.infer<typeof meResponseSchema>;
+
+export const displayNameSchema = z
+  .string()
+  .refine((s) => !/\p{Cc}/u.test(s), 'Não use caracteres de controle.')
+  .transform((s) => s.normalize('NFC').trim())
+  .refine(
+    (s) =>
+      Array.from(s).length >= 2 &&
+      Array.from(s).length <= 60 &&
+      !/\p{Cc}/u.test(s),
+    'Use de 2 a 60 caracteres, sem caracteres de controle.',
+  );
+export const profileUpdateSchema = z
+  .object({ displayName: displayNameSchema })
+  .strict();
+const preferencesObjectSchema = z
+  .object({
+    tasks: z.boolean(),
+    subjects: z.boolean(),
+    flashcards: z.boolean(),
+    ai: z.boolean(),
+  })
+  .strict();
+export function hasEnabledStudyModule(value: {
+  tasks: boolean;
+  subjects: boolean;
+  flashcards: boolean;
+}): boolean {
+  return value.tasks || value.subjects || value.flashcards;
+}
+export const preferencesSchema = preferencesObjectSchema.refine(
+  hasEnabledStudyModule,
+  'Mantenha pelo menos um módulo de estudo ativo.',
+);
+export const preferencesUpdateSchema = preferencesObjectSchema
+  .partial()
+  .refine((v) => Object.keys(v).length > 0);
+export const profileSchema = authUserSchema
+  .extend({
+    displayName: displayNameSchema,
+    emailVerified: z.boolean(),
+    localPassword: z.boolean(),
+    avatarVersion: z.string().nullable(),
+  })
+  .strict();
+export const identityProofSchema = z
+  .object({ currentPassword: z.string().min(1).max(128) })
+  .strict();
+export const emailChangeSchema = z.object({ email: emailSchema }).strict();
+export const passwordChangeSchema = identityProofSchema
+  .extend({ password: registerRequestSchema.shape.password })
+  .strict();
+export type UserProfile = z.infer<typeof profileSchema>;
+export type ModulePreferences = z.infer<typeof preferencesSchema>;
+export type Capability = keyof ModulePreferences;

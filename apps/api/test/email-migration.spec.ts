@@ -8,7 +8,6 @@ import { loadEnv } from '../src/config/env.js';
 import { createDataSource } from '../src/database/data-source.js';
 import { CreateAuthentication20260924221500 } from '../src/database/migrations/20260924221500-CreateAuthentication.js';
 import { CreateEmailVerification20260924230000 } from '../src/database/migrations/20260924230000-CreateEmailVerification.js';
-import { AuthRepository } from '../src/modules/auth/auth.repository.js';
 import { SessionRepository } from '../src/modules/auth/session.repository.js';
 import { sessionCookieName } from '../src/modules/auth/auth.routes.js';
 
@@ -34,11 +33,14 @@ describe('email verification migration', () => {
     try {
       await original.initialize();
       await original.runMigrations();
-      const users = new AuthRepository(original);
-      const local = await users.createLocal(
-        `${randomUUID()}@example.com`,
-        Buffer.alloc(64),
-        Buffer.alloc(32),
+      const local = { id: randomUUID(), email: `${randomUUID()}@example.com` };
+      await original.query('INSERT INTO users (id, email) VALUES (?, ?)', [
+        local.id,
+        local.email,
+      ]);
+      await original.query(
+        'INSERT INTO password_credentials (user_id, password_hash, salt, hash_version) VALUES (?, ?, ?, 1)',
+        [local.id, Buffer.alloc(64), Buffer.alloc(32)],
       );
       const google = { id: randomUUID(), email: `${randomUUID()}@example.com` };
       await original.query('INSERT INTO users (id, email) VALUES (?, ?)', [

@@ -1,3 +1,4 @@
+import { CreateProfilePreferences20260926160000 } from '../src/database/migrations/20260926160000-CreateProfilePreferences.js';
 import { randomBytes, randomUUID } from 'node:crypto';
 import { DataSource } from 'typeorm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -18,6 +19,7 @@ const source = new DataSource({
   migrations: [
     CreateAuthentication20260924221500,
     CreateEmailVerification20260924230000,
+    CreateProfilePreferences20260926160000,
   ],
 });
 const repository = new AuthRepository(source);
@@ -48,8 +50,8 @@ describe('auth persistence on MySQL', () => {
       1,
     );
     const denied = attempts.find((item) => item.status === 'rejected');
-    expect(denied?.status === 'rejected' && isDuplicateKey(denied.reason)).toBe(
-      true,
+    expect(denied?.status === 'rejected' && denied.reason.code).toBe(
+      'EMAIL_UNAVAILABLE',
     );
     expect(
       await source.query('SELECT id FROM users WHERE email = ?', [email]),

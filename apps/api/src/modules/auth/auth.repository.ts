@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type { DataSource, EntityManager } from 'typeorm';
+import { lockAvailableEmail } from './profile.repository.js';
 
 export interface AuthUser {
   id: string;
@@ -79,9 +80,13 @@ export class AuthRepository {
   ): Promise<AuthUser> {
     const id = randomUUID();
     const persist = async (manager: EntityManager) => {
+      await lockAvailableEmail(manager, email);
       await manager.query('INSERT INTO users (id, email) VALUES (?, ?)', [
         id,
         email,
+      ]);
+      await manager.query('INSERT INTO user_preferences (user_id) VALUES (?)', [
+        id,
       ]);
       await manager.query(
         'INSERT INTO password_credentials (user_id, password_hash, salt, hash_version) VALUES (?, ?, ?, 1)',
@@ -117,10 +122,14 @@ export class AuthRepository {
   ): Promise<AuthUser> {
     const id = randomUUID();
     await this.source.transaction(async (manager) => {
+      await lockAvailableEmail(manager, email);
       await manager.query(
         'INSERT INTO users (id, email, email_verified_at) VALUES (?, ?, UTC_TIMESTAMP(3))',
         [id, email],
       );
+      await manager.query('INSERT INTO user_preferences (user_id) VALUES (?)', [
+        id,
+      ]);
       await manager.query(
         `INSERT INTO external_identities (id, user_id, provider, subject, provider_email)
          VALUES (?, ?, 'google', ?, ?)`,

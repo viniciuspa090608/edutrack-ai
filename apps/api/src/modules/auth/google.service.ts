@@ -6,11 +6,14 @@ import { AuthRepository, isDuplicateKey } from './auth.repository.js';
 import { OAuthRepository } from './oauth.repository.js';
 import type { ActiveSession } from './session.repository.js';
 import { SessionRepository } from './session.repository.js';
+import { ProfileRepository } from './profile.repository.js';
+import { HttpError } from '../../shared/http-error.js';
 
 export type GoogleOutcome =
   | { kind: 'login'; token: string; returnTo: string }
   | { kind: 'linked'; returnTo: string }
-  | { kind: 'conflict' | 'failed'; intent: 'login' | 'link' };
+  | { kind: 'reauthenticated'; returnTo: string }
+  | { kind: 'conflict' | 'failed'; intent: 'login' | 'link' | 'reauth' };
 
 export function allowedReturnTo(value: unknown): string {
   return value === '/conta' ? '/conta' : '/app';
@@ -46,11 +49,11 @@ export class GoogleService {
   }
 
   async start(
-    intent: 'login' | 'link',
+    intent: 'login' | 'link' | 'reauth',
     returnTo: string,
     session?: ActiveSession,
   ): Promise<{ url: string; browserSecret: string }> {
-    if (intent === 'link' && !session)
+    if (intent !== 'login' && !session)
       throw new Error('Session required for link');
     await this.attempts.cleanup();
     const config = await this.config();
@@ -80,6 +83,7 @@ export class GoogleService {
       code_challenge_method: 'S256',
       state,
       nonce,
+      ...(intent === 'reauth' ? { prompt: 'login', max_age: '0' } : {}),
     });
     return { url: url.href, browserSecret };
   }
@@ -115,7 +119,7 @@ export class GoogleService {
       ) {
         return { kind: 'failed', intent: attempt.intent };
       }
-      if (attempt.intent === 'link') {
+      if (attempt.intent !== 'login') {
         const session = currentSessionToken
           ? await this.sessions.resolve(currentSessionToken)
           : null;
@@ -124,7 +128,20 @@ export class GoogleService {
           session.id !== attempt.sessionId ||
           session.userId !== attempt.userId
         ) {
-          return { kind: 'failed', intent: 'link' };
+          return { kind: 'failed', intent: attempt.intent };
+        }
+        if (attempt.intent === 'reauth') {
+          if (
+            typeof claims.auth_time !== 'number' ||
+            claims.auth_time < Math.floor(Date.now() / 1000) - 300 ||
+            claims.auth_time > Math.floor(Date.now() / 1000) + 60
+          )
+            return { kind: 'failed', intent: 'reauth' };
+          const linked = await this.users.googleUser(claims.sub);
+          if (linked?.id !== session.userId)
+            return { kind: 'failed', intent: 'reauth' };
+          await new ProfileRepository(this.users.source).prove(session);
+          return { kind: 'reauthenticated', returnTo: '/conta' };
         }
         try {
           await this.users.linkGoogle(session.userId, claims.sub, claims.email);
@@ -143,7 +160,11 @@ export class GoogleService {
         try {
           user = await this.users.createGoogle(email, claims.sub, claims.email);
         } catch (error) {
-          if (!isDuplicateKey(error)) throw error;
+          if (
+            !isDuplicateKey(error) &&
+            !(error instanceof HttpError && error.code === 'EMAIL_UNAVAILABLE')
+          )
+            throw error;
           user = await this.users.googleUser(claims.sub);
           if (!user) return { kind: 'conflict', intent: 'login' };
         }

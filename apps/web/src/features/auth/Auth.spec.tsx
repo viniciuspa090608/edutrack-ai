@@ -14,6 +14,27 @@ const denied = {
   status: 401,
   json: async () => ({ error: { code: 'UNAUTHENTICATED' } }),
 };
+const profile = {
+  ...user,
+  displayName: 'Estudante',
+  emailVerified: true,
+  localPassword: true,
+  avatarVersion: null,
+};
+const preferences = {
+  tasks: true,
+  subjects: true,
+  flashcards: true,
+  ai: false,
+};
+function privateFetch(url: string) {
+  if (url.endsWith('/profile/preferences'))
+    return { ok: true, status: 200, json: async () => preferences };
+  if (url.endsWith('/profile'))
+    return { ok: true, status: 200, json: async () => profile };
+  if (url.endsWith('/auth/logout')) return { ok: true, status: 204 };
+  return success;
+}
 
 beforeEach(() => {
   vi.stubEnv('VITE_API_BASE_URL', 'http://localhost:3001');
@@ -150,10 +171,7 @@ describe('account access', () => {
 
   it('lets an authenticated user leave and hides account data', async () => {
     window.history.replaceState({}, '', '/conta');
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValueOnce(success)
-      .mockResolvedValueOnce({ ok: true, status: 204 });
+    const fetchMock = vi.fn(async (url: string) => privateFetch(url));
     vi.stubGlobal('fetch', fetchMock);
     render(<App />);
     expect(await screen.findByRole('heading', { name: 'Conta' })).toBeTruthy();
@@ -167,7 +185,10 @@ describe('account access', () => {
 
   it('shows Google failure without switching the current account', async () => {
     window.history.replaceState({}, '', '/conta?google=failed');
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(success));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string) => privateFetch(url)),
+    );
     render(<App />);
     expect(await screen.findByRole('heading', { name: 'Conta' })).toBeTruthy();
     expect(screen.getByRole('alert').textContent).toContain(

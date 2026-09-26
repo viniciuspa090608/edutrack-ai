@@ -316,6 +316,29 @@ export function authRoutes(
     },
   );
 
+  router.post(
+    '/google/reauth/start',
+    write,
+    secure,
+    async (_request, response) => {
+      try {
+        const started = await google.start(
+          'reauth',
+          '/conta',
+          authenticatedSession(response),
+        );
+        response.cookie(oauthCookieName, started.browserSecret, oauthCookie);
+        response.json({ url: started.url });
+      } catch {
+        throw new HttpError(
+          503,
+          'GOOGLE_FAILED',
+          'Não foi possível iniciar o Google. Tente novamente.',
+        );
+      }
+    },
+  );
+
   router.get('/google/callback', async (request, response) => {
     const currentUrl = new URL(request.originalUrl, env.API_PUBLIC_ORIGIN);
     const result = await google.callback(
@@ -334,8 +357,10 @@ export function authRoutes(
       response.redirect(302, `${env.WEB_ORIGIN}${result.returnTo}`);
     } else if (result.kind === 'linked') {
       response.redirect(302, `${env.WEB_ORIGIN}/conta?google=linked`);
+    } else if (result.kind === 'reauthenticated') {
+      response.redirect(302, `${env.WEB_ORIGIN}/conta?google=reauthenticated`);
     } else {
-      const path = result.intent === 'link' ? '/conta' : '/acesso';
+      const path = result.intent !== 'login' ? '/conta' : '/acesso';
       response.redirect(302, `${env.WEB_ORIGIN}${path}?google=${result.kind}`);
     }
   });

@@ -19,22 +19,28 @@ export class AuthApiError extends Error {
         ? `Aguarde ${retryAfter ?? 60} segundos antes de tentar novamente.`
         : code === 'INVALID_CODE'
           ? 'Código inválido ou expirado. Solicite outro se necessário.'
-          : code === 'INVALID_RESET_GRANT'
-            ? 'O prazo da redefinição terminou. Solicite outro código.'
-            : code === 'ALREADY_VERIFIED'
-              ? 'Seu e-mail já foi confirmado. Volte para a entrada.'
-              : code === 'UNAUTHENTICATED'
-                ? 'Seu acesso temporário expirou. Entre novamente para continuar.'
-                : status === 401
-                  ? 'E-mail ou senha inválidos.'
-                  : status === 409
-                    ? 'Não foi possível usar este e-mail.'
-                    : 'Não foi possível concluir a ação. Tente novamente.',
+          : code === 'LAST_MODULE_REQUIRED'
+            ? 'Mantenha pelo menos um módulo de estudo ativo: tarefas, matérias ou flashcards.'
+            : code === 'INVALID_RESET_GRANT'
+              ? 'O prazo da redefinição terminou. Solicite outro código.'
+              : code === 'IDENTITY_PROOF_REQUIRED'
+                ? 'Confirme novamente sua identidade para alterar o e-mail.'
+                : code === 'INVALID_AVATAR' || code === 'PAYLOAD_TOO_LARGE'
+                  ? 'Use JPEG, PNG ou WebP estático de até 2 MiB, entre 64 e 4096 pixels por lado e até 16 milhões de pixels.'
+                  : code === 'ALREADY_VERIFIED'
+                    ? 'Seu e-mail já foi confirmado. Volte para a entrada.'
+                    : code === 'UNAUTHENTICATED'
+                      ? 'Seu acesso temporário expirou. Entre novamente para continuar.'
+                      : status === 401
+                        ? 'E-mail ou senha inválidos.'
+                        : status === 409
+                          ? 'Não foi possível usar este e-mail.'
+                          : 'Não foi possível concluir a ação. Tente novamente.',
     );
   }
 }
 
-async function send(
+export async function send(
   path: string,
   options: RequestInit = {},
 ): Promise<Response> {

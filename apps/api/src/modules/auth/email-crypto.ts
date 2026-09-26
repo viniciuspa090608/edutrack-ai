@@ -8,7 +8,8 @@ import {
   timingSafeEqual,
 } from 'node:crypto';
 
-export type EmailPurpose = 'verify_email' | 'reset_password';
+export type EmailPurpose =
+  'verify_email' | 'reset_password' | 'change_email' | 'email_changed';
 
 export class EmailCrypto {
   private readonly hmacKey: Buffer;

@@ -1,3 +1,4 @@
+import { CreateProfilePreferences20260926160000 } from '../src/database/migrations/20260926160000-CreateProfilePreferences.js';
 import {
   createSign,
   generateKeyPairSync,
@@ -18,6 +19,8 @@ import { AuthRepository } from '../src/modules/auth/auth.repository.js';
 import { GoogleService } from '../src/modules/auth/google.service.js';
 import { OAuthRepository } from '../src/modules/auth/oauth.repository.js';
 import { SessionRepository } from '../src/modules/auth/session.repository.js';
+import { EmailRepository } from '../src/modules/auth/email.repository.js';
+import { EmailCrypto } from '../src/modules/auth/email-crypto.js';
 
 const env = {
   ...loadEnv(),
@@ -31,6 +34,7 @@ const source = new DataSource({
   migrations: [
     CreateAuthentication20260924221500,
     CreateEmailVerification20260924230000,
+    CreateProfilePreferences20260926160000,
   ],
 });
 const users = new AuthRepository(source);
@@ -49,6 +53,7 @@ let claims = {
 let audience = 'test-client';
 let expiresIn = 3600;
 let invalidSignature = false;
+let authAge = 0;
 
 function idToken(): string {
   const header = Buffer.from(
@@ -60,6 +65,7 @@ function idToken(): string {
       aud: audience,
       iat: Math.floor(Date.now() / 1000),
       exp: Math.floor(Date.now() / 1000) + expiresIn,
+      auth_time: Math.floor(Date.now() / 1000) - authAge,
       ...claims,
     }),
   ).toString('base64url');
@@ -127,6 +133,82 @@ afterAll(async () => {
 });
 
 describe('Google OIDC identity', () => {
+  it('reauthenticates only the same sub and session with a fresh provider authentication', async () => {
+    const sub = randomUUID();
+    const address = `${randomUUID()}@example.com`;
+    const owner = await users.createGoogle(address, sub, address);
+    const token = await sessions.create(owner.id);
+    const session = await sessions.resolve(token);
+    if (!session) throw new Error('Missing session');
+    for (const mode of ['sub', 'session', 'old', 'valid']) {
+      claims = {
+        sub: mode === 'sub' ? randomUUID() : sub,
+        email: address,
+        email_verified: true,
+        nonce: '',
+      };
+      const start = await google.start('reauth', '/conta', session);
+      expect(new URL(start.url).searchParams.get('prompt')).toBe('login');
+      claims.nonce = new URL(start.url).searchParams.get('nonce')!;
+      authAge = mode === 'old' ? 3600 : 0;
+      const otherToken =
+        mode === 'session' ? await sessions.create(owner.id) : token;
+      const result = await google.callback(
+        callbackUrl(start.url),
+        start.browserSecret,
+        otherToken,
+      );
+      expect(result.kind).toBe(mode === 'valid' ? 'reauthenticated' : 'failed');
+    }
+    authAge = 0;
+    const app = createApp({
+      logger: pino({ level: 'silent' }),
+      webOrigin: env.WEB_ORIGIN,
+      source,
+      env,
+    });
+    const target = `${randomUUID()}@example.com`;
+    const requested = await request(app)
+      .post('/profile/email/request')
+      .set('Origin', env.WEB_ORIGIN)
+      .set('Cookie', `edutrack_session=${token}`)
+      .send({ email: target });
+    expect(requested.status).toBe(202);
+    const delivery = new EmailRepository(
+      source,
+      new EmailCrypto(env.EMAIL_HMAC_KEY!, env.EMAIL_ENCRYPTION_KEY!),
+    );
+    let code = '';
+    for (let i = 0; i < 30 && !code; i++)
+      if (
+        !(await delivery.deliverOne(async (email, value, purpose) => {
+          if (email === target && purpose === 'change_email') code = value;
+        }))
+      )
+        break;
+    expect(
+      (
+        await request(app)
+          .post('/profile/email/confirm')
+          .set('Origin', env.WEB_ORIGIN)
+          .set('Cookie', `edutrack_session=${token}`)
+          .send({ code })
+      ).status,
+    ).toBe(204);
+    expect((await users.userById(owner.id))?.email).toBe(target);
+    expect(await users.passwordByEmail(target)).toBeNull();
+    claims = { sub, email: address, email_verified: true, nonce: '' };
+    const login = await google.start('login', '/app');
+    claims.nonce = new URL(login.url).searchParams.get('nonce')!;
+    const result = await google.callback(
+      callbackUrl(login.url),
+      login.browserSecret,
+      undefined,
+    );
+    expect(result.kind).toBe('login');
+    if (result.kind === 'login')
+      expect((await sessions.resolve(result.token))?.userId).toBe(owner.id);
+  });
   it('sets a browser attempt cookie, then clears it on the callback', async () => {
     const app = createApp({
       logger: pino({ level: 'silent' }),

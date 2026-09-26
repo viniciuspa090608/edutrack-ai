@@ -45,6 +45,12 @@ export function AccessPage() {
         <p className="section-kicker">EduTrack</p>
         <h1>{mode === 'login' ? 'Entre na sua conta' : 'Crie sua conta'}</h1>
         <p>Organize seus estudos em um espaço só seu.</p>
+        {parameters.get('account') === 'updated' && (
+          <p role="status">
+            Dados de segurança alterados. Entre novamente; as sessões anteriores
+            foram encerradas.
+          </p>
+        )}
         {googleError && (
           <p className="auth-alert" role="alert">
             {googleError === 'conflict'

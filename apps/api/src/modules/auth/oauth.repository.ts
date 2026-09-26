@@ -6,7 +6,7 @@ export interface OAuthAttempt {
   id: string;
   codeVerifier: string;
   nonce: string;
-  intent: 'login' | 'link';
+  intent: 'login' | 'link' | 'reauth';
   userId: string | null;
   sessionId: string | null;
   returnTo: string;
@@ -16,7 +16,7 @@ interface AttemptRow {
   id: string;
   code_verifier: string;
   nonce: string;
-  intent: 'login' | 'link';
+  intent: 'login' | 'link' | 'reauth';
   user_id: string | null;
   session_id: string | null;
   return_to: string;

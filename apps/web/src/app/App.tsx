@@ -5,6 +5,7 @@ import { PasswordRecoveryPage } from '../features/auth/PasswordRecoveryPage.js';
 import { AccessPage } from '../features/landing/AccessPage.js';
 import { PublicLanding } from '../features/landing/PublicLanding.js';
 import { SystemPage } from '../features/system/SystemPage.js';
+import { moduleAtPath } from '../features/profile/module-catalog.js';
 
 export function App() {
   const [path, setPath] = useState(window.location.pathname);
@@ -29,6 +30,7 @@ export function App() {
     case '/conta':
       return <PrivatePage key="conta" page="conta" />;
     default:
+      if (moduleAtPath(path)) return <PrivatePage key={path} page="module" />;
       return (
         <main className="route-fallback">
           <h1>Página não encontrada</h1>

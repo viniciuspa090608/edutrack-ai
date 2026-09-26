@@ -9,6 +9,7 @@ import { hashPassword, verifyPassword } from './password.js';
 import { RateLimitRepository } from './rate-limit.repository.js';
 import { SessionRepository } from './session.repository.js';
 import { EmailRepository } from './email.repository.js';
+import { ProfileRepository } from './profile.repository.js';
 
 const INVALID_CREDENTIALS = new HttpError(
   401,
@@ -37,6 +38,9 @@ export class AuthService {
       id: user.id,
       email: user.email,
       googleLinked: await this.users.hasGoogle(user.id),
+      displayName: (
+        await new ProfileRepository(this.users.source).read(user.id)
+      ).displayName,
     };
   }
 

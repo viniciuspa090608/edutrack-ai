@@ -17,6 +17,9 @@ import { EmailCrypto } from './modules/auth/email-crypto.js';
 import { EmailRepository } from './modules/auth/email.repository.js';
 import { HttpError } from './shared/http-error.js';
 import type { AppLogger } from './shared/logger.js';
+import { ProfileService } from './modules/auth/profile.service.js';
+import { profileRoutes } from './modules/auth/profile.routes.js';
+import { PreferencesService } from './modules/preferences/preferences.service.js';
 
 export interface AppOptions {
   logger: AppLogger;
@@ -71,6 +74,15 @@ export function createApp({
       oidcFetch,
     );
     app.use('/auth', authRoutes(service, google, env));
+    app.use(
+      '/profile',
+      profileRoutes(
+        service,
+        new ProfileService(service),
+        new PreferencesService(source),
+        env,
+      ),
+    );
   }
   app.use(notFound);
   app.use(errorHandler(logger));
