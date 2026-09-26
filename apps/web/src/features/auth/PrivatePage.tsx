@@ -5,6 +5,7 @@ import { ProfilePage } from '../profile/ProfilePage.js';
 import { preferences } from '../profile/profile-api.js';
 import { availableModules, moduleAtPath } from '../profile/module-catalog.js';
 import { TasksPage } from '../tasks/TasksPage.js';
+import { PomodoroPage } from '../pomodoro/PomodoroPage.js';
 import {
   AuthApiError,
   currentUser,
@@ -13,7 +14,11 @@ import {
   startGoogleLink,
 } from './auth-api.js';
 
-export function PrivatePage({ page }: { page: 'app' | 'conta' | 'module' }) {
+export function PrivatePage({
+  page,
+}: {
+  page: 'app' | 'conta' | 'module' | 'pomodoro';
+}) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [checking, setChecking] = useState(true);
   const [error, setError] = useState('');
@@ -30,12 +35,13 @@ export function PrivatePage({ page }: { page: 'app' | 'conta' | 'module' }) {
   );
 
   const check = useCallback(async () => {
-    const returnTo =
-      window.location.pathname === '/app/tarefas'
-        ? '/app/tarefas'
-        : page === 'conta'
-          ? '/conta'
-          : '/app';
+    const returnTo = ['/app/tarefas', '/app/pomodoro'].includes(
+      window.location.pathname,
+    )
+      ? window.location.pathname
+      : page === 'conta'
+        ? '/conta'
+        : '/app';
     setChecking(true);
     setError('');
     try {
@@ -138,6 +144,7 @@ export function PrivatePage({ page }: { page: 'app' | 'conta' | 'module' }) {
         <nav aria-label="Área pessoal">
           <a href="/app">Início</a>
           <a href="/conta">Conta</a>
+          <a href="/app/pomodoro">Pomodoro</a>
           {prefs &&
             availableModules(prefs).map((item) => (
               <a key={item.capability} href={item.path}>
@@ -156,7 +163,9 @@ export function PrivatePage({ page }: { page: 'app' | 'conta' | 'module' }) {
         </button>
       </header>
       <main className="private-content">
-        {page === 'app' ? (
+        {page === 'pomodoro' ? (
+          <PomodoroPage tasksEnabled={prefs?.tasks ?? false} />
+        ) : page === 'app' ? (
           <>
             <p className="section-kicker">Seu espaço</p>
             <h1>Olá, {user.displayName ?? user.email}</h1>

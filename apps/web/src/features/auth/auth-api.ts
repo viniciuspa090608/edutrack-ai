@@ -159,7 +159,8 @@ export function googleLoginUrl(returnTo: string): string {
 
 export function allowedReturnTo(
   value: unknown,
-): '/app' | '/conta' | '/app/tarefas' {
+): '/app' | '/conta' | '/app/tarefas' | '/app/pomodoro' {
+  if (value === '/app/pomodoro') return value;
   if (value === '/app/tarefas') return value;
   return value === '/conta' ? '/conta' : '/app';
 }

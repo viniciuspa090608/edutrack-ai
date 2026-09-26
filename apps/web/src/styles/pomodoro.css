@@ -1,0 +1,35 @@
+.pomodoro-page {
+  min-width: 0;
+  max-width: 48rem;
+  overflow-wrap: anywhere;
+}
+.pomodoro-page select {
+  display: block;
+  max-width: 100%;
+  width: 100%;
+}
+.pomodoro-actions,
+.pomodoro-page nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+.pomodoro-page button {
+  margin: 0.25rem;
+  max-width: 100%;
+  white-space: normal;
+}
+.pomodoro-page :focus-visible {
+  outline: 3px solid #7355d8;
+  outline-offset: 3px;
+}
+.pomodoro-clock {
+  font-size: clamp(2rem, 12vw, 4rem);
+  font-variant-numeric: tabular-nums;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pomodoro-page * {
+    animation: none;
+    transition: none;
+  }
+}

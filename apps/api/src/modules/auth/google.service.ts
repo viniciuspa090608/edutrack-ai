@@ -16,6 +16,7 @@ export type GoogleOutcome =
   | { kind: 'conflict' | 'failed'; intent: 'login' | 'link' | 'reauth' };
 
 export function allowedReturnTo(value: unknown): string {
+  if (value === '/app/pomodoro') return value;
   if (value === '/app/tarefas') return value;
   return value === '/conta' ? '/conta' : '/app';
 }

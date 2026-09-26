@@ -27,6 +27,8 @@ export function App() {
       return <SystemPage />;
     case '/app':
       return <PrivatePage key="app" page="app" />;
+    case '/app/pomodoro':
+      return <PrivatePage key="pomodoro" page="pomodoro" />;
     case '/conta':
       return <PrivatePage key="conta" page="conta" />;
     default:

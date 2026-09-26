@@ -134,3 +134,4 @@ export const passwordChangeSchema = identityProofSchema
 export type UserProfile = z.infer<typeof profileSchema>;
 export type ModulePreferences = z.infer<typeof preferencesSchema>;
 export type Capability = keyof ModulePreferences;
+export * from './pomodoro.js';

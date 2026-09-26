@@ -23,6 +23,10 @@ import { PreferencesService } from './modules/preferences/preferences.service.js
 import { tasksRoutes } from './modules/tasks/tasks.routes.js';
 import { TasksService } from './modules/tasks/tasks.service.js';
 import { TasksRepository } from './modules/tasks/tasks.repository.js';
+import { PomodoroRepository } from './modules/pomodoro/pomodoro.repository.js';
+import type { PomodoroClock } from './modules/pomodoro/pomodoro.repository.js';
+import { PomodoroService } from './modules/pomodoro/pomodoro.service.js';
+import { pomodoroRoutes } from './modules/pomodoro/pomodoro.routes.js';
 
 export interface AppOptions {
   logger: AppLogger;
@@ -30,6 +34,7 @@ export interface AppOptions {
   source?: DataSource;
   env?: ApiEnv;
   oidcFetch?: CustomFetch;
+  pomodoroClock?: PomodoroClock;
 }
 
 export function createApp({
@@ -38,6 +43,7 @@ export function createApp({
   source,
   env,
   oidcFetch,
+  pomodoroClock,
 }: AppOptions) {
   const app = express();
 
@@ -77,6 +83,18 @@ export function createApp({
       oidcFetch,
     );
     app.use('/auth', authRoutes(service, google, env));
+    app.use(
+      '/pomodoro',
+      pomodoroRoutes(
+        service,
+        new PomodoroService(
+          new PomodoroRepository(source, pomodoroClock),
+          new TasksService(new TasksRepository(source)),
+          new PreferencesService(source),
+        ),
+        env,
+      ),
+    );
     app.use(
       '/tasks',
       tasksRoutes(
