@@ -13,6 +13,7 @@ import type {
 } from '@study-platform/contracts';
 import { HttpError } from '../../shared/http-error.js';
 import { parseImport, classifyImport } from './import-parser.js';
+import { initializeCardReviews } from './review-lifecycle.js';
 interface AttemptRow {
   id: string;
   deck_id: string;
@@ -186,15 +187,17 @@ export class ImportRepository {
       // Bounded batches keep packets small even with 1,000 maximum-sized cards.
       for (let offset = 0; offset < classified.cards.length; offset += 50) {
         const batch = classified.cards.slice(offset, offset + 50);
+        const ids = batch.map(() => randomUUID());
         await manager.query(
           `INSERT INTO flashcards (id,deck_id,front,back) VALUES ${batch.map(() => '(?,?,?,?)').join(',')}`,
-          batch.flatMap((card) => [
-            randomUUID(),
+          batch.flatMap((card, index) => [
+            ids[index]!,
             deckId,
             card.front,
             card.back,
           ]),
         );
+        await initializeCardReviews(manager, userId, ids);
       }
       const result = importResultSchema.parse({
         counts: classified.preview.counts,

@@ -40,6 +40,10 @@ import { flashcardsRoutes } from './modules/flashcards/flashcards.routes.js';
 import { ImportRepository } from './modules/flashcards/import.repository.js';
 import { ImportService } from './modules/flashcards/import.service.js';
 import { importRoutes } from './modules/flashcards/import.routes.js';
+import { ReviewsRepository } from './modules/flashcards/reviews.repository.js';
+import { ReviewsService } from './modules/flashcards/reviews.service.js';
+import type { ReviewClock } from './modules/flashcards/reviews.service.js';
+import { reviewsRoutes } from './modules/flashcards/reviews.routes.js';
 import { roadmapAIRoutes } from './modules/ai/roadmap-ai.routes.js';
 import { RoadmapAIService } from './modules/ai/roadmap-ai.service.js';
 import { OpenAIRoadmapProvider } from './modules/ai/roadmap-provider.js';
@@ -57,6 +61,7 @@ export interface AppOptions {
   pomodoroClock?: PomodoroClock;
   aiFetch?: typeof fetch;
   aiClock?: () => Date;
+  reviewClock?: ReviewClock;
 }
 
 export function createApp({
@@ -68,6 +73,7 @@ export function createApp({
   pomodoroClock,
   aiFetch,
   aiClock,
+  reviewClock,
 }: AppOptions) {
   const app = express();
 
@@ -109,6 +115,15 @@ export function createApp({
     app.use('/auth', authRoutes(service, google, env));
     const prefs = new PreferencesService(source);
     const subjects = new SubjectsService(new SubjectsRepository(source), prefs);
+    app.use(
+      '/flashcard-decks',
+      reviewsRoutes(
+        service,
+        new ReviewsService(new ReviewsRepository(source), prefs, reviewClock),
+        prefs,
+        env,
+      ),
+    );
     app.use(
       '/decks',
       importRoutes(

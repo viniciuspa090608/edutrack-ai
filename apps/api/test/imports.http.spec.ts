@@ -105,11 +105,18 @@ it('applies/reverses the migration with isolated MySQL, indexes and foreign keys
       [randomUUID(), randomUUID(), randomUUID()],
     ),
   ).rejects.toThrow();
+  const applied = await source.query<Array<{ name: string }>>(
+    'SELECT name FROM migrations ORDER BY id DESC',
+  );
+  const later = applied.findIndex(
+    (row) => row.name === 'CreateFlashcardImports20260926234000',
+  );
+  for (let index = 0; index < later; index++) await source.undoLastMigration();
   await source.undoLastMigration();
   expect(
     await source.query("SHOW TABLES LIKE 'flashcard_import_attempts'"),
   ).toEqual([]);
-  expect(await source.runMigrations()).toHaveLength(1);
+  expect(await source.runMigrations()).toHaveLength(1 + later);
 });
 it('uploads CSV/TSV without writing cards and rejects limits, encoding and malformed files', async () => {
   const a = await setup();

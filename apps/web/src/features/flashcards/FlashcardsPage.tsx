@@ -16,6 +16,8 @@ import {
 import { DeckForm, CardForm } from './FlashcardForms.js';
 import { CardViewer } from './CardViewer.js';
 import { ImportFlow } from './ImportFlow.js';
+import { ReviewQueue } from './ReviewQueue.js';
+import { ReviewHistory } from './ReviewHistory.js';
 import { SubjectName } from '../subjects/SubjectName.js';
 import { TaskConfirmation } from '../tasks/TaskConfirmation.js';
 import '../../styles/flashcards.css';
@@ -66,6 +68,11 @@ export function FlashcardsPage({
   const [editingCard, setEditingCard] = useState<Flashcard | null>(null);
   const [viewing, setViewing] = useState<Flashcard | null>(null);
   const [importing, setImporting] = useState(false);
+  const [reviewing, setReviewing] = useState(false);
+  const [historyCard, setHistoryCard] = useState<{
+    deckId: string;
+    cardId: string;
+  } | null>(null);
   const [confirmation, setConfirmation] = useState<{
     cardId?: string;
     deck: FlashcardDeck;
@@ -74,6 +81,12 @@ export function FlashcardsPage({
   const request = useRef(0);
   const heading = useRef<HTMLHeadingElement>(null);
   const wasImporting = useRef(false);
+  const wasReviewing = useRef(false);
+  useEffect(() => {
+    if (wasReviewing.current && !reviewing)
+      document.getElementById('start-review')?.focus();
+    wasReviewing.current = reviewing;
+  }, [reviewing]);
   useEffect(() => {
     if (wasImporting.current && !importing)
       document.getElementById('start-import')?.focus();
@@ -180,6 +193,30 @@ export function FlashcardsPage({
   return (
     <div className="flashcards-page">
       <p>Crie perguntas e respostas e consulte seus cartões manualmente.</p>
+      <button
+        id="start-review"
+        disabled={reviewing}
+        onClick={() => setReviewing(true)}
+      >
+        Revisões pendentes
+      </button>
+      {reviewing && (
+        <ReviewQueue deckId={deck?.id} onClose={() => setReviewing(false)} />
+      )}
+      {historyCard && (
+        <ReviewHistory
+          key={historyCard.cardId}
+          deckId={historyCard.deckId}
+          cardId={historyCard.cardId}
+          onClose={() => {
+            const id = historyCard.cardId;
+            setHistoryCard(null);
+            requestAnimationFrame(() =>
+              document.getElementById(`history-card-${id}`)?.focus(),
+            );
+          }}
+        />
+      )}
       {error && <p role="alert">{error}</p>}
       {success && <p role="status">{success}</p>}
       {busy && <p role="status">Carregando detalhe…</p>}
@@ -365,6 +402,14 @@ export function FlashcardsPage({
                         onClick={() => void openCard(item.id, false)}
                       >
                         Abrir cartão
+                      </button>
+                      <button
+                        id={`history-card-${item.id}`}
+                        onClick={() =>
+                          setHistoryCard({ deckId: deck.id, cardId: item.id })
+                        }
+                      >
+                        Histórico do cartão
                       </button>
                       <button
                         disabled={busy}

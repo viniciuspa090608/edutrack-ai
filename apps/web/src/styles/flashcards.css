@@ -99,6 +99,11 @@
   outline: 3px solid #2563eb;
   outline-offset: 3px;
 }
+.review-queue h2:focus,
+.flashcard-panel h3:focus {
+  outline: 3px solid #2563eb;
+  outline-offset: 3px;
+}
 @media (prefers-reduced-motion: reduce) {
   .flashcards-page *,
   .flashcards-page *::before,

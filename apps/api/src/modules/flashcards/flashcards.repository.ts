@@ -8,6 +8,7 @@ import type {
   FlashcardPagination,
 } from '@study-platform/contracts';
 import { HttpError } from '../../shared/http-error.js';
+import { initializeCardReviews, resetCardReview } from './review-lifecycle.js';
 interface DeckRow {
   id: string;
   subject_id: string | null;
@@ -188,6 +189,7 @@ export class FlashcardsRepository {
         'INSERT INTO flashcards (id,deck_id,front,back) SELECT ?,id,?,? FROM flashcard_decks WHERE user_id=? AND id=?',
         [id, input.front, input.back, userId, deckId],
       );
+      await initializeCardReviews(manager, userId, [id]);
       return this.card(manager, userId, deckId, id);
     });
   }
@@ -199,14 +201,17 @@ export class FlashcardsRepository {
   ) {
     return this.source.transaction(async (manager) => {
       await this.deck(manager, userId, deckId, true);
-      await this.card(manager, userId, deckId, cardId);
+      const previous = await this.card(manager, userId, deckId, cardId);
       const entries = Object.entries(input).filter(
-        ([, value]) => value !== undefined,
+        ([key, value]) =>
+          value !== undefined && value !== previous[key as 'front' | 'back'],
       );
+      if (!entries.length) return previous;
       await manager.query(
         `UPDATE flashcards c JOIN flashcard_decks d ON d.id=c.deck_id SET ${entries.map(([key]) => `c.${key}=?`).join(',')} WHERE d.user_id=? AND d.id=? AND c.id=?`,
         [...entries.map(([, value]) => value), userId, deckId, cardId],
       );
+      await resetCardReview(manager, userId, deckId, cardId);
       return this.card(manager, userId, deckId, cardId);
     });
   }
