@@ -148,3 +148,4 @@ export * from './reviews.js';
 export * from './flashcard-ai.js';
 export * from './analytics.js';
 export * from './study-progress.js';
+export * from './dashboard.js';

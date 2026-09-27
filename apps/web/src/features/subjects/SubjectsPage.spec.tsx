@@ -33,6 +33,19 @@ const calls: Array<{
   method: string;
   body: Record<string, unknown>;
 }> = [];
+it('opens the own subject selected by a dashboard link', async () => {
+  items = [base];
+  window.history.replaceState({}, '', `/app/materias?subject=${id}`);
+  render(<SubjectsPage />);
+  await waitFor(() =>
+    expect(document.activeElement?.textContent).toBe('Álgebra'),
+  );
+  expect(
+    calls.some(
+      (call) => call.path === `/subjects/${id}` && call.method === 'GET',
+    ),
+  ).toBe(true);
+});
 beforeEach(() => {
   items = [];
   failed = '';
@@ -138,6 +151,7 @@ beforeEach(() => {
   );
 });
 afterEach(() => {
+  window.history.replaceState({}, '', '/');
   cleanup();
   vi.unstubAllGlobals();
 });

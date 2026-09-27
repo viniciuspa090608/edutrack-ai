@@ -13,6 +13,7 @@ import {
   updateRoadmapSchema,
   stepProgressSchema,
   revisionListSchema,
+  dashboardSubjectSchema,
 } from '@study-platform/contracts';
 import type { z } from 'zod';
 import type { PreferencesService } from '../preferences/preferences.service.js';
@@ -25,6 +26,34 @@ function parse<T>(schema: z.ZodType<T>, input: unknown): T {
   return result.data;
 }
 export class SubjectsService {
+  async dashboardSummary(userId: string) {
+    await this.prefs.requireEnabled(userId, 'subjects');
+    const candidate = await this.repository.dashboardCandidate(userId);
+    if (!candidate) return null;
+    const { subject, hasPending } = candidate;
+    const roadmaps = await this.listRoadmaps(userId, subject.id, {
+      page: 1,
+      pageSize: 1,
+    });
+    const roadmap = roadmaps.items[0];
+    const steps = roadmap?.blocks.flatMap((block) => block.steps);
+    const total = steps?.length ?? subject.planItems.length;
+    const completed = steps
+      ? steps.filter((step) => step.completed).length
+      : subject.planItems.filter((item) => item.status === 'COMPLETED').length;
+    return dashboardSubjectSchema.parse({
+      id: subject.id,
+      name: subject.name,
+      dueDate: subject.dueDate,
+      hasPending,
+      source: roadmap ? 'roadmap' : 'manual',
+      roadmapId: roadmap?.id ?? null,
+      title: roadmap?.title ?? 'Plano manual',
+      total,
+      completed,
+      progressPercent: total ? (completed / total) * 100 : null,
+    });
+  }
   constructor(
     private readonly repository: SubjectsRepository,
     private readonly prefs: Pick<PreferencesService, 'requireEnabled'>,

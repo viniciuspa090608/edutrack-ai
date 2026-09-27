@@ -5,6 +5,7 @@ import {
   pomodoroPageSchema,
   pomodoroHistorySchema,
   pomodoroSummarySchema,
+  dashboardPomodoroSchema,
 } from '@study-platform/contracts';
 import type {
   PomodoroAction,
@@ -65,6 +66,18 @@ function dto(row: SessionRecord, now: Date) {
   });
 }
 export class PomodoroService {
+  dashboardSummary(userId: string) {
+    return this.repository.transaction(async (manager) => {
+      const row = await this.repository.current(manager, userId);
+      return dashboardPomodoroSchema.parse({
+        session: row ? dto(row, await this.repository.now(manager)) : null,
+        completedSessions: await this.repository.completedCount(
+          manager,
+          userId,
+        ),
+      });
+    });
+  }
   constructor(
     private readonly repository: PomodoroRepository,
     private readonly tasks: Pick<TasksService, 'detail'>,

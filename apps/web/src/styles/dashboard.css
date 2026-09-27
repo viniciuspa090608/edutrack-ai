@@ -1,0 +1,49 @@
+.dashboard {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  gap: 1rem;
+}
+.dashboard-card {
+  min-width: 0;
+  padding: 1rem;
+  border: 1px solid #dbe3ef;
+  border-radius: 1rem;
+  background: #f8fbf7;
+}
+.dashboard-card h2 {
+  margin-top: 0;
+}
+.dashboard-card ul {
+  padding-left: 1.25rem;
+}
+.dashboard-card li + li {
+  margin-top: 1rem;
+}
+.dashboard-card dd {
+  margin: 0.25rem 0 0.75rem;
+  font-weight: 700;
+}
+.dashboard-card > a {
+  display: block;
+  margin-top: 1rem;
+}
+.dashboard-card button {
+  max-width: 100%;
+  white-space: normal;
+}
+.dashboard :focus-visible {
+  outline: 3px solid #426de4;
+  outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .dashboard *,
+  .dashboard *::before,
+  .dashboard *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

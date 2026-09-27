@@ -3,6 +3,7 @@ import {
   taskFiltersSchema,
   taskListSchema,
   taskSchema,
+  dashboardTasksSchema,
   updateTaskSchema,
   createSubtaskSchema,
   updateSubtaskSchema,
@@ -63,6 +64,16 @@ function dto(row: TaskRecord | null) {
   });
 }
 export class TasksService {
+  async dashboardSummary(userId: string) {
+    const result = await this.repository.dashboardSummary(userId);
+    const counts = { PENDING: 0, IN_PROGRESS: 0, COMPLETED: 0 };
+    for (const row of result.counts) counts[row.status] = Number(row.total);
+    return dashboardTasksSchema.parse({
+      counts,
+      withoutDeadline: result.withoutDeadline,
+      upcoming: result.upcoming.map(dto),
+    });
+  }
   constructor(
     private readonly repository: TasksRepository,
     private readonly subjects: Pick<SubjectsService, 'requireOwned'>,

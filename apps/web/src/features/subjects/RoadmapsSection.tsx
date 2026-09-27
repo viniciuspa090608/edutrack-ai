@@ -262,6 +262,12 @@ export function RoadmapsSection({
     };
   }, [subject.id, page, revision]);
   useEffect(() => {
+    const target = result?.items.find(
+      (item) => window.location.hash === `#roadmap-${item.id}`,
+    );
+    if (target) document.getElementById(`roadmap-${target.id}`)?.focus();
+  }, [result]);
+  useEffect(() => {
     if (!aiEnabled) {
       request.current?.abort();
       request.current = null;
@@ -507,7 +513,12 @@ export function RoadmapsSection({
         </p>
       )}
       {result?.items.map((roadmap) => (
-        <article className="subject-card" key={roadmap.id}>
+        <article
+          className="subject-card"
+          key={roadmap.id}
+          id={`roadmap-${roadmap.id}`}
+          tabIndex={-1}
+        >
           <h4>{roadmap.title}</h4>
           <p>{roadmap.description}</p>
           <ol>

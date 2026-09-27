@@ -38,6 +38,22 @@ export class SubjectsRepository {
   constructor(private readonly source: DataSource) {
     this.roadmaps = new RoadmapsRepository(source);
   }
+  dashboardCandidate(userId: string) {
+    return this.source.transaction(async (manager) => {
+      const rows = await manager.query<
+        Array<{ id: string; has_pending: number }>
+      >(
+        `SELECT s.id,
+        (EXISTS(SELECT 1 FROM subject_plan_items i WHERE i.subject_id=s.id AND i.status<>'COMPLETED') OR EXISTS(SELECT 1 FROM subject_roadmap_steps p JOIN subject_roadmap_blocks b ON b.id=p.block_id JOIN subject_roadmaps r ON r.id=b.roadmap_id WHERE r.subject_id=s.id AND p.completed=false)) AS has_pending
+        FROM study_subjects s WHERE s.user_id=? ORDER BY has_pending DESC, CASE WHEN has_pending THEN s.due_date END ASC,s.updated_at DESC,s.id ASC LIMIT 1`,
+        [userId],
+      );
+      const candidate = rows[0];
+      if (!candidate) return null;
+      const subject = await this.detailIn(manager, userId, candidate.id);
+      return { subject, hasPending: Boolean(candidate.has_pending) };
+    });
+  }
   private async owned(
     manager: EntityManager,
     userId: string,

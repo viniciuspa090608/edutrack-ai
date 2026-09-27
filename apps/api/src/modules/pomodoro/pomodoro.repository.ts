@@ -123,4 +123,11 @@ export class PomodoroRepository {
       completedBlocks: Number(rows[0]!.blocks),
     };
   }
+  async completedCount(manager: EntityManager, userId: string) {
+    const rows = await manager.query<Array<{ total: string }>>(
+      "SELECT COUNT(*) total FROM pomodoro_sessions WHERE user_id=? AND state='COMPLETED'",
+      [userId],
+    );
+    return Number(rows[0]!.total);
+  }
 }

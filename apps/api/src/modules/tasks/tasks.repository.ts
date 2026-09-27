@@ -19,6 +19,36 @@ export type TaskRecord = TaskEntity & {
 };
 export class TasksRepository {
   constructor(private readonly source: DataSource) {}
+  dashboardSummary(userId: string) {
+    return this.source.transaction(async (manager) => {
+      const counts = await manager.query<
+        Array<{ status: TaskEntity['status']; total: string }>
+      >(
+        'SELECT status,COUNT(*) total FROM study_tasks WHERE user_id=? GROUP BY status',
+        [userId],
+      );
+      const missing = await manager.query<Array<{ total: string }>>(
+        "SELECT COUNT(*) total FROM study_tasks WHERE user_id=? AND status<>'COMPLETED' AND due_date IS NULL",
+        [userId],
+      );
+      const rows = await manager
+        .getRepository(taskEntity)
+        .createQueryBuilder('task')
+        .where(
+          "task.userId=:userId AND task.status<>'COMPLETED' AND task.dueDate IS NOT NULL",
+          { userId },
+        )
+        .orderBy('task.dueDate', 'ASC')
+        .addOrderBy('task.id', 'ASC')
+        .take(5)
+        .getMany();
+      return {
+        counts,
+        withoutDeadline: Number(missing[0]!.total),
+        upcoming: await this.summarize(manager, userId, rows),
+      };
+    });
+  }
   async create(userId: string, input: CreateTask) {
     const id = randomUUID();
     await this.source.transaction(async (manager) => {

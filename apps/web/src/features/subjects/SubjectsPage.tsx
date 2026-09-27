@@ -425,6 +425,21 @@ export function SubjectsPage({
   const newButton = useRef<HTMLButtonElement>(null);
   const heading = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
+    const id = new URLSearchParams(window.location.search).get('subject');
+    if (!id) return;
+    let active = true;
+    void subjectDetail(id)
+      .then((value) => {
+        if (active) setDetail(value);
+      })
+      .catch((cause) => {
+        if (active) setError(failure(cause));
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+  useEffect(() => {
     let active = true;
     setLoading(true);
     setError('');

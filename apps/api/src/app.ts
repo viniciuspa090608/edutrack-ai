@@ -6,6 +6,8 @@ import type { ApiEnv } from './config/env.js';
 import { errorHandler, notFound } from './middlewares/error-handler.js';
 import { requestContext } from './middlewares/request-context.js';
 import { healthRoutes } from './modules/health/health.routes.js';
+import { DashboardService } from './modules/dashboard/dashboard.service.js';
+import { dashboardRoutes } from './modules/dashboard/dashboard.routes.js';
 import { AnalyticsService } from './modules/analytics/analytics.service.js';
 import { analyticsRoutes } from './modules/analytics/analytics.routes.js';
 import { StudyProgressRepository } from './modules/study-progress/study-progress.repository.js';
@@ -72,6 +74,7 @@ export interface AppOptions {
   aiClock?: () => Date;
   reviewClock?: ReviewClock;
   progressClock?: () => Date;
+  dashboardClock?: () => Date;
 }
 
 export function createApp({
@@ -85,6 +88,7 @@ export function createApp({
   aiClock,
   reviewClock,
   progressClock,
+  dashboardClock,
 }: AppOptions) {
   const app = express();
 
@@ -140,6 +144,41 @@ export function createApp({
       analyticsRoutes(service, new AnalyticsService(source, prefs), env),
     );
     const subjects = new SubjectsService(new SubjectsRepository(source), prefs);
+    const tasks = new TasksService(new TasksRepository(source), subjects);
+    const pomodoro = new PomodoroService(
+      new PomodoroRepository(source, pomodoroClock),
+      tasks,
+      prefs,
+      subjects,
+    );
+    const reviews = new ReviewsService(
+      new ReviewsRepository(source),
+      prefs,
+      reviewClock,
+    );
+    const progress = new StudyProgressService(
+      new StudyProgressRepository(source),
+      progressClock,
+    );
+    app.use(
+      '/dashboard',
+      dashboardRoutes(
+        service,
+        new DashboardService(
+          {
+            preferences: prefs,
+            tasks,
+            subjects,
+            pomodoro,
+            reviews,
+            progress,
+            analytics: new AnalyticsService(source, prefs, dashboardClock),
+          },
+          dashboardClock,
+        ),
+        env,
+      ),
+    );
     const flashcards = new FlashcardsService(
       new FlashcardsRepository(source),
       subjects,

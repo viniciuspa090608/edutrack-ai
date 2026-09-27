@@ -11,6 +11,7 @@ import { SubjectsPage } from '../subjects/SubjectsPage.js';
 import { RoutinesPage } from '../routines/RoutinesPage.js';
 import { AnalyticsPage } from '../analytics/AnalyticsPage.js';
 import { StudyProgressPage } from '../study-progress/StudyProgressPage.js';
+import { DashboardPage } from '../dashboard/DashboardPage.js';
 import {
   AuthApiError,
   currentUser,
@@ -195,15 +196,7 @@ export function PrivatePage({
             subjectsEnabled={prefs?.subjects ?? false}
           />
         ) : page === 'app' ? (
-          <>
-            <p className="section-kicker">Seu espaço</p>
-            <h1>Olá, {user.displayName ?? user.email}</h1>
-            <p>
-              Seu espaço de estudos está pronto. Os módulos de estudo aparecerão
-              aqui conforme forem adicionados.
-            </p>
-            <a href="/conta">Ver minha conta</a>
-          </>
+          <DashboardPage displayName={user.displayName ?? user.email} />
         ) : page === 'module' ? (
           <section>
             <h1>{moduleAtPath(window.location.pathname)?.label}</h1>
