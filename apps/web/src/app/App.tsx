@@ -33,6 +33,8 @@ export function App() {
       return <PrivatePage key="rotinas" page="rotinas" />;
     case '/app/estatisticas':
       return <PrivatePage key="estatisticas" page="estatisticas" />;
+    case '/app/progresso':
+      return <PrivatePage key="progresso" page="progresso" />;
     case '/conta':
       return <PrivatePage key="conta" page="conta" />;
     default:

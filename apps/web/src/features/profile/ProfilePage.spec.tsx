@@ -39,6 +39,11 @@ beforeEach(() => {
       const body: unknown =
         typeof init?.body === 'string' ? JSON.parse(init.body) : init?.body;
       requests.push({ path, body, method });
+      if (path === '/account/study-timezone')
+        return Response.json({
+          timeZone: 'UTC',
+          trackingStartedAt: '2026-09-27T12:00:00.000Z',
+        });
       if (failed && path === failed && method !== 'GET')
         throw new Error('Rede indisponível. Tente novamente.');
       if (path === '/auth/me') return Response.json({ user: profile });

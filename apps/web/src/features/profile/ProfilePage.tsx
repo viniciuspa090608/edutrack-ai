@@ -1,3 +1,4 @@
+import { StudyTimeZoneSection } from '../study-progress/StudyTimeZoneSection.js';
 import { useCallback, useEffect, useState } from 'react';
 import type {
   Capability,
@@ -126,6 +127,7 @@ export function ProfilePage({
   return (
     <div className="account-sections">
       <h1>Conta</h1>
+      <StudyTimeZoneSection />
       <p role="status" aria-live="polite">
         {busy ? 'Salvando…' : message}
       </p>

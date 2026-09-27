@@ -10,6 +10,7 @@ import { PomodoroPage } from '../pomodoro/PomodoroPage.js';
 import { SubjectsPage } from '../subjects/SubjectsPage.js';
 import { RoutinesPage } from '../routines/RoutinesPage.js';
 import { AnalyticsPage } from '../analytics/AnalyticsPage.js';
+import { StudyProgressPage } from '../study-progress/StudyProgressPage.js';
 import {
   AuthApiError,
   currentUser,
@@ -21,7 +22,14 @@ import {
 export function PrivatePage({
   page,
 }: {
-  page: 'app' | 'conta' | 'module' | 'pomodoro' | 'rotinas' | 'estatisticas';
+  page:
+    | 'app'
+    | 'conta'
+    | 'module'
+    | 'pomodoro'
+    | 'rotinas'
+    | 'estatisticas'
+    | 'progresso';
 }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [checking, setChecking] = useState(true);
@@ -45,6 +53,7 @@ export function PrivatePage({
       '/app/rotinas',
       '/app/materias',
       '/app/estatisticas',
+      '/app/progresso',
     ].includes(window.location.pathname)
       ? window.location.pathname
       : page === 'conta'
@@ -155,6 +164,7 @@ export function PrivatePage({
           <a href="/app/pomodoro">Pomodoro</a>
           <a href="/app/rotinas">Rotinas</a>
           <a href="/app/estatisticas">Estatísticas</a>
+          <a href="/app/progresso">Progresso</a>
           {prefs &&
             availableModules(prefs).map((item) => (
               <a key={item.capability} href={item.path}>
@@ -173,7 +183,9 @@ export function PrivatePage({
         </button>
       </header>
       <main className="private-content">
-        {page === 'estatisticas' ? (
+        {page === 'progresso' ? (
+          <StudyProgressPage />
+        ) : page === 'estatisticas' ? (
           <AnalyticsPage />
         ) : page === 'rotinas' ? (
           <RoutinesPage />

@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { DataSource, EntityManager } from 'typeorm';
 import type { PomodoroSession } from '@study-platform/contracts';
+import { lockStudyProgress } from '../study-progress/activity-recorder.js';
 
 export interface SessionRecord {
   id: string;
@@ -33,6 +34,7 @@ export class PomodoroRepository {
     return this.clock(manager);
   }
   async lockOwner(manager: EntityManager, userId: string) {
+    await lockStudyProgress(manager, userId);
     await manager.query('SELECT id FROM users WHERE id = ? FOR UPDATE', [
       userId,
     ]);

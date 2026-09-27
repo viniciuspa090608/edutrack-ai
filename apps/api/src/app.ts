@@ -8,6 +8,9 @@ import { requestContext } from './middlewares/request-context.js';
 import { healthRoutes } from './modules/health/health.routes.js';
 import { AnalyticsService } from './modules/analytics/analytics.service.js';
 import { analyticsRoutes } from './modules/analytics/analytics.routes.js';
+import { StudyProgressRepository } from './modules/study-progress/study-progress.repository.js';
+import { StudyProgressService } from './modules/study-progress/study-progress.service.js';
+import { studyProgressRoutes } from './modules/study-progress/study-progress.routes.js';
 import { AuthRepository } from './modules/auth/auth.repository.js';
 import { authRoutes } from './modules/auth/auth.routes.js';
 import { AuthService } from './modules/auth/auth.service.js';
@@ -68,6 +71,7 @@ export interface AppOptions {
   aiFetch?: typeof fetch;
   aiClock?: () => Date;
   reviewClock?: ReviewClock;
+  progressClock?: () => Date;
 }
 
 export function createApp({
@@ -80,6 +84,7 @@ export function createApp({
   aiFetch,
   aiClock,
   reviewClock,
+  progressClock,
 }: AppOptions) {
   const app = express();
 
@@ -120,6 +125,16 @@ export function createApp({
     );
     app.use('/auth', authRoutes(service, google, env));
     const prefs = new PreferencesService(source);
+    app.use(
+      studyProgressRoutes(
+        service,
+        new StudyProgressService(
+          new StudyProgressRepository(source),
+          progressClock,
+        ),
+        env,
+      ),
+    );
     app.use(
       '/analytics',
       analyticsRoutes(service, new AnalyticsService(source, prefs), env),

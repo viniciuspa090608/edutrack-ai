@@ -7,6 +7,7 @@ import {
 import type { PendingFilters, ReviewEvent } from '@study-platform/contracts';
 import { HttpError } from '../../shared/http-error.js';
 import { publishActivity } from '../analytics/activity-publisher.js';
+import { lockStudyProgress } from '../study-progress/activity-recorder.js';
 interface StateRow {
   card_id: string;
   due_at: Date;
@@ -129,6 +130,7 @@ export class ReviewsRepository {
   ) {
     try {
       return await this.source.transaction(async (manager) => {
+        await lockStudyProgress(manager, userId);
         await this.requireDeck(userId, deckId, manager, true);
         return work(
           manager,

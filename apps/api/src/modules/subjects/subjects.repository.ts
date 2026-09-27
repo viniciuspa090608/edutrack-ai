@@ -10,6 +10,7 @@ import type {
 import { HttpError } from '../../shared/http-error.js';
 import { RoadmapsRepository } from './roadmaps.repository.js';
 import { publishActivity } from '../analytics/activity-publisher.js';
+import { lockStudyProgress } from '../study-progress/activity-recorder.js';
 
 interface SubjectRecord {
   id: string;
@@ -43,6 +44,7 @@ export class SubjectsRepository {
     id: string,
     lock = false,
   ) {
+    if (lock) await lockStudyProgress(manager, userId);
     const rows = await manager.query<SubjectRecord[]>(
       `SELECT * FROM study_subjects WHERE user_id=? AND id=?${lock ? ' FOR UPDATE' : ''}`,
       [userId, id],
@@ -220,6 +222,9 @@ export class SubjectsRepository {
           'SUBJECT_PLAN_ITEM_COMPLETED',
           'plan-item',
           itemId,
+          undefined,
+          undefined,
+          false,
         );
     });
   }

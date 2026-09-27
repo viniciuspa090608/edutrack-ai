@@ -120,7 +120,13 @@ it('rolls back and reapplies in MySQL, backfills only reliable timestamps', asyn
     [task.body.id],
   );
   expect(source.options.synchronize).toBe(false);
-  await source.undoLastMigration();
+  const later =
+    source.migrations.length -
+    source.migrations.findIndex((migration) =>
+      migration.constructor.name.startsWith('CreateStudyAnalytics'),
+    ) -
+    1;
+  for (let i = 0; i <= later; i++) await source.undoLastMigration();
   expect(
     await source.query("SHOW TABLES LIKE 'study_activity_events'"),
   ).toEqual([]);
@@ -131,7 +137,7 @@ it('rolls back and reapplies in MySQL, backfills only reliable timestamps', asyn
       ])
     ).length,
   ).toBe(1);
-  expect(await source.runMigrations()).toHaveLength(1);
+  expect(await source.runMigrations()).toHaveLength(later + 1);
   expect(await source.runMigrations()).toHaveLength(0);
   expect(await count(a.id, 'FLASHCARD_REVIEWED')).toBe(1);
   expect(await count(a.id, 'POMODORO_SESSION_COMPLETED')).toBe(1);

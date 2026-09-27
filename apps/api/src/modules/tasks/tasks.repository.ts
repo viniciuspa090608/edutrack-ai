@@ -10,6 +10,7 @@ import { HttpError } from '../../shared/http-error.js';
 import { subtaskEntity } from './subtask.entity.js';
 import { taskEntity } from './task.entity.js';
 import { publishActivity } from '../analytics/activity-publisher.js';
+import { lockStudyProgress } from '../study-progress/activity-recorder.js';
 import type { TaskEntity } from './task.entity.js';
 
 export type TaskRecord = TaskEntity & {
@@ -21,9 +22,19 @@ export class TasksRepository {
   async create(userId: string, input: CreateTask) {
     const id = randomUUID();
     await this.source.transaction(async (manager) => {
+      await lockStudyProgress(manager, userId);
       await manager.getRepository(taskEntity).insert({ id, userId, ...input });
       if (input.status === 'COMPLETED')
-        await publishActivity(manager, userId, 'TASK_COMPLETED', 'task', id);
+        await publishActivity(
+          manager,
+          userId,
+          'TASK_COMPLETED',
+          'task',
+          id,
+          undefined,
+          undefined,
+          false,
+        );
     });
     return this.find(userId, id);
   }
@@ -129,6 +140,7 @@ export class TasksRepository {
         .getRepository(taskEntity)
         .createQueryBuilder('task')
         .where('task.id = :id AND task.userId = :userId', { id, userId });
+      if (lock) await lockStudyProgress(manager, userId);
       if (lock) query.setLock('pessimistic_write');
       const task = await query.getOne();
       if (!task)

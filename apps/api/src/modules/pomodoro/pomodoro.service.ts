@@ -234,6 +234,21 @@ export class PomodoroService {
           ],
         );
       await this.repository.save(manager, row);
+      if (
+        row.completed_blocks > stored.completed_blocks &&
+        stored.running_since
+      ) {
+        const boundaryAt = new Date(stored.running_since.getTime() + elapsed);
+        await publishActivity(
+          manager,
+          userId,
+          'POMODORO_BLOCK_COMPLETED',
+          'pomodoro-block',
+          id,
+          String(row.completed_blocks),
+          boundaryAt,
+        );
+      }
       if (row.state === 'COMPLETED')
         await publishActivity(
           manager,

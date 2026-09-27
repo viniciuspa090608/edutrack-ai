@@ -1,5 +1,6 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { publishActivity } from '../analytics/activity-publisher.js';
+import { lockStudyProgress } from '../study-progress/activity-recorder.js';
 import type { DataSource, EntityManager } from 'typeorm';
 import type {
   RoadmapContent,
@@ -37,6 +38,7 @@ export class RoadmapsRepository {
     subjectId: string,
     lock = false,
   ) {
+    if (lock) await lockStudyProgress(manager, userId);
     const rows = await manager.query<{ id: string }[]>(
       `SELECT id FROM study_subjects WHERE user_id=? AND id=?${lock ? ' FOR UPDATE' : ''}`,
       [userId, subjectId],
@@ -400,7 +402,7 @@ export class RoadmapsRepository {
           ) {
             // Block rows are recreated by revisions; stable step identities define the studied block.
             const blockKey = createHash('sha256')
-              .update(block.steps.map((step) => step.id).join(','))
+              .update(`${id}:${block.steps.map((step) => step.id).join(',')}`)
               .digest('hex');
             await publishActivity(
               manager,
@@ -408,7 +410,6 @@ export class RoadmapsRepository {
               'ROADMAP_BLOCK_COMPLETED',
               'roadmap-block',
               blockKey,
-              `${id}:${current.revision + 1}`,
             );
           }
         }

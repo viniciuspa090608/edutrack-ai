@@ -28,6 +28,15 @@ const preferences = {
   ai: false,
 };
 function privateFetch(url: string) {
+  if (url.endsWith('/account/study-timezone'))
+    return {
+      ok: true,
+      status: 200,
+      json: async () => ({
+        timeZone: 'UTC',
+        trackingStartedAt: '2026-09-27T12:00:00.000Z',
+      }),
+    };
   if (url.endsWith('/profile/preferences'))
     return { ok: true, status: 200, json: async () => preferences };
   if (url.endsWith('/profile'))
