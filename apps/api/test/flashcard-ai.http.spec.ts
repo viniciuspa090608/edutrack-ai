@@ -133,12 +133,19 @@ it('applies and reverses confirmation migration with real isolated MySQL without
   expect(source.options.synchronize).toBe(false);
   expect(await source.runMigrations()).toEqual([]);
   const a = await setup();
+  const applied = await source.query<Array<{ name: string }>>(
+    'SELECT name FROM migrations ORDER BY id DESC',
+  );
+  const later = applied.findIndex(
+    (row) => row.name === 'CreateFlashcardAIConfirmations20260927233000',
+  );
+  for (let index = 0; index < later; index++) await source.undoLastMigration();
   await source.undoLastMigration();
   expect(
     await source.query("SHOW TABLES LIKE 'flashcard_ai_confirmations'"),
   ).toEqual([]);
   expect(await count(a)).toBe(1);
-  expect(await source.runMigrations()).toHaveLength(1);
+  expect(await source.runMigrations()).toHaveLength(1 + later);
   await expect(
     source.query(
       'INSERT INTO flashcard_ai_confirmations (generation_id,user_id,deck_id,result) VALUES (?,?,?,?)',

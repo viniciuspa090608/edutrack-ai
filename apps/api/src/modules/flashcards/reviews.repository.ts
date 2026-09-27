@@ -6,6 +6,7 @@ import {
 } from '@study-platform/contracts';
 import type { PendingFilters, ReviewEvent } from '@study-platform/contracts';
 import { HttpError } from '../../shared/http-error.js';
+import { publishActivity } from '../analytics/activity-publisher.js';
 interface StateRow {
   card_id: string;
   due_at: Date;
@@ -189,6 +190,15 @@ export class ReviewsRepository {
         JSON.stringify(event.previousState),
         JSON.stringify(event.newState),
       ],
+    );
+    await publishActivity(
+      manager,
+      userId,
+      'FLASHCARD_REVIEWED',
+      'flashcard',
+      event.cardId,
+      event.id,
+      new Date(event.reviewedAt),
     );
   }
   pending(userId: string, filters: PendingFilters, now: Date) {

@@ -9,6 +9,7 @@ import type {
 } from '@study-platform/contracts';
 import { HttpError } from '../../shared/http-error.js';
 import { RoadmapsRepository } from './roadmaps.repository.js';
+import { publishActivity } from '../analytics/activity-publisher.js';
 
 interface SubjectRecord {
   id: string;
@@ -207,21 +208,36 @@ export class SubjectsRepository {
   ) {
     return this.locked(userId, id, async (manager) => {
       const items = await this.items(manager, userId, id);
+      const itemId = randomUUID();
       await manager.query(
         'INSERT INTO subject_plan_items (id,subject_id,title,status,position) SELECT ?,id,?,?,? FROM study_subjects WHERE user_id=? AND id=?',
-        [randomUUID(), input.title, input.status, items.length, userId, id],
+        [itemId, input.title, input.status, items.length, userId, id],
       );
+      if (input.status === 'COMPLETED')
+        await publishActivity(
+          manager,
+          userId,
+          'SUBJECT_PLAN_ITEM_COMPLETED',
+          'plan-item',
+          itemId,
+        );
     });
   }
   editItem(userId: string, id: string, itemId: string, input: UpdatePlanItem) {
     return this.locked(userId, id, async (manager) => {
-      if (
-        !(await this.items(manager, userId, id)).some(
-          (item) => item.id === itemId,
-        )
-      )
-        throw missing();
+      const previous = (await this.items(manager, userId, id)).find(
+        (item) => item.id === itemId,
+      );
+      if (!previous) throw missing();
       await this.updateItem(manager, userId, id, itemId, input);
+      if (previous?.status !== 'COMPLETED' && input.status === 'COMPLETED')
+        await publishActivity(
+          manager,
+          userId,
+          'SUBJECT_PLAN_ITEM_COMPLETED',
+          'plan-item',
+          itemId,
+        );
     });
   }
   removeItem(userId: string, id: string, itemId: string) {

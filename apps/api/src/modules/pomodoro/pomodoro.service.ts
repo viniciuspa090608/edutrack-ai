@@ -18,6 +18,8 @@ import { PomodoroRepository } from './pomodoro.repository.js';
 import type { SessionRecord } from './pomodoro.repository.js';
 
 import type { SubjectsService } from '../subjects/subjects.service.js';
+import { publishActivity } from '../analytics/activity-publisher.js';
+import { randomUUID } from 'node:crypto';
 const BLOCK = 1_500_000;
 export class PomodoroConflict extends Error {
   constructor(public readonly session: PomodoroSession) {
@@ -218,7 +220,30 @@ export class PomodoroService {
         row.running_since = null;
       } else throw new PomodoroConflict(dto(row, now));
       row.version += 1;
+      const elapsed = row.active_ms - Number(stored.active_ms);
+      if (stored.running_since && elapsed > 0)
+        await manager.query(
+          'INSERT INTO pomodoro_active_intervals (id,user_id,session_id,started_at,ended_at,source_version) VALUES (?,?,?,?,?,?)',
+          [
+            randomUUID(),
+            userId,
+            id,
+            stored.running_since,
+            new Date(stored.running_since.getTime() + elapsed),
+            stored.version,
+          ],
+        );
       await this.repository.save(manager, row);
+      if (row.state === 'COMPLETED')
+        await publishActivity(
+          manager,
+          userId,
+          'POMODORO_SESSION_COMPLETED',
+          'pomodoro',
+          id,
+          'terminal',
+          now,
+        );
       return dto(row, now);
     });
   }

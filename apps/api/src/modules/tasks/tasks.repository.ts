@@ -9,6 +9,7 @@ import type { UpdateSubtask } from '@study-platform/contracts';
 import { HttpError } from '../../shared/http-error.js';
 import { subtaskEntity } from './subtask.entity.js';
 import { taskEntity } from './task.entity.js';
+import { publishActivity } from '../analytics/activity-publisher.js';
 import type { TaskEntity } from './task.entity.js';
 
 export type TaskRecord = TaskEntity & {
@@ -17,12 +18,13 @@ export type TaskRecord = TaskEntity & {
 };
 export class TasksRepository {
   constructor(private readonly source: DataSource) {}
-  private get rows() {
-    return this.source.getRepository(taskEntity);
-  }
   async create(userId: string, input: CreateTask) {
     const id = randomUUID();
-    await this.rows.insert({ id, userId, ...input });
+    await this.source.transaction(async (manager) => {
+      await manager.getRepository(taskEntity).insert({ id, userId, ...input });
+      if (input.status === 'COMPLETED')
+        await publishActivity(manager, userId, 'TASK_COMPLETED', 'task', id);
+    });
     return this.find(userId, id);
   }
   find(userId: string, id: string) {
@@ -131,7 +133,15 @@ export class TasksRepository {
       const task = await query.getOne();
       if (!task)
         throw new HttpError(404, 'TASK_NOT_FOUND', 'Tarefa não encontrada.');
-      return work(manager, task);
+      const result = await work(manager, task);
+      if (lock) {
+        const after = await manager
+          .getRepository(taskEntity)
+          .findOneBy({ id, userId });
+        if (task.status !== 'COMPLETED' && after?.status === 'COMPLETED')
+          await publishActivity(manager, userId, 'TASK_COMPLETED', 'task', id);
+      }
+      return result;
     });
   }
   locked<T>(

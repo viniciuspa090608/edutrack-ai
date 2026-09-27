@@ -153,6 +153,7 @@ export class SubjectsService {
           })),
         };
       },
+      true,
     );
     return this.roadmapDetail(userId, id, roadmapId);
   }

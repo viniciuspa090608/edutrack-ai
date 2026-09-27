@@ -165,7 +165,9 @@ export function allowedReturnTo(
   | '/app/tarefas'
   | '/app/pomodoro'
   | '/app/rotinas'
+  | '/app/estatisticas'
   | '/app/materias' {
+  if (value === '/app/estatisticas') return value;
   if (value === '/app/rotinas') return value;
   if (value === '/app/pomodoro') return value;
   if (value === '/app/materias') return value;

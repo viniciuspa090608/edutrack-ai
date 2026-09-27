@@ -6,6 +6,8 @@ import type { ApiEnv } from './config/env.js';
 import { errorHandler, notFound } from './middlewares/error-handler.js';
 import { requestContext } from './middlewares/request-context.js';
 import { healthRoutes } from './modules/health/health.routes.js';
+import { AnalyticsService } from './modules/analytics/analytics.service.js';
+import { analyticsRoutes } from './modules/analytics/analytics.routes.js';
 import { AuthRepository } from './modules/auth/auth.repository.js';
 import { authRoutes } from './modules/auth/auth.routes.js';
 import { AuthService } from './modules/auth/auth.service.js';
@@ -118,6 +120,10 @@ export function createApp({
     );
     app.use('/auth', authRoutes(service, google, env));
     const prefs = new PreferencesService(source);
+    app.use(
+      '/analytics',
+      analyticsRoutes(service, new AnalyticsService(source, prefs), env),
+    );
     const subjects = new SubjectsService(new SubjectsRepository(source), prefs);
     const flashcards = new FlashcardsService(
       new FlashcardsRepository(source),

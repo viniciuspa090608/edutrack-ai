@@ -1,4 +1,5 @@
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
+import { publishActivity } from '../analytics/activity-publisher.js';
 import type { DataSource, EntityManager } from 'typeorm';
 import type {
   RoadmapContent,
@@ -358,6 +359,7 @@ export class RoadmapsRepository {
     origin: RoadmapRevision['origin'],
     sourceRevision: number | null,
     compose: (current: Roadmap) => PersistedRoadmapContent,
+    studyProgress = false,
   ) {
     return this.source.transaction(async (manager) => {
       await this.own(manager, userId, subjectId, true);
@@ -381,12 +383,42 @@ export class RoadmapsRepository {
           );
       }
       if (current.revision !== baseRevision) throw revisionConflict();
+      const content = compose(current);
+      if (studyProgress) {
+        for (const block of content.blocks) {
+          const before = current.blocks.find(
+            (candidate) =>
+              candidate.steps.length === block.steps.length &&
+              candidate.steps.every(
+                (step, index) => step.id === block.steps[index]?.id,
+              ),
+          );
+          if (
+            before &&
+            !before.steps.every((step) => step.completed) &&
+            block.steps.every((step) => step.completed)
+          ) {
+            // Block rows are recreated by revisions; stable step identities define the studied block.
+            const blockKey = createHash('sha256')
+              .update(block.steps.map((step) => step.id).join(','))
+              .digest('hex');
+            await publishActivity(
+              manager,
+              userId,
+              'ROADMAP_BLOCK_COMPLETED',
+              'roadmap-block',
+              blockKey,
+              `${id}:${current.revision + 1}`,
+            );
+          }
+        }
+      }
       return this.replaceIn(
         manager,
         userId,
         subjectId,
         current,
-        compose(current),
+        content,
         origin,
         sourceRevision,
         actionId,

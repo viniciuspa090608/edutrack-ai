@@ -31,6 +31,8 @@ export function App() {
       return <PrivatePage key="pomodoro" page="pomodoro" />;
     case '/app/rotinas':
       return <PrivatePage key="rotinas" page="rotinas" />;
+    case '/app/estatisticas':
+      return <PrivatePage key="estatisticas" page="estatisticas" />;
     case '/conta':
       return <PrivatePage key="conta" page="conta" />;
     default:
