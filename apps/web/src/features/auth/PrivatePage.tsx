@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import type { AuthUser } from '@study-platform/contracts';
 import type { ModulePreferences } from '@study-platform/contracts';
 import { ProfilePage } from '../profile/ProfilePage.js';
+import { FlashcardsPage } from '../flashcards/FlashcardsPage.js';
 import { preferences } from '../profile/profile-api.js';
 import { availableModules, moduleAtPath } from '../profile/module-catalog.js';
 import { TasksPage } from '../tasks/TasksPage.js';
@@ -201,6 +202,8 @@ export function PrivatePage({
               </p>
             ) : window.location.pathname === '/app/tarefas' ? (
               <TasksPage subjectsEnabled={prefs.subjects} />
+            ) : window.location.pathname === '/app/flashcards' ? (
+              <FlashcardsPage subjectsEnabled={prefs.subjects} />
             ) : window.location.pathname === '/app/materias' ? (
               <SubjectsPage tasksEnabled={prefs.tasks} aiEnabled={prefs.ai} />
             ) : (

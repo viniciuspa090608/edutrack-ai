@@ -34,6 +34,9 @@ import { RoutinesRepository } from './modules/routines/routines.repository.js';
 import { SubjectsRepository } from './modules/subjects/subjects.repository.js';
 import { SubjectsService } from './modules/subjects/subjects.service.js';
 import { subjectsRoutes } from './modules/subjects/subjects.routes.js';
+import { FlashcardsRepository } from './modules/flashcards/flashcards.repository.js';
+import { FlashcardsService } from './modules/flashcards/flashcards.service.js';
+import { flashcardsRoutes } from './modules/flashcards/flashcards.routes.js';
 import { roadmapAIRoutes } from './modules/ai/roadmap-ai.routes.js';
 import { RoadmapAIService } from './modules/ai/roadmap-ai.service.js';
 import { OpenAIRoadmapProvider } from './modules/ai/roadmap-provider.js';
@@ -103,6 +106,15 @@ export function createApp({
     app.use('/auth', authRoutes(service, google, env));
     const prefs = new PreferencesService(source);
     const subjects = new SubjectsService(new SubjectsRepository(source), prefs);
+    app.use(
+      '/flashcard-decks',
+      flashcardsRoutes(
+        service,
+        new FlashcardsService(new FlashcardsRepository(source), subjects),
+        prefs,
+        env,
+      ),
+    );
     const roadmapAI = new RoadmapAIService(
       subjects,
       prefs,

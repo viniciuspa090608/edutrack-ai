@@ -1,0 +1,73 @@
+.flashcards-page {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+.flashcard-panel {
+  padding: 1rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.75rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.flashcard-panel fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.75rem;
+  min-width: 0;
+}
+.flashcard-panel label {
+  display: block;
+}
+.flashcard-panel input,
+.flashcard-panel textarea,
+.flashcard-panel select {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  font: inherit;
+  padding: 0.5rem;
+}
+.flashcard-panel textarea {
+  min-height: 6rem;
+  resize: vertical;
+}
+.flashcard-actions,
+.flashcards-page nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-block: 0.75rem;
+}
+.flashcards-page button {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  max-width: 100%;
+}
+.flashcards-page :focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: 3px;
+}
+.flashcard-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.flashcard-list {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 1rem;
+}
+@media (prefers-reduced-motion: reduce) {
+  .flashcards-page *,
+  .flashcards-page *::before,
+  .flashcards-page *::after {
+    animation: none;
+    transition: none;
+    scroll-behavior: auto;
+  }
+}

@@ -141,3 +141,5 @@ export * from './subjects.js';
 
 export * from './roadmaps.js';
 export * from './roadmap-revisions.js';
+
+export * from './flashcards.js';

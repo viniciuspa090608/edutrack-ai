@@ -137,7 +137,7 @@ describe('profile page', () => {
       expect(screen.getByRole('checkbox', { name })).toBeTruthy();
     expect(
       screen.getAllByText(/Funcionalidade ainda não disponível/),
-    ).toHaveLength(2);
+    ).toHaveLength(1);
     expect(
       screen.queryByRole('button', { name: 'Aprimorar com IA' }),
     ).toBeNull();
@@ -347,7 +347,7 @@ describe('profile page', () => {
     expect(
       await screen.findByRole('link', { name: 'Reativar nas preferências' }),
     ).toBeTruthy();
-    expect(availableModules(prefs)).toHaveLength(1);
+    expect(availableModules(prefs)).toHaveLength(2);
     expect(canUseAI(prefs, 'tasks', true)).toBe(false);
     expect(canUseAI({ ...prefs, ai: true }, 'tasks', true)).toBe(true);
     expect(canUseAI({ ...prefs, ai: true }, 'subjects', true)).toBe(false);

@@ -175,6 +175,13 @@ it('migrates existing identities and order into initial snapshots and rolls back
   expect(await source.runMigrations()).toEqual([]);
   const a = await setup(),
     original = flattenRoadmap(a.roadmap);
+  const applied = await source.query<Array<{ name: string }>>(
+    'SELECT name FROM migrations ORDER BY id DESC',
+  );
+  const later = applied.findIndex(
+    (migration) => migration.name === 'VersionRoadmapSteps20260926232000',
+  );
+  for (let index = 0; index < later; index++) await source.undoLastMigration();
   await source.undoLastMigration();
   expect(
     await source.query(
@@ -191,7 +198,7 @@ it('migrates existing identities and order into initial snapshots and rolls back
   expect(rows).toEqual(
     original.map((step) => ({ id: step.id, title: step.title })),
   );
-  expect(await source.runMigrations()).toHaveLength(1);
+  expect(await source.runMigrations()).toHaveLength(1 + later);
   expect(flattenRoadmap(await current(a.roadmap, a.cookie))).toEqual(original);
   const history = (await read(`${path(a.roadmap)}/revisions`, a.cookie)).body;
   expect(history.total).toBe(1);

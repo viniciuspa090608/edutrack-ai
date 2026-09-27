@@ -151,6 +151,13 @@ it('applies and rolls back both migrations with preserved manual content and sim
     content,
   );
   expect(roadmap.status).toBe(201);
+  const applied = await source.query<Array<{ name: string }>>(
+    'SELECT name FROM migrations ORDER BY id DESC',
+  );
+  const later = applied.findIndex(
+    (migration) => migration.name === 'VersionRoadmapSteps20260926232000',
+  );
+  for (let index = 0; index < later; index++) await source.undoLastMigration();
   await source.undoLastMigration(); // version/progress migration
   await source.undoLastMigration();
   expect(
@@ -166,13 +173,12 @@ it('applies and rolls back both migrations with preserved manual content and sim
       )
     )[0]!.title,
   ).toBe('Plano');
-  expect(await source.runMigrations()).toHaveLength(2);
+  expect(await source.runMigrations()).toHaveLength(2 + later);
   expect(
     (await read(`/subjects/${id}/roadmaps/${roadmap.body.id}`, a.cookie)).body,
   ).toEqual(roadmap.body);
-  await source.undoLastMigration();
-  await source.undoLastMigration();
-  await source.undoLastMigration();
+  for (let index = 0; index < 3 + later; index++)
+    await source.undoLastMigration();
   for (const table of [
     'subject_roadmaps',
     'subject_roadmap_blocks',
@@ -182,7 +188,7 @@ it('applies and rolls back both migrations with preserved manual content and sim
   expect((await read(`/subjects/${id}`, a.cookie)).body.planItems).toHaveLength(
     1,
   );
-  expect(await source.runMigrations()).toHaveLength(3);
+  expect(await source.runMigrations()).toHaveLength(3 + later);
   await expect(
     source.query(
       'INSERT INTO subject_roadmaps (id,subject_id,title,description) VALUES (?,?,?,?)',

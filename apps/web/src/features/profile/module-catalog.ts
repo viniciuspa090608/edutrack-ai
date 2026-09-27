@@ -20,9 +20,9 @@ export const moduleCatalog: ReadonlyArray<{
   },
   {
     capability: 'flashcards',
-    path: '/flashcards',
+    path: '/app/flashcards',
     label: 'Flashcards',
-    delivered: false,
+    delivered: true,
   },
 ];
 export function availableModules(prefs: ModulePreferences) {
