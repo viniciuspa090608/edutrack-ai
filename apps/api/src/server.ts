@@ -3,6 +3,7 @@ import { createApp } from './app.js';
 import { loadEnv } from './config/env.js';
 import { createDataSource } from './database/data-source.js';
 import { logger } from './shared/logger.js';
+import { ImportRepository } from './modules/flashcards/import.repository.js';
 
 async function main(): Promise<void> {
   const env = loadEnv();
@@ -25,8 +26,27 @@ async function main(): Promise<void> {
     throw error;
   }
   logger.info({ event: 'server.ready', port: env.API_PORT });
+  const imports = new ImportRepository(source);
+  let cleaning = false;
+  const cleanup = async () => {
+    if (cleaning) return;
+    cleaning = true;
+    try {
+      await imports.cleanupExpired();
+    } catch {
+      logger.error({ event: 'flashcard_import.cleanup_failed' });
+    } finally {
+      cleaning = false;
+    }
+  };
+  void cleanup();
+  const importCleanup = setInterval(() => {
+    void cleanup();
+  }, 60_000);
+  importCleanup.unref();
 
   const close = () => {
+    clearInterval(importCleanup);
     server.close(() => {
       source.destroy().then(
         () => {

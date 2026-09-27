@@ -84,10 +84,17 @@ it('applies and rolls back the migration on isolated real MySQL', async () => {
       [randomUUID(), randomUUID(), 'a', 'b'],
     ),
   ).rejects.toThrow();
+  const applied = await source.query<Array<{ name: string }>>(
+    'SELECT name FROM migrations ORDER BY id DESC',
+  );
+  const later = applied.findIndex(
+    (migration) => migration.name === 'CreateManualFlashcards20260926233000',
+  );
+  for (let index = 0; index < later; index++) await source.undoLastMigration();
   await source.undoLastMigration();
   expect(await source.query("SHOW TABLES LIKE 'flashcard_decks'")).toEqual([]);
   expect(await source.query("SHOW TABLES LIKE 'flashcards'")).toEqual([]);
-  expect(await source.runMigrations()).toHaveLength(1);
+  expect(await source.runMigrations()).toHaveLength(1 + later);
 });
 it('authenticates every endpoint, requires origin and rejects invalid external input', async () => {
   const a = await account();

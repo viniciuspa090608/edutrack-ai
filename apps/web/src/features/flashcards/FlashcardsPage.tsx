@@ -15,6 +15,7 @@ import {
 } from './flashcards-api.js';
 import { DeckForm, CardForm } from './FlashcardForms.js';
 import { CardViewer } from './CardViewer.js';
+import { ImportFlow } from './ImportFlow.js';
 import { SubjectName } from '../subjects/SubjectName.js';
 import { TaskConfirmation } from '../tasks/TaskConfirmation.js';
 import '../../styles/flashcards.css';
@@ -64,6 +65,7 @@ export function FlashcardsPage({
   const [cardForm, setCardForm] = useState(false);
   const [editingCard, setEditingCard] = useState<Flashcard | null>(null);
   const [viewing, setViewing] = useState<Flashcard | null>(null);
+  const [importing, setImporting] = useState(false);
   const [confirmation, setConfirmation] = useState<{
     cardId?: string;
     deck: FlashcardDeck;
@@ -71,6 +73,12 @@ export function FlashcardsPage({
   } | null>(null);
   const request = useRef(0);
   const heading = useRef<HTMLHeadingElement>(null);
+  const wasImporting = useRef(false);
+  useEffect(() => {
+    if (wasImporting.current && !importing)
+      document.getElementById('start-import')?.focus();
+    wasImporting.current = importing;
+  }, [importing]);
   const deckId = deck?.id;
   useEffect(() => {
     heading.current?.focus();
@@ -127,6 +135,7 @@ export function FlashcardsPage({
     setBusy(true);
     setError('');
     setViewing(null);
+    setImporting(false);
     setCardForm(false);
     try {
       const result = await deckDetail(id);
@@ -275,6 +284,24 @@ export function FlashcardsPage({
           <h2 tabIndex={-1} ref={heading}>
             {deck.name}: cartões
           </h2>
+          <button
+            id="start-import"
+            disabled={busy || importing}
+            onClick={() => setImporting(true)}
+          >
+            Importar CSV ou TSV
+          </button>
+          {importing && (
+            <ImportFlow
+              key={deck.id}
+              deckId={deck.id}
+              onClose={() => {
+                setImporting(false);
+                document.getElementById('start-import')?.focus();
+              }}
+              onImported={() => refresh('Cartões importados.')}
+            />
+          )}
           <button
             id="new-card"
             disabled={busy}
