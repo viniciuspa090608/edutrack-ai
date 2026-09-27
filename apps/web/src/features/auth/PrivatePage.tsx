@@ -203,7 +203,10 @@ export function PrivatePage({
             ) : window.location.pathname === '/app/tarefas' ? (
               <TasksPage subjectsEnabled={prefs.subjects} />
             ) : window.location.pathname === '/app/flashcards' ? (
-              <FlashcardsPage subjectsEnabled={prefs.subjects} />
+              <FlashcardsPage
+                subjectsEnabled={prefs.subjects}
+                aiEnabled={prefs.ai}
+              />
             ) : window.location.pathname === '/app/materias' ? (
               <SubjectsPage tasksEnabled={prefs.tasks} aiEnabled={prefs.ai} />
             ) : (

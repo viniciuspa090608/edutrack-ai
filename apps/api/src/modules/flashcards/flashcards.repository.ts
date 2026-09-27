@@ -6,7 +6,9 @@ import type {
   CreateCard,
   UpdateCard,
   FlashcardPagination,
+  GeneratedCard,
 } from '@study-platform/contracts';
+import { flashcardAIResultSchema } from '@study-platform/contracts';
 import { HttpError } from '../../shared/http-error.js';
 import { initializeCardReviews, resetCardReview } from './review-lifecycle.js';
 interface DeckRow {
@@ -49,6 +51,58 @@ const cardDto = (row: CardRow) => ({
 });
 export class FlashcardsRepository {
   constructor(private readonly source: DataSource) {}
+  confirmGenerated(
+    userId: string,
+    deckId: string,
+    cards: GeneratedCard[],
+    generationId: string,
+    expiresAt: number,
+    now: Date,
+    authorize: () => Promise<void>,
+  ) {
+    return this.source.transaction(async (manager) => {
+      await this.deck(manager, userId, deckId, true);
+      await authorize();
+      const prior = await manager.query<Array<{ result: unknown }>>(
+        'SELECT result FROM flashcard_ai_confirmations WHERE generation_id=? AND user_id=? AND deck_id=?',
+        [generationId, userId, deckId],
+      );
+      if (prior[0])
+        return flashcardAIResultSchema.parse(
+          typeof prior[0].result === 'string'
+            ? JSON.parse(prior[0].result)
+            : prior[0].result,
+        );
+      if (expiresAt <= now.getTime())
+        throw new HttpError(
+          400,
+          'RECEIPT_EXPIRED',
+          'A prévia expirou. Gere novamente.',
+        );
+      await manager.query(
+        `INSERT INTO flashcards (id,deck_id,front,back) VALUES ${cards.map(() => '(?,?,?,?)').join(',')}`,
+        cards.flatMap((card) => [card.id, deckId, card.front, card.back]),
+      );
+      await initializeCardReviews(
+        manager,
+        userId,
+        cards.map((card) => card.id),
+      );
+      const created = await Promise.all(
+        cards.map((card) => this.card(manager, userId, deckId, card.id)),
+      );
+      const result = flashcardAIResultSchema.parse({
+        generationId,
+        deckId,
+        cards: created,
+      });
+      await manager.query(
+        'INSERT INTO flashcard_ai_confirmations (generation_id,user_id,deck_id,result) VALUES (?,?,?,?)',
+        [generationId, userId, deckId, JSON.stringify(result)],
+      );
+      return result;
+    });
+  }
   private async deck(
     manager: EntityManager,
     userId: string,

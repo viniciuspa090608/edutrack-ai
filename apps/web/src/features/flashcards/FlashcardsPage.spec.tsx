@@ -29,6 +29,7 @@ let decks: FlashcardDeck[],
   cards: Flashcard[],
   failed: string,
   enabled: boolean;
+let aiEnabled: boolean;
 const calls: Array<{
   path: string;
   method: string;
@@ -54,6 +55,7 @@ beforeEach(() => {
   ];
   failed = '';
   enabled = true;
+  aiEnabled = false;
   calls.length = 0;
   vi.stubEnv('VITE_API_BASE_URL', 'http://localhost:3001');
   HTMLDialogElement.prototype.showModal = function () {
@@ -82,7 +84,7 @@ beforeEach(() => {
           tasks: true,
           subjects: false,
           flashcards: enabled,
-          ai: false,
+          ai: aiEnabled,
         });
       const list = (items: unknown[]) => {
         const page = Number(url.searchParams.get('page') ?? 1),
@@ -160,6 +162,32 @@ async function openDeck() {
   );
   await screen.findByText('Pergunta 1');
 }
+it('offers AI only when enabled, keeping manual and import actions available on direct navigation', async () => {
+  const user = userEvent.setup();
+  const view = render(
+    <FlashcardsPage subjectsEnabled={false} aiEnabled={false} />,
+  );
+  expect(screen.queryByRole('button', { name: 'Aprimorar com IA' })).toBeNull();
+  await user.click(
+    await screen.findByRole('button', { name: 'Abrir Álgebra' }),
+  );
+  expect(screen.getByRole('button', { name: 'Adicionar cartão' })).toBeTruthy();
+  expect(
+    screen.getByRole('button', { name: 'Importar CSV ou TSV' }),
+  ).toBeTruthy();
+  view.rerender(<FlashcardsPage subjectsEnabled={false} aiEnabled />);
+  await user.click(screen.getByRole('button', { name: 'Aprimorar com IA' }));
+  await screen.findByLabelText('Conteúdo ou assunto');
+  view.rerender(<FlashcardsPage subjectsEnabled={false} aiEnabled={false} />);
+  expect(screen.queryByLabelText('Conteúdo ou assunto')).toBeNull();
+  view.unmount();
+  aiEnabled = true;
+  window.history.replaceState(null, '', '/app/flashcards');
+  render(<App />);
+  expect(
+    await screen.findByRole('button', { name: 'Aprimorar com IA' }),
+  ).toBeTruthy();
+});
 it('reveals by keyboard only, resets when changing cards and never writes during consultation', async () => {
   render(<FlashcardsPage subjectsEnabled={false} />);
   await openDeck();

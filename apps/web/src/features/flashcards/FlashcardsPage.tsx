@@ -18,6 +18,7 @@ import { CardViewer } from './CardViewer.js';
 import { ImportFlow } from './ImportFlow.js';
 import { ReviewQueue } from './ReviewQueue.js';
 import { ReviewHistory } from './ReviewHistory.js';
+import { FlashcardAIFlow } from './FlashcardAIFlow.js';
 import { SubjectName } from '../subjects/SubjectName.js';
 import { TaskConfirmation } from '../tasks/TaskConfirmation.js';
 import '../../styles/flashcards.css';
@@ -48,8 +49,10 @@ function Pagination({
 }
 export function FlashcardsPage({
   subjectsEnabled,
+  aiEnabled = false,
 }: {
   subjectsEnabled: boolean;
+  aiEnabled?: boolean;
 }) {
   const [decks, setDecks] = useState<DeckList | null>(null);
   const [deck, setDeck] = useState<FlashcardDeck | null>(null);
@@ -69,6 +72,7 @@ export function FlashcardsPage({
   const [viewing, setViewing] = useState<Flashcard | null>(null);
   const [importing, setImporting] = useState(false);
   const [reviewing, setReviewing] = useState(false);
+  const [generating, setGenerating] = useState(false);
   const [historyCard, setHistoryCard] = useState<{
     deckId: string;
     cardId: string;
@@ -193,6 +197,27 @@ export function FlashcardsPage({
   return (
     <div className="flashcards-page">
       <p>Crie perguntas e respostas e consulte seus cartões manualmente.</p>
+      {aiEnabled && (
+        <button
+          id="start-flashcard-ai"
+          disabled={generating}
+          onClick={() => setGenerating(true)}
+        >
+          Aprimorar com IA
+        </button>
+      )}
+      {aiEnabled && generating && (
+        <FlashcardAIFlow
+          initialDeck={deck}
+          onClose={() => {
+            setGenerating(false);
+            requestAnimationFrame(() =>
+              document.getElementById('start-flashcard-ai')?.focus(),
+            );
+          }}
+          onSaved={() => refresh('Cartões gerados salvos.')}
+        />
+      )}
       <button
         id="start-review"
         disabled={reviewing}

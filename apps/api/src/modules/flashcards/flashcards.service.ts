@@ -8,7 +8,10 @@ import {
   deckListSchema,
   cardListSchema,
   flashcardPaginationSchema,
+  generatedCardsSchema,
 } from '@study-platform/contracts';
+import type { GeneratedCard } from '@study-platform/contracts';
+import type { PreferencesService } from '../preferences/preferences.service.js';
 import type { z } from 'zod';
 import type { SubjectsService } from '../subjects/subjects.service.js';
 import type { FlashcardsRepository } from './flashcards.repository.js';
@@ -23,7 +26,35 @@ export class FlashcardsService {
   constructor(
     private readonly repository: FlashcardsRepository,
     private readonly subjects: Pick<SubjectsService, 'requireOwned'>,
+    private readonly prefs?: Pick<PreferencesService, 'requireEnabled'>,
   ) {}
+  confirmGenerated(
+    userId: string,
+    deckId: string,
+    cards: GeneratedCard[],
+    generationId: string,
+    expiresAt: number,
+    now: Date,
+  ) {
+    return this.repository.confirmGenerated(
+      userId,
+      deckId,
+      parse(generatedCardsSchema, cards),
+      generationId,
+      expiresAt,
+      now,
+      async () => {
+        if (!this.prefs)
+          throw new HttpError(
+            503,
+            'AI_UNAVAILABLE',
+            'A geração por IA está indisponível.',
+          );
+        await this.prefs.requireEnabled(userId, 'flashcards');
+        await this.prefs.requireEnabled(userId, 'ai');
+      },
+    );
+  }
   async create(userId: string, input: unknown) {
     const data = parse(createDeckSchema, input);
     if (data.subjectId)

@@ -91,6 +91,13 @@ const rate = (
 it('migrates existing cards with idempotent backfill and rolls back without deleting cards', async () => {
   expect(source.options.synchronize).toBe(false);
   expect(await source.runMigrations()).toEqual([]);
+  const applied = await source.query<Array<{ name: string }>>(
+    'SELECT name FROM migrations ORDER BY id DESC',
+  );
+  const later = applied.findIndex(
+    (row) => row.name === 'CreateSpacedRepetition20260926235000',
+  );
+  for (let index = 0; index < later; index++) await source.undoLastMigration();
   await source.undoLastMigration();
   const a = await account(),
     deckId = randomUUID(),
@@ -104,7 +111,7 @@ it('migrates existing cards with idempotent backfill and rolls back without dele
     [cardId, deckId],
   );
   const before = new Date();
-  expect(await source.runMigrations()).toHaveLength(1);
+  expect(await source.runMigrations()).toHaveLength(1 + later);
   const row = (
     await read(
       `/flashcard-decks/${deckId}/cards/${cardId}/review-state`,
@@ -142,6 +149,7 @@ it('migrates existing cards with idempotent backfill and rolls back without dele
   expect(await source.query('SELECT id FROM flashcard_review_events')).toEqual(
     [],
   );
+  for (let index = 0; index < later; index++) await source.undoLastMigration();
   await source.undoLastMigration();
   expect(
     await source.query("SHOW TABLES LIKE 'flashcard_review_states'"),
@@ -149,7 +157,7 @@ it('migrates existing cards with idempotent backfill and rolls back without dele
   expect(
     await source.query('SELECT id FROM flashcards WHERE id=?', [cardId]),
   ).toHaveLength(1);
-  expect(await source.runMigrations()).toHaveLength(1);
+  expect(await source.runMigrations()).toHaveLength(1 + later);
 });
 it('creates initial state atomically from manual and imported cards and paginates due cards without backs', async () => {
   const a = await setup(),

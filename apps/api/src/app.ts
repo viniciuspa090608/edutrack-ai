@@ -47,6 +47,10 @@ import { reviewsRoutes } from './modules/flashcards/reviews.routes.js';
 import { roadmapAIRoutes } from './modules/ai/roadmap-ai.routes.js';
 import { RoadmapAIService } from './modules/ai/roadmap-ai.service.js';
 import { OpenAIRoadmapProvider } from './modules/ai/roadmap-provider.js';
+import { OpenAIStructuredProvider } from './shared/openai-structured-provider.js';
+import { FlashcardAIService } from './modules/ai/flashcard-ai.service.js';
+import { FlashcardReceipt } from './modules/ai/flashcard-receipt.js';
+import { flashcardAIRoutes } from './modules/ai/flashcard-ai.routes.js';
 import { RoadmapReceipt } from './modules/ai/roadmap-receipt.js';
 import { RevisionReceipt } from './modules/subjects/revision-receipt.js';
 import { RoadmapRevisionsService } from './modules/subjects/roadmap-revisions.service.js';
@@ -115,6 +119,26 @@ export function createApp({
     app.use('/auth', authRoutes(service, google, env));
     const prefs = new PreferencesService(source);
     const subjects = new SubjectsService(new SubjectsRepository(source), prefs);
+    const flashcards = new FlashcardsService(
+      new FlashcardsRepository(source),
+      subjects,
+      prefs,
+    );
+    app.use(
+      '/flashcard-decks',
+      flashcardAIRoutes(
+        service,
+        new FlashcardAIService(
+          flashcards,
+          prefs,
+          new OpenAIStructuredProvider(env, aiFetch),
+          new FlashcardReceipt(env.AI_RECEIPT_KEY, aiClock),
+          aiClock,
+        ),
+        prefs,
+        env,
+      ),
+    );
     app.use(
       '/flashcard-decks',
       reviewsRoutes(
@@ -135,12 +159,7 @@ export function createApp({
     );
     app.use(
       '/flashcard-decks',
-      flashcardsRoutes(
-        service,
-        new FlashcardsService(new FlashcardsRepository(source), subjects),
-        prefs,
-        env,
-      ),
+      flashcardsRoutes(service, flashcards, prefs, env),
     );
     const roadmapAI = new RoadmapAIService(
       subjects,
