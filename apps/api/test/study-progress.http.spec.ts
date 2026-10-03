@@ -6,6 +6,7 @@ import { studyProgressSchema } from '@study-platform/contracts';
 import { createApp } from '../src/app.js';
 import { loadEnv } from '../src/config/env.js';
 import { createDataSource } from '../src/database/data-source.js';
+import { setInitialCardTime } from './card-time.fixture.js';
 import { AuthRepository } from '../src/modules/auth/auth.repository.js';
 import { SessionRepository } from '../src/modules/auth/session.repository.js';
 import { PreferencesService } from '../src/modules/preferences/preferences.service.js';
@@ -375,6 +376,7 @@ it('records all four review ratings once per persisted event and preserves delet
         back: 'Resposta',
       })
     ).body;
+    await setInitialCardTime(source, card.id, now);
     const path = `/flashcard-decks/${deck.id}/cards/${card.id}`;
     await read(path, a.cookie);
     const body = { rating, expectedRevision: 1, idempotencyKey: randomUUID() };

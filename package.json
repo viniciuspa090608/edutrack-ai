@@ -9,11 +9,10 @@
   "scripts": {
     "dev:web": "pnpm --filter @study-platform/web dev",
     "dev:api": "pnpm --filter @study-platform/api dev",
-    "db:up": "docker compose up -d mysql",
     "db:migration:show": "pnpm --filter @study-platform/api migration:show",
     "db:migration:run": "pnpm --filter @study-platform/api migration:run",
-    "lint": "pnpm -r --if-present lint && prettier --check apps packages package.json pnpm-workspace.yaml compose.yaml eslint.config.mjs prettier.config.mjs .github README.md AGENTS.md",
-    "format": "prettier --write apps packages package.json pnpm-workspace.yaml compose.yaml eslint.config.mjs prettier.config.mjs .github README.md AGENTS.md",
+    "lint": "pnpm -r --if-present lint && prettier --check apps packages package.json pnpm-workspace.yaml eslint.config.mjs prettier.config.mjs .github README.md AGENTS.md",
+    "format": "prettier --write apps packages package.json pnpm-workspace.yaml eslint.config.mjs prettier.config.mjs .github README.md AGENTS.md",
     "typecheck": "pnpm --filter @study-platform/contracts build && pnpm --filter @study-platform/ui build && pnpm -r --if-present typecheck",
     "test": "pnpm --filter @study-platform/contracts build && pnpm --filter @study-platform/ui build && pnpm -r --workspace-concurrency=1 --if-present test",
     "build": "pnpm -r --if-present build"

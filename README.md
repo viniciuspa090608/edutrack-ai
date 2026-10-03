@@ -5,7 +5,8 @@ Plataforma de estudos em construção. A página inicial apresenta os recursos p
 ## Pré-requisitos
 
 - Node.js 24 ou 25 e pnpm 11.25.0 (ver `packageManager` no `package.json`).
-- Docker com Compose para MySQL local, ou MySQL 8.4 equivalente.
+- MySQL instalado localmente e iniciado como serviço do sistema. O ambiente local foi validado com MySQL 8.0.46; o CI usa MySQL 8.4 LTS.
+- Para e-mail de teste, Mailpit nativo; também é possível usar um provedor SMTP configurado.
 
 ## Preparação local
 
@@ -16,21 +17,47 @@ pnpm install --frozen-lockfile
 Copy-Item .env.example .env
 ```
 
-O arquivo `.env` é local e ignorado pelo Git. Ajuste `DB_PASSWORD` para uma senha local e mantenha `DB_NAME` e `TEST_DB_NAME` diferentes. `DB_PORT=3307` evita conflito com um MySQL local na porta padrão. Defina `API_PUBLIC_ORIGIN` como a origem pública da API e `WEB_ORIGIN` como a origem da web. `VITE_API_BASE_URL` contém somente a origem pública da API; nunca coloque segredos em variáveis `VITE_*`.
+O arquivo `.env` é local e ignorado pelo Git. Em um ambiente já configurado, preserve esse arquivo. O exemplo aponta para `DB_HOST=localhost`, `DB_PORT=3306` e `DB_USER=root`; preencha `DB_PASSWORD` somente no `.env` com a senha do seu servidor. A senha vazia do exemplo é rejeitada pela validação até ser preenchida. Mantenha `DB_NAME` e `TEST_DB_NAME` diferentes. Defina `API_PUBLIC_ORIGIN` como a origem pública da API e `WEB_ORIGIN` como a origem da web. `VITE_API_BASE_URL` contém somente a origem pública da API; nunca coloque segredos em variáveis `VITE_*`.
 
 Para ativar o Google, configure `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET` no servidor e registre exatamente `http://localhost:3001/auth/google/callback` como URI de redirecionamento no projeto Google local. Em produção, use `${API_PUBLIC_ORIGIN}/auth/google/callback`; web e API precisam estar em HTTPS e no mesmo site. As duas credenciais Google são exigidas em produção. Mantenha o segredo somente na API.
 
 Para confirmação de e-mail e recuperação de senha, configure `SMTP_HOST`, `SMTP_PORT`, `SMTP_FROM`, `EMAIL_HMAC_KEY` e `EMAIL_ENCRYPTION_KEY` na API em todos os ambientes. As chaves são valores hexadecimais independentes de 32 bytes cada; gere cada uma com `node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"`. Use `SMTP_USER` e `SMTP_PASSWORD` juntos quando o provedor exigir autenticação. A porta 465 usa TLS direto; em produção, as demais portas exigem STARTTLS. Nunca exponha essas variáveis em `VITE_*` ou registre seus valores em logs. A API valida as configurações antes de iniciar; configure o SMTP e inicie o worker de entrega antes de habilitar os novos fluxos.
 
-Inicie o banco e consulte as migrations:
+### E-mail no desenvolvimento local
+
+Para usar Mailpit nativo, baixe o binário para seu sistema na [página oficial de instalação](https://mailpit.axllent.org/docs/install/) e extraia-o fora do repositório. No Windows, use o arquivo para Windows amd64. Configure `SMTP_HOST=localhost`, `SMTP_PORT=1025` e `SMTP_FROM=no-reply@localhost.test` no `.env`, mantendo `SMTP_USER` e `SMTP_PASSWORD` vazios e as duas chaves de e-mail existentes. Na pasta do executável, mantenha este comando em um terminal separado:
 
 ```powershell
-pnpm db:up
+.\mailpit.exe --smtp 127.0.0.1:1025 --listen 127.0.0.1:8025
+```
+
+Mantenha o worker `pnpm --filter @study-platform/api email:worker` ativo e abra <http://localhost:8025> para ler as mensagens de teste. Para entrega real, configure os dados do seu provedor SMTP e reinicie API e worker.
+
+### Banco local e migrations
+
+Instale o MySQL pelo [instalador oficial](https://dev.mysql.com/downloads/mysql/) caso ainda não exista e inicie o serviço pelo gerenciador do seu sistema. No Windows, confirme o estado do serviço na aplicação **Serviços**. Com o cliente `mysql` disponível no PATH (ou usando o caminho completo para `mysql.exe`), conecte pelo terminal; `-p` solicita a senha sem gravá-la no comando:
+
+```powershell
+mysql -h localhost -P 3306 -u root -p
+```
+
+Crie os dois bancos no cliente MySQL, ajustando os nomes se forem diferentes no `.env`:
+
+```sql
+CREATE DATABASE IF NOT EXISTS study_platform_dev;
+CREATE DATABASE IF NOT EXISTS study_platform_test;
+```
+
+O usuário configurado precisa acessar o banco de desenvolvimento e aplicar migrations. Para testes, também precisa criar e remover bancos temporários com prefixo `TEST_DB_NAME` e gerenciar tabelas, índices, constraints e triggers nesses bancos. Use essas permissões somente em uma instância local dedicada ao desenvolvimento: os testes não devem apontar para produção ou usar o banco de desenvolvimento. O usuário `root` local já possui as permissões necessárias; se escolher outro usuário, peça ao administrador para concedê-las para os bancos de desenvolvimento/teste e o prefixo dos bancos temporários.
+
+Consulte e aplique as migrations:
+
+```powershell
 pnpm db:migration:show
 pnpm db:migration:run
 ```
 
-O Compose cria os bancos de desenvolvimento e teste na primeira inicialização. O volume mantém os dados entre reinicializações. Se usar um MySQL já instalado, crie os dois bancos conforme `.env` e dê ao usuário configurado permissão para conectar, criar e remover tabelas no banco de teste. As migrations criam autenticação e os dados de confirmação/recuperação. Execute `pnpm db:migration:run` antes de iniciar a API; `synchronize` continua desativado. Contas locais existentes passam a exigir confirmação; contas exclusivas do Google previamente validadas por OIDC permanecem confirmadas. Sessões antigas de contas locais pendentes perdem acesso privado no servidor.
+Os bancos são criados explicitamente; o serviço MySQL mantém os dados no diretório configurado em sua instalação. Apontar para o servidor local não transfere dados de um volume Docker antigo. Preserve esse volume e, se precisar dos dados anteriores, faça backup e importação como uma operação separada. As migrations criam autenticação e os dados de confirmação/recuperação. Execute `pnpm db:migration:run` antes de iniciar a API; `synchronize` continua desativado. Contas locais existentes passam a exigir confirmação; contas exclusivas do Google previamente validadas por OIDC permanecem confirmadas. Sessões antigas de contas locais pendentes perdem acesso privado no servidor.
 
 Em terminais separados:
 

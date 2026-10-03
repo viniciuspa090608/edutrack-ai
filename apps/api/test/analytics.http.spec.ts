@@ -1,7 +1,7 @@
 import { randomBytes, randomUUID } from 'node:crypto';
 import pino from 'pino';
 import request from 'supertest';
-import { afterAll, beforeAll, expect, it } from 'vitest';
+import { afterAll, beforeAll, beforeEach, expect, it } from 'vitest';
 import { createApp } from '../src/app.js';
 import { loadEnv } from '../src/config/env.js';
 import { createDataSource } from '../src/database/data-source.js';
@@ -13,6 +13,7 @@ import { publishActivity } from '../src/modules/analytics/activity-publisher.js'
 import { SubjectsService } from '../src/modules/subjects/subjects.service.js';
 import { SubjectsRepository } from '../src/modules/subjects/subjects.repository.js';
 import { studyAnalyticsSchema } from '@study-platform/contracts';
+import { setInitialCardTime } from './card-time.fixture.js';
 const env = loadEnv();
 const database = `${env.TEST_DB_NAME}_analytics_${randomBytes(4).toString('hex')}`;
 const admin = createDataSource({ ...env, DB_NAME: env.TEST_DB_NAME });
@@ -32,6 +33,12 @@ beforeAll(async () => {
   await admin.query(`CREATE DATABASE \`${database}\``);
   await source.initialize();
   await source.runMigrations();
+});
+beforeEach(async () => {
+  // Ordinary scenarios have known coverage; the migration scenario recreates it.
+  await source.query(
+    "UPDATE study_analytics_coverage SET started_at='2020-01-01'",
+  );
 });
 afterAll(async () => {
   if (source.isInitialized) await source.destroy();
@@ -87,6 +94,7 @@ async function reviewed(a: Awaited<ReturnType<typeof account>>) {
     { front: 'P', back: 'R' },
   );
   expect(card.status).toBe(201);
+  await setInitialCardTime(source, card.body.id, now);
   const path = `/flashcard-decks/${deck.body.id}/cards/${card.body.id}`;
   await read(path, a.cookie);
   expect(await count(a.id, 'FLASHCARD_REVIEWED')).toBe(0);
@@ -153,9 +161,6 @@ it('rolls back and reapplies in MySQL, backfills only reliable timestamps', asyn
   expect(unavailable.metrics.tasks!.currentStatus).toBe('history_unavailable');
   expect(unavailable.metrics.activeMs!.current).toBeNull();
   expect(unavailable.series[0]!.values.pomodoroSessions).toBe(1);
-  await source.query(
-    "UPDATE study_analytics_coverage SET started_at='2020-01-01'",
-  );
 });
 it('records task and subtask transitions once and retains deleted origins', async () => {
   const a = await account();

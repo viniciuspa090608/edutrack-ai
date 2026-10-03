@@ -9,6 +9,7 @@ import { AuthRepository } from '../src/modules/auth/auth.repository.js';
 import { SessionRepository } from '../src/modules/auth/session.repository.js';
 import { PreferencesService } from '../src/modules/preferences/preferences.service.js';
 import { CreateSpacedRepetition20260926235000 } from '../src/database/migrations/20260926235000-CreateSpacedRepetition.js';
+import { setInitialCardTime } from './card-time.fixture.js';
 const env = loadEnv();
 const database = `${env.TEST_DB_NAME}_reviews_${randomBytes(4).toString('hex')}`;
 const admin = createDataSource({ ...env, DB_NAME: env.TEST_DB_NAME });
@@ -71,6 +72,7 @@ async function setup() {
       back: 'Resposta secreta',
     })
   ).body;
+  await setInitialCardTime(source, card.id, now);
   return { ...a, deckId: deck.id as string, cardId: card.id as string };
 }
 const path = (a: { deckId: string; cardId: string }) =>
@@ -179,6 +181,12 @@ it('creates initial state atomically from manual and imported cards and paginate
     (await write('post', `${attempt}/confirm`, a.cookie, { confirm: true }))
       .status,
   ).toBe(200);
+  const imported = await source.query<Array<{ id: string }>>(
+    'SELECT id FROM flashcards WHERE deck_id=? AND id<>?',
+    [a.deckId, a.cardId],
+  );
+  expect(imported).toHaveLength(1);
+  await setInitialCardTime(source, imported[0]!.id, now);
   const queue = (
     await read(
       `/flashcard-decks/reviews/pending?deckId=${a.deckId}&pageSize=1`,
@@ -266,6 +274,12 @@ it('creates initial state atomically from manual and imported cards and paginate
       })
     ).status,
   ).toBe(200);
+  const retried = await source.query<Array<{ id: string }>>(
+    "SELECT id FROM flashcards WHERE deck_id=? AND front='Fails import'",
+    [a.deckId],
+  );
+  expect(retried).toHaveLength(1);
+  await setInitialCardTime(source, retried[0]!.id, now);
   expect(
     (
       await read(
@@ -364,6 +378,7 @@ it('advances accumulated history, resets on real content edits but not identical
     (await write('patch', path(a), a.cookie, { back: 'Nova resposta' })).status,
   ).toBe(200);
   const reset = await state(a);
+  now = new Date(Math.max(now.getTime(), new Date(reset.dueAt).getTime()));
   expect(reset).toMatchObject({
     revision: 4,
     contentGeneration: 2,
