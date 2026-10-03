@@ -1,3 +1,5 @@
+import { Card, CardContent } from '@study-platform/ui/components/ui/card';
+import { Button } from '@study-platform/ui/components/ui/button';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -69,66 +71,72 @@ export function FeatureCarousel() {
   const slide = slides[active]!;
 
   return (
-    <div
-      className="feature-carousel"
-      aria-label="Destaques da EduTrack"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      onFocusCapture={() => setFocused(true)}
-      onBlurCapture={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget))
-          setFocused(false);
-      }}
-    >
-      <div className="carousel-art">
-        <img src={slide.image} alt={slide.alt} />
-      </div>
-      <div className="carousel-copy">
-        <span className="carousel-count">
-          Visão {String(active + 1).padStart(2, '0')} /{' '}
-          {String(slides.length).padStart(2, '0')}
-        </span>
-        <h3>{slide.title}</h3>
-        <p>{slide.description}</p>
-        <div className="carousel-controls">
-          <button
-            type="button"
-            className="carousel-arrow"
-            aria-label="Slide anterior"
-            onClick={() =>
-              setActive(
-                (current) => (current - 1 + slides.length) % slides.length,
-              )
-            }
-          >
-            <ArrowLeft size={20} aria-hidden="true" />
-          </button>
-          <div className="carousel-dots" aria-label="Selecionar slide">
-            {slides.map((item, index) => (
-              <button
-                type="button"
-                key={item.title}
-                className={
-                  index === active ? 'carousel-dot is-active' : 'carousel-dot'
-                }
-                aria-label={`Mostrar slide ${index + 1}: ${item.title}`}
-                aria-current={index === active ? 'true' : undefined}
-                onClick={() => setActive(index)}
-              />
-            ))}
-          </div>
-          <button
-            type="button"
-            className="carousel-arrow"
-            aria-label="Próximo slide"
-            onClick={() =>
-              setActive((current) => (current + 1) % slides.length)
-            }
-          >
-            <ArrowRight size={20} aria-hidden="true" />
-          </button>
+    <Card asChild>
+      <div
+        className="feature-carousel"
+        aria-label="Destaques da EduTrack"
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        onFocusCapture={() => setFocused(true)}
+        onBlurCapture={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget))
+            setFocused(false);
+        }}
+      >
+        <div className="carousel-art">
+          <img src={slide.image} alt={slide.alt} />
         </div>
+        <CardContent className="carousel-copy">
+          <span className="carousel-count">
+            Visão {String(active + 1).padStart(2, '0')} /{' '}
+            {String(slides.length).padStart(2, '0')}
+          </span>
+          <h3>{slide.title}</h3>
+          <p>{slide.description}</p>
+          <div className="carousel-controls">
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="carousel-arrow"
+              aria-label="Slide anterior"
+              onClick={() =>
+                setActive(
+                  (current) => (current - 1 + slides.length) % slides.length,
+                )
+              }
+            >
+              <ArrowLeft size={20} aria-hidden="true" />
+            </Button>
+            <div className="carousel-dots" aria-label="Selecionar slide">
+              {slides.map((item, index) => (
+                <Button
+                  type="button"
+                  size="icon"
+                  variant={index === active ? 'default' : 'outline'}
+                  key={item.title}
+                  className={
+                    index === active ? 'carousel-dot is-active' : 'carousel-dot'
+                  }
+                  aria-label={`Mostrar slide ${index + 1}: ${item.title}`}
+                  aria-current={index === active ? 'true' : undefined}
+                  onClick={() => setActive(index)}
+                />
+              ))}
+            </div>
+            <Button
+              type="button"
+              className="carousel-arrow"
+              aria-label="Próximo slide"
+              onClick={() =>
+                setActive((current) => (current + 1) % slides.length)
+              }
+            >
+              <ArrowRight size={20} aria-hidden="true" />
+            </Button>
+          </div>
+        </CardContent>
       </div>
-    </div>
+    </Card>
   );
 }

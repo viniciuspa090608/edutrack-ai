@@ -1,3 +1,27 @@
+import {
+  CardHeader,
+  Card,
+  CardContent,
+} from '@study-platform/ui/components/ui/card';
+import {
+  AlertDescription,
+  Alert,
+} from '@study-platform/ui/components/ui/alert';
+import { Skeleton } from '@study-platform/ui/components/ui/skeleton';
+import { FieldSet, FieldLegend } from '@study-platform/ui/components/ui/field';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+} from '@study-platform/ui/components/ui/pagination';
+
+import { Button } from '@study-platform/ui/components/ui/button';
+import { Label } from '@study-platform/ui/components/ui/label';
+import { Textarea } from '@study-platform/ui/components/ui/textarea';
+import {
+  NativeSelect,
+  NativeSelectOption,
+} from '@study-platform/ui/components/ui/native-select';
 import { useEffect, useRef, useState } from 'react';
 import {
   flashcardGenerationSchema,
@@ -153,215 +177,261 @@ export function FlashcardAIFlow({
   }
   const options = decks?.items ?? [];
   return (
-    <section
-      className="flashcard-panel flashcard-ai-flow"
-      aria-label="Aprimorar com IA"
-    >
-      <h2 ref={heading} tabIndex={-1}>
-        Aprimorar com IA
-      </h2>
-      {error && <p role="alert">{error}</p>}
-      {error.includes('preferências') && (
-        <a href="/app/profile">Abrir preferências</a>
-      )}
-      {busy && <p role="status">Processando cartões…</p>}
-      {result ? (
-        <>
-          <p role="status">{result.cards.length} cartões salvos no baralho.</p>
-          <ol>
-            {result.cards.map((card) => (
-              <li key={card.id}>
-                <p className="flashcard-text">{card.front}</p>
-                <p className="flashcard-text">{card.back}</p>
-              </li>
-            ))}
-          </ol>
-          <button onClick={onClose}>Fechar resultado</button>
-        </>
-      ) : preview ? (
-        <>
-          <p>Destino: {preview.deckName}</p>
-          <p className="flashcard-text">Entrada: {preview.text}</p>
-          <p>Confira a precisão das perguntas e respostas antes de salvar.</p>
-          <p>
-            Prévia válida até {new Date(preview.expiresAt).toLocaleString()}.
-          </p>
-          {invalidCards && (
-            <p role="alert">
-              Revise os campos indicados. Mantenha pelo menos um cartão válido.
-            </p>
+    <Card asChild>
+      <section
+        className="flashcard-panel flashcard-ai-flow"
+        aria-label="Aprimorar com IA"
+      >
+        <CardHeader>
+          <h2 ref={heading} tabIndex={-1}>
+            Aprimorar com IA
+          </h2>
+        </CardHeader>
+        <CardContent>
+          {error && (
+            <Alert variant="destructive" role="alert">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
           )}
-          {uncertain && (
-            <p>
-              Confirmação sem resposta. Tente salvar novamente para recuperar o
-              mesmo resultado.
-            </p>
+          {error.includes('preferências') && (
+            <a href="/app/profile">Abrir preferências</a>
           )}
-          <ol>
-            {cards.map((card, index) => (
-              <li key={card.id}>
-                <fieldset disabled={busy || uncertain}>
-                  <legend>Cartão {index + 1}</legend>
-                  {(['front', 'back'] as const).map((side) => {
-                    const label = side === 'front' ? 'Frente' : 'Verso',
-                      limit = side === 'front' ? 2000 : 4000;
-                    const invalid =
-                      invalidCards &&
-                      (!card[side].trim() || card[side].trim().length > limit);
-                    return (
-                      <label key={side}>
-                        {label} do cartão {index + 1}
-                        <textarea
-                          aria-label={`${label} do cartão ${index + 1}`}
-                          value={card[side]}
-                          maxLength={limit}
-                          aria-invalid={invalid}
-                          aria-describedby={
-                            invalid ? `${side}-${card.id}-error` : undefined
-                          }
-                          onChange={(e) =>
-                            setCards((values) =>
-                              values.map((value) =>
-                                value.id === card.id
-                                  ? { ...value, [side]: e.target.value }
-                                  : value,
-                              ),
-                            )
-                          }
-                        />
-                        {invalid && (
-                          <span id={`${side}-${card.id}-error`}>
-                            Preencha {label.toLowerCase()} de até {limit}{' '}
-                            caracteres.
+          {busy && (
+            <div>
+              <Skeleton aria-hidden="true" className="my-2 h-3 w-2/3" />
+              <p role="status">Processando cartões…</p>
+            </div>
+          )}
+          {result ? (
+            <>
+              <p role="status">
+                {result.cards.length} cartões salvos no baralho.
+              </p>
+              <ol>
+                {result.cards.map((card) => (
+                  <li key={card.id}>
+                    <p className="flashcard-text">{card.front}</p>
+                    <p className="flashcard-text">{card.back}</p>
+                  </li>
+                ))}
+              </ol>
+              <Button onClick={onClose}>Fechar resultado</Button>
+            </>
+          ) : preview ? (
+            <>
+              <p>Destino: {preview.deckName}</p>
+              <p className="flashcard-text">Entrada: {preview.text}</p>
+              <p>
+                Confira a precisão das perguntas e respostas antes de salvar.
+              </p>
+              <p>
+                Prévia válida até {new Date(preview.expiresAt).toLocaleString()}
+                .
+              </p>
+              {invalidCards && (
+                <Alert variant="destructive" role="alert">
+                  <AlertDescription>
+                    Revise os campos indicados. Mantenha pelo menos um cartão
+                    válido.
+                  </AlertDescription>
+                </Alert>
+              )}
+              {uncertain && (
+                <p>
+                  Confirmação sem resposta. Tente salvar novamente para
+                  recuperar o mesmo resultado.
+                </p>
+              )}
+              <ol>
+                {cards.map((card, index) => (
+                  <li key={card.id}>
+                    <FieldSet disabled={busy || uncertain}>
+                      <FieldLegend>Cartão {index + 1}</FieldLegend>
+                      {(['front', 'back'] as const).map((side) => {
+                        const label = side === 'front' ? 'Frente' : 'Verso',
+                          limit = side === 'front' ? 2000 : 4000;
+                        const invalid =
+                          invalidCards &&
+                          (!card[side].trim() ||
+                            card[side].trim().length > limit);
+                        return (
+                          <Label key={side}>
+                            {label} do cartão {index + 1}
+                            <Textarea
+                              aria-label={`${label} do cartão ${index + 1}`}
+                              value={card[side]}
+                              maxLength={limit}
+                              aria-invalid={invalid}
+                              aria-describedby={
+                                invalid ? `${side}-${card.id}-error` : undefined
+                              }
+                              onChange={(e) =>
+                                setCards((values) =>
+                                  values.map((value) =>
+                                    value.id === card.id
+                                      ? { ...value, [side]: e.target.value }
+                                      : value,
+                                  ),
+                                )
+                              }
+                            />
+                            {invalid && (
+                              <span id={`${side}-${card.id}-error`}>
+                                Preencha {label.toLowerCase()} de até {limit}{' '}
+                                caracteres.
+                              </span>
+                            )}
+                          </Label>
+                        );
+                      })}
+                      <Button
+                        onClick={() => {
+                          setCards((values) =>
+                            values.filter((value) => value.id !== card.id),
+                          );
+                          heading.current?.focus();
+                        }}
+                      >
+                        Remover cartão {index + 1}
+                      </Button>
+                    </FieldSet>
+                  </li>
+                ))}
+              </ol>
+              {!cards.length && (
+                <p>Nenhum cartão restante. Gere outra prévia ou cancele.</p>
+              )}
+              <Button
+                disabled={busy || !cards.length}
+                onClick={() => void save()}
+              >
+                Salvar cartões
+              </Button>
+              <Button
+                disabled={busy}
+                onClick={() => {
+                  setPreview(null);
+                  setCards([]);
+                  setError('');
+                  setUncertain(false);
+                  pending.current = null;
+                }}
+              >
+                Gerar outra prévia
+              </Button>
+              <Button disabled={busy} onClick={onClose}>
+                Cancelar
+              </Button>
+            </>
+          ) : (
+            <form
+              noValidate
+              onSubmit={(e) => {
+                e.preventDefault();
+                void generate();
+              }}
+            >
+              <FieldSet disabled={busy}>
+                <FieldLegend>Origem e destino dos cartões</FieldLegend>
+                {deckError ? (
+                  <Alert variant="destructive" role="alert">
+                    <AlertDescription>
+                      Não foi possível carregar baralhos.{' '}
+                      <Button type="button" onClick={() => setRetry(retry + 1)}>
+                        Tentar novamente
+                      </Button>
+                    </AlertDescription>
+                  </Alert>
+                ) : !decks ? (
+                  <div>
+                    <Skeleton aria-hidden="true" className="my-2 h-3 w-2/3" />
+                    <p role="status">Carregando baralhos…</p>
+                  </div>
+                ) : (
+                  <>
+                    {!decks.total && (
+                      <p>Crie um baralho antes de gerar cartões.</p>
+                    )}
+                    <Label>
+                      Baralho de destino
+                      <NativeSelect
+                        value={deckId}
+                        onChange={(e) => setDeckId(e.target.value)}
+                      >
+                        <NativeSelectOption value="">
+                          Escolha um baralho
+                        </NativeSelectOption>
+                        {initialDeck &&
+                          !options.some(
+                            (deck) => deck.id === initialDeck.id,
+                          ) && (
+                            <NativeSelectOption value={initialDeck.id}>
+                              {initialDeck.name}
+                            </NativeSelectOption>
+                          )}
+                        {options.map((deck) => (
+                          <NativeSelectOption key={deck.id} value={deck.id}>
+                            {deck.name}
+                          </NativeSelectOption>
+                        ))}
+                      </NativeSelect>
+                    </Label>
+                    <Pagination aria-label="Páginas de baralhos para IA">
+                      <PaginationContent className="flex-wrap">
+                        <PaginationItem>
+                          <Button
+                            type="button"
+                            disabled={page === 1}
+                            onClick={() => setPage(page - 1)}
+                          >
+                            Anterior
+                          </Button>
+                        </PaginationItem>
+                        <PaginationItem>
+                          <span>
+                            Página {page} de {Math.max(1, decks.totalPages)}
                           </span>
-                        )}
-                      </label>
-                    );
-                  })}
-                  <button
-                    onClick={() => {
-                      setCards((values) =>
-                        values.filter((value) => value.id !== card.id),
-                      );
-                      heading.current?.focus();
-                    }}
-                  >
-                    Remover cartão {index + 1}
-                  </button>
-                </fieldset>
-              </li>
-            ))}
-          </ol>
-          {!cards.length && (
-            <p>Nenhum cartão restante. Gere outra prévia ou cancele.</p>
+                        </PaginationItem>
+                        <PaginationItem>
+                          <Button
+                            type="button"
+                            disabled={page >= decks.totalPages}
+                            onClick={() => setPage(page + 1)}
+                          >
+                            Próxima
+                          </Button>
+                        </PaginationItem>
+                      </PaginationContent>
+                    </Pagination>
+                  </>
+                )}
+                <Label>
+                  Conteúdo ou assunto
+                  <Textarea
+                    ref={source}
+                    value={text}
+                    maxLength={10000}
+                    aria-invalid={!!inputError}
+                    aria-describedby={inputError ? 'ai-input-error' : undefined}
+                    onChange={(e) => setText(e.target.value)}
+                  />
+                </Label>
+                {inputError && (
+                  <Alert variant="destructive" id="ai-input-error" role="alert">
+                    <AlertDescription>{inputError}</AlertDescription>
+                  </Alert>
+                )}
+                <Button type="submit" disabled={!decks || !decks.total}>
+                  Gerar prévia
+                </Button>
+                <Button type="button" onClick={onClose}>
+                  Cancelar
+                </Button>
+              </FieldSet>
+            </form>
           )}
-          <button disabled={busy || !cards.length} onClick={() => void save()}>
-            Salvar cartões
-          </button>
-          <button
-            disabled={busy}
-            onClick={() => {
-              setPreview(null);
-              setCards([]);
-              setError('');
-              setUncertain(false);
-              pending.current = null;
-            }}
-          >
-            Gerar outra prévia
-          </button>
-          <button disabled={busy} onClick={onClose}>
-            Cancelar
-          </button>
-        </>
-      ) : (
-        <form
-          noValidate
-          onSubmit={(e) => {
-            e.preventDefault();
-            void generate();
-          }}
-        >
-          <fieldset disabled={busy}>
-            <legend>Origem e destino dos cartões</legend>
-            {deckError ? (
-              <p role="alert">
-                Não foi possível carregar baralhos.{' '}
-                <button type="button" onClick={() => setRetry(retry + 1)}>
-                  Tentar novamente
-                </button>
-              </p>
-            ) : !decks ? (
-              <p role="status">Carregando baralhos…</p>
-            ) : (
-              <>
-                {!decks.total && <p>Crie um baralho antes de gerar cartões.</p>}
-                <label>
-                  Baralho de destino
-                  <select
-                    value={deckId}
-                    onChange={(e) => setDeckId(e.target.value)}
-                  >
-                    <option value="">Escolha um baralho</option>
-                    {initialDeck &&
-                      !options.some((deck) => deck.id === initialDeck.id) && (
-                        <option value={initialDeck.id}>
-                          {initialDeck.name}
-                        </option>
-                      )}
-                    {options.map((deck) => (
-                      <option key={deck.id} value={deck.id}>
-                        {deck.name}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <nav aria-label="Páginas de baralhos para IA">
-                  <button
-                    type="button"
-                    disabled={page === 1}
-                    onClick={() => setPage(page - 1)}
-                  >
-                    Anterior
-                  </button>
-                  <span>
-                    Página {page} de {Math.max(1, decks.totalPages)}
-                  </span>
-                  <button
-                    type="button"
-                    disabled={page >= decks.totalPages}
-                    onClick={() => setPage(page + 1)}
-                  >
-                    Próxima
-                  </button>
-                </nav>
-              </>
-            )}
-            <label>
-              Conteúdo ou assunto
-              <textarea
-                ref={source}
-                value={text}
-                maxLength={10000}
-                aria-invalid={!!inputError}
-                aria-describedby={inputError ? 'ai-input-error' : undefined}
-                onChange={(e) => setText(e.target.value)}
-              />
-            </label>
-            {inputError && (
-              <p id="ai-input-error" role="alert">
-                {inputError}
-              </p>
-            )}
-            <button type="submit" disabled={!decks || !decks.total}>
-              Gerar prévia
-            </button>
-            <button type="button" onClick={onClose}>
-              Cancelar
-            </button>
-          </fieldset>
-        </form>
-      )}
-    </section>
+        </CardContent>
+      </section>
+    </Card>
   );
 }

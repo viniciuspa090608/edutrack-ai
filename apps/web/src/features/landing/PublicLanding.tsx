@@ -1,3 +1,14 @@
+import { Progress } from '@study-platform/ui/components/ui/progress';
+import {
+  Sheet,
+  SheetContent,
+  SheetTitle,
+  SheetDescription,
+  SheetTrigger,
+} from '@study-platform/ui/components/ui/sheet';
+import { Badge } from '@study-platform/ui/components/ui/badge';
+import { Button } from '@study-platform/ui/components/ui/button';
+import { Card, CardContent } from '@study-platform/ui/components/ui/card';
 import {
   ArrowRight,
   BarChart3,
@@ -79,61 +90,80 @@ export function PublicLanding() {
 
   return (
     <div className="landing-page">
-      <header className="landing-header">
-        <div className="header-inner">
-          <a className="header-brand" href="/" aria-label="EduTrack, início">
-            <span className="brand-symbol" aria-hidden="true">
-              <Sparkles size={20} />
-            </span>{' '}
-            EduTrack
-          </a>
-          <nav className="desktop-nav" aria-label="Seções da página">
-            <a href="#funcionalidades">Funcionalidades</a>
-            <a href="#tecnologias">Tecnologias</a>
-          </nav>
-          <div className="header-actions">
-            <a className="header-cta" href="/acesso">
-              Login / Inscreva-se <ArrowRight size={16} aria-hidden="true" />
+      <Sheet modal={false} open={menuOpen} onOpenChange={setMenuOpen}>
+        <header className="landing-header">
+          <div className="header-inner">
+            <a className="header-brand" href="/" aria-label="EduTrack, início">
+              <span className="brand-symbol" aria-hidden="true">
+                <Sparkles size={20} />
+              </span>{' '}
+              EduTrack
             </a>
-            <button
-              ref={menuButton}
-              type="button"
-              className="menu-toggle"
-              aria-label={menuOpen ? 'Fechar menu' : 'Abrir menu'}
-              aria-expanded={menuOpen}
-              aria-controls="mobile-navigation"
-              onClick={() => setMenuOpen((open) => !open)}
-            >
-              {menuOpen ? (
-                <X size={22} aria-hidden="true" />
-              ) : (
-                <Menu size={22} aria-hidden="true" />
-              )}
-            </button>
+            <nav className="desktop-nav" aria-label="Seções da página">
+              <a href="#funcionalidades">Funcionalidades</a>
+              <a href="#tecnologias">Tecnologias</a>
+            </nav>
+            <div className="header-actions">
+              <Button asChild>
+                <a className="header-cta" href="/acesso">
+                  Login / Inscreva-se{' '}
+                  <ArrowRight size={16} aria-hidden="true" />
+                </a>
+              </Button>
+              <SheetTrigger asChild>
+                <Button
+                  variant="outline"
+                  ref={menuButton}
+                  type="button"
+                  className="menu-toggle"
+                  aria-label={menuOpen ? 'Fechar menu' : 'Abrir menu'}
+                  aria-expanded={menuOpen}
+                  aria-controls="mobile-navigation"
+                >
+                  {menuOpen ? (
+                    <X size={22} aria-hidden="true" />
+                  ) : (
+                    <Menu size={22} aria-hidden="true" />
+                  )}
+                </Button>
+              </SheetTrigger>
+            </div>
           </div>
-        </div>
-        {menuOpen && (
-          <nav
-            id="mobile-navigation"
-            className="mobile-nav"
-            aria-label="Seções da página"
+          <SheetContent
+            side="top"
+            className="top-[70px]"
+            showCloseButton={false}
+            onCloseAutoFocus={(event) => {
+              event.preventDefault();
+              menuButton.current?.focus();
+            }}
           >
-            <a href="#funcionalidades" onClick={() => setMenuOpen(false)}>
-              Funcionalidades
-            </a>
-            <a href="#tecnologias" onClick={() => setMenuOpen(false)}>
-              Tecnologias
-            </a>
-          </nav>
-        )}
-      </header>
+            <SheetTitle className="sr-only">Navegação</SheetTitle>
+            <SheetDescription className="sr-only">
+              Seções da página inicial
+            </SheetDescription>
+            <nav
+              id="mobile-navigation"
+              className="mobile-nav"
+              aria-label="Seções da página"
+            >
+              <a href="#funcionalidades" onClick={() => setMenuOpen(false)}>
+                Funcionalidades
+              </a>
+              <a href="#tecnologias" onClick={() => setMenuOpen(false)}>
+                Tecnologias
+              </a>
+            </nav>
+          </SheetContent>
+        </header>
+      </Sheet>
 
       <main>
         <section className="hero section-wrap" aria-labelledby="hero-title">
           <div className="hero-copy">
-            <span className="eyebrow-pill">
+            <Badge className="eyebrow-pill" variant="secondary">
               <span aria-hidden="true">✦</span> UM JEITO MAIS CLARO DE ESTUDAR
-            </span>
+            </Badge>
             <h1 id="hero-title">
               Seu plano de estudos, <em>em movimento.</em>
             </h1>
@@ -143,9 +173,12 @@ export function PublicLanding() {
               acompanhar cada conquista.
             </p>
             <div className="hero-actions">
-              <a className="button button-primary" href="/acesso">
-                Login / Inscreva-se <ArrowRight size={19} aria-hidden="true" />
-              </a>
+              <Button asChild>
+                <a href="/acesso">
+                  Login / Inscreva-se{' '}
+                  <ArrowRight size={19} aria-hidden="true" />
+                </a>
+              </Button>
               <a className="text-link" href="#funcionalidades">
                 Conheça a proposta <ArrowRight size={17} aria-hidden="true" />
               </a>
@@ -157,28 +190,30 @@ export function PublicLanding() {
           <div className="hero-visual" aria-hidden="true">
             <div className="orbit orbit-one" />
             <div className="orbit orbit-two" />
-            <div className="hero-card">
-              <div className="hero-card-top">
-                <span>Minha jornada</span>
-                <span>✦</span>
+            <Card asChild>
+              <div className="hero-card">
+                <CardContent>
+                  <div className="hero-card-top">
+                    <span>Minha jornada</span>
+                    <span>✦</span>
+                  </div>
+                  <div className="hero-card-title">Um dia de cada vez.</div>
+                  <Progress value={66} className="hero-progress" />
+                  <div className="hero-card-row">
+                    <CheckCircle2 size={20} />
+                    <span>Organizar prioridades</span>
+                  </div>
+                  <div className="hero-card-row">
+                    <Clock3 size={20} />
+                    <span>Reservar tempo de foco</span>
+                  </div>
+                  <div className="hero-card-row">
+                    <Layers3 size={20} />
+                    <span>Revisar o que importa</span>
+                  </div>
+                </CardContent>
               </div>
-              <div className="hero-card-title">Um dia de cada vez.</div>
-              <div className="hero-progress">
-                <span />
-              </div>
-              <div className="hero-card-row">
-                <CheckCircle2 size={20} />
-                <span>Organizar prioridades</span>
-              </div>
-              <div className="hero-card-row">
-                <Clock3 size={20} />
-                <span>Reservar tempo de foco</span>
-              </div>
-              <div className="hero-card-row">
-                <Layers3 size={20} />
-                <span>Revisar o que importa</span>
-              </div>
-            </div>
+            </Card>
             <div className="floating-tag">
               Seu progresso tem caminho <Sparkles size={15} />
             </div>
@@ -214,13 +249,17 @@ export function PublicLanding() {
           </div>
           <div className="features-grid">
             {features.map(({ icon: Icon, title, description }) => (
-              <article className="feature-card" key={title}>
-                <span className="feature-icon">
-                  <Icon size={22} aria-hidden="true" />
-                </span>
-                <h3>{title}</h3>
-                <p>{description}</p>
-              </article>
+              <Card key={title} asChild>
+                <article className="feature-card">
+                  <CardContent>
+                    <span className="feature-icon">
+                      <Icon size={22} aria-hidden="true" />
+                    </span>
+                    <h3>{title}</h3>
+                    <p>{description}</p>
+                  </CardContent>
+                </article>
+              </Card>
             ))}
           </div>
         </section>
@@ -241,11 +280,11 @@ export function PublicLanding() {
               </p>
             </div>
             <div className="tech-list" aria-label="Tecnologias utilizadas">
-              <span>React</span>
-              <span>TypeScript</span>
-              <span>Vite</span>
-              <span>Express</span>
-              <span>MySQL</span>
+              <Badge variant="secondary">React</Badge>
+              <Badge variant="secondary">TypeScript</Badge>
+              <Badge variant="secondary">Vite</Badge>
+              <Badge variant="secondary">Express</Badge>
+              <Badge variant="secondary">MySQL</Badge>
             </div>
           </div>
         </section>
@@ -263,9 +302,11 @@ export function PublicLanding() {
             Estamos preparando a EduTrack. Conheça o espaço de acesso e volte
             para acompanhar as novidades.
           </p>
-          <a className="button button-light" href="/acesso">
-            Quero me inscrever <ArrowRight size={18} aria-hidden="true" />
-          </a>
+          <Button asChild variant="secondary">
+            <a href="/acesso">
+              Quero me inscrever <ArrowRight size={18} aria-hidden="true" />
+            </a>
+          </Button>
         </section>
       </main>
 

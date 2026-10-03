@@ -1,3 +1,8 @@
+import { FieldSet, FieldLegend } from '@study-platform/ui/components/ui/field';
+import { Label } from '@study-platform/ui/components/ui/label';
+import { Input } from '@study-platform/ui/components/ui/input';
+import { Textarea } from '@study-platform/ui/components/ui/textarea';
+import { Button } from '@study-platform/ui/components/ui/button';
 import { useEffect, useRef } from 'react';
 import type { RoadmapDraft } from '@study-platform/contracts';
 const blankStep = () => ({ title: '', description: '' });
@@ -45,46 +50,46 @@ export function RoadmapEditor({
       .slice(0, index)
       .reduce((sum, block) => sum + block.steps.length, 0);
   return (
-    <fieldset disabled={disabled} aria-label="Conteúdo do roadmap">
-      <label>
+    <FieldSet disabled={disabled} aria-label="Conteúdo do roadmap">
+      <Label>
         Título do roadmap
-        <input
+        <Input
           ref={first}
           required
           maxLength={120}
           value={value.title}
           onChange={(e) => onChange({ ...value, title: e.target.value })}
         />
-      </label>
-      <label>
+      </Label>
+      <Label>
         Descrição do roadmap
-        <textarea
+        <Textarea
           required
           maxLength={1000}
           value={value.description}
           onChange={(e) => onChange({ ...value, description: e.target.value })}
         />
-      </label>
+      </Label>
       {value.blocks.map((block, index) => (
-        <fieldset
+        <FieldSet
           className="roadmap-block"
           key={index}
           aria-label={`Bloco ${index + 1}`}
         >
-          <legend>Bloco {index + 1}</legend>
-          <label>
+          <FieldLegend>Bloco {index + 1}</FieldLegend>
+          <Label>
             Título do bloco {index + 1}
-            <input
+            <Input
               required
               maxLength={120}
               value={block.title}
               readOnly={offset(index) < boundary}
               onChange={(e) => blockChange(index, { title: e.target.value })}
             />
-          </label>
-          <label>
+          </Label>
+          <Label>
             Descrição do bloco {index + 1}
-            <textarea
+            <Textarea
               required
               maxLength={1000}
               value={block.description}
@@ -93,9 +98,9 @@ export function RoadmapEditor({
                 blockChange(index, { description: e.target.value })
               }
             />
-          </label>
+          </Label>
           <div className="subject-actions">
-            <button
+            <Button
               type="button"
               disabled={index === 0 || offset(index - 1) < boundary}
               onClick={() =>
@@ -103,8 +108,8 @@ export function RoadmapEditor({
               }
             >
               Subir bloco {index + 1}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               disabled={
                 index === value.blocks.length - 1 || offset(index) < boundary
@@ -114,8 +119,8 @@ export function RoadmapEditor({
               }
             >
               Descer bloco {index + 1}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               disabled={value.blocks.length === 1 || offset(index) < boundary}
               onClick={() =>
@@ -126,22 +131,22 @@ export function RoadmapEditor({
               }
             >
               Excluir bloco {index + 1}
-            </button>
+            </Button>
           </div>
           {block.steps.map((step, stepIndex) => (
-            <fieldset
+            <FieldSet
               className="roadmap-step"
               key={step.id ?? stepIndex}
               disabled={offset(index) + stepIndex < boundary}
               aria-label={`Passo ${index + 1}.${stepIndex + 1}`}
             >
-              <legend>
+              <FieldLegend>
                 Passo {index + 1}.{stepIndex + 1}
                 {offset(index) + stepIndex < boundary ? ' — preservado' : ''}
-              </legend>
-              <label>
+              </FieldLegend>
+              <Label>
                 Título do passo {index + 1}.{stepIndex + 1}
-                <input
+                <Input
                   required
                   maxLength={120}
                   value={step.title}
@@ -153,10 +158,10 @@ export function RoadmapEditor({
                     })
                   }
                 />
-              </label>
-              <label>
+              </Label>
+              <Label>
                 Descrição do passo {index + 1}.{stepIndex + 1}
-                <textarea
+                <Textarea
                   required
                   maxLength={1000}
                   value={step.description}
@@ -170,9 +175,9 @@ export function RoadmapEditor({
                     })
                   }
                 />
-              </label>
+              </Label>
               <div className="subject-actions">
-                <button
+                <Button
                   type="button"
                   disabled={
                     stepIndex === 0 || offset(index) + stepIndex - 1 < boundary
@@ -184,8 +189,8 @@ export function RoadmapEditor({
                   }
                 >
                   Subir passo {index + 1}.{stepIndex + 1}
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
                   disabled={stepIndex === block.steps.length - 1}
                   onClick={() =>
@@ -195,8 +200,8 @@ export function RoadmapEditor({
                   }
                 >
                   Descer passo {index + 1}.{stepIndex + 1}
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
                   disabled={block.steps.length === 1}
                   onClick={() =>
@@ -206,11 +211,11 @@ export function RoadmapEditor({
                   }
                 >
                   Excluir passo {index + 1}.{stepIndex + 1}
-                </button>
+                </Button>
               </div>
-            </fieldset>
+            </FieldSet>
           ))}
-          <button
+          <Button
             type="button"
             disabled={
               block.steps.length >= 20 ||
@@ -221,10 +226,10 @@ export function RoadmapEditor({
             }
           >
             Adicionar passo ao bloco {index + 1}
-          </button>
-        </fieldset>
+          </Button>
+        </FieldSet>
       ))}
-      <button
+      <Button
         type="button"
         disabled={value.blocks.length >= 20}
         onClick={() =>
@@ -235,7 +240,7 @@ export function RoadmapEditor({
         }
       >
         Adicionar bloco
-      </button>
-    </fieldset>
+      </Button>
+    </FieldSet>
   );
 }

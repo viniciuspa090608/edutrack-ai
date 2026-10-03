@@ -1,3 +1,30 @@
+import {
+  AlertDescription,
+  Alert,
+} from '@study-platform/ui/components/ui/alert';
+import { FieldSet } from '@study-platform/ui/components/ui/field';
+import { Skeleton } from '@study-platform/ui/components/ui/skeleton';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogTitle,
+  AlertDialogDescription,
+} from '@study-platform/ui/components/ui/alert-dialog';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+} from '@study-platform/ui/components/ui/pagination';
+
+import { Label } from '@study-platform/ui/components/ui/label';
+import {
+  NativeSelect,
+  NativeSelectOption,
+} from '@study-platform/ui/components/ui/native-select';
+import { Textarea } from '@study-platform/ui/components/ui/textarea';
+import { Input } from '@study-platform/ui/components/ui/input';
+import { Button } from '@study-platform/ui/components/ui/button';
+import { Card, CardContent } from '@study-platform/ui/components/ui/card';
 import { useEffect, useRef, useState } from 'react';
 import {
   generationParametersSchema,
@@ -71,9 +98,9 @@ function ParametersForm({
   }, []);
   const fieldError = (field: string) =>
     errors[field] ? (
-      <p id={`roadmap-${field}-error`} role="alert">
-        {errors[field]}
-      </p>
+      <Alert variant="destructive" id={`roadmap-${field}-error`} role="alert">
+        <AlertDescription>{errors[field]}</AlertDescription>
+      </Alert>
     ) : null;
   const accessibility = (field: string) => ({
     'aria-invalid': !!errors[field],
@@ -123,10 +150,10 @@ function ParametersForm({
         O nome da matéria e estes parâmetros serão enviados ao provedor de IA.
         Revise antes de gerar.
       </p>
-      <fieldset disabled={busy}>
-        <label>
+      <FieldSet disabled={busy}>
+        <Label>
           Nível atual
-          <select
+          <NativeSelect
             name="currentLevel"
             ref={first}
             value={level}
@@ -135,37 +162,39 @@ function ParametersForm({
               setLevel(e.target.value as RoadmapParameters['currentLevel'])
             }
           >
-            <option value="BEGINNER">Iniciante</option>
-            <option value="INTERMEDIATE">Intermediário</option>
-            <option value="ADVANCED">Avançado</option>
-          </select>
-        </label>
+            <NativeSelectOption value="BEGINNER">Iniciante</NativeSelectOption>
+            <NativeSelectOption value="INTERMEDIATE">
+              Intermediário
+            </NativeSelectOption>
+            <NativeSelectOption value="ADVANCED">Avançado</NativeSelectOption>
+          </NativeSelect>
+        </Label>
         {fieldError('currentLevel')}
-        <label>
+        <Label>
           Objetivo da geração
-          <textarea
+          <Textarea
             name="objective"
             value={objective}
             maxLength={500}
             {...accessibility('objective')}
             onChange={(e) => setObjective(e.target.value)}
           />
-        </label>
+        </Label>
         {fieldError('objective')}
-        <label>
+        <Label>
           Prazo da geração
-          <input
+          <Input
             name="dueDate"
             type="date"
             value={date}
             {...accessibility('dueDate')}
             onChange={(e) => setDate(e.target.value)}
           />
-        </label>
+        </Label>
         {fieldError('dueDate')}
-        <label>
+        <Label>
           Horas semanais da geração
-          <input
+          <Input
             name="weeklyHours"
             type="number"
             step="any"
@@ -175,23 +204,23 @@ function ParametersForm({
             {...accessibility('weeklyHours')}
             onChange={(e) => setHours(e.target.value)}
           />
-        </label>
+        </Label>
         {fieldError('weeklyHours')}
-        <label>
+        <Label>
           Assuntos conhecidos para a geração
-          <textarea
+          <Textarea
             name="knownTopics"
             value={topics}
             {...accessibility('knownTopics')}
             onChange={(e) => setTopics(e.target.value)}
           />
-        </label>
+        </Label>
         {fieldError('knownTopics')}
-        <button type="submit">Gerar prévia</button>
-      </fieldset>
-      <button type="button" onClick={onCancel}>
+        <Button type="submit">Gerar prévia</Button>
+      </FieldSet>
+      <Button type="button" onClick={onCancel}>
         Cancelar
-      </button>
+      </Button>
     </form>
   );
 }
@@ -368,7 +397,7 @@ export function RoadmapsSection({
     <section aria-label="Roadmaps" className="roadmaps-section">
       <h3>Roadmaps</h3>
       <div className="subject-actions">
-        <button
+        <Button
           ref={newButton}
           disabled={!!busy || !!mode || !!deleting}
           onClick={() => {
@@ -380,9 +409,9 @@ export function RoadmapsSection({
           }}
         >
           Criar roadmap manual
-        </button>
+        </Button>
         {aiEnabled && (
-          <button
+          <Button
             ref={aiButton}
             disabled={!!busy || !!mode || !!deleting}
             onClick={() => {
@@ -393,19 +422,30 @@ export function RoadmapsSection({
             }}
           >
             Aprimorar com IA
-          </button>
+          </Button>
         )}
       </div>
-      {loading && <p role="status">Carregando roadmaps…</p>}
-      {loadError && (
-        <div role="alert">
-          <p>{loadError}</p>
-          <button onClick={() => setRevision((value) => value + 1)}>
-            Tentar carregar roadmaps novamente
-          </button>
+      {loading && (
+        <div>
+          <Skeleton aria-hidden="true" className="my-2 h-3 w-2/3" />
+          <p role="status">Carregando roadmaps…</p>
         </div>
       )}
-      {error && <p role="alert">{error}</p>}
+      {loadError && (
+        <Alert variant="destructive" role="alert">
+          <AlertDescription>
+            <p>{loadError}</p>
+            <Button onClick={() => setRevision((value) => value + 1)}>
+              Tentar carregar roadmaps novamente
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+      {error && !deleting && (
+        <Alert variant="destructive" role="alert">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
       {success && <p role="status">{success}</p>}
       {busy && (
         <p role="status">
@@ -473,11 +513,13 @@ export function RoadmapsSection({
                 {new Date(preview.expiresAt).toLocaleString('pt-BR')}.
               </p>
               {expired && (
-                <p role="alert">
-                  A prévia expirou. Gere novamente para salvar.
-                </p>
+                <Alert variant="destructive" role="alert">
+                  <AlertDescription>
+                    A prévia expirou. Gere novamente para salvar.
+                  </AlertDescription>
+                </Alert>
               )}
-              <button
+              <Button
                 type="button"
                 disabled={!!busy}
                 onClick={() => {
@@ -488,7 +530,7 @@ export function RoadmapsSection({
                 }}
               >
                 Gerar novamente
-              </button>
+              </Button>
             </>
           )}
           <RoadmapEditor
@@ -497,12 +539,12 @@ export function RoadmapsSection({
             disabled={!!busy}
           />
           <div className="subject-actions">
-            <button type="submit" disabled={!!busy || expired}>
+            <Button type="submit" disabled={!!busy || expired}>
               Salvar roadmap
-            </button>
-            <button type="button" disabled={!!busy} onClick={close}>
+            </Button>
+            <Button type="button" disabled={!!busy} onClick={close}>
               Cancelar
-            </button>
+            </Button>
           </div>
         </form>
       )}
@@ -513,130 +555,170 @@ export function RoadmapsSection({
         </p>
       )}
       {result?.items.map((roadmap) => (
-        <article
-          className="subject-card"
-          key={roadmap.id}
-          id={`roadmap-${roadmap.id}`}
-          tabIndex={-1}
-        >
-          <h4>{roadmap.title}</h4>
-          <p>{roadmap.description}</p>
-          <ol>
-            {roadmap.blocks.map((block, index) => (
-              <li key={index}>
-                <h5>{block.title}</h5>
-                <p>{block.description}</p>
-                <ol>
-                  {block.steps.map((step, stepIndex) => (
-                    <li key={stepIndex}>
-                      <strong>{step.title}</strong>
-                      <p>{step.description}</p>
-                    </li>
-                  ))}
-                </ol>
-              </li>
-            ))}
-          </ol>
-          <div className="subject-actions">
-            <button
-              disabled={!!mode || !!busy || !!deleting}
-              onClick={() => {
-                setEditingId(roadmap.id);
-                setEditingRevision(roadmap.revision);
-                setContent({
-                  title: roadmap.title,
-                  description: roadmap.description,
-                  blocks: roadmap.blocks,
-                });
-                setMode('manual');
-                setError('');
-                setSuccess('');
-              }}
-            >
-              Editar roadmap {roadmap.title}
-            </button>
-            <button
-              disabled={!!mode || !!busy || !!deleting}
-              onClick={() => {
-                setDeleting(roadmap);
-                setError('');
-                setSuccess('');
-              }}
-            >
-              Excluir roadmap {roadmap.title}
-            </button>
-          </div>
-          <RoadmapRevisionTools
-            roadmap={roadmap}
-            aiEnabled={aiEnabled}
-            disabled={!!mode || !!busy || !!deleting}
-            onChanged={() => {
-              setSuccess('Roadmap atualizado.');
-              setRevision((value) => value + 1);
-              newButton.current?.focus();
-            }}
-          />
-        </article>
+        <Card key={roadmap.id} asChild>
+          <article
+            className="subject-card"
+
+            id={`roadmap-${roadmap.id}`}
+            tabIndex={-1}
+          >
+            <CardContent>
+              <h4>{roadmap.title}</h4>
+              <p>{roadmap.description}</p>
+              <ol>
+                {roadmap.blocks.map((block, index) => (
+                  <li key={index}>
+                    <h5>{block.title}</h5>
+                    <p>{block.description}</p>
+                    <ol>
+                      {block.steps.map((step, stepIndex) => (
+                        <li key={stepIndex}>
+                          <strong>{step.title}</strong>
+                          <p>{step.description}</p>
+                        </li>
+                      ))}
+                    </ol>
+                  </li>
+                ))}
+              </ol>
+              <div className="subject-actions">
+                <Button
+                  disabled={!!mode || !!busy || !!deleting}
+                  onClick={() => {
+                    setEditingId(roadmap.id);
+                    setEditingRevision(roadmap.revision);
+                    setContent({
+                      title: roadmap.title,
+                      description: roadmap.description,
+                      blocks: roadmap.blocks,
+                    });
+                    setMode('manual');
+                    setError('');
+                    setSuccess('');
+                  }}
+                >
+                  Editar roadmap {roadmap.title}
+                </Button>
+                <Button
+                  disabled={!!mode || !!busy || !!deleting}
+                  onClick={() => {
+                    setDeleting(roadmap);
+                    setError('');
+                    setSuccess('');
+                  }}
+                >
+                  Excluir roadmap {roadmap.title}
+                </Button>
+              </div>
+              <RoadmapRevisionTools
+                roadmap={roadmap}
+                aiEnabled={aiEnabled}
+                disabled={!!mode || !!busy || !!deleting}
+                onChanged={() => {
+                  setSuccess('Roadmap atualizado.');
+                  setRevision((value) => value + 1);
+                  newButton.current?.focus();
+                }}
+              />
+            </CardContent>
+          </article>
+        </Card>
       ))}
       {deleting && (
-        <div role="group" aria-label="Confirmar exclusão do roadmap">
-          <p>Excluir {deleting.title} e seus blocos e passos?</p>
-          <button
-            autoFocus
-            disabled={!!busy}
-            onClick={() => {
-              setDeleting(null);
+        <AlertDialog
+          open
+          onOpenChange={(open) => {
+            if (!open && !busy) setDeleting(null);
+          }}
+        >
+          <AlertDialogContent
+            onEscapeKeyDown={(event) => {
+              event.preventDefault();
+              if (!busy) setDeleting(null);
+            }}
+            onCloseAutoFocus={(event) => {
+              event.preventDefault();
               newButton.current?.focus();
             }}
           >
-            Cancelar exclusão do roadmap
-          </button>
-          <button
-            disabled={!!busy}
-            onClick={async () => {
-              if (saving.current) return;
-              saving.current = true;
-              setBusy('delete');
-              setError('');
-              try {
-                await deleteRoadmap(subject.id, deleting.id);
-                if (active.current) {
+            <AlertDialogTitle className="sr-only">
+              Confirmar exclusão do roadmap
+            </AlertDialogTitle>
+            <div role="group" aria-label="Confirmar exclusão do roadmap">
+              {error && (
+                <Alert variant="destructive">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+              <AlertDialogDescription asChild>
+                <p>Excluir {deleting.title} e seus blocos e passos?</p>
+              </AlertDialogDescription>
+              <Button
+                autoFocus
+                disabled={!!busy}
+                onClick={() => {
                   setDeleting(null);
-                  setPage(1);
-                  setRevision((value) => value + 1);
-                  setSuccess('Roadmap excluído.');
                   newButton.current?.focus();
-                }
-              } catch (cause) {
-                if (active.current) setError(failure(cause));
-              } finally {
-                saving.current = false;
-                if (active.current) setBusy(null);
-              }
-            }}
-          >
-            Confirmar exclusão do roadmap
-          </button>
-        </div>
+                }}
+              >
+                Cancelar exclusão do roadmap
+              </Button>
+              <Button
+                disabled={!!busy}
+                onClick={async () => {
+                  if (saving.current) return;
+                  saving.current = true;
+                  setBusy('delete');
+                  setError('');
+                  try {
+                    await deleteRoadmap(subject.id, deleting.id);
+                    if (active.current) {
+                      setDeleting(null);
+                      setPage(1);
+                      setRevision((value) => value + 1);
+                      setSuccess('Roadmap excluído.');
+                      newButton.current?.focus();
+                    }
+                  } catch (cause) {
+                    if (active.current) setError(failure(cause));
+                  } finally {
+                    saving.current = false;
+                    if (active.current) setBusy(null);
+                  }
+                }}
+              >
+                Confirmar exclusão do roadmap
+              </Button>
+            </div>
+          </AlertDialogContent>
+        </AlertDialog>
       )}
       {result && result.totalPages > 1 && (
-        <nav aria-label="Paginação de roadmaps">
-          <button
-            disabled={page === 1 || !!mode || !!busy}
-            onClick={() => setPage(page - 1)}
-          >
-            Roadmaps anteriores
-          </button>
-          <span>
-            Página {page} de {result.totalPages}
-          </span>
-          <button
-            disabled={page >= result.totalPages || !!mode || !!busy}
-            onClick={() => setPage(page + 1)}
-          >
-            Próximos roadmaps
-          </button>
-        </nav>
+        <Pagination aria-label="Paginação de roadmaps">
+          <PaginationContent className="flex-wrap">
+            <PaginationItem>
+              <Button
+                disabled={page === 1 || !!mode || !!busy}
+                onClick={() => setPage(page - 1)}
+              >
+                Roadmaps anteriores
+              </Button>
+            </PaginationItem>
+            <PaginationItem>
+              <span>
+                Página {page} de {result.totalPages}
+              </span>
+            </PaginationItem>
+            <PaginationItem>
+              <Button
+                disabled={page >= result.totalPages || !!mode || !!busy}
+                onClick={() => setPage(page + 1)}
+              >
+                Próximos roadmaps
+              </Button>
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
       )}
     </section>
   );

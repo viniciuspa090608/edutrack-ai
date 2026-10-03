@@ -64,11 +64,11 @@ describe('account access', () => {
     const interaction = userEvent.setup();
     await interaction.tab();
     expect(document.activeElement).toBe(
-      screen.getAllByRole('button', { name: 'Entrar' })[0],
+      screen.getByRole('tab', { name: 'Entrar' }),
     );
-    await interaction.tab();
+    await interaction.keyboard('{ArrowRight}');
     expect(document.activeElement).toBe(
-      screen.getByRole('button', { name: 'Criar conta' }),
+      screen.getByRole('tab', { name: 'Criar conta' }),
     );
     await interaction.tab();
     expect(document.activeElement).toBe(
@@ -87,9 +87,7 @@ describe('account access', () => {
     vi.stubGlobal('fetch', fetchMock);
     render(<App />);
     const interaction = userEvent.setup();
-    await interaction.click(
-      screen.getAllByRole('button', { name: 'Criar conta' }).at(-1)!,
-    );
+    await interaction.click(screen.getByRole('tab', { name: 'Criar conta' }));
     expect(
       screen.getByRole('heading', { name: 'Crie sua conta' }),
     ).toBeTruthy();

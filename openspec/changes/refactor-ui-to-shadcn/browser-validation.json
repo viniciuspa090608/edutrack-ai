@@ -1,0 +1,461 @@
+{
+  "results": [
+    {
+      "r": "/",
+      "width": 320,
+      "scroll": 320,
+      "heading": "Seu plano de estudos, em movimento.",
+      "slots": 36,
+      "overflow": [
+        {
+          "tag": "DIV",
+          "cls": "orbit orbit-one",
+          "right": 325
+        },
+        {
+          "tag": "DIV",
+          "cls": "orbit orbit-two",
+          "right": 385
+        }
+      ]
+    },
+    {
+      "r": "/acesso",
+      "width": 320,
+      "scroll": 320,
+      "heading": "Entre na sua conta",
+      "slots": 14,
+      "overflow": []
+    },
+    {
+      "r": "/confirmar-email",
+      "width": 320,
+      "scroll": 320,
+      "heading": "Confirme seu e-mail",
+      "slots": 7,
+      "overflow": []
+    },
+    {
+      "r": "/recuperar-senha",
+      "width": 320,
+      "scroll": 320,
+      "heading": "Esqueci minha senha",
+      "slots": 6,
+      "overflow": []
+    },
+    {
+      "r": "/status",
+      "width": 320,
+      "scroll": 320,
+      "heading": "A base para estudar com clareza.",
+      "slots": 6,
+      "overflow": []
+    },
+    {
+      "r": "/conta",
+      "width": 320,
+      "scroll": 320,
+      "heading": "Conta",
+      "slots": 46,
+      "overflow": []
+    },
+    {
+      "r": "/app",
+      "width": 320,
+      "scroll": 320,
+      "heading": "Olá, Estudante",
+      "slots": 20,
+      "overflow": []
+    },
+    {
+      "r": "/app/tarefas",
+      "width": 320,
+      "scroll": 320,
+      "heading": "Tarefas",
+      "slots": 34,
+      "overflow": []
+    },
+    {
+      "r": "/app/materias",
+      "width": 320,
+      "scroll": 320,
+      "heading": "Matérias",
+      "slots": 2,
+      "overflow": []
+    },
+    {
+      "r": "/app/flashcards",
+      "width": 320,
+      "scroll": 320,
+      "heading": "Flashcards",
+      "slots": 10,
+      "overflow": []
+    },
+    {
+      "r": "/app/pomodoro",
+      "width": 320,
+      "scroll": 320,
+      "heading": "Pomodoro",
+      "slots": 18,
+      "overflow": []
+    },
+    {
+      "r": "/app/rotinas",
+      "width": 320,
+      "scroll": 320,
+      "heading": "Rotinas de estudo",
+      "slots": 3,
+      "overflow": []
+    },
+    {
+      "r": "/app/estatisticas",
+      "width": 320,
+      "scroll": 320,
+      "heading": "Estatísticas de estudo",
+      "slots": 9,
+      "overflow": []
+    },
+    {
+      "r": "/app/progresso",
+      "width": 320,
+      "scroll": 320,
+      "heading": "Seu progresso",
+      "slots": 28,
+      "overflow": []
+    },
+    {
+      "r": "/inexistente",
+      "width": 320,
+      "scroll": 320,
+      "heading": "Página não encontrada",
+      "slots": 0,
+      "overflow": []
+    },
+    {
+      "r": "/",
+      "width": 390,
+      "scroll": 390,
+      "heading": "Seu plano de estudos, em movimento.",
+      "slots": 36,
+      "overflow": [
+        {
+          "tag": "DIV",
+          "cls": "orbit orbit-two",
+          "right": 420
+        }
+      ]
+    },
+    {
+      "r": "/acesso",
+      "width": 390,
+      "scroll": 390,
+      "heading": "Entre na sua conta",
+      "slots": 14,
+      "overflow": []
+    },
+    {
+      "r": "/confirmar-email",
+      "width": 390,
+      "scroll": 390,
+      "heading": "Confirme seu e-mail",
+      "slots": 7,
+      "overflow": []
+    },
+    {
+      "r": "/recuperar-senha",
+      "width": 390,
+      "scroll": 390,
+      "heading": "Esqueci minha senha",
+      "slots": 6,
+      "overflow": []
+    },
+    {
+      "r": "/status",
+      "width": 390,
+      "scroll": 390,
+      "heading": "A base para estudar com clareza.",
+      "slots": 6,
+      "overflow": []
+    },
+    {
+      "r": "/conta",
+      "width": 390,
+      "scroll": 390,
+      "heading": "Conta",
+      "slots": 46,
+      "overflow": []
+    },
+    {
+      "r": "/app",
+      "width": 390,
+      "scroll": 390,
+      "heading": "Olá, Estudante",
+      "slots": 20,
+      "overflow": []
+    },
+    {
+      "r": "/app/tarefas",
+      "width": 390,
+      "scroll": 390,
+      "heading": "Tarefas",
+      "slots": 34,
+      "overflow": []
+    },
+    {
+      "r": "/app/materias",
+      "width": 390,
+      "scroll": 390,
+      "heading": "Matérias",
+      "slots": 2,
+      "overflow": []
+    },
+    {
+      "r": "/app/flashcards",
+      "width": 390,
+      "scroll": 390,
+      "heading": "Flashcards",
+      "slots": 10,
+      "overflow": []
+    },
+    {
+      "r": "/app/pomodoro",
+      "width": 390,
+      "scroll": 390,
+      "heading": "Pomodoro",
+      "slots": 18,
+      "overflow": []
+    },
+    {
+      "r": "/app/rotinas",
+      "width": 390,
+      "scroll": 390,
+      "heading": "Rotinas de estudo",
+      "slots": 3,
+      "overflow": []
+    },
+    {
+      "r": "/app/estatisticas",
+      "width": 390,
+      "scroll": 390,
+      "heading": "Estatísticas de estudo",
+      "slots": 9,
+      "overflow": []
+    },
+    {
+      "r": "/app/progresso",
+      "width": 390,
+      "scroll": 390,
+      "heading": "Seu progresso",
+      "slots": 28,
+      "overflow": []
+    },
+    {
+      "r": "/inexistente",
+      "width": 390,
+      "scroll": 390,
+      "heading": "Página não encontrada",
+      "slots": 0,
+      "overflow": []
+    },
+    {
+      "r": "/",
+      "width": 1280,
+      "scroll": 1280,
+      "heading": "Seu plano de estudos, em movimento.",
+      "slots": 36,
+      "overflow": []
+    },
+    {
+      "r": "/acesso",
+      "width": 1280,
+      "scroll": 1280,
+      "heading": "Entre na sua conta",
+      "slots": 14,
+      "overflow": []
+    },
+    {
+      "r": "/confirmar-email",
+      "width": 1280,
+      "scroll": 1280,
+      "heading": "Confirme seu e-mail",
+      "slots": 7,
+      "overflow": []
+    },
+    {
+      "r": "/recuperar-senha",
+      "width": 1280,
+      "scroll": 1280,
+      "heading": "Esqueci minha senha",
+      "slots": 6,
+      "overflow": []
+    },
+    {
+      "r": "/status",
+      "width": 1280,
+      "scroll": 1280,
+      "heading": "A base para estudar com clareza.",
+      "slots": 6,
+      "overflow": []
+    },
+    {
+      "r": "/conta",
+      "width": 1280,
+      "scroll": 1280,
+      "heading": "Conta",
+      "slots": 46,
+      "overflow": []
+    },
+    {
+      "r": "/app",
+      "width": 1280,
+      "scroll": 1280,
+      "heading": "Olá, Estudante",
+      "slots": 20,
+      "overflow": []
+    },
+    {
+      "r": "/app/tarefas",
+      "width": 1280,
+      "scroll": 1280,
+      "heading": "Tarefas",
+      "slots": 34,
+      "overflow": []
+    },
+    {
+      "r": "/app/materias",
+      "width": 1280,
+      "scroll": 1280,
+      "heading": "Matérias",
+      "slots": 2,
+      "overflow": []
+    },
+    {
+      "r": "/app/flashcards",
+      "width": 1280,
+      "scroll": 1280,
+      "heading": "Flashcards",
+      "slots": 10,
+      "overflow": []
+    },
+    {
+      "r": "/app/pomodoro",
+      "width": 1280,
+      "scroll": 1280,
+      "heading": "Pomodoro",
+      "slots": 18,
+      "overflow": []
+    },
+    {
+      "r": "/app/rotinas",
+      "width": 1280,
+      "scroll": 1280,
+      "heading": "Rotinas de estudo",
+      "slots": 3,
+      "overflow": []
+    },
+    {
+      "r": "/app/estatisticas",
+      "width": 1280,
+      "scroll": 1280,
+      "heading": "Estatísticas de estudo",
+      "slots": 9,
+      "overflow": []
+    },
+    {
+      "r": "/app/progresso",
+      "width": 1280,
+      "scroll": 1280,
+      "heading": "Seu progresso",
+      "slots": 28,
+      "overflow": []
+    },
+    {
+      "r": "/inexistente",
+      "width": 1280,
+      "scroll": 1280,
+      "heading": "Página não encontrada",
+      "slots": 0,
+      "overflow": []
+    },
+    {
+      "interaction": "Sheet Escape",
+      "focus": true
+    },
+    {
+      "interaction": "Tabs arrow",
+      "selected": "true"
+    },
+    {
+      "interaction": "Select portal",
+      "text": "Ano"
+    },
+    {
+      "interaction": "Dialog at 320",
+      "width": 288
+    },
+    {
+      "interaction": "Dialog Escape",
+      "focus": true
+    },
+    {
+      "interaction": "Central theme token",
+      "color": "rgb(120, 40, 180)"
+    },
+    {
+      "r": "/status",
+      "state": "error",
+      "alerts": 1
+    },
+    {
+      "r": "/conta",
+      "state": "error",
+      "alerts": 1
+    },
+    {
+      "r": "/app",
+      "state": "error",
+      "alerts": 1
+    },
+    {
+      "r": "/app/tarefas",
+      "state": "error",
+      "alerts": 1
+    },
+    {
+      "r": "/app/materias",
+      "state": "error",
+      "alerts": 1
+    },
+    {
+      "r": "/app/flashcards",
+      "state": "error",
+      "alerts": 1
+    },
+    {
+      "r": "/app/pomodoro",
+      "state": "error",
+      "alerts": 2
+    },
+    {
+      "r": "/app/rotinas",
+      "state": "error",
+      "alerts": 1
+    },
+    {
+      "r": "/app/estatisticas",
+      "state": "error",
+      "alerts": 1
+    },
+    {
+      "r": "/app/progresso",
+      "state": "error",
+      "alerts": 1
+    },
+    {
+      "interaction": "Reduced motion carousel",
+      "stable": true
+    }
+  ],
+  "errors": [],
+  "missing": []
+}

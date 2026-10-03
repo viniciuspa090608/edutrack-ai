@@ -18,19 +18,9 @@
   box-sizing: border-box;
   width: 100%;
   min-width: 0;
-  padding: 0.6rem;
-}
-.analytics-page button {
-  padding: 0.6rem;
-}
-.analytics-page :focus-visible {
-  outline: 3px solid #4d49d9;
-  outline-offset: 3px;
 }
 .analytics-cards article,
 .analytics-series li {
-  border: 1px solid #bbb;
-  border-radius: 0.6rem;
   padding: 1rem;
 }
 .analytics-cards h2 {

@@ -9,10 +9,6 @@
 }
 .dashboard-card {
   min-width: 0;
-  padding: 1rem;
-  border: 1px solid #dbe3ef;
-  border-radius: 1rem;
-  background: #f8fbf7;
 }
 .dashboard-card h2 {
   margin-top: 0;
@@ -34,10 +30,6 @@
 .dashboard-card button {
   max-width: 100%;
   white-space: normal;
-}
-.dashboard :focus-visible {
-  outline: 3px solid #426de4;
-  outline-offset: 3px;
 }
 @media (prefers-reduced-motion: reduce) {
   .dashboard *,

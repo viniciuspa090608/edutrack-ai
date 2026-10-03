@@ -1,3 +1,20 @@
+import {
+  CardHeader,
+  Card,
+  CardContent,
+} from '@study-platform/ui/components/ui/card';
+import {
+  AlertDescription,
+  Alert,
+} from '@study-platform/ui/components/ui/alert';
+import { Skeleton } from '@study-platform/ui/components/ui/skeleton';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+} from '@study-platform/ui/components/ui/pagination';
+
+import { Button } from '@study-platform/ui/components/ui/button';
 import { useEffect, useState, useRef } from 'react';
 import type { ReviewHistory as History } from '@study-platform/contracts';
 import { reviewHistory } from './reviews-api.js';
@@ -34,53 +51,77 @@ export function ReviewHistory({
     };
   }, [deckId, cardId, page, retry]);
   return (
-    <section className="flashcard-panel" aria-label="Histórico de revisões">
-      <h3 ref={heading} tabIndex={-1}>
-        Histórico de revisões
-      </h3>
-      {error ? (
-        <p role="alert">
-          Não foi possível carregar o histórico.{' '}
-          <button onClick={() => setRetry(retry + 1)}>Tentar novamente</button>
-        </p>
-      ) : !result ? (
-        <p role="status">Carregando histórico…</p>
-      ) : (
-        <>
-          {!result.items.length && <p>Nenhuma avaliação registrada.</p>}
-          <ol>
-            {result.items.map((event) => (
-              <li key={event.id}>
-                <strong>{event.rating}</strong>
-                <p>
-                  Avaliado em {new Date(event.reviewedAt).toLocaleString()}.
-                  Próxima revisão: {new Date(event.dueAt).toLocaleString()}.
-                </p>
-                <p>
-                  Intervalo: {event.intervalSeconds / 60} minutos. Geração do
-                  conteúdo: {event.contentGeneration}. Política:{' '}
-                  {event.policyId}-v{event.policyVersion}.
-                </p>
-              </li>
-            ))}
-          </ol>
-          <nav aria-label="Páginas do histórico">
-            <button disabled={page === 1} onClick={() => setPage(page - 1)}>
-              Anterior
-            </button>
-            <span>
-              Página {page} de {Math.max(1, result.totalPages)}
-            </span>
-            <button
-              disabled={page >= result.totalPages}
-              onClick={() => setPage(page + 1)}
-            >
-              Próxima
-            </button>
-          </nav>
-        </>
-      )}
-      <button onClick={onClose}>Fechar histórico</button>
-    </section>
+    <Card asChild>
+      <section className="flashcard-panel" aria-label="Histórico de revisões">
+        <CardHeader>
+          <h3 ref={heading} tabIndex={-1}>
+            Histórico de revisões
+          </h3>
+        </CardHeader>
+        <CardContent>
+          {error ? (
+            <Alert variant="destructive" role="alert">
+              <AlertDescription>
+                Não foi possível carregar o histórico.{' '}
+                <Button onClick={() => setRetry(retry + 1)}>
+                  Tentar novamente
+                </Button>
+              </AlertDescription>
+            </Alert>
+          ) : !result ? (
+            <div>
+              <Skeleton aria-hidden="true" className="my-2 h-3 w-2/3" />
+              <p role="status">Carregando histórico…</p>
+            </div>
+          ) : (
+            <>
+              {!result.items.length && <p>Nenhuma avaliação registrada.</p>}
+              <ol>
+                {result.items.map((event) => (
+                  <li key={event.id}>
+                    <strong>{event.rating}</strong>
+                    <p>
+                      Avaliado em {new Date(event.reviewedAt).toLocaleString()}.
+                      Próxima revisão: {new Date(event.dueAt).toLocaleString()}.
+                    </p>
+                    <p>
+                      Intervalo: {event.intervalSeconds / 60} minutos. Geração
+                      do conteúdo: {event.contentGeneration}. Política:{' '}
+                      {event.policyId}-v{event.policyVersion}.
+                    </p>
+                  </li>
+                ))}
+              </ol>
+              <Pagination aria-label="Páginas do histórico">
+                <PaginationContent className="flex-wrap">
+                  <PaginationItem>
+                    <Button
+                      disabled={page === 1}
+                      onClick={() => setPage(page - 1)}
+                    >
+                      Anterior
+                    </Button>
+                  </PaginationItem>
+                  <PaginationItem>
+                    <span>
+                      Página {page} de {Math.max(1, result.totalPages)}
+                    </span>
+                  </PaginationItem>
+                  <PaginationItem>
+                    <Button
+                      disabled={page >= result.totalPages}
+                      onClick={() => setPage(page + 1)}
+                    >
+                      Próxima
+                    </Button>
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            </>
+          )}
+          <Button onClick={onClose}>Fechar histórico</Button>
+        </CardContent>
+      </section>
+    </Card>
   );
 }

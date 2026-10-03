@@ -7,8 +7,6 @@
   min-width: 0;
   margin: 1rem 0;
   padding: 1rem;
-  border: 1px solid #bfcac5;
-  border-radius: 0.75rem;
 }
 .routines-page label {
   display: block;
@@ -32,10 +30,6 @@
   max-width: 100%;
   white-space: normal;
 }
-.routines-page :focus-visible {
-  outline: 3px solid #7355d8;
-  outline-offset: 3px;
-}
 .routine-list,
 .routine-week ul {
   list-style: none;
@@ -43,8 +37,6 @@
 }
 .routine-list > li,
 .routine-week > section {
-  border: 1px solid #bfcac5;
-  border-radius: 0.75rem;
   padding: 1rem;
   margin: 1rem 0;
   min-width: 0;

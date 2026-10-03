@@ -1,3 +1,34 @@
+import {
+  CardHeader,
+  Card,
+  CardContent,
+} from '@study-platform/ui/components/ui/card';
+import { FieldSet } from '@study-platform/ui/components/ui/field';
+import {
+  AlertDescription,
+  Alert,
+} from '@study-platform/ui/components/ui/alert';
+import { Skeleton } from '@study-platform/ui/components/ui/skeleton';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogTitle,
+  AlertDialogDescription,
+} from '@study-platform/ui/components/ui/alert-dialog';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+} from '@study-platform/ui/components/ui/pagination';
+import { Label } from '@study-platform/ui/components/ui/label';
+import { Input } from '@study-platform/ui/components/ui/input';
+import {
+  NativeSelect,
+  NativeSelectOption,
+} from '@study-platform/ui/components/ui/native-select';
+import { Textarea } from '@study-platform/ui/components/ui/textarea';
+import { Button } from '@study-platform/ui/components/ui/button';
+
 import { useEffect, useRef, useState } from 'react';
 import {
   createSubjectSchema,
@@ -64,114 +95,124 @@ function SubjectForm({
     first.current?.focus();
   }, []);
   return (
-    <form
-      className="subject-card"
-      aria-label={subject ? 'Editar matéria' : 'Criar matéria'}
-      onSubmit={async (event) => {
-        event.preventDefault();
-        if (submitting.current) return;
-        const parsed = createSubjectSchema.safeParse({
-          name,
-          currentLevel,
-          objective,
-          dueDate,
-          weeklyHours: Number(hours),
-          knownTopics: topics === '' ? [] : topics.split('\n'),
-        });
-        if (!parsed.success) {
-          setError(
-            'Revise os campos: nome até 120 caracteres, objetivo até 1000, data válida, horas em intervalos de meia hora e assuntos não vazios sem repetição.',
-          );
-          return;
-        }
-        submitting.current = true;
-        setBusy(true);
-        setError('');
-        try {
-          onSaved(await saveSubject(subject?.id ?? null, parsed.data));
-        } catch (cause) {
-          setError(failure(cause));
-        } finally {
-          setBusy(false);
-          submitting.current = false;
-        }
-      }}
-    >
-      <h2>{subject ? 'Editar matéria' : 'Nova matéria'}</h2>
-      <fieldset disabled={busy}>
-        <label>
-          Nome
-          <input
-            ref={first}
-            required
-            maxLength={120}
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-          />
-        </label>
-        <label>
-          Nível atual
-          <select
-            value={currentLevel}
-            onChange={(event) =>
-              setLevel(event.target.value as StudySubject['currentLevel'])
-            }
-          >
-            {Object.entries(levels).map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          Objetivo
-          <textarea
-            required
-            maxLength={1000}
-            value={objective}
-            onChange={(event) => setObjective(event.target.value)}
-          />
-        </label>
-        <label>
-          Prazo
-          <input
-            required
-            type="date"
-            min="1000-01-01"
-            max="9999-12-31"
-            value={dueDate}
-            onChange={(event) => setDate(event.target.value)}
-          />
-        </label>
-        <label>
-          Horas por semana
-          <input
-            required
-            type="number"
-            min="0.5"
-            max="168"
-            step="0.5"
-            value={hours}
-            onChange={(event) => setHours(event.target.value)}
-          />
-        </label>
-        <label>
-          Assuntos conhecidos (um por linha, opcional)
-          <textarea
-            value={topics}
-            onChange={(event) => setTopics(event.target.value)}
-          />
-        </label>
-        <div className="subject-actions">
-          <button>{busy ? 'Salvando…' : 'Salvar matéria'}</button>
-          <button type="button" onClick={onCancel}>
-            Cancelar edição
-          </button>
-        </div>
-      </fieldset>
-      {error && <p role="alert">{error}</p>}
-    </form>
+    <Card asChild>
+      <form
+        className="subject-card"
+        aria-label={subject ? 'Editar matéria' : 'Criar matéria'}
+        onSubmit={async (event) => {
+          event.preventDefault();
+          if (submitting.current) return;
+          const parsed = createSubjectSchema.safeParse({
+            name,
+            currentLevel,
+            objective,
+            dueDate,
+            weeklyHours: Number(hours),
+            knownTopics: topics === '' ? [] : topics.split('\n'),
+          });
+          if (!parsed.success) {
+            setError(
+              'Revise os campos: nome até 120 caracteres, objetivo até 1000, data válida, horas em intervalos de meia hora e assuntos não vazios sem repetição.',
+            );
+            return;
+          }
+          submitting.current = true;
+          setBusy(true);
+          setError('');
+          try {
+            onSaved(await saveSubject(subject?.id ?? null, parsed.data));
+          } catch (cause) {
+            setError(failure(cause));
+          } finally {
+            setBusy(false);
+            submitting.current = false;
+          }
+        }}
+      >
+        <CardHeader>
+          <h2>{subject ? 'Editar matéria' : 'Nova matéria'}</h2>
+        </CardHeader>
+        <CardContent>
+          <FieldSet disabled={busy}>
+            <Label>
+              Nome
+              <Input
+                ref={first}
+                required
+                maxLength={120}
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+              />
+            </Label>
+            <Label>
+              Nível atual
+              <NativeSelect
+                value={currentLevel}
+                onChange={(event) =>
+                  setLevel(event.target.value as StudySubject['currentLevel'])
+                }
+              >
+                {Object.entries(levels).map(([value, label]) => (
+                  <NativeSelectOption key={value} value={value}>
+                    {label}
+                  </NativeSelectOption>
+                ))}
+              </NativeSelect>
+            </Label>
+            <Label>
+              Objetivo
+              <Textarea
+                required
+                maxLength={1000}
+                value={objective}
+                onChange={(event) => setObjective(event.target.value)}
+              />
+            </Label>
+            <Label>
+              Prazo
+              <Input
+                required
+                type="date"
+                min="1000-01-01"
+                max="9999-12-31"
+                value={dueDate}
+                onChange={(event) => setDate(event.target.value)}
+              />
+            </Label>
+            <Label>
+              Horas por semana
+              <Input
+                required
+                type="number"
+                min="0.5"
+                max="168"
+                step="0.5"
+                value={hours}
+                onChange={(event) => setHours(event.target.value)}
+              />
+            </Label>
+            <Label>
+              Assuntos conhecidos (um por linha, opcional)
+              <Textarea
+                value={topics}
+                onChange={(event) => setTopics(event.target.value)}
+              />
+            </Label>
+            <div className="subject-actions">
+              <Button>{busy ? 'Salvando…' : 'Salvar matéria'}</Button>
+              <Button type="button" onClick={onCancel}>
+                Cancelar edição
+              </Button>
+            </div>
+          </FieldSet>
+          {error && (
+            <Alert variant="destructive" role="alert">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+        </CardContent>
+      </form>
+    </Card>
   );
 }
 function PlanEditor({
@@ -234,21 +275,21 @@ function PlanEditor({
           );
         }}
       >
-        <label>
+        <Label>
           Assunto a estudar
-          <input
+          <Input
             value={title}
             maxLength={160}
             required
             disabled={busy}
             onChange={(event) => setTitle(event.target.value)}
           />
-        </label>
-        <button disabled={busy}>
+        </Label>
+        <Button disabled={busy}>
           {editing ? 'Salvar assunto' : 'Adicionar assunto'}
-        </button>
+        </Button>
         {editing && (
-          <button
+          <Button
             type="button"
             disabled={busy}
             onClick={() => {
@@ -257,10 +298,14 @@ function PlanEditor({
             }}
           >
             Cancelar alteração
-          </button>
+          </Button>
         )}
       </form>
-      {error && <p role="alert">{error}</p>}
+      {error && (
+        <Alert variant="destructive" role="alert">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
       {busy && <p role="status">Salvando plano…</p>}
       {!subject.planItems.length && (
         <p>Seu plano está vazio. Adicione o primeiro assunto.</p>
@@ -269,9 +314,9 @@ function PlanEditor({
         {subject.planItems.map((item, index) => (
           <li key={item.id}>
             <h4>{item.title}</h4>
-            <label>
+            <Label>
               Status de {item.title}
-              <select
+              <NativeSelect
                 disabled={busy}
                 value={item.status}
                 onChange={(event) =>
@@ -281,14 +326,14 @@ function PlanEditor({
                 }
               >
                 {Object.entries(statuses).map(([value, label]) => (
-                  <option key={value} value={value}>
+                  <NativeSelectOption key={value} value={value}>
                     {label}
-                  </option>
+                  </NativeSelectOption>
                 ))}
-              </select>
-            </label>
+              </NativeSelect>
+            </Label>
             <div className="subject-actions">
-              <button
+              <Button
                 disabled={busy}
                 onClick={() => {
                   setEditing(item);
@@ -296,25 +341,25 @@ function PlanEditor({
                 }}
               >
                 Renomear {item.title}
-              </button>
-              <button
+              </Button>
+              <Button
                 disabled={busy || index === 0}
                 onClick={() => move(index, -1)}
               >
                 Subir {item.title}
-              </button>
-              <button
+              </Button>
+              <Button
                 disabled={busy || index === subject.planItems.length - 1}
                 onClick={() => move(index, 1)}
               >
                 Descer {item.title}
-              </button>
-              <button
+              </Button>
+              <Button
                 disabled={busy}
                 onClick={() => void mutate(`/${item.id}`, 'DELETE', {})}
               >
                 Remover {item.title}
-              </button>
+              </Button>
             </div>
           </li>
         ))}
@@ -368,8 +413,17 @@ function LinkedRecords({
   return (
     <section>
       <h3>Registros vinculados recentes</h3>
-      {busy && <p role="status">Carregando registros…</p>}
-      {error && <p role="alert">{error}</p>}
+      {busy && (
+        <div>
+          <Skeleton aria-hidden="true" className="my-2 h-3 w-2/3" />
+          <p role="status">Carregando registros…</p>
+        </div>
+      )}
+      {error && (
+        <Alert variant="destructive" role="alert">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
       {!busy && !error && (
         <>
           {tasksEnabled && (
@@ -470,7 +524,7 @@ export function SubjectsPage({
   return (
     <div className="subjects-page">
       <p>Organize objetivos e assuntos no seu ritmo.</p>
-      <button
+      <Button
         ref={newButton}
         onClick={() => {
           setEditor({ subject: null });
@@ -479,16 +533,28 @@ export function SubjectsPage({
         }}
       >
         Criar matéria
-      </button>
-      {loading && <p role="status">Carregando matérias…</p>}
-      {busy && <p role="status">Carregando ação…</p>}
-      {error && (
-        <div role="alert">
-          <p>{error}</p>
-          <button onClick={() => setRevision(revision + 1)}>
-            Tentar novamente
-          </button>
+      </Button>
+      {loading && (
+        <div>
+          <Skeleton aria-hidden="true" className="my-2 h-3 w-2/3" />
+          <p role="status">Carregando matérias…</p>
         </div>
+      )}
+      {busy && (
+        <div>
+          <Skeleton aria-hidden="true" className="my-2 h-3 w-2/3" />
+          <p role="status">Carregando ação…</p>
+        </div>
+      )}
+      {error && !deleting && (
+        <Alert variant="destructive" role="alert">
+          <AlertDescription>
+            <p>{error}</p>
+            <Button onClick={() => setRevision(revision + 1)}>
+              Tentar novamente
+            </Button>
+          </AlertDescription>
+        </Alert>
       )}
       {success && <p role="status">{success}</p>}
       {editor && (
@@ -503,121 +569,155 @@ export function SubjectsPage({
         />
       )}
       {detail && (
-        <section className="subject-card">
-          <h2 ref={heading} tabIndex={-1}>
-            {detail.name}
-          </h2>
-          <p>{detail.objective}</p>
-          <dl>
-            <dt>Nível</dt>
-            <dd>{levels[detail.currentLevel]}</dd>
-            <dt>Prazo</dt>
-            <dd>{detail.dueDate}</dd>
-            <dt>Horas semanais</dt>
-            <dd>{detail.weeklyHours}</dd>
-          </dl>
-          <h3>Assuntos conhecidos</h3>
-          {detail.knownTopics.length ? (
-            <ul>
-              {detail.knownTopics.map((topic) => (
-                <li key={topic}>{topic}</li>
-              ))}
-            </ul>
-          ) : (
-            <p>Nenhum assunto conhecido informado.</p>
-          )}
-          <div className="subject-actions">
-            <button
-              disabled={busy}
-              onClick={() => {
-                setSuccess('');
-                setEditor({ subject: detail });
-              }}
-            >
-              Editar matéria
-            </button>
-            <button
-              disabled={busy}
-              onClick={() => {
-                setSuccess('');
-                setDeleting(true);
-              }}
-            >
-              Excluir matéria
-            </button>
-            <button
-              disabled={busy}
-              onClick={() => {
-                setDetail(null);
-                setDeleting(false);
-                newButton.current?.focus();
-              }}
-            >
-              Fechar detalhe
-            </button>
-          </div>
-          {deleting && (
-            <div role="group" aria-label="Confirmar exclusão">
-              <p>
-                Excluir {detail.name} e seu plano? Tarefas e sessões serão
-                preservadas.
-              </p>
-              <button
-                autoFocus
-                disabled={busy}
-                onClick={() => setDeleting(false)}
-              >
-                Cancelar exclusão
-              </button>
-              <button
-                disabled={busy}
-                onClick={async () => {
-                  setBusy(true);
-                  setError('');
-                  setSuccess('');
-                  try {
-                    await deleteSubject(detail.id);
+        <Card asChild>
+          <section className="subject-card">
+            <CardHeader>
+              <h2 ref={heading} tabIndex={-1}>
+                {detail.name}
+              </h2>
+            </CardHeader>
+            <CardContent>
+              <p>{detail.objective}</p>
+              <dl>
+                <dt>Nível</dt>
+                <dd>{levels[detail.currentLevel]}</dd>
+                <dt>Prazo</dt>
+                <dd>{detail.dueDate}</dd>
+                <dt>Horas semanais</dt>
+                <dd>{detail.weeklyHours}</dd>
+              </dl>
+              <h3>Assuntos conhecidos</h3>
+              {detail.knownTopics.length ? (
+                <ul>
+                  {detail.knownTopics.map((topic) => (
+                    <li key={topic}>{topic}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p>Nenhum assunto conhecido informado.</p>
+              )}
+              <div className="subject-actions">
+                <Button
+                  disabled={busy}
+                  onClick={() => {
+                    setSuccess('');
+                    setEditor({ subject: detail });
+                  }}
+                >
+                  Editar matéria
+                </Button>
+                <Button
+                  disabled={busy}
+                  onClick={() => {
+                    setSuccess('');
+                    setDeleting(true);
+                  }}
+                >
+                  Excluir matéria
+                </Button>
+                <Button
+                  disabled={busy}
+                  onClick={() => {
                     setDetail(null);
                     setDeleting(false);
-                    setPage(1);
-                    setRevision(revision + 1);
-                    setSuccess('Matéria excluída.');
                     newButton.current?.focus();
-                  } catch (cause) {
-                    setError(failure(cause));
-                  } finally {
-                    setBusy(false);
-                  }
-                }}
-              >
-                Confirmar exclusão
-              </button>
-            </div>
-          )}
-          {!editor && (
-            <>
-              <RoadmapsSection
-                key={`roadmaps-${detail.id}`}
-                subject={detail}
-                aiEnabled={aiEnabled}
-              />
-              <PlanEditor
-                key={detail.id}
-                subject={detail}
-                onActionStart={() => setSuccess('')}
-                onChanged={(value) => {
-                  setDetail(value);
-                  setSuccess('Plano salvo.');
-                  setRevision(revision + 1);
-                }}
-              />
-              <LinkedRecords
-                subjectId={detail.id}
-                tasksEnabled={tasksEnabled}
-              />
-            </>
-          )}
-        </section>
+                  }}
+                >
+                  Fechar detalhe
+                </Button>
+              </div>
+              {deleting && (
+                <AlertDialog
+                  open
+                  onOpenChange={(open) => {
+                    if (!open && !busy) setDeleting(false);
+                  }}
+                >
+                  <AlertDialogContent
+                    onEscapeKeyDown={(event) => {
+                      event.preventDefault();
+                      if (!busy) setDeleting(false);
+                    }}
+                    onCloseAutoFocus={(event) => {
+                      event.preventDefault();
+                      newButton.current?.focus();
+                    }}
+                  >
+                    <AlertDialogTitle className="sr-only">
+                      Confirmar exclusão
+                    </AlertDialogTitle>
+                    <div role="group" aria-label="Confirmar exclusão">
+                      {error && (
+                        <Alert variant="destructive">
+                          <AlertDescription>{error}</AlertDescription>
+                        </Alert>
+                      )}
+                      <AlertDialogDescription asChild>
+                        <p>
+                          Excluir {detail.name} e seu plano? Tarefas e sessões
+                          serão preservadas.
+                        </p>
+                      </AlertDialogDescription>
+                      <Button
+                        autoFocus
+                        disabled={busy}
+                        onClick={() => setDeleting(false)}
+                      >
+                        Cancelar exclusão
+                      </Button>
+                      <Button
+                        disabled={busy}
+                        onClick={async () => {
+                          setBusy(true);
+                          setError('');
+                          setSuccess('');
+                          try {
+                            await deleteSubject(detail.id);
+                            setDetail(null);
+                            setDeleting(false);
+                            setPage(1);
+                            setRevision(revision + 1);
+                            setSuccess('Matéria excluída.');
+                            newButton.current?.focus();
+                          } catch (cause) {
+                            setError(failure(cause));
+                          } finally {
+                            setBusy(false);
+                          }
+                        }}
+                      >
+                        Confirmar exclusão
+                      </Button>
+                    </div>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
+              {!editor && (
+                <>
+                  <RoadmapsSection
+                    key={`roadmaps-${detail.id}`}
+                    subject={detail}
+                    aiEnabled={aiEnabled}
+                  />
+                  <PlanEditor
+                    key={detail.id}
+                    subject={detail}
+                    onActionStart={() => setSuccess('')}
+                    onChanged={(value) => {
+                      setDetail(value);
+                      setSuccess('Plano salvo.');
+                      setRevision(revision + 1);
+                    }}
+                  />
+                  <LinkedRecords
+                    subjectId={detail.id}
+                    tasksEnabled={tasksEnabled}
+                  />
+                </>
+              )}
+            </CardContent>
+          </section>
+        </Card>
       )}
       {result && (
         <section aria-label="Lista de matérias">
@@ -626,54 +726,68 @@ export function SubjectsPage({
           ) : (
             <ul className="subject-list">
               {result.items.map((subject) => (
-                <li className="subject-card" key={subject.id}>
-                  <h2>{subject.name}</h2>
-                  <p>
-                    {levels[subject.currentLevel]} · {subject.weeklyHours} horas
-                    por semana
-                  </p>
-                  <button
-                    disabled={busy}
-                    onClick={async () => {
-                      setBusy(true);
-                      setError('');
-                      setSuccess('');
-                      setEditor(null);
-                      setDetail(null);
-                      setDeleting(false);
-                      try {
-                        setDetail(await subjectDetail(subject.id));
-                      } catch (cause) {
-                        setError(failure(cause));
-                      } finally {
-                        setBusy(false);
-                      }
-                    }}
-                  >
-                    Ver {subject.name}
-                  </button>
-                </li>
+                <Card key={subject.id} asChild>
+                  <li className="subject-card">
+                    <CardHeader>
+                      <h2>{subject.name}</h2>
+                    </CardHeader>
+                    <CardContent>
+                      <p>
+                        {levels[subject.currentLevel]} · {subject.weeklyHours}{' '}
+                        horas por semana
+                      </p>
+                      <Button
+                        disabled={busy}
+                        onClick={async () => {
+                          setBusy(true);
+                          setError('');
+                          setSuccess('');
+                          setEditor(null);
+                          setDetail(null);
+                          setDeleting(false);
+                          try {
+                            setDetail(await subjectDetail(subject.id));
+                          } catch (cause) {
+                            setError(failure(cause));
+                          } finally {
+                            setBusy(false);
+                          }
+                        }}
+                      >
+                        Ver {subject.name}
+                      </Button>
+                    </CardContent>
+                  </li>
+                </Card>
               ))}
             </ul>
           )}
           {result.totalPages > 1 && (
-            <nav aria-label="Páginas de matérias">
-              <button
-                disabled={page === 1 || busy}
-                onClick={() => setPage(page - 1)}
-              >
-                Anterior
-              </button>
-              <span>
-                Página {page} de {result.totalPages}
-              </span>
-              <button
-                disabled={page >= result.totalPages || busy}
-                onClick={() => setPage(page + 1)}
-              >
-                Próxima
-              </button>
-            </nav>
+            <Pagination aria-label="Páginas de matérias">
+              <PaginationContent className="flex-wrap">
+                <PaginationItem>
+                  <Button
+                    disabled={page === 1 || busy}
+                    onClick={() => setPage(page - 1)}
+                  >
+                    Anterior
+                  </Button>
+                </PaginationItem>
+                <PaginationItem>
+                  <span>
+                    Página {page} de {result.totalPages}
+                  </span>
+                </PaginationItem>
+                <PaginationItem>
+                  <Button
+                    disabled={page >= result.totalPages || busy}
+                    onClick={() => setPage(page + 1)}
+                  >
+                    Próxima
+                  </Button>
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
           )}
         </section>
       )}

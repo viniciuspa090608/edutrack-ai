@@ -1,3 +1,8 @@
+import { Alert, AlertDescription, AlertTitle } from './components/ui/alert.js';
+import { Button } from './components/ui/button.js';
+import { Card, CardContent } from './components/ui/card.js';
+import { Skeleton } from './components/ui/skeleton.js';
+
 export interface StatusPanelProps {
   title: string;
   message: string;
@@ -12,18 +17,31 @@ export function StatusPanel({
   onRetry,
 }: StatusPanelProps) {
   return (
-    <section
-      role={tone === 'error' ? 'alert' : 'status'}
-      aria-live="polite"
-      className={`status-panel status-panel--${tone}`}
-    >
-      <h2>{title}</h2>
-      <p>{message}</p>
-      {tone === 'error' && onRetry ? (
-        <button type="button" onClick={onRetry}>
-          Tentar novamente
-        </button>
-      ) : null}
-    </section>
+    <Card asChild>
+      <section
+        aria-live="polite"
+        className={`status-panel status-panel--${tone}`}
+      >
+        <CardContent>
+          <Alert
+            role={tone === 'error' ? 'alert' : 'status'}
+            variant={tone === 'error' ? 'destructive' : 'default'}
+          >
+            <AlertTitle>
+              <h2>{title}</h2>
+            </AlertTitle>
+            <AlertDescription>{message}</AlertDescription>
+            {tone === 'loading' && (
+              <Skeleton className="mt-3 h-2 w-2/3" aria-hidden="true" />
+            )}
+            {tone === 'error' && onRetry ? (
+              <Button type="button" className="mt-4" onClick={onRetry}>
+                Tentar novamente
+              </Button>
+            ) : null}
+          </Alert>
+        </CardContent>
+      </section>
+    </Card>
   );
 }

@@ -4,9 +4,6 @@
   min-width: 0;
 }
 .subject-card {
-  padding: 1rem;
-  border: 1px solid #cbd5e1;
-  border-radius: 0.75rem;
   min-width: 0;
   overflow-wrap: anywhere;
 }
@@ -31,8 +28,6 @@
   max-width: 100%;
   min-width: 0;
   box-sizing: border-box;
-  font: inherit;
-  padding: 0.5rem;
 }
 .subject-actions,
 .subjects-page nav {
@@ -45,10 +40,6 @@
   white-space: normal;
   overflow-wrap: anywhere;
   max-width: 100%;
-}
-.subjects-page :focus-visible {
-  outline: 3px solid #2563eb;
-  outline-offset: 3px;
 }
 .subject-list {
   list-style: none;
@@ -69,8 +60,6 @@
 }
 .subject-card fieldset.roadmap-block,
 .subject-card fieldset.roadmap-step {
-  border: 1px solid #cbd5e1;
-  border-radius: 0.5rem;
   padding: 0.75rem;
 }
 .roadmaps-section dd {
@@ -91,6 +80,6 @@
   flex: 0 0 auto;
 }
 .roadmap-revisions h5[tabindex='-1']:focus {
-  outline: 3px solid #2563eb;
+  outline: 3px solid var(--primary);
   outline-offset: 3px;
 }

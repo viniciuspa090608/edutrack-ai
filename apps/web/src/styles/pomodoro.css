@@ -19,10 +19,6 @@
   max-width: 100%;
   white-space: normal;
 }
-.pomodoro-page :focus-visible {
-  outline: 3px solid #7355d8;
-  outline-offset: 3px;
-}
 .pomodoro-clock {
   font-size: clamp(2rem, 12vw, 4rem);
   font-variant-numeric: tabular-nums;

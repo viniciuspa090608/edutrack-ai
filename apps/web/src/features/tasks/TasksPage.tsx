@@ -1,3 +1,40 @@
+import {
+  CardHeader,
+  Card,
+  CardContent,
+} from '@study-platform/ui/components/ui/card';
+import { FieldSet } from '@study-platform/ui/components/ui/field';
+import {
+  AlertDescription,
+  Alert,
+} from '@study-platform/ui/components/ui/alert';
+import { Skeleton } from '@study-platform/ui/components/ui/skeleton';
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
+} from '@study-platform/ui/components/ui/dialog';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+} from '@study-platform/ui/components/ui/pagination';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogTitle,
+  AlertDialogDescription,
+} from '@study-platform/ui/components/ui/alert-dialog';
+import { Label } from '@study-platform/ui/components/ui/label';
+import { Input } from '@study-platform/ui/components/ui/input';
+import { Textarea } from '@study-platform/ui/components/ui/textarea';
+import {
+  NativeSelect,
+  NativeSelectOption,
+} from '@study-platform/ui/components/ui/native-select';
+import { Button } from '@study-platform/ui/components/ui/button';
+
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { SubtasksSection } from './SubtasksSection.js';
 import { TaskProgress } from './TaskProgress.js';
@@ -63,163 +100,179 @@ function TaskForm({
     titleRef.current?.focus();
   }, []);
   return (
-    <form
-      className="task-card task-form"
-      aria-label={task ? 'Editar tarefa' : 'Criar tarefa'}
-      noValidate
-      onSubmit={async (event) => {
-        event.preventDefault();
-        if (submitting.current) return;
-        const parsed = createTaskSchema.safeParse({
-          ...(subjectsEnabled
-            ? { subjectId: subjectId || null }
-            : task
-              ? { subjectId: task.subjectId }
-              : {}),
-          title,
-          description: description || null,
-          priority,
-          status,
-          dueDate: dueDate || null,
-        });
-        if (!parsed.success) {
-          const errors: Record<string, string> = {};
-          for (const issue of parsed.error.issues)
-            errors[String(issue.path[0])] =
-              issue.path[0] === 'title'
-                ? 'Informe um título de 1 a 160 caracteres.'
-                : issue.path[0] === 'description'
-                  ? 'Use até 2.000 caracteres.'
-                  : 'Informe uma data ou opção válida.';
-          setInvalid(errors);
-          setError('Revise os campos indicados.');
-          document.getElementById(`task-${Object.keys(errors)[0]}`)?.focus();
-          return;
-        }
-        submitting.current = true;
-        setBusy(true);
-        setError('');
-        setInvalid({});
-        try {
-          const input = task?.subtaskTotal
-            ? {
-                ...(subjectsEnabled
-                  ? { subjectId: parsed.data.subjectId }
-                  : {}),
-                title: parsed.data.title,
-                description: parsed.data.description,
-                priority: parsed.data.priority,
-                dueDate: parsed.data.dueDate,
+    <Card asChild>
+      <form
+        className="task-card task-form"
+        aria-label={task ? 'Editar tarefa' : 'Criar tarefa'}
+        noValidate
+        onSubmit={async (event) => {
+          event.preventDefault();
+          if (submitting.current) return;
+          const parsed = createTaskSchema.safeParse({
+            ...(subjectsEnabled
+              ? { subjectId: subjectId || null }
+              : task
+                ? { subjectId: task.subjectId }
+                : {}),
+            title,
+            description: description || null,
+            priority,
+            status,
+            dueDate: dueDate || null,
+          });
+          if (!parsed.success) {
+            const errors: Record<string, string> = {};
+            for (const issue of parsed.error.issues)
+              errors[String(issue.path[0])] =
+                issue.path[0] === 'title'
+                  ? 'Informe um título de 1 a 160 caracteres.'
+                  : issue.path[0] === 'description'
+                    ? 'Use até 2.000 caracteres.'
+                    : 'Informe uma data ou opção válida.';
+            setInvalid(errors);
+            setError('Revise os campos indicados.');
+            document.getElementById(`task-${Object.keys(errors)[0]}`)?.focus();
+            return;
+          }
+          submitting.current = true;
+          setBusy(true);
+          setError('');
+          setInvalid({});
+          try {
+            const input = task?.subtaskTotal
+              ? {
+                  ...(subjectsEnabled
+                    ? { subjectId: parsed.data.subjectId }
+                    : {}),
+                  title: parsed.data.title,
+                  description: parsed.data.description,
+                  priority: parsed.data.priority,
+                  dueDate: parsed.data.dueDate,
+                }
+              : subjectsEnabled
+                ? parsed.data
+                : Object.fromEntries(
+                    Object.entries(parsed.data).filter(
+                      ([key]) => key !== 'subjectId',
+                    ),
+                  );
+            onSaved(await saveTask(task?.id ?? null, input));
+          } catch (cause) {
+            setError(failure(cause));
+          } finally {
+            submitting.current = false;
+            setBusy(false);
+          }
+        }}
+      >
+        <CardHeader>
+          <h2>{task ? 'Editar tarefa' : 'Nova tarefa'}</h2>
+        </CardHeader>
+        <CardContent>
+          <FieldSet disabled={busy}>
+            {subjectsEnabled && (
+              <SubjectSelect
+                value={subjectId}
+                onChange={setSubjectId}
+                disabled={busy}
+              />
+            )}
+            <Label htmlFor="task-title">Título</Label>
+            <Input
+              ref={titleRef}
+              id="task-title"
+              value={title}
+              maxLength={160}
+              required
+              aria-invalid={!!invalid.title}
+              aria-describedby={invalid.title ? 'task-title-error' : undefined}
+              onChange={(event) => setTitle(event.target.value)}
+            />
+            {invalid.title && <p id="task-title-error">{invalid.title}</p>}
+            <Label htmlFor="task-description">Descrição (opcional)</Label>
+            <Textarea
+              id="task-description"
+              value={description}
+              maxLength={2000}
+              aria-invalid={!!invalid.description}
+              aria-describedby={
+                invalid.description ? 'task-description-error' : undefined
               }
-            : subjectsEnabled
-              ? parsed.data
-              : Object.fromEntries(
-                  Object.entries(parsed.data).filter(
-                    ([key]) => key !== 'subjectId',
-                  ),
-                );
-          onSaved(await saveTask(task?.id ?? null, input));
-        } catch (cause) {
-          setError(failure(cause));
-        } finally {
-          submitting.current = false;
-          setBusy(false);
-        }
-      }}
-    >
-      <h2>{task ? 'Editar tarefa' : 'Nova tarefa'}</h2>
-      <fieldset disabled={busy}>
-        {subjectsEnabled && (
-          <SubjectSelect
-            value={subjectId}
-            onChange={setSubjectId}
-            disabled={busy}
-          />
-        )}
-        <label htmlFor="task-title">Título</label>
-        <input
-          ref={titleRef}
-          id="task-title"
-          value={title}
-          maxLength={160}
-          required
-          aria-invalid={!!invalid.title}
-          aria-describedby={invalid.title ? 'task-title-error' : undefined}
-          onChange={(event) => setTitle(event.target.value)}
-        />
-        {invalid.title && <p id="task-title-error">{invalid.title}</p>}
-        <label htmlFor="task-description">Descrição (opcional)</label>
-        <textarea
-          id="task-description"
-          value={description}
-          maxLength={2000}
-          aria-invalid={!!invalid.description}
-          aria-describedby={
-            invalid.description ? 'task-description-error' : undefined
-          }
-          onChange={(event) => setDescription(event.target.value)}
-        />
-        {invalid.description && (
-          <p id="task-description-error">{invalid.description}</p>
-        )}
-        <label htmlFor="task-priority">Importância</label>
-        <select
-          id="task-priority"
-          value={priority}
-          onChange={(event) =>
-            setPriority(event.target.value as StudyTask['priority'])
-          }
-        >
-          {Object.entries(priorities).map(([value, label]) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
-        </select>
-        <label htmlFor="task-dueDate">Prazo (opcional)</label>
-        <input
-          id="task-dueDate"
-          type="date"
-          min="1000-01-01"
-          max="9999-12-31"
-          value={dueDate}
-          aria-invalid={!!invalid.dueDate}
-          aria-describedby={invalid.dueDate ? 'task-dueDate-error' : undefined}
-          onChange={(event) => setDueDate(event.target.value)}
-        />
-        {invalid.dueDate && <p id="task-dueDate-error">{invalid.dueDate}</p>}
-        {task?.subtaskTotal ? (
-          <p>
-            Status calculado pelas subtarefas. Conclua ou reabra os passos no
-            detalhe da tarefa.
-          </p>
-        ) : (
-          <>
-            <label htmlFor="task-status">Status</label>
-            <select
-              id="task-status"
-              value={status}
+              onChange={(event) => setDescription(event.target.value)}
+            />
+            {invalid.description && (
+              <p id="task-description-error">{invalid.description}</p>
+            )}
+            <Label htmlFor="task-priority">Importância</Label>
+            <NativeSelect
+              id="task-priority"
+              value={priority}
               onChange={(event) =>
-                setStatus(event.target.value as StudyTask['status'])
+                setPriority(event.target.value as StudyTask['priority'])
               }
             >
-              {Object.entries(statuses).map(([value, label]) => (
-                <option key={value} value={value}>
+              {Object.entries(priorities).map(([value, label]) => (
+                <NativeSelectOption key={value} value={value}>
                   {label}
-                </option>
+                </NativeSelectOption>
               ))}
-            </select>
-          </>
-        )}
-        <div className="task-actions">
-          <button type="submit">{busy ? 'Salvando…' : 'Salvar tarefa'}</button>
-          <button type="button" onClick={onCancel}>
-            Cancelar edição
-          </button>
-        </div>
-      </fieldset>
-      {error && <p role="alert">{error}</p>}
-    </form>
+            </NativeSelect>
+            <Label htmlFor="task-dueDate">Prazo (opcional)</Label>
+            <Input
+              id="task-dueDate"
+              type="date"
+              min="1000-01-01"
+              max="9999-12-31"
+              value={dueDate}
+              aria-invalid={!!invalid.dueDate}
+              aria-describedby={
+                invalid.dueDate ? 'task-dueDate-error' : undefined
+              }
+              onChange={(event) => setDueDate(event.target.value)}
+            />
+            {invalid.dueDate && (
+              <p id="task-dueDate-error">{invalid.dueDate}</p>
+            )}
+            {task?.subtaskTotal ? (
+              <p>
+                Status calculado pelas subtarefas. Conclua ou reabra os passos
+                no detalhe da tarefa.
+              </p>
+            ) : (
+              <>
+                <Label htmlFor="task-status">Status</Label>
+                <NativeSelect
+                  id="task-status"
+                  value={status}
+                  onChange={(event) =>
+                    setStatus(event.target.value as StudyTask['status'])
+                  }
+                >
+                  {Object.entries(statuses).map(([value, label]) => (
+                    <NativeSelectOption key={value} value={value}>
+                      {label}
+                    </NativeSelectOption>
+                  ))}
+                </NativeSelect>
+              </>
+            )}
+            <div className="task-actions">
+              <Button type="submit">
+                {busy ? 'Salvando…' : 'Salvar tarefa'}
+              </Button>
+              <Button type="button" onClick={onCancel}>
+                Cancelar edição
+              </Button>
+            </div>
+          </FieldSet>
+          {error && (
+            <Alert variant="destructive" role="alert">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+        </CardContent>
+      </form>
+    </Card>
   );
 }
 
@@ -232,64 +285,75 @@ function DeleteConfirmation({
   onClose: () => void;
   onDeleted: () => void;
 }) {
-  const dialog = useRef<HTMLDialogElement>(null);
+  const previousFocus = useRef(document.activeElement);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const submitting = useRef(false);
-  useEffect(() => {
-    const element = dialog.current!;
-    const previousFocus = document.activeElement;
-    element.showModal();
-    return () => {
-      element.close();
-      if (previousFocus instanceof HTMLElement && previousFocus.isConnected)
-        previousFocus.focus();
-      else document.getElementById('task-create')?.focus();
-    };
-  }, []);
   return (
-    <dialog
-      ref={dialog}
-      className="task-dialog"
-      aria-labelledby="delete-heading"
-      aria-describedby="delete-description"
-      onCancel={(event) => {
-        event.preventDefault();
-        if (!busy) onClose();
+    <AlertDialog
+      open
+      onOpenChange={(open) => {
+        if (!open && !busy) onClose();
       }}
     >
-      <h2 id="delete-heading">Excluir tarefa?</h2>
-      <p id="delete-description">
-        “{task.title}” será removida permanentemente.
-      </p>
-      {error && <p role="alert">{error}</p>}
-      <div className="task-actions">
-        <button type="button" autoFocus disabled={busy} onClick={onClose}>
-          Cancelar exclusão
-        </button>
-        <button
-          type="button"
-          disabled={busy}
-          onClick={async () => {
-            if (submitting.current) return;
-            submitting.current = true;
-            setBusy(true);
-            setError('');
-            try {
-              await deleteTask(task.id);
-              onDeleted();
-            } catch (cause) {
-              setError(failure(cause));
-            } finally {
-              submitting.current = false;
-              setBusy(false);
-            }
-          }}
-        >
-          {busy ? 'Excluindo…' : 'Confirmar exclusão'}
-        </button>
-      </div>
-    </dialog>
+      <AlertDialogContent
+        onCloseAutoFocus={(event) => {
+          event.preventDefault();
+          const element = previousFocus.current;
+          if (element instanceof HTMLElement && element.isConnected)
+            element.focus();
+          else document.getElementById('task-create')?.focus();
+        }}
+        aria-labelledby="delete-heading"
+        aria-describedby="delete-description"
+        onEscapeKeyDown={(event) => {
+          event.preventDefault();
+          if (!busy) onClose();
+        }}
+      >
+        <AlertDialogTitle id="delete-heading">Excluir tarefa?</AlertDialogTitle>
+        <AlertDialogDescription id="delete-description">
+          “{task.title}” será removida permanentemente.
+        </AlertDialogDescription>
+        {error && (
+          <Alert variant="destructive" role="alert">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+        <div className="task-actions">
+          <Button
+            variant="outline"
+            type="button"
+            autoFocus
+            disabled={busy}
+            onClick={onClose}
+          >
+            Cancelar exclusão
+          </Button>
+          <Button
+            type="button"
+            disabled={busy}
+            onClick={async () => {
+              if (submitting.current) return;
+              submitting.current = true;
+              setBusy(true);
+              setError('');
+              try {
+                await deleteTask(task.id);
+                onDeleted();
+              } catch (cause) {
+                setError(failure(cause));
+              } finally {
+                submitting.current = false;
+                setBusy(false);
+              }
+            }}
+          >
+            {busy ? 'Excluindo…' : 'Confirmar exclusão'}
+          </Button>
+        </div>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }
 
@@ -369,7 +433,7 @@ export function TasksPage({
   return (
     <div className="tasks-page">
       <p>Organize seus estudos com prazos, subtarefas e progresso.</p>
-      <button
+      <Button
         ref={newButton}
         id="task-create"
         type="button"
@@ -380,194 +444,263 @@ export function TasksPage({
         }}
       >
         Criar tarefa
-      </button>
+      </Button>
       {success && <p role="status">{success}</p>}
       {editor && (
-        <TaskForm
-          key={editor.task?.id ?? 'new'}
-          task={editor.task}
-          subjectsEnabled={subjectsEnabled}
-          onCancel={() => {
-            setEditor(null);
-            newButton.current?.focus();
+        <Dialog
+          open
+          onOpenChange={(open) => {
+            if (
+              !open &&
+              !document.getElementById('task-title')?.closest('fieldset')
+                ?.disabled
+            )
+              setEditor(null);
           }}
-          onSaved={(task) => {
-            setEditor(null);
-            setDetail(task);
-            setSuccess('Tarefa salva.');
-            refresh();
-          }}
-        />
-      )}
-      <form
-        className="task-card task-filters"
-        aria-label="Filtrar tarefas"
-        onSubmit={(event) => {
-          event.preventDefault();
-          const parsed = taskFiltersSchema.safeParse(
-            Object.fromEntries(
-              Object.entries({
-                ...draft,
-                page: 1,
-                pageSize: filters.pageSize,
-              }).filter(([, value]) => value !== ''),
-            ),
-          );
-          if (!parsed.success) {
-            setFilterError(
-              'Informe filtros válidos e um prazo final igual ou posterior ao inicial.',
-            );
-            return;
-          }
-          setFilterError('');
-          setFilters(parsed.data);
-          setSuccess('');
-        }}
-      >
-        <h2>Filtros</h2>
-        <label htmlFor="filter-status">Filtrar por status</label>
-        <select
-          id="filter-status"
-          value={draft.status}
-          onChange={(e) => setDraft({ ...draft, status: e.target.value })}
         >
-          <option value="">Todos os status</option>
-          {Object.entries(statuses).map(([v, label]) => (
-            <option key={v} value={v}>
-              {label}
-            </option>
-          ))}
-        </select>
-        <label htmlFor="filter-priority">Filtrar por importância</label>
-        <select
-          id="filter-priority"
-          value={draft.priority}
-          onChange={(e) => setDraft({ ...draft, priority: e.target.value })}
-        >
-          <option value="">Todas as importâncias</option>
-          {Object.entries(priorities).map(([v, label]) => (
-            <option key={v} value={v}>
-              {label}
-            </option>
-          ))}
-        </select>
-        <label htmlFor="filter-from">Prazo de</label>
-        <input
-          id="filter-from"
-          type="date"
-          min="1000-01-01"
-          max="9999-12-31"
-          value={draft.dueFrom}
-          aria-describedby={filterError ? 'filter-error' : undefined}
-          onChange={(e) => setDraft({ ...draft, dueFrom: e.target.value })}
-        />
-        <label htmlFor="filter-to">Prazo até</label>
-        <input
-          id="filter-to"
-          type="date"
-          min="1000-01-01"
-          max="9999-12-31"
-          value={draft.dueTo}
-          aria-describedby={filterError ? 'filter-error' : undefined}
-          onChange={(e) => setDraft({ ...draft, dueTo: e.target.value })}
-        />
-        <div className="task-actions">
-          <button type="submit">Aplicar filtros</button>
-          <button
-            type="button"
-            onClick={() => {
-              setDraft({ status: '', priority: '', dueFrom: '', dueTo: '' });
-              setFilters({ ...initialFilters });
-              setFilterError('');
+          <DialogContent
+            showCloseButton={false}
+            className="max-h-[90dvh] overflow-y-auto"
+            onInteractOutside={(event) => event.preventDefault()}
+            onEscapeKeyDown={(event) => {
+              if (
+                document.getElementById('task-title')?.closest('fieldset')
+                  ?.disabled
+              )
+                event.preventDefault();
+            }}
+            onCloseAutoFocus={(event) => {
+              event.preventDefault();
+              if (!detail) newButton.current?.focus();
+              else detailHeading.current?.focus();
             }}
           >
-            Limpar filtros
-          </button>
-        </div>
-        {filterError && (
-          <p id="filter-error" role="alert">
-            {filterError}
-          </p>
-        )}
-      </form>
-      {loading && <p role="status">Carregando tarefas…</p>}
-      {detailLoading && <p role="status">Carregando detalhe…</p>}
-      {error && (
-        <div role="alert">
-          <p>{error}</p>
-          <button type="button" onClick={refresh}>
-            Tentar novamente
-          </button>
-        </div>
-      )}
-      {detail && (
-        <section className="task-card" aria-labelledby="task-detail-heading">
-          <h2 id="task-detail-heading" ref={detailHeading} tabIndex={-1}>
-            {detail.title}
-          </h2>
-          <TaskProgress task={detail} />
-          <p className="task-description">
-            {detail.description || 'Sem descrição'}
-          </p>
-          <dl>
-            {subjectsEnabled && (
-              <>
-                <dt>Matéria</dt>
-                <dd>
-                  {detail.subjectId
-                    ? subjectName || 'Carregando matéria…'
-                    : 'Sem matéria'}
-                </dd>
-              </>
-            )}
-            <dt>Status</dt>
-            <dd>{statuses[detail.status]}</dd>
-            <dt>Importância</dt>
-            <dd>{priorities[detail.priority]}</dd>
-            <dt>Prazo</dt>
-            <dd>{detail.dueDate ? dateLabel(detail.dueDate) : 'Sem prazo'}</dd>
-            <dt>Criada em</dt>
-            <dd>{new Date(detail.createdAt).toLocaleString('pt-BR')}</dd>
-            <dt>Atualizada em</dt>
-            <dd>{new Date(detail.updatedAt).toLocaleString('pt-BR')}</dd>
-          </dl>
-          <div className="task-actions">
-            <button
-              type="button"
-              onClick={() => {
-                setSuccess('');
-                setEditor({ task: detail });
-              }}
-            >
-              Editar tarefa
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setSuccess('');
-                setDeleting(detail);
-              }}
-            >
-              Excluir tarefa
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setDetail(null);
+            <DialogTitle asChild>
+              <span className="sr-only">Editor de tarefa</span>
+            </DialogTitle>
+            <DialogDescription className="sr-only">
+              Preencha os dados da tarefa e salve ou cancele a edição.
+            </DialogDescription>
+            <TaskForm
+              key={editor.task?.id ?? 'new'}
+              task={editor.task}
+              subjectsEnabled={subjectsEnabled}
+              onCancel={() => {
+                setEditor(null);
                 newButton.current?.focus();
               }}
-            >
-              Fechar detalhe
-            </button>
-          </div>
-          {!editor && (
-            <SubtasksSection
-              key={detail.id}
-              task={detail}
-              onTaskChanged={onSubtasksChanged}
+              onSaved={(task) => {
+                setEditor(null);
+                setDetail(task);
+                setSuccess('Tarefa salva.');
+                refresh();
+              }}
             />
-          )}
-        </section>
+          </DialogContent>
+        </Dialog>
+      )}
+      <Card asChild>
+        <form
+          className="task-card task-filters"
+          aria-label="Filtrar tarefas"
+          onSubmit={(event) => {
+            event.preventDefault();
+            const parsed = taskFiltersSchema.safeParse(
+              Object.fromEntries(
+                Object.entries({
+                  ...draft,
+                  page: 1,
+                  pageSize: filters.pageSize,
+                }).filter(([, value]) => value !== ''),
+              ),
+            );
+            if (!parsed.success) {
+              setFilterError(
+                'Informe filtros válidos e um prazo final igual ou posterior ao inicial.',
+              );
+              return;
+            }
+            setFilterError('');
+            setFilters(parsed.data);
+            setSuccess('');
+          }}
+        >
+          <CardHeader>
+            <h2>Filtros</h2>
+          </CardHeader>
+          <CardContent>
+            <Label htmlFor="filter-status">Filtrar por status</Label>
+            <NativeSelect
+              id="filter-status"
+              value={draft.status}
+              onChange={(e) => setDraft({ ...draft, status: e.target.value })}
+            >
+              <NativeSelectOption value="">Todos os status</NativeSelectOption>
+              {Object.entries(statuses).map(([v, label]) => (
+                <NativeSelectOption key={v} value={v}>
+                  {label}
+                </NativeSelectOption>
+              ))}
+            </NativeSelect>
+            <Label htmlFor="filter-priority">Filtrar por importância</Label>
+            <NativeSelect
+              id="filter-priority"
+              value={draft.priority}
+              onChange={(e) => setDraft({ ...draft, priority: e.target.value })}
+            >
+              <NativeSelectOption value="">
+                Todas as importâncias
+              </NativeSelectOption>
+              {Object.entries(priorities).map(([v, label]) => (
+                <NativeSelectOption key={v} value={v}>
+                  {label}
+                </NativeSelectOption>
+              ))}
+            </NativeSelect>
+            <Label htmlFor="filter-from">Prazo de</Label>
+            <Input
+              id="filter-from"
+              type="date"
+              min="1000-01-01"
+              max="9999-12-31"
+              value={draft.dueFrom}
+              aria-describedby={filterError ? 'filter-error' : undefined}
+              onChange={(e) => setDraft({ ...draft, dueFrom: e.target.value })}
+            />
+            <Label htmlFor="filter-to">Prazo até</Label>
+            <Input
+              id="filter-to"
+              type="date"
+              min="1000-01-01"
+              max="9999-12-31"
+              value={draft.dueTo}
+              aria-describedby={filterError ? 'filter-error' : undefined}
+              onChange={(e) => setDraft({ ...draft, dueTo: e.target.value })}
+            />
+            <div className="task-actions">
+              <Button type="submit">Aplicar filtros</Button>
+              <Button
+                type="button"
+                onClick={() => {
+                  setDraft({
+                    status: '',
+                    priority: '',
+                    dueFrom: '',
+                    dueTo: '',
+                  });
+                  setFilters({ ...initialFilters });
+                  setFilterError('');
+                }}
+              >
+                Limpar filtros
+              </Button>
+            </div>
+            {filterError && (
+              <Alert variant="destructive" id="filter-error" role="alert">
+                <AlertDescription>{filterError}</AlertDescription>
+              </Alert>
+            )}
+          </CardContent>
+        </form>
+      </Card>
+      {loading && (
+        <div>
+          <Skeleton aria-hidden="true" className="my-2 h-3 w-2/3" />
+          <p role="status">Carregando tarefas…</p>
+        </div>
+      )}
+      {detailLoading && (
+        <div>
+          <Skeleton aria-hidden="true" className="my-2 h-3 w-2/3" />
+          <p role="status">Carregando detalhe…</p>
+        </div>
+      )}
+      {error && (
+        <Alert variant="destructive" role="alert">
+          <AlertDescription>
+            <p>{error}</p>
+            <Button type="button" onClick={refresh}>
+              Tentar novamente
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+      {detail && (
+        <Card asChild>
+          <section className="task-card" aria-labelledby="task-detail-heading">
+            <CardHeader>
+              <h2 id="task-detail-heading" ref={detailHeading} tabIndex={-1}>
+                {detail.title}
+              </h2>
+            </CardHeader>
+            <CardContent>
+              <TaskProgress task={detail} />
+              <p className="task-description">
+                {detail.description || 'Sem descrição'}
+              </p>
+              <dl>
+                {subjectsEnabled && (
+                  <>
+                    <dt>Matéria</dt>
+                    <dd>
+                      {detail.subjectId
+                        ? subjectName || 'Carregando matéria…'
+                        : 'Sem matéria'}
+                    </dd>
+                  </>
+                )}
+                <dt>Status</dt>
+                <dd>{statuses[detail.status]}</dd>
+                <dt>Importância</dt>
+                <dd>{priorities[detail.priority]}</dd>
+                <dt>Prazo</dt>
+                <dd>
+                  {detail.dueDate ? dateLabel(detail.dueDate) : 'Sem prazo'}
+                </dd>
+                <dt>Criada em</dt>
+                <dd>{new Date(detail.createdAt).toLocaleString('pt-BR')}</dd>
+                <dt>Atualizada em</dt>
+                <dd>{new Date(detail.updatedAt).toLocaleString('pt-BR')}</dd>
+              </dl>
+              <div className="task-actions">
+                <Button
+                  type="button"
+                  onClick={() => {
+                    setSuccess('');
+                    setEditor({ task: detail });
+                  }}
+                >
+                  Editar tarefa
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => {
+                    setSuccess('');
+                    setDeleting(detail);
+                  }}
+                >
+                  Excluir tarefa
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => {
+                    setDetail(null);
+                    newButton.current?.focus();
+                  }}
+                >
+                  Fechar detalhe
+                </Button>
+              </div>
+              {!editor && (
+                <SubtasksSection
+                  key={detail.id}
+                  task={detail}
+                  onTaskChanged={onSubtasksChanged}
+                />
+              )}
+            </CardContent>
+          </section>
+        </Card>
       )}
       {result && (
         <section aria-label="Lista de tarefas">
@@ -580,60 +713,81 @@ export function TasksPage({
           ) : (
             <ul className="task-list">
               {result.items.map((task) => (
-                <li key={task.id} className="task-card">
-                  <h2>{task.title}</h2>
-                  <TaskProgress task={task} />
-                  <p>
-                    {statuses[task.status]} · Importância{' '}
-                    {priorities[task.priority].toLowerCase()} ·{' '}
-                    {task.dueDate
-                      ? `Prazo: ${dateLabel(task.dueDate)}`
-                      : 'Sem prazo'}
-                  </p>
-                  <button
-                    type="button"
-                    disabled={detailLoading}
-                    onClick={async () => {
-                      setDetailLoading(true);
-                      setSuccess('');
-                      setError('');
-                      setDetail(null);
-                      setEditor(null);
-                      try {
-                        setDetail(await taskDetail(task.id));
-                      } catch (cause) {
-                        setError(failure(cause));
-                      } finally {
-                        setDetailLoading(false);
-                      }
-                    }}
-                  >
-                    Ver detalhes de {task.title}
-                  </button>
-                </li>
+                <Card key={task.id} asChild>
+                  <li className="task-card">
+                    <CardHeader>
+                      <h2>{task.title}</h2>
+                    </CardHeader>
+                    <CardContent>
+                      <TaskProgress task={task} />
+                      <p>
+                        {statuses[task.status]} · Importância{' '}
+                        {priorities[task.priority].toLowerCase()} ·{' '}
+                        {task.dueDate
+                          ? `Prazo: ${dateLabel(task.dueDate)}`
+                          : 'Sem prazo'}
+                      </p>
+                      <Button
+                        type="button"
+                        disabled={detailLoading}
+                        onClick={async () => {
+                          setDetailLoading(true);
+                          setSuccess('');
+                          setError('');
+                          setDetail(null);
+                          setEditor(null);
+                          try {
+                            setDetail(await taskDetail(task.id));
+                          } catch (cause) {
+                            setError(failure(cause));
+                          } finally {
+                            setDetailLoading(false);
+                          }
+                        }}
+                      >
+                        Ver detalhes de {task.title}
+                      </Button>
+                    </CardContent>
+                  </li>
+                </Card>
               ))}
             </ul>
           )}
-          <nav className="task-actions" aria-label="Paginação de tarefas">
-            <button
-              type="button"
-              disabled={filters.page <= 1}
-              onClick={() => setFilters({ ...filters, page: filters.page - 1 })}
-            >
-              Página anterior
-            </button>
-            <span>
-              Página {result.page} de {Math.max(1, result.totalPages)} ·{' '}
-              {result.total} tarefa(s)
-            </span>
-            <button
-              type="button"
-              disabled={filters.page >= result.totalPages}
-              onClick={() => setFilters({ ...filters, page: filters.page + 1 })}
-            >
-              Próxima página
-            </button>
-          </nav>
+          <Pagination
+            className="task-actions"
+            aria-label="Paginação de tarefas"
+          >
+            <PaginationContent className="flex-wrap">
+              <PaginationItem>
+                <Button
+                  type="button"
+                  disabled={filters.page <= 1}
+                  onClick={() =>
+                    setFilters({ ...filters, page: filters.page - 1 })
+                  }
+                >
+                  Página anterior
+                </Button>
+              </PaginationItem>
+              <PaginationItem>
+                <span>
+                  Página {result.page} de {Math.max(1, result.totalPages)} ·{' '}
+                  {result.total} tarefa(s)
+                </span>
+              </PaginationItem>
+              <PaginationItem>
+                <Button
+                  type="button"
+                  disabled={filters.page >= result.totalPages}
+                  onClick={() =>
+                    setFilters({ ...filters, page: filters.page + 1 })
+                  }
+                >
+                  Próxima página
+                </Button>
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
         </section>
       )}
       {deleting && (

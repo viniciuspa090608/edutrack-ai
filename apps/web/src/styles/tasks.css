@@ -4,9 +4,6 @@
   min-width: 0;
 }
 .task-card {
-  padding: clamp(12px, 3vw, 24px);
-  border: 1px solid #dce9dc;
-  border-radius: 12px;
   min-width: 0;
 }
 .task-card h2 {
@@ -31,12 +28,6 @@
   width: 100%;
   min-width: 0;
   max-width: 100%;
-  padding: 10px;
-  border: 1px solid #8aab96;
-  border-radius: 6px;
-  font: inherit;
-  background: white;
-  color: #193b2c;
 }
 .tasks-page textarea {
   min-height: 100px;
@@ -69,29 +60,12 @@
   font-weight: 700;
   margin-top: 0.5rem;
 }
-.task-dialog {
-  width: min(440px, calc(100% - 32px));
-  max-width: calc(100% - 32px);
-  padding: 20px;
-  border: 1px solid #8aab96;
-  border-radius: 12px;
-  overflow-wrap: anywhere;
-}
-.task-dialog::backdrop {
-  background: #102d2266;
-}
-.tasks-page :focus-visible,
-.task-dialog :focus-visible {
-  outline: 3px solid #b47924;
-  outline-offset: 3px;
-}
-.tasks-page [role='alert'],
-.task-dialog [role='alert'] {
-  color: #9b2525;
+.tasks-page [role='alert'] {
+  color: var(--destructive);
 }
 .subtasks-section {
   margin-top: 1.5rem;
-  border-top: 1px solid #dce9dc;
+  border-top: 1px solid var(--border);
   padding-top: 1rem;
 }
 .subtasks-controls {
@@ -125,5 +99,4 @@
 }
 .task-progress progress {
   width: 100%;
-  accent-color: #185b45;
 }

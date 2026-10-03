@@ -7,20 +7,12 @@
   flex-wrap: wrap;
   gap: 1rem;
 }
-.progress-summary div,
-.progress-achievements li {
-  padding: 1rem;
-  border: 1px solid var(--border, #d5ddd8);
-  border-radius: 0.75rem;
-}
 .progress-summary dd {
   margin: 0.5rem 0 0;
   font-size: 1.5rem;
-  font-weight: 700;
 }
 .progress-achievements {
   list-style: none;
-  padding: 0;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
   gap: 1rem;
@@ -30,12 +22,7 @@
   width: 100%;
   max-width: 100%;
   margin-top: 0.5rem;
-  accent-color: #287052;
 }
 .progress-achievements h3 {
   margin-top: 0;
-}
-.study-progress :focus-visible {
-  outline: 3px solid #426de4;
-  outline-offset: 3px;
 }

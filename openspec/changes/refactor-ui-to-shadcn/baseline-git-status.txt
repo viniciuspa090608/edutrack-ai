@@ -1,0 +1,84 @@
+ M .env.example
+ M README.md
+ D openspec/changes/add-public-landing/.openspec.yaml
+ D openspec/changes/add-public-landing/design.md
+ D openspec/changes/add-public-landing/proposal.md
+ D openspec/changes/add-public-landing/specs/public-landing/spec.md
+ D openspec/changes/add-public-landing/tasks.md
+ D openspec/changes/bootstrap-study-platform/.openspec.yaml
+ D openspec/changes/bootstrap-study-platform/design.md
+ D openspec/changes/bootstrap-study-platform/proposal.md
+ D openspec/changes/bootstrap-study-platform/specs/api-error-handling/spec.md
+ D openspec/changes/bootstrap-study-platform/specs/api-health/spec.md
+ D openspec/changes/bootstrap-study-platform/specs/api-runtime/spec.md
+ D openspec/changes/bootstrap-study-platform/specs/continuous-integration/spec.md
+ D openspec/changes/bootstrap-study-platform/specs/database-connection/spec.md
+ D openspec/changes/bootstrap-study-platform/specs/environment-validation/spec.md
+ D openspec/changes/bootstrap-study-platform/specs/quality-commands/spec.md
+ D openspec/changes/bootstrap-study-platform/specs/shared-contracts/spec.md
+ D openspec/changes/bootstrap-study-platform/specs/web-runtime/spec.md
+ D openspec/changes/bootstrap-study-platform/specs/workspace-bootstrap/spec.md
+ D openspec/changes/bootstrap-study-platform/tasks.md
+ D openspec/changes/document-commit-convention/.openspec.yaml
+ D openspec/changes/document-commit-convention/design.md
+ D openspec/changes/document-commit-convention/proposal.md
+ D openspec/changes/document-commit-convention/tasks.md
+ M package.json
+?? .agents/
+?? openspec/changes/add-manual-flashcards/.openspec.yaml
+?? openspec/changes/add-manual-flashcards/design.md
+?? openspec/changes/add-manual-flashcards/proposal.md
+?? openspec/changes/add-manual-flashcards/specs/
+?? openspec/changes/add-spaced-repetition/.openspec.yaml
+?? openspec/changes/add-spaced-repetition/design.md
+?? openspec/changes/add-spaced-repetition/proposal.md
+?? openspec/changes/add-spaced-repetition/specs/
+?? openspec/changes/add-study-analytics/.openspec.yaml
+?? openspec/changes/add-study-analytics/design.md
+?? openspec/changes/add-study-analytics/proposal.md
+?? openspec/changes/add-study-analytics/specs/
+?? openspec/changes/add-study-streaks-and-achievements/.openspec.yaml
+?? openspec/changes/add-study-streaks-and-achievements/design.md
+?? openspec/changes/add-study-streaks-and-achievements/proposal.md
+?? openspec/changes/add-study-streaks-and-achievements/specs/
+?? openspec/changes/add-study-tasks/.openspec.yaml
+?? openspec/changes/add-study-tasks/design.md
+?? openspec/changes/add-study-tasks/proposal.md
+?? openspec/changes/add-study-tasks/specs/
+?? openspec/changes/add-subjects/.openspec.yaml
+?? openspec/changes/add-subjects/design.md
+?? openspec/changes/add-subjects/proposal.md
+?? openspec/changes/add-subjects/specs/
+?? openspec/changes/add-task-subtasks-and-progress/.openspec.yaml
+?? openspec/changes/add-task-subtasks-and-progress/specs/
+?? openspec/changes/archive/.gitkeep
+?? openspec/changes/archive/2026-09-23-add-public-landing/
+?? openspec/changes/archive/2026-09-23-bootstrap-study-platform/
+?? openspec/changes/archive/2026-09-23-document-commit-convention/
+?? openspec/changes/compose-user-dashboard/.openspec.yaml
+?? openspec/changes/compose-user-dashboard/design.md
+?? openspec/changes/compose-user-dashboard/proposal.md
+?? openspec/changes/compose-user-dashboard/specs/
+?? openspec/changes/generate-flashcards-with-ai/.openspec.yaml
+?? openspec/changes/generate-flashcards-with-ai/design.md
+?? openspec/changes/generate-flashcards-with-ai/proposal.md
+?? openspec/changes/generate-flashcards-with-ai/specs/
+?? openspec/changes/generate-subject-roadmaps-with-ai/.openspec.yaml
+?? openspec/changes/import-flashcards/.openspec.yaml
+?? openspec/changes/import-flashcards/design.md
+?? openspec/changes/import-flashcards/proposal.md
+?? openspec/changes/import-flashcards/specs/
+?? openspec/changes/refactor-ui-to-shadcn/
+?? openspec/changes/regenerate-roadmap-steps/.openspec.yaml
+?? openspec/specs/.gitkeep
+?? openspec/specs/api-error-handling/
+?? openspec/specs/api-health/
+?? openspec/specs/api-runtime/
+?? openspec/specs/continuous-integration/
+?? openspec/specs/database-connection/
+?? openspec/specs/environment-validation/
+?? openspec/specs/public-landing/
+?? openspec/specs/quality-commands/
+?? openspec/specs/shared-contracts/
+?? openspec/specs/web-runtime/
+?? openspec/specs/workspace-bootstrap/

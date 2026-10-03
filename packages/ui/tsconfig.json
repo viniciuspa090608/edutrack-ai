@@ -6,7 +6,11 @@
     "jsx": "react-jsx",
     "rootDir": "src",
     "outDir": "dist",
-    "declaration": true
+    "declaration": true,
+    "paths": {
+      "@study-platform/ui/*": ["./src/*"],
+      "@/*": ["./src/*"]
+    }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"]
 }

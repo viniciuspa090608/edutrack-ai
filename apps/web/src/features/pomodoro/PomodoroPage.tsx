@@ -1,3 +1,26 @@
+import { Skeleton } from '@study-platform/ui/components/ui/skeleton';
+import {
+  AlertDescription,
+  Alert,
+} from '@study-platform/ui/components/ui/alert';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogTitle,
+  AlertDialogDescription,
+} from '@study-platform/ui/components/ui/alert-dialog';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+} from '@study-platform/ui/components/ui/pagination';
+
+import { Button } from '@study-platform/ui/components/ui/button';
+import { Label } from '@study-platform/ui/components/ui/label';
+import {
+  NativeSelect,
+  NativeSelectOption,
+} from '@study-platform/ui/components/ui/native-select';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type {
   PomodoroAction,
@@ -201,46 +224,55 @@ export function PomodoroPage({
         Pomodoro
       </h1>
       <p>Blocos de 25 minutos de foco. As pausas não contam como estudo.</p>
-      {busy && <p role="status">Carregando…</p>}
-      {error && <p role="alert">{error}</p>}
+      {busy && (
+        <div>
+          <Skeleton aria-hidden="true" className="my-2 h-3 w-2/3" />
+          <p role="status">Carregando…</p>
+        </div>
+      )}
+      {error && !canceling && (
+        <Alert variant="destructive" role="alert">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
       {message && <p role="status">{message}</p>}
-      <button disabled={busy} onClick={() => void retry()}>
+      <Button disabled={busy} onClick={() => void retry()}>
         Sincronizar
-      </button>
+      </Button>
       {ready && !session && (
         <div>
           <p>Nenhuma sessão em andamento.</p>
           {tasksEnabled && (
             <>
-              <label>
+              <Label>
                 Tarefa opcional
-                <select
+                <NativeSelect
                   value={taskId}
                   onChange={(event) => setTaskId(event.target.value)}
                   disabled={busy}
                 >
-                  <option value="">Sem tarefa</option>
+                  <NativeSelectOption value="">Sem tarefa</NativeSelectOption>
                   {tasks.map((task) => (
-                    <option key={task.id} value={task.id}>
+                    <NativeSelectOption key={task.id} value={task.id}>
                       {task.title}
-                    </option>
+                    </NativeSelectOption>
                   ))}
-                </select>
-              </label>
+                </NativeSelect>
+              </Label>
               {taskPages > 1 && (
                 <div>
-                  <button
+                  <Button
                     disabled={taskPage === 1 || busy}
                     onClick={() => setTaskPage(taskPage - 1)}
                   >
                     Tarefas anteriores
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     disabled={taskPage >= taskPages || busy}
                     onClick={() => setTaskPage(taskPage + 1)}
                   >
                     Mais tarefas
-                  </button>
+                  </Button>
                 </div>
               )}
             </>
@@ -252,9 +284,9 @@ export function PomodoroPage({
               disabled={busy}
             />
           )}
-          <button disabled={busy} onClick={() => void act()}>
+          <Button disabled={busy} onClick={() => void act()}>
             Iniciar sessão
-          </button>
+          </Button>
         </div>
       )}
       {session && (
@@ -275,64 +307,92 @@ export function PomodoroPage({
           </p>
           <div className="pomodoro-actions">
             {state === 'RUNNING' && (
-              <button
+              <Button
                 disabled={busy || !ready}
                 onClick={() => void act('pause')}
               >
                 Pausar
-              </button>
+              </Button>
             )}
             {state === 'PAUSED' && (
-              <button
+              <Button
                 disabled={busy || !ready}
                 onClick={() => void act('resume')}
               >
                 Continuar
-              </button>
+              </Button>
             )}
             {state === 'BETWEEN_BLOCKS' && (
-              <button
+              <Button
                 disabled={busy || !ready}
                 onClick={() => void act('next-block')}
               >
                 Iniciar próximo bloco
-              </button>
+              </Button>
             )}
             {blocks > 0 && (
-              <button
+              <Button
                 disabled={busy || !ready}
                 onClick={() => void act('complete')}
               >
                 Concluir
-              </button>
+              </Button>
             )}
-            <button
+            <Button
               ref={cancelButton}
               disabled={busy || !ready}
               onClick={() => setCanceling(true)}
             >
               Cancelar sessão
-            </button>
+            </Button>
           </div>
           {canceling && (
-            <div role="group" aria-label="Confirmar cancelamento">
-              <p>
-                Cancelar a sessão? O tempo estudado e os blocos serão
-                preservados.
-              </p>
-              <button
-                autoFocus
-                onClick={() => {
-                  setCanceling(false);
+            <AlertDialog
+              open
+              onOpenChange={(open) => {
+                if (!open && !busy) setCanceling(false);
+              }}
+            >
+              <AlertDialogContent
+                onEscapeKeyDown={(event) => {
+                  event.preventDefault();
+                  if (!busy) setCanceling(false);
+                }}
+                onCloseAutoFocus={(event) => {
+                  event.preventDefault();
                   cancelButton.current?.focus();
                 }}
               >
-                Manter sessão
-              </button>
-              <button onClick={() => void act('cancel')}>
-                Confirmar cancelamento
-              </button>
-            </div>
+                <AlertDialogTitle className="sr-only">
+                  Confirmar cancelamento
+                </AlertDialogTitle>
+                <div role="group" aria-label="Confirmar cancelamento">
+                  {error && (
+                    <Alert variant="destructive">
+                      <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                  )}
+                  <AlertDialogDescription asChild>
+                    <p>
+                      Cancelar a sessão? O tempo estudado e os blocos serão
+                      preservados.
+                    </p>
+                  </AlertDialogDescription>
+                  <Button
+                    autoFocus
+                    onClick={() => {
+                      setCanceling(false);
+                      cancelButton.current?.focus();
+                    }}
+                  >
+                    Manter sessão
+                  </Button>
+                  <Button onClick={() => void act('cancel')}>
+                    Confirmar cancelamento
+                  </Button>
+                </div>
+              </AlertDialogContent>
+            </AlertDialog>
           )}
         </div>
       )}
@@ -381,23 +441,31 @@ export function PomodoroPage({
           <p>Nenhuma sessão encerrada.</p>
         ))}
       {history && history.totalPages > 1 && (
-        <nav aria-label="Páginas do histórico">
-          <button
-            disabled={busy || page === 1}
-            onClick={() => setPage(page - 1)}
-          >
-            Anterior
-          </button>
-          <span>
-            Página {page} de {history.totalPages}
-          </span>
-          <button
-            disabled={busy || page >= history.totalPages}
-            onClick={() => setPage(page + 1)}
-          >
-            Próxima
-          </button>
-        </nav>
+        <Pagination aria-label="Páginas do histórico">
+          <PaginationContent className="flex-wrap">
+            <PaginationItem>
+              <Button
+                disabled={busy || page === 1}
+                onClick={() => setPage(page - 1)}
+              >
+                Anterior
+              </Button>
+            </PaginationItem>
+            <PaginationItem>
+              <span>
+                Página {page} de {history.totalPages}
+              </span>
+            </PaginationItem>
+            <PaginationItem>
+              <Button
+                disabled={busy || page >= history.totalPages}
+                onClick={() => setPage(page + 1)}
+              >
+                Próxima
+              </Button>
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
       )}
     </section>
   );

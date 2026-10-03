@@ -1,3 +1,20 @@
+import { FieldSet, FieldLegend } from '@study-platform/ui/components/ui/field';
+import { Skeleton } from '@study-platform/ui/components/ui/skeleton';
+import {
+  AlertDescription,
+  Alert,
+} from '@study-platform/ui/components/ui/alert';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+} from '@study-platform/ui/components/ui/pagination';
+import { Label } from '@study-platform/ui/components/ui/label';
+import { Checkbox } from '@study-platform/ui/components/ui/checkbox';
+import { Button } from '@study-platform/ui/components/ui/button';
+
+import { Input } from '@study-platform/ui/components/ui/input';
+import { Textarea } from '@study-platform/ui/components/ui/textarea';
 import { useEffect, useRef, useState } from 'react';
 import {
   completedBoundary,
@@ -266,18 +283,17 @@ export function RoadmapRevisionTools({
         Revisão ativa {roadmap.revision}. Passos até o último concluído ficam
         protegidos.
       </p>
-      <fieldset
+      <FieldSet
         disabled={disabled || busy || !!mode}
         aria-label="Progresso dos passos"
       >
-        <legend>Progresso</legend>
+        <FieldLegend>Progresso</FieldLegend>
         {activeSteps.map((step) => (
-          <label className="roadmap-progress" key={step.id}>
-            <input
-              type="checkbox"
+          <Label className="roadmap-progress" key={step.id}>
+            <Checkbox
               checked={step.completed}
               aria-label={`Concluído: ${step.title}`}
-              onChange={async (event) => {
+              onCheckedChange={async (event) => {
                 if (submitting.current) return;
                 submitting.current = true;
                 setBusy(true);
@@ -289,7 +305,7 @@ export function RoadmapRevisionTools({
                     roadmap.id,
                     step.id,
                     roadmap.revision,
-                    event.target.checked,
+                    event === true,
                   );
                   if (alive.current) {
                     setSuccess('Progresso atualizado.');
@@ -305,12 +321,12 @@ export function RoadmapRevisionTools({
             />
             {step.title}
             {step.completed ? ' — concluído' : ''}
-          </label>
+          </Label>
         ))}
-      </fieldset>
+      </FieldSet>
       <div className="subject-actions">
         {aiEnabled && (
-          <button
+          <Button
             ref={trigger}
             disabled={
               disabled || busy || !!mode || boundary === activeSteps.length
@@ -326,9 +342,9 @@ export function RoadmapRevisionTools({
             }}
           >
             Reorganizar e regenerar passos
-          </button>
+          </Button>
         )}
-        <button
+        <Button
           disabled={disabled || busy || !!mode}
           onClick={() => {
             setHistoryOpen(!historyOpen);
@@ -339,13 +355,22 @@ export function RoadmapRevisionTools({
         >
           {' '}
           {historyOpen ? 'Fechar histórico' : 'Ver histórico'}{' '}
-        </button>
+        </Button>
       </div>
-      {busy && <p role="status">Processando revisão…</p>}
-      {error && <p role="alert">{error}</p>}
+      {busy && (
+        <div>
+          <Skeleton aria-hidden="true" className="my-2 h-3 w-2/3" />
+          <p role="status">Processando revisão…</p>
+        </div>
+      )}
+      {error && (
+        <Alert variant="destructive" role="alert">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
       {success && <p role="status">{success}</p>}
       {conflict && (
-        <button
+        <Button
           disabled={busy}
           onClick={() => {
             close();
@@ -353,7 +378,7 @@ export function RoadmapRevisionTools({
           }}
         >
           Atualizar versão do roadmap
-        </button>
+        </Button>
       )}
       {mode === 'order' && aiEnabled && (
         <section aria-label="Reordenar passos pendentes">
@@ -377,7 +402,7 @@ export function RoadmapRevisionTools({
                       : 'Pendente'}
                 </p>
                 <div className="subject-actions">
-                  <button
+                  <Button
                     disabled={busy || index <= boundary}
                     onClick={() => {
                       setOrdered(moved(ordered, index, -1));
@@ -385,8 +410,8 @@ export function RoadmapRevisionTools({
                     }}
                   >
                     Subir {step.title}
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     disabled={
                       busy || index < boundary || index === ordered.length - 1
                     }
@@ -396,21 +421,21 @@ export function RoadmapRevisionTools({
                     }}
                   >
                     Descer {step.title}
-                  </button>
+                  </Button>
                 </div>
               </li>
             ))}
           </ol>
           <div className="subject-actions">
-            <button
+            <Button
               disabled={busy || !movedId || conflict}
               onClick={() => {
                 void prepare();
               }}
             >
               Regenerar continuação
-            </button>
-            <button onClick={close}>Cancelar revisão</button>
+            </Button>
+            <Button onClick={close}>Cancelar revisão</Button>
           </div>
         </section>
       )}
@@ -436,9 +461,11 @@ export function RoadmapRevisionTools({
             {new Date(preview.expiresAt).toLocaleString('pt-BR')}.
           </p>
           {expired && (
-            <p role="alert">
-              A prévia expirou ou foi invalidada. Cancele e prepare uma nova.
-            </p>
+            <Alert variant="destructive" role="alert">
+              <AlertDescription>
+                A prévia expirou ou foi invalidada. Cancele e prepare uma nova.
+              </AlertDescription>
+            </Alert>
           )}
           {preview.warnings.map((warning, index) => (
             <p role="status" key={index}>
@@ -446,7 +473,11 @@ export function RoadmapRevisionTools({
             </p>
           ))}
           {duplicates.length > 0 && (
-            <p role="alert">Passos repetidos: {duplicates.join(', ')}.</p>
+            <Alert variant="destructive" role="alert">
+              <AlertDescription>
+                Passos repetidos: {duplicates.join(', ')}.
+              </AlertDescription>
+            </Alert>
           )}
           <ol>
             {steps.map((step, index) => (
@@ -461,14 +492,14 @@ export function RoadmapRevisionTools({
                     </p>
                   </>
                 ) : (
-                  <fieldset disabled={busy}>
-                    <legend>
+                  <FieldSet disabled={busy}>
+                    <FieldLegend>
                       Passo {index + 1} —{' '}
                       {preview.origin === 'ia' ? 'sugerido' : 'restaurado'}
-                    </legend>
-                    <label>
+                    </FieldLegend>
+                    <Label>
                       Título do passo sugerido {index + 1}
-                      <input
+                      <Input
                         ref={
                           index === preview.preservedCount
                             ? firstEditable
@@ -487,10 +518,10 @@ export function RoadmapRevisionTools({
                           )
                         }
                       />
-                    </label>
-                    <label>
+                    </Label>
+                    <Label>
                       Descrição do passo sugerido {index + 1}
-                      <textarea
+                      <Textarea
                         required
                         maxLength={1000}
                         value={step.description}
@@ -504,60 +535,67 @@ export function RoadmapRevisionTools({
                           )
                         }
                       />
-                    </label>
+                    </Label>
                     <div className="subject-actions">
-                      <button
+                      <Button
                         type="button"
                         disabled={index === preview.preservedCount}
                         onClick={() => setSteps(moved(steps, index, -1))}
                       >
                         Subir sugestão {index + 1}
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         type="button"
                         disabled={index === steps.length - 1}
                         onClick={() => setSteps(moved(steps, index, 1))}
                       >
                         Descer sugestão {index + 1}
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         type="button"
                         onClick={() =>
                           setSteps(steps.filter((_, i) => i !== index))
                         }
                       >
                         Remover sugestão {index + 1}
-                      </button>
+                      </Button>
                     </div>
-                  </fieldset>
+                  </FieldSet>
                 )}
               </li>
             ))}
           </ol>
           <div className="subject-actions">
-            <button
+            <Button
               type="submit"
               disabled={busy || conflict || expired || !!duplicates.length}
             >
               Confirmar revisão
-            </button>
-            <button type="button" disabled={busy} onClick={close}>
+            </Button>
+            <Button type="button" disabled={busy} onClick={close}>
               Cancelar revisão
-            </button>
+            </Button>
           </div>
         </form>
       )}
       {historyOpen && (
         <section aria-label="Histórico de revisões">
           <h5>Histórico de revisões</h5>
-          {historyLoading && <p role="status">Carregando histórico…</p>}
-          {historyError && (
-            <div role="alert">
-              <p>{historyError}</p>
-              <button onClick={() => setHistoryReload((value) => value + 1)}>
-                Tentar carregar histórico novamente
-              </button>
+          {historyLoading && (
+            <div>
+              <Skeleton aria-hidden="true" className="my-2 h-3 w-2/3" />
+              <p role="status">Carregando histórico…</p>
             </div>
+          )}
+          {historyError && (
+            <Alert variant="destructive" role="alert">
+              <AlertDescription>
+                <p>{historyError}</p>
+                <Button onClick={() => setHistoryReload((value) => value + 1)}>
+                  Tentar carregar histórico novamente
+                </Button>
+              </AlertDescription>
+            </Alert>
           )}
           {history && !history.items.length && (
             <p>Nenhuma revisão disponível.</p>
@@ -568,7 +606,7 @@ export function RoadmapRevisionTools({
                 Revisão {item.revision} · {origins[item.origin]} ·{' '}
                 {new Date(item.createdAt).toLocaleString('pt-BR')}
                 {item.revision === roadmap.revision ? ' · ativa' : ''}
-                <button
+                <Button
                   disabled={disabled || busy || !!mode}
                   onClick={async () => {
                     if (submitting.current) return;
@@ -591,28 +629,38 @@ export function RoadmapRevisionTools({
                   }}
                 >
                   Consultar revisão {item.revision}
-                </button>
+                </Button>
               </li>
             ))}
           </ul>
           {history && history.totalPages > 1 && (
-            <nav aria-label="Paginação do histórico">
-              <button
-                disabled={historyPage === 1 || busy || !!mode}
-                onClick={() => setHistoryPage(historyPage - 1)}
-              >
-                Revisões anteriores
-              </button>
-              <span>
-                Página {historyPage} de {history.totalPages}
-              </span>
-              <button
-                disabled={historyPage >= history.totalPages || busy || !!mode}
-                onClick={() => setHistoryPage(historyPage + 1)}
-              >
-                Próximas revisões
-              </button>
-            </nav>
+            <Pagination aria-label="Paginação do histórico">
+              <PaginationContent className="flex-wrap">
+                <PaginationItem>
+                  <Button
+                    disabled={historyPage === 1 || busy || !!mode}
+                    onClick={() => setHistoryPage(historyPage - 1)}
+                  >
+                    Revisões anteriores
+                  </Button>
+                </PaginationItem>
+                <PaginationItem>
+                  <span>
+                    Página {historyPage} de {history.totalPages}
+                  </span>
+                </PaginationItem>
+                <PaginationItem>
+                  <Button
+                    disabled={
+                      historyPage >= history.totalPages || busy || !!mode
+                    }
+                    onClick={() => setHistoryPage(historyPage + 1)}
+                  >
+                    Próximas revisões
+                  </Button>
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
           )}
           {selected && (
             <section aria-label="Revisão histórica">
@@ -633,7 +681,7 @@ export function RoadmapRevisionTools({
                   </li>
                 ))}
               </ol>
-              <button
+              <Button
                 ref={restoreButton}
                 disabled={disabled || busy || !!mode}
                 onClick={() => {
@@ -641,9 +689,9 @@ export function RoadmapRevisionTools({
                 }}
               >
                 Preparar restauração
-              </button>
+              </Button>
               {busy && pending.current && (
-                <button onClick={close}>Cancelar revisão</button>
+                <Button onClick={close}>Cancelar revisão</Button>
               )}
             </section>
           )}

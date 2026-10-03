@@ -1,3 +1,4 @@
+import { Badge } from '@study-platform/ui/components/ui/badge';
 import { useEffect, useState } from 'react';
 import { subjectDetail } from './subjects-api.js';
 export function SubjectName({ id }: { id: string | null }) {
@@ -17,5 +18,9 @@ export function SubjectName({ id }: { id: string | null }) {
       active = false;
     };
   }, [id]);
-  return <span>{id ? name || 'Carregando matéria…' : 'Sem matéria'}</span>;
+  return (
+    <Badge variant="secondary">
+      {id ? name || 'Carregando matéria…' : 'Sem matéria'}
+    </Badge>
+  );
 }

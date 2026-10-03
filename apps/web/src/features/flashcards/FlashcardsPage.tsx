@@ -1,3 +1,20 @@
+import {
+  Pagination as PaginationRoot,
+  PaginationContent,
+  PaginationItem,
+} from '@study-platform/ui/components/ui/pagination';
+import {
+  AlertDescription,
+  Alert,
+} from '@study-platform/ui/components/ui/alert';
+import { Skeleton } from '@study-platform/ui/components/ui/skeleton';
+import {
+  CardHeader,
+  Card,
+  CardContent,
+} from '@study-platform/ui/components/ui/card';
+import { Button } from '@study-platform/ui/components/ui/button';
+
 import { useEffect, useRef, useState } from 'react';
 import type {
   DeckList,
@@ -34,17 +51,28 @@ function Pagination({
   label: string;
 }) {
   return (
-    <nav aria-label={label}>
-      <button disabled={page <= 1} onClick={() => onPage(page - 1)}>
-        Anterior
-      </button>
-      <span>
-        Página {page} de {Math.max(1, totalPages)}
-      </span>
-      <button disabled={page >= totalPages} onClick={() => onPage(page + 1)}>
-        Próxima
-      </button>
-    </nav>
+    <PaginationRoot aria-label={label}>
+      <PaginationContent className="flex-wrap">
+        <PaginationItem>
+          <Button disabled={page <= 1} onClick={() => onPage(page - 1)}>
+            Anterior
+          </Button>
+        </PaginationItem>
+        <PaginationItem>
+          <span>
+            Página {page} de {Math.max(1, totalPages)}
+          </span>
+        </PaginationItem>
+        <PaginationItem>
+          <Button
+            disabled={page >= totalPages}
+            onClick={() => onPage(page + 1)}
+          >
+            Próxima
+          </Button>
+        </PaginationItem>
+      </PaginationContent>
+    </PaginationRoot>
   );
 }
 export function FlashcardsPage({
@@ -198,13 +226,13 @@ export function FlashcardsPage({
     <div className="flashcards-page">
       <p>Crie perguntas e respostas e consulte seus cartões manualmente.</p>
       {aiEnabled && (
-        <button
+        <Button
           id="start-flashcard-ai"
           disabled={generating}
           onClick={() => setGenerating(true)}
         >
           Aprimorar com IA
-        </button>
+        </Button>
       )}
       {aiEnabled && generating && (
         <FlashcardAIFlow
@@ -218,13 +246,13 @@ export function FlashcardsPage({
           onSaved={() => refresh('Cartões gerados salvos.')}
         />
       )}
-      <button
+      <Button
         id="start-review"
         disabled={reviewing}
         onClick={() => setReviewing(true)}
       >
         Revisões pendentes
-      </button>
+      </Button>
       {reviewing && (
         <ReviewQueue deckId={deck?.id} onClose={() => setReviewing(false)} />
       )}
@@ -242,10 +270,19 @@ export function FlashcardsPage({
           }}
         />
       )}
-      {error && <p role="alert">{error}</p>}
+      {error && (
+        <Alert variant="destructive" role="alert">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
       {success && <p role="status">{success}</p>}
-      {busy && <p role="status">Carregando detalhe…</p>}
-      <button
+      {busy && (
+        <div>
+          <Skeleton aria-hidden="true" className="my-2 h-3 w-2/3" />
+          <p role="status">Carregando detalhe…</p>
+        </div>
+      )}
+      <Button
         id="new-deck"
         disabled={busy}
         onClick={() => {
@@ -254,7 +291,7 @@ export function FlashcardsPage({
         }}
       >
         Criar baralho
-      </button>
+      </Button>
       {deckForm && (
         <DeckForm
           key={editingDeck?.id ?? 'new'}
@@ -277,14 +314,19 @@ export function FlashcardsPage({
         />
       )}
       {listError ? (
-        <p role="alert">
-          {listError}{' '}
-          <button onClick={() => setRevision(revision + 1)}>
-            Tentar novamente
-          </button>
-        </p>
+        <Alert variant="destructive" role="alert">
+          <AlertDescription>
+            {listError}{' '}
+            <Button onClick={() => setRevision(revision + 1)}>
+              Tentar novamente
+            </Button>
+          </AlertDescription>
+        </Alert>
       ) : !decks ? (
-        <p role="status">Carregando baralhos…</p>
+        <div>
+          <Skeleton aria-hidden="true" className="my-2 h-3 w-2/3" />
+          <p role="status">Carregando baralhos…</p>
+        </div>
       ) : (
         <>
           {!decks.items.length && (
@@ -292,45 +334,51 @@ export function FlashcardsPage({
           )}
           <ul className="flashcard-list">
             {decks.items.map((item) => (
-              <li className="flashcard-panel" key={item.id}>
-                <h2>{item.name}</h2>
-                {subjectsEnabled && (
-                  <p>
-                    <SubjectName id={item.subjectId} />
-                  </p>
-                )}
-                <p className="flashcard-text">{item.description}</p>
-                <div className="flashcard-actions">
-                  <button
-                    disabled={busy}
-                    onClick={() => void openDeck(item.id)}
-                  >
-                    Abrir {item.name}
-                  </button>
-                  <button
-                    id={`edit-deck-${item.id}`}
-                    disabled={busy}
-                    onClick={() => {
-                      setEditingDeck(item);
-                      setDeckForm(true);
-                    }}
-                  >
-                    Editar {item.name}
-                  </button>
-                  <button
-                    id={`delete-deck-${item.id}`}
-                    disabled={busy}
-                    onClick={() =>
-                      setConfirmation({
-                        deck: item,
-                        returnId: `delete-deck-${item.id}`,
-                      })
-                    }
-                  >
-                    Excluir {item.name}
-                  </button>
-                </div>
-              </li>
+              <Card key={item.id} asChild>
+                <li className="flashcard-panel">
+                  <CardHeader>
+                    <h2>{item.name}</h2>
+                  </CardHeader>
+                  <CardContent>
+                    {subjectsEnabled && (
+                      <p>
+                        <SubjectName id={item.subjectId} />
+                      </p>
+                    )}
+                    <p className="flashcard-text">{item.description}</p>
+                    <div className="flashcard-actions">
+                      <Button
+                        disabled={busy}
+                        onClick={() => void openDeck(item.id)}
+                      >
+                        Abrir {item.name}
+                      </Button>
+                      <Button
+                        id={`edit-deck-${item.id}`}
+                        disabled={busy}
+                        onClick={() => {
+                          setEditingDeck(item);
+                          setDeckForm(true);
+                        }}
+                      >
+                        Editar {item.name}
+                      </Button>
+                      <Button
+                        id={`delete-deck-${item.id}`}
+                        disabled={busy}
+                        onClick={() =>
+                          setConfirmation({
+                            deck: item,
+                            returnId: `delete-deck-${item.id}`,
+                          })
+                        }
+                      >
+                        Excluir {item.name}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </li>
+              </Card>
             ))}
           </ul>
           <Pagination
@@ -346,13 +394,13 @@ export function FlashcardsPage({
           <h2 tabIndex={-1} ref={heading}>
             {deck.name}: cartões
           </h2>
-          <button
+          <Button
             id="start-import"
             disabled={busy || importing}
             onClick={() => setImporting(true)}
           >
             Importar CSV ou TSV
-          </button>
+          </Button>
           {importing && (
             <ImportFlow
               key={deck.id}
@@ -364,7 +412,7 @@ export function FlashcardsPage({
               onImported={() => refresh('Cartões importados.')}
             />
           )}
-          <button
+          <Button
             id="new-card"
             disabled={busy}
             onClick={() => {
@@ -374,7 +422,7 @@ export function FlashcardsPage({
             }}
           >
             Adicionar cartão
-          </button>
+          </Button>
           {cardForm && (
             <CardForm
               key={editingCard?.id ?? 'new'}
@@ -403,14 +451,19 @@ export function FlashcardsPage({
             />
           )}
           {cardsError ? (
-            <p role="alert">
-              {cardsError}{' '}
-              <button onClick={() => setRevision(revision + 1)}>
-                Tentar novamente
-              </button>
-            </p>
+            <Alert variant="destructive" role="alert">
+              <AlertDescription>
+                {cardsError}{' '}
+                <Button onClick={() => setRevision(revision + 1)}>
+                  Tentar novamente
+                </Button>
+              </AlertDescription>
+            </Alert>
           ) : !cards ? (
-            <p role="status">Carregando cartões…</p>
+            <div>
+              <Skeleton aria-hidden="true" className="my-2 h-3 w-2/3" />
+              <p role="status">Carregando cartões…</p>
+            </div>
           ) : (
             <>
               {!cards.items.length && (
@@ -418,45 +471,52 @@ export function FlashcardsPage({
               )}
               <ul className="flashcard-list">
                 {cards.items.map((item) => (
-                  <li className="flashcard-panel" key={item.id}>
-                    <p className="flashcard-text">{item.front}</p>
-                    <div className="flashcard-actions">
-                      <button
-                        id={`open-card-${item.id}`}
-                        disabled={busy}
-                        onClick={() => void openCard(item.id, false)}
-                      >
-                        Abrir cartão
-                      </button>
-                      <button
-                        id={`history-card-${item.id}`}
-                        onClick={() =>
-                          setHistoryCard({ deckId: deck.id, cardId: item.id })
-                        }
-                      >
-                        Histórico do cartão
-                      </button>
-                      <button
-                        disabled={busy}
-                        onClick={() => void openCard(item.id, true)}
-                      >
-                        Editar cartão
-                      </button>
-                      <button
-                        id={`delete-card-${item.id}`}
-                        disabled={busy}
-                        onClick={() =>
-                          setConfirmation({
-                            deck,
-                            cardId: item.id,
-                            returnId: `delete-card-${item.id}`,
-                          })
-                        }
-                      >
-                        Excluir cartão
-                      </button>
-                    </div>
-                  </li>
+                  <Card key={item.id} asChild>
+                    <li className="flashcard-panel">
+                      <CardContent>
+                        <p className="flashcard-text">{item.front}</p>
+                        <div className="flashcard-actions">
+                          <Button
+                            id={`open-card-${item.id}`}
+                            disabled={busy}
+                            onClick={() => void openCard(item.id, false)}
+                          >
+                            Abrir cartão
+                          </Button>
+                          <Button
+                            id={`history-card-${item.id}`}
+                            onClick={() =>
+                              setHistoryCard({
+                                deckId: deck.id,
+                                cardId: item.id,
+                              })
+                            }
+                          >
+                            Histórico do cartão
+                          </Button>
+                          <Button
+                            disabled={busy}
+                            onClick={() => void openCard(item.id, true)}
+                          >
+                            Editar cartão
+                          </Button>
+                          <Button
+                            id={`delete-card-${item.id}`}
+                            disabled={busy}
+                            onClick={() =>
+                              setConfirmation({
+                                deck,
+                                cardId: item.id,
+                                returnId: `delete-card-${item.id}`,
+                              })
+                            }
+                          >
+                            Excluir cartão
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </li>
+                  </Card>
                 ))}
               </ul>
               <Pagination

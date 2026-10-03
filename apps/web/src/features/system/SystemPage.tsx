@@ -1,3 +1,4 @@
+import { Badge } from '@study-platform/ui/components/ui/badge';
 import { ApiStatus } from './ApiStatus.js';
 
 export function SystemPage() {
@@ -5,7 +6,9 @@ export function SystemPage() {
     <div className="app-shell system-page">
       <header className="site-header">
         <span className="brand">Study Platform</span>
-        <span className="technical-badge">Fundação técnica</span>
+        <Badge variant="secondary" className="technical-badge">
+          Fundação técnica
+        </Badge>
       </header>
 
       <main id="main-content" className="content">

@@ -41,7 +41,8 @@ it('shows partial comparisons, text series and omitted modules, and submits filt
   expect(screen.queryByText('Flashcards avaliados')).toBeNull();
   expect(screen.getByRole('list')).toBeTruthy();
   const user = userEvent.setup();
-  await user.selectOptions(screen.getByLabelText('Período'), 'year');
+  await user.click(screen.getByRole('combobox', { name: 'Período' }));
+  await user.click(screen.getByRole('option', { name: 'Ano' }));
   await user.clear(screen.getByLabelText('Fuso IANA'));
   await user.type(screen.getByLabelText('Fuso IANA'), 'America/New_York');
   screen.getByRole('button', { name: 'Consultar' }).focus();

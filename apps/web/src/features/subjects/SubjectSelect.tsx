@@ -1,3 +1,15 @@
+import { Skeleton } from '@study-platform/ui/components/ui/skeleton';
+import {
+  AlertDescription,
+  Alert,
+} from '@study-platform/ui/components/ui/alert';
+import { Label } from '@study-platform/ui/components/ui/label';
+import {
+  NativeSelect,
+  NativeSelectOption,
+} from '@study-platform/ui/components/ui/native-select';
+
+import { Button } from '@study-platform/ui/components/ui/button';
 import { useEffect, useState } from 'react';
 import type { SubjectList } from '@study-platform/contracts';
 import { listSubjects } from './subjects-api.js';
@@ -33,49 +45,58 @@ export function SubjectSelect({
   }, [page, revision]);
   return (
     <div className="subject-select">
-      <label>
+      <Label>
         {label}
-        <select
+        <NativeSelect
           value={value}
           disabled={disabled || !result}
           onChange={(event) => onChange(event.target.value)}
         >
-          <option value="">Sem matéria</option>
+          <NativeSelectOption value="">Sem matéria</NativeSelectOption>
           {value && !result?.items.some((item) => item.id === value) && (
-            <option value={value}>Matéria selecionada</option>
+            <NativeSelectOption value={value}>
+              Matéria selecionada
+            </NativeSelectOption>
           )}
           {result?.items.map((item) => (
-            <option key={item.id} value={item.id}>
+            <NativeSelectOption key={item.id} value={item.id}>
               {item.name}
-            </option>
+            </NativeSelectOption>
           ))}
-        </select>
-      </label>
-      {!result && !error && <p role="status">Carregando matérias…</p>}
+        </NativeSelect>
+      </Label>
+      {!result && !error && (
+        <div>
+          <Skeleton aria-hidden="true" className="my-2 h-3 w-2/3" />
+          <p role="status">Carregando matérias…</p>
+        </div>
+      )}
       {error && (
-        <p role="alert">
-          Não foi possível carregar matérias.{' '}
-          <button type="button" onClick={() => setRevision(revision + 1)}>
-            Tentar novamente
-          </button>
-        </p>
+        <Alert variant="destructive" role="alert">
+          <AlertDescription>
+            Não foi possível carregar matérias.{' '}
+            <Button type="button" onClick={() => setRevision(revision + 1)}>
+              Tentar novamente
+            </Button>
+          </AlertDescription>
+        </Alert>
       )}
       {result && result.totalPages > 1 && (
         <div>
-          <button
+          <Button
             type="button"
             disabled={disabled || page === 1}
             onClick={() => setPage(page - 1)}
           >
             Matérias anteriores
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             disabled={disabled || page >= result.totalPages}
             onClick={() => setPage(page + 1)}
           >
             Mais matérias
-          </button>
+          </Button>
         </div>
       )}
     </div>

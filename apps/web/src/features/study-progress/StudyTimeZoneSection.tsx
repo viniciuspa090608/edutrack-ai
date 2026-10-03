@@ -1,3 +1,17 @@
+import {
+  CardHeader,
+  Card,
+  CardContent,
+} from '@study-platform/ui/components/ui/card';
+import {
+  AlertDescription,
+  Alert,
+} from '@study-platform/ui/components/ui/alert';
+import { Skeleton } from '@study-platform/ui/components/ui/skeleton';
+
+import { Button } from '@study-platform/ui/components/ui/button';
+import { Label } from '@study-platform/ui/components/ui/label';
+import { Input } from '@study-platform/ui/components/ui/input';
 import { useEffect, useState } from 'react';
 import type { StudyTimeZoneSettings } from '@study-platform/contracts';
 import { saveStudyTimeZone, studyTimeZone } from './progress-api.js';
@@ -52,58 +66,71 @@ export function StudyTimeZoneSection() {
     }
   }
   return (
-    <section className="account-card" aria-labelledby="study-timezone-title">
-      <h2 id="study-timezone-title">Fuso de estudo</h2>
-      <p>
-        O padrão é UTC. Cada atividade mantém a data local do fuso vigente
-        quando aconteceu. Alterações valem para novas atividades.
-      </p>
-      {error && <p role="alert">{error}</p>}
-      {!settings ? (
-        error ? (
-          <button onClick={() => setRetry((value) => value + 1)}>
-            Tentar carregar fuso novamente
-          </button>
-        ) : (
-          <p role="status">Carregando fuso…</p>
-        )
-      ) : (
-        <form
-          onSubmit={(event) => {
-            event.preventDefault();
-            void save();
-          }}
-        >
+    <Card asChild>
+      <section className="account-card" aria-labelledby="study-timezone-title">
+        <CardHeader>
+          <h2 id="study-timezone-title">Fuso de estudo</h2>
+        </CardHeader>
+        <CardContent>
           <p>
-            Fuso salvo: <strong>{settings.timeZone}</strong>
+            O padrão é UTC. Cada atividade mantém a data local do fuso vigente
+            quando aconteceu. Alterações valem para novas atividades.
           </p>
-          <label htmlFor="study-timezone">Fuso IANA</label>
-          <input
-            id="study-timezone"
-            value={draft}
-            maxLength={100}
-            required
-            disabled={busy}
-            onChange={(event) => setDraft(event.target.value)}
-            aria-describedby="study-timezone-help"
-          />
-          <p id="study-timezone-help">
-            Exemplos: UTC, America/Sao_Paulo. Sugestão do navegador:{' '}
-            {suggestion}. A sugestão só será aplicada se você salvar.
-          </p>
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() => setDraft(suggestion)}
-          >
-            Usar sugestão no campo
-          </button>
-          <button disabled={busy}>
-            {busy ? 'Salvando fuso…' : 'Salvar fuso de estudo'}
-          </button>
-          <p role="status">{message}</p>
-        </form>
-      )}
-    </section>
+          {error && (
+            <Alert variant="destructive" role="alert">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          {!settings ? (
+            error ? (
+              <Button onClick={() => setRetry((value) => value + 1)}>
+                Tentar carregar fuso novamente
+              </Button>
+            ) : (
+              <div>
+                <Skeleton aria-hidden="true" className="my-2 h-3 w-2/3" />
+                <p role="status">Carregando fuso…</p>
+              </div>
+            )
+          ) : (
+            <form
+              onSubmit={(event) => {
+                event.preventDefault();
+                void save();
+              }}
+            >
+              <p>
+                Fuso salvo: <strong>{settings.timeZone}</strong>
+              </p>
+              <Label htmlFor="study-timezone">Fuso IANA</Label>
+              <Input
+                id="study-timezone"
+                value={draft}
+                maxLength={100}
+                required
+                disabled={busy}
+                onChange={(event) => setDraft(event.target.value)}
+                aria-describedby="study-timezone-help"
+              />
+              <p id="study-timezone-help">
+                Exemplos: UTC, America/Sao_Paulo. Sugestão do navegador:{' '}
+                {suggestion}. A sugestão só será aplicada se você salvar.
+              </p>
+              <Button
+                type="button"
+                disabled={busy}
+                onClick={() => setDraft(suggestion)}
+              >
+                Usar sugestão no campo
+              </Button>
+              <Button disabled={busy}>
+                {busy ? 'Salvando fuso…' : 'Salvar fuso de estudo'}
+              </Button>
+              <p role="status">{message}</p>
+            </form>
+          )}
+        </CardContent>
+      </section>
+    </Card>
   );
 }

@@ -1,3 +1,4 @@
+import { Progress } from '@study-platform/ui/components/ui/progress';
 import type { StudyTask } from '@study-platform/contracts';
 export function progressLabel(
   task: Pick<
@@ -19,14 +20,14 @@ export function TaskProgress({ task }: { task: StudyTask }) {
   return (
     <div className="task-progress">
       <p>{text}</p>
-      <progress
+      <Progress
         max={100}
         value={task.progressPercent}
         aria-label="Progresso da tarefa"
         aria-valuetext={text}
       >
         {text}
-      </progress>
+      </Progress>
     </div>
   );
 }

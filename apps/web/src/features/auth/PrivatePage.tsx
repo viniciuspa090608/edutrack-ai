@@ -1,3 +1,10 @@
+import { Skeleton } from '@study-platform/ui/components/ui/skeleton';
+import {
+  AlertDescription,
+  Alert,
+} from '@study-platform/ui/components/ui/alert';
+
+import { Button } from '@study-platform/ui/components/ui/button';
 import { useCallback, useEffect, useState } from 'react';
 import type { AuthUser } from '@study-platform/contracts';
 import type { ModulePreferences } from '@study-platform/contracts';
@@ -136,20 +143,25 @@ export function PrivatePage({
   if (checking)
     return (
       <main className="private-page">
-        <p role="status">Verificando sessão…</p>
+        <div>
+          <Skeleton aria-hidden="true" className="my-2 h-3 w-2/3" />
+          <p role="status">Verificando sessão…</p>
+        </div>
       </main>
     );
   if (!user)
     return (
       <main className="private-page">
-        <p role="alert">{error}</p>
-        <button
+        <Alert variant="destructive" role="alert">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+        <Button
           onClick={() => {
             void check();
           }}
         >
           Tentar novamente
-        </button>
+        </Button>
       </main>
     );
 
@@ -173,7 +185,7 @@ export function PrivatePage({
               </a>
             ))}
         </nav>
-        <button
+        <Button
           type="button"
           disabled={busy}
           onClick={() => {
@@ -181,7 +193,7 @@ export function PrivatePage({
           }}
         >
           Sair
-        </button>
+        </Button>
       </header>
       <main className="private-content">
         {page === 'progresso' ? (
@@ -233,7 +245,7 @@ export function PrivatePage({
               onPreferences={updatePreferences}
             />
             {!user.googleLinked && (
-              <button
+              <Button
                 type="button"
                 disabled={busy}
                 onClick={() => {
@@ -241,21 +253,27 @@ export function PrivatePage({
                 }}
               >
                 Vincular Google
-              </button>
+              </Button>
             )}
             {new URLSearchParams(window.location.search).get('google') ===
               'linked' && <p role="status">Google vinculado com sucesso.</p>}
             {['failed', 'conflict'].includes(
               new URLSearchParams(window.location.search).get('google') ?? '',
             ) && (
-              <p role="alert">
-                Não foi possível vincular o Google. Sua conta continua ativa.
-                Tente novamente.
-              </p>
+              <Alert variant="destructive" role="alert">
+                <AlertDescription>
+                  Não foi possível vincular o Google. Sua conta continua ativa.
+                  Tente novamente.
+                </AlertDescription>
+              </Alert>
             )}
           </>
         )}
-        {error && <p role="alert">{error}</p>}
+        {error && (
+          <Alert variant="destructive" role="alert">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
       </main>
     </div>
   );

@@ -1,3 +1,12 @@
+import {
+  AlertDescription,
+  Alert,
+} from '@study-platform/ui/components/ui/alert';
+import { Card, CardContent } from '@study-platform/ui/components/ui/card';
+
+import { Label } from '@study-platform/ui/components/ui/label';
+import { Input } from '@study-platform/ui/components/ui/input';
+import { Button } from '@study-platform/ui/components/ui/button';
 import { useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import {
@@ -71,72 +80,74 @@ export function EmailVerificationPage() {
   }
   return (
     <main className="access-page">
-      <div className="access-card auth-card">
-        <p className="section-kicker">EduTrack</p>
-        <h1 ref={heading} tabIndex={-1}>
-          Confirme seu e-mail
-        </h1>
-        <p>
-          Digite o código de seis dígitos enviado ao seu endereço. Ele vale por
-          10 minutos após o envio.
-        </p>
-        <p role="status" aria-live="polite">
-          {message}
-        </p>
-        {error && (
-          <p className="auth-alert" role="alert">
-            {error}
-          </p>
-        )}
-        {!done && (
-          <>
-            <form
-              onSubmit={(event) => {
-                void confirm(event);
-              }}
-            >
-              <label htmlFor="verification-code">Código de confirmação</label>
-              <input
-                id="verification-code"
-                type="text"
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                pattern="[0-9]{6}"
-                maxLength={6}
-                required
-                value={code}
-                onChange={(event) =>
-                  setCode(event.target.value.replace(/\D/g, ''))
-                }
-              />
-              <button
-                className="button button-primary auth-submit"
-                type="submit"
-                disabled={busy}
-              >
-                {busy ? 'Verificando…' : 'Confirmar e-mail'}
-              </button>
-            </form>
-            <button
+      <Card asChild>
+        <div className="access-card auth-card">
+          <CardContent>
+            <p className="section-kicker">EduTrack</p>
+            <h1 ref={heading} tabIndex={-1}>
+              Confirme seu e-mail
+            </h1>
+            <p>
+              Digite o código de seis dígitos enviado ao seu endereço. Ele vale
+              por 10 minutos após o envio.
+            </p>
+            <p role="status" aria-live="polite">
+              {message}
+            </p>
+            {error && (
+              <Alert variant="destructive" role="alert">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+            {!done && (
+              <>
+                <form
+                  onSubmit={(event) => {
+                    void confirm(event);
+                  }}
+                >
+                  <Label htmlFor="verification-code">
+                    Código de confirmação
+                  </Label>
+                  <Input
+                    id="verification-code"
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    pattern="[0-9]{6}"
+                    maxLength={6}
+                    required
+                    value={code}
+                    onChange={(event) =>
+                      setCode(event.target.value.replace(/\D/g, ''))
+                    }
+                  />
+                  <Button className="auth-submit" type="submit" disabled={busy}>
+                    {busy ? 'Verificando…' : 'Confirmar e-mail'}
+                  </Button>
+                </form>
+                <Button
+                  className="auth-text-button"
+                  type="button"
+                  disabled={busy || wait > 0}
+                  onClick={() => {
+                    void resend();
+                  }}
+                >
+                  {wait > 0 ? `Reenviar em ${wait}s` : 'Enviar outro código'}
+                </Button>
+              </>
+            )}
+            <Button
               className="auth-text-button"
               type="button"
-              disabled={busy || wait > 0}
-              onClick={() => {
-                void resend();
-              }}
+              onClick={() => navigate('/acesso')}
             >
-              {wait > 0 ? `Reenviar em ${wait}s` : 'Enviar outro código'}
-            </button>
-          </>
-        )}
-        <button
-          className="auth-text-button"
-          type="button"
-          onClick={() => navigate('/acesso')}
-        >
-          {done ? 'Entrar' : 'Voltar para entrada'}
-        </button>
-      </div>
+              {done ? 'Entrar' : 'Voltar para entrada'}
+            </Button>
+          </CardContent>
+        </div>
+      </Card>
     </main>
   );
 }

@@ -4,9 +4,6 @@
   min-width: 0;
 }
 .flashcard-panel {
-  padding: 1rem;
-  border: 1px solid #cbd5e1;
-  border-radius: 0.75rem;
   min-width: 0;
   overflow-wrap: anywhere;
 }
@@ -28,8 +25,6 @@
   max-width: 100%;
   min-width: 0;
   box-sizing: border-box;
-  font: inherit;
-  padding: 0.5rem;
 }
 .flashcard-panel textarea {
   min-height: 6rem;
@@ -47,10 +42,6 @@
   white-space: normal;
   overflow-wrap: anywhere;
   max-width: 100%;
-}
-.flashcards-page :focus-visible {
-  outline: 3px solid #2563eb;
-  outline-offset: 3px;
 }
 .flashcard-text {
   white-space: pre-wrap;
@@ -71,7 +62,6 @@
 .import-flow td {
   overflow-wrap: anywhere;
   white-space: pre-wrap;
-  border: 1px solid #cbd5e1;
   padding: 0.25rem;
   vertical-align: top;
 }
@@ -96,13 +86,13 @@
   padding-inline-start: 1.25rem;
 }
 .import-flow h3:focus {
-  outline: 3px solid #2563eb;
+  outline: 3px solid var(--primary);
   outline-offset: 3px;
 }
 .review-queue h2:focus,
 .flashcard-ai-flow h2:focus,
 .flashcard-panel h3:focus {
-  outline: 3px solid #2563eb;
+  outline: 3px solid var(--primary);
   outline-offset: 3px;
 }
 @media (prefers-reduced-motion: reduce) {

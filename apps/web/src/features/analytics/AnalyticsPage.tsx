@@ -1,3 +1,20 @@
+import { Skeleton } from '@study-platform/ui/components/ui/skeleton';
+import {
+  AlertDescription,
+  Alert,
+} from '@study-platform/ui/components/ui/alert';
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from '@study-platform/ui/components/ui/select';
+import { Label } from '@study-platform/ui/components/ui/label';
+
+import { Input } from '@study-platform/ui/components/ui/input';
+import { Button } from '@study-platform/ui/components/ui/button';
+
 import { useEffect, useState } from 'react';
 import type {
   AnalyticsMetric,
@@ -90,34 +107,38 @@ export function AnalyticsPage() {
           setQuery(result.data);
         }}
       >
-        <label>
-          Período
-          <select
+        <div>
+          <Label htmlFor="analytics-period">Período</Label>
+          <Select
             value={draft.granularity}
-            onChange={(event) =>
+            onValueChange={(value) =>
               setDraft({
                 ...draft,
-                granularity: event.target
-                  .value as AnalyticsQuery['granularity'],
+                granularity: value as AnalyticsQuery['granularity'],
               })
             }
           >
-            {[
-              ['day', 'Dia'],
-              ['week', 'Semana'],
-              ['quarter', 'Trimestre'],
-              ['semester', 'Semestre'],
-              ['year', 'Ano'],
-            ].map(([id, label]) => (
-              <option key={id} value={id}>
-                {label}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
+            <SelectTrigger id="analytics-period">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {[
+                ['day', 'Dia'],
+                ['week', 'Semana'],
+                ['quarter', 'Trimestre'],
+                ['semester', 'Semestre'],
+                ['year', 'Ano'],
+              ].map(([id, label]) => (
+                <SelectItem key={id} value={id!}>
+                  {label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <Label>
           Data de referência
-          <input
+          <Input
             type="date"
             required
             value={draft.date}
@@ -125,10 +146,10 @@ export function AnalyticsPage() {
               setDraft({ ...draft, date: event.target.value })
             }
           />
-        </label>
-        <label>
+        </Label>
+        <Label>
           Fuso IANA
-          <input
+          <Input
             required
             value={draft.timeZone}
             onChange={(event) =>
@@ -136,21 +157,28 @@ export function AnalyticsPage() {
             }
             aria-describedby="analytics-zone-help"
           />
-        </label>
-        <button type="submit">Consultar</button>
+        </Label>
+        <Button type="submit">Consultar</Button>
       </form>
       <p id="analytics-zone-help">
         Fuso selecionado: {query.timeZone}. UTC é usado quando o navegador não
         informa um fuso. Exemplo: America/Sao_Paulo.
       </p>
-      {loading && <p role="status">Carregando estatísticas…</p>}
-      {error && (
-        <div role="alert">
-          <p>{error}</p>
-          <button onClick={() => setRetry((value) => value + 1)}>
-            Tentar novamente
-          </button>
+      {loading && (
+        <div>
+          <Skeleton aria-hidden="true" className="my-2 h-3 w-2/3" />
+          <p role="status">Carregando estatísticas…</p>
         </div>
+      )}
+      {error && (
+        <Alert variant="destructive" role="alert">
+          <AlertDescription>
+            <p>{error}</p>
+            <Button onClick={() => setRetry((value) => value + 1)}>
+              Tentar novamente
+            </Button>
+          </AlertDescription>
+        </Alert>
       )}
       {data && (
         <>

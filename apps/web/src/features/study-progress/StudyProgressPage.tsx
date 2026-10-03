@@ -1,3 +1,13 @@
+import {
+  AlertDescription,
+  Alert,
+} from '@study-platform/ui/components/ui/alert';
+import { Skeleton } from '@study-platform/ui/components/ui/skeleton';
+import { Card, CardContent } from '@study-platform/ui/components/ui/card';
+
+import { Button } from '@study-platform/ui/components/ui/button';
+import { Label } from '@study-platform/ui/components/ui/label';
+import { Progress } from '@study-platform/ui/components/ui/progress';
 import { useEffect, useState } from 'react';
 import type { StudyProgress } from '@study-platform/contracts';
 import { studyProgress } from './progress-api.js';
@@ -30,13 +40,18 @@ export function StudyProgressPage() {
       <h1 id="study-progress-title">Seu progresso</h1>
       {error ? (
         <>
-          <p role="alert">{error}</p>
-          <button onClick={() => setRetry((value) => value + 1)}>
+          <Alert variant="destructive" role="alert">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+          <Button onClick={() => setRetry((value) => value + 1)}>
             Tentar novamente
-          </button>
+          </Button>
         </>
       ) : !data ? (
-        <p role="status">Carregando progresso…</p>
+        <div>
+          <Skeleton aria-hidden="true" className="my-2 h-3 w-2/3" />
+          <p role="status">Carregando progresso…</p>
+        </div>
       ) : (
         <>
           <p>
@@ -51,18 +66,30 @@ export function StudyProgressPage() {
             . Atividades anteriores não contam para sequências ou conquistas.
           </p>
           <dl className="progress-summary">
-            <div>
-              <dt>Sequência atual</dt>
-              <dd>{data.currentStreak} dias</dd>
-            </div>
-            <div>
-              <dt>Maior sequência</dt>
-              <dd>{data.longestStreak} dias</dd>
-            </div>
-            <div>
-              <dt>Dias ativos</dt>
-              <dd>{data.activeDays}</dd>
-            </div>
+            <Card asChild>
+              <div>
+                <CardContent>
+                  <dt>Sequência atual</dt>
+                  <dd>{data.currentStreak} dias</dd>
+                </CardContent>
+              </div>
+            </Card>
+            <Card asChild>
+              <div>
+                <CardContent>
+                  <dt>Maior sequência</dt>
+                  <dd>{data.longestStreak} dias</dd>
+                </CardContent>
+              </div>
+            </Card>
+            <Card asChild>
+              <div>
+                <CardContent>
+                  <dt>Dias ativos</dt>
+                  <dd>{data.activeDays}</dd>
+                </CardContent>
+              </div>
+            </Card>
           </dl>
           <p>
             A sequência atual continua se você estudou hoje ou ontem. Várias
@@ -93,11 +120,12 @@ export function StudyProgressPage() {
                     'Pendente'
                   )}
                 </p>
-                <label htmlFor={`achievement-${item.code}`}>
+                <Label id={`achievement-label-${item.code}`}>
                   Progresso: {Math.min(item.progress, item.target)} de{' '}
                   {item.target}
-                </label>
-                <progress
+                </Label>
+                <Progress
+                  aria-labelledby={`achievement-label-${item.code}`}
                   id={`achievement-${item.code}`}
                   max={item.target}
                   value={Math.min(item.progress, item.target)}

@@ -17,6 +17,17 @@ let prefs: ModulePreferences;
 let failed = '';
 const requests: Array<{ path: string; body: unknown; method: string }> = [];
 beforeEach(() => {
+  vi.stubGlobal(
+    'Image',
+    class extends EventTarget {
+      complete = false;
+      naturalWidth = 64;
+      set src(_value: string) {
+        this.complete = true;
+        queueMicrotask(() => this.dispatchEvent(new Event('load')));
+      }
+    },
+  );
   profile = {
     id: '00000000-0000-4000-8000-000000000000',
     email: 'ana@example.com',
@@ -104,9 +115,10 @@ describe('profile page', () => {
       'pelo menos um módulo de estudo ativo',
     );
     expect(
-      (screen.getByRole('checkbox', { name: 'Tarefas' }) as HTMLInputElement)
-        .checked,
-    ).toBe(true);
+      screen
+        .getByRole('checkbox', { name: 'Tarefas' })
+        .getAttribute('aria-checked'),
+    ).toBe('true');
     expect(requests.filter((r) => r.method === 'PATCH')).toHaveLength(0);
   });
   it('handles a server refusal when another tab has disabled the other modules', async () => {
@@ -130,9 +142,10 @@ describe('profile page', () => {
       'pelo menos um módulo de estudo ativo',
     );
     expect(
-      (screen.getByRole('checkbox', { name: 'Tarefas' }) as HTMLInputElement)
-        .checked,
-    ).toBe(true);
+      screen
+        .getByRole('checkbox', { name: 'Tarefas' })
+        .getAttribute('aria-checked'),
+    ).toBe('true');
   });
   it('shows own profile, labelled keyboard controls and unavailable independent preferences', async () => {
     await open();
@@ -153,12 +166,13 @@ describe('profile page', () => {
     toggle.focus();
     await userEvent.setup().keyboard(' ');
     await waitFor(() =>
-      expect((toggle as HTMLInputElement).checked).toBe(false),
+      expect(toggle.getAttribute('aria-checked')).toBe('false'),
     );
     expect(
-      (screen.getByRole('checkbox', { name: 'Matérias' }) as HTMLInputElement)
-        .checked,
-    ).toBe(true);
+      screen
+        .getByRole('checkbox', { name: 'Matérias' })
+        .getAttribute('aria-checked'),
+    ).toBe('true');
     expect(requests.find((r) => r.method === 'PATCH')?.body).toEqual({
       tasks: false,
     });
@@ -187,9 +201,10 @@ describe('profile page', () => {
     await interaction.click(screen.getByRole('checkbox', { name: 'Matérias' }));
     await screen.findByRole('alert');
     expect(
-      (screen.getByRole('checkbox', { name: 'Matérias' }) as HTMLInputElement)
-        .checked,
-    ).toBe(true);
+      screen
+        .getByRole('checkbox', { name: 'Matérias' })
+        .getAttribute('aria-checked'),
+    ).toBe('true');
   });
   it('previews, uploads and removes photos and rejects excessive file size', async () => {
     await open();

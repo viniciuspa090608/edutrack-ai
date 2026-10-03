@@ -1,3 +1,15 @@
+import {
+  CardHeader,
+  Card,
+  CardContent,
+} from '@study-platform/ui/components/ui/card';
+import {
+  AlertDescription,
+  Alert,
+} from '@study-platform/ui/components/ui/alert';
+import { Skeleton } from '@study-platform/ui/components/ui/skeleton';
+
+import { Button } from '@study-platform/ui/components/ui/button';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { Dashboard } from '@study-platform/contracts';
@@ -120,25 +132,36 @@ export function DashboardPage({ displayName }: { displayName: string }) {
     const section = data?.[key];
     if (!section) return null;
     return (
-      <section className="dashboard-card" aria-labelledby={`dashboard-${key}`}>
-        <h2 id={`dashboard-${key}`}>{title}</h2>
-        {section.state === 'error' ? (
-          <>
-            <p role="alert">{section.message}</p>
-            <button
-              disabled={loading}
-              onClick={() => {
-                void load(key);
-              }}
-            >
-              Tentar novamente: {title}
-            </button>
-          </>
-        ) : (
-          content
-        )}
-        <a href={href}>Abrir {title.toLowerCase()}</a>
-      </section>
+      <Card asChild>
+        <section
+          className="dashboard-card"
+          aria-labelledby={`dashboard-${key}`}
+        >
+          <CardHeader>
+            <h2 id={`dashboard-${key}`}>{title}</h2>
+          </CardHeader>
+          <CardContent>
+            {section.state === 'error' ? (
+              <>
+                <Alert variant="destructive" role="alert">
+                  <AlertDescription>{section.message}</AlertDescription>
+                </Alert>
+                <Button
+                  disabled={loading}
+                  onClick={() => {
+                    void load(key);
+                  }}
+                >
+                  Tentar novamente: {title}
+                </Button>
+              </>
+            ) : (
+              content
+            )}
+            <a href={href}>Abrir {title.toLowerCase()}</a>
+          </CardContent>
+        </section>
+      </Card>
     );
   }
   const tasks = data?.tasks?.state !== 'error' ? data?.tasks?.data : undefined;
@@ -164,17 +187,24 @@ export function DashboardPage({ displayName }: { displayName: string }) {
     <div className="dashboard">
       <h1>Olá, {displayName}</h1>
       <p>Escolha seu próximo passo de estudo.</p>
-      {loading && <p role="status">Carregando dashboard…</p>}
+      {loading && (
+        <div>
+          <Skeleton aria-hidden="true" className="my-2 h-3 w-2/3" />
+          <p role="status">Carregando dashboard…</p>
+        </div>
+      )}
       {error && (
         <>
-          <p role="alert">{error}</p>
-          <button
+          <Alert variant="destructive" role="alert">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+          <Button
             onClick={() => {
               void load();
             }}
           >
             Tentar carregar dashboard novamente
-          </button>
+          </Button>
         </>
       )}
       {data && (
@@ -220,7 +250,7 @@ export function DashboardPage({ displayName }: { displayName: string }) {
                 ) : (
                   <>
                     <p>Comece um bloco de foco de 25 minutos.</p>
-                    <button
+                    <Button
                       disabled={starting}
                       onClick={() => {
                         void begin();
@@ -231,10 +261,14 @@ export function DashboardPage({ displayName }: { displayName: string }) {
                         : uncertain
                           ? 'Consultar sessão e iniciar'
                           : 'Iniciar Pomodoro'}
-                    </button>
+                    </Button>
                   </>
                 )}
-                {startError && <p role="alert">{startError}</p>}
+                {startError && (
+                  <Alert variant="destructive" role="alert">
+                    <AlertDescription>{startError}</AlertDescription>
+                  </Alert>
+                )}
               </>,
             )}
             {card(

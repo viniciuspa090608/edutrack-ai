@@ -7,36 +7,20 @@
     BlinkMacSystemFont,
     'Segoe UI',
     sans-serif;
-  color: #16212f;
-  background: #f4f7fb;
   font-synthesis: none;
 }
-
 * {
   box-sizing: border-box;
 }
-
 body {
   margin: 0;
   min-width: 0;
 }
-
-button {
-  font: inherit;
-}
-
-button:focus-visible,
-a:focus-visible {
-  outline: 3px solid #2a61d6;
-  outline-offset: 3px;
-}
-
 .app-shell {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
-
 .site-header,
 .site-footer,
 .content {
@@ -44,7 +28,6 @@ a:focus-visible {
   margin-inline: auto;
   padding-inline: 20px;
 }
-
 .site-header {
   display: flex;
   align-items: center;
@@ -52,34 +35,21 @@ a:focus-visible {
   gap: 12px;
   padding-block: 24px;
 }
-
 .brand {
   font-weight: 800;
   letter-spacing: -0.03em;
 }
-
-.technical-badge {
-  border-radius: 999px;
-  background: #e4ecfa;
-  padding: 7px 10px;
-  color: #314b73;
-  font-size: 0.75rem;
-  white-space: nowrap;
-}
-
 .content {
   flex: 1;
   padding-block: 64px 48px;
 }
-
 .eyebrow {
-  color: #3663ac;
+  color: var(--primary);
   font-weight: 700;
   font-size: 0.78rem;
   letter-spacing: 0.11em;
   text-transform: uppercase;
 }
-
 h1 {
   max-width: 720px;
   margin: 18px 0;
@@ -87,77 +57,54 @@ h1 {
   line-height: 1.08;
   letter-spacing: -0.05em;
 }
-
 .lead {
   max-width: 610px;
-  color: #506075;
+  color: var(--primary);
   font-size: 1.05rem;
   line-height: 1.65;
 }
-
 .status-panel {
   max-width: 560px;
   margin-top: 42px;
-  padding: 22px;
-  border: 1px solid #dbe4f0;
-  border-radius: 18px;
-  background: #fff;
-  box-shadow: 0 12px 35px rgb(35 62 103 / 6%);
   overflow-wrap: anywhere;
 }
-
 .status-panel--success {
-  border-color: #b1ddc7;
+  border-color: var(--border);
 }
-
 .status-panel--error {
-  border-color: #efc1c1;
+  border-color: var(--border);
 }
-
 .status-panel h2 {
   margin: 0 0 8px;
   font-size: 1.1rem;
 }
-
 .status-panel p {
   margin: 0;
-  color: #506075;
+  color: var(--primary);
   line-height: 1.5;
 }
-
 .status-panel button {
   margin-top: 18px;
-  border: 0;
-  border-radius: 10px;
-  background: #285bc5;
-  color: #fff;
-  cursor: pointer;
-  padding: 10px 16px;
 }
-
 .site-footer {
   padding-block: 28px;
-  color: #69798e;
+  color: var(--primary);
   font-size: 0.85rem;
 }
-
 .animate__animated {
   animation-duration: 0.55s;
 }
-
 @media (max-width: 380px) {
   .site-header,
   .site-footer,
   .content {
     padding-inline: 16px;
   }
-
   .site-header {
     align-items: flex-start;
     flex-direction: column;
   }
 }
-
 @media (prefers-reduced-motion: reduce) {
   .animate__animated {
     animation: none !important;

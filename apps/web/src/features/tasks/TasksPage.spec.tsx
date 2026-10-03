@@ -37,20 +37,7 @@ const requests: Array<{
   method: string;
   body: Record<string, unknown>;
 }> = [];
-// jsdom does not implement native dialog methods; browser focus trapping is checked in the visual review.
-Object.defineProperty(HTMLDialogElement.prototype, 'showModal', {
-  configurable: true,
-  value: function (this: HTMLDialogElement) {
-    this.setAttribute('open', '');
-    this.querySelector<HTMLButtonElement>('button')?.focus();
-  },
-});
-Object.defineProperty(HTMLDialogElement.prototype, 'close', {
-  configurable: true,
-  value: function (this: HTMLDialogElement) {
-    this.removeAttribute('open');
-  },
-});
+
 beforeEach(() => {
   items = [];
   failed = '';

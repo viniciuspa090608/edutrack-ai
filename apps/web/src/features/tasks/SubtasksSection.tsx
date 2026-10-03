@@ -1,3 +1,15 @@
+import { Skeleton } from '@study-platform/ui/components/ui/skeleton';
+import {
+  AlertDescription,
+  Alert,
+} from '@study-platform/ui/components/ui/alert';
+import { FieldSet } from '@study-platform/ui/components/ui/field';
+
+import { Button } from '@study-platform/ui/components/ui/button';
+import { Card, CardContent } from '@study-platform/ui/components/ui/card';
+import { Label } from '@study-platform/ui/components/ui/label';
+import { Checkbox } from '@study-platform/ui/components/ui/checkbox';
+import { Input } from '@study-platform/ui/components/ui/input';
 import { useEffect, useRef, useState } from 'react';
 import { createSubtaskSchema } from '@study-platform/contracts';
 import type {
@@ -121,102 +133,113 @@ export function SubtasksSection({
   return (
     <section className="subtasks-section" aria-labelledby="subtasks-heading">
       <h3 id="subtasks-heading">Subtarefas</h3>
-      {loading && <p role="status">Carregando subtarefas…</p>}
-      {error && <p role="alert">{error}</p>}
+      {loading && (
+        <div>
+          <Skeleton aria-hidden="true" className="my-2 h-3 w-2/3" />
+          <p role="status">Carregando subtarefas…</p>
+        </div>
+      )}
+      {error && (
+        <Alert variant="destructive" role="alert">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
       {success && (
         <p role="status" aria-live="polite">
           {success}
         </p>
       )}
       {!loading && !data && (
-        <button type="button" onClick={() => setRevision((value) => value + 1)}>
+        <Button type="button" onClick={() => setRevision((value) => value + 1)}>
           Tentar carregar subtarefas
-        </button>
+        </Button>
       )}
       {data && (
         <>
-          <fieldset disabled={busy || loading} className="subtasks-controls">
+          <FieldSet disabled={busy || loading} className="subtasks-controls">
             {data.items.length === 0 ? (
               <p>Sem subtarefas. Adicione o primeiro passo.</p>
             ) : (
               <ol className="subtask-list">
                 {data.items.map((item) => (
-                  <li
-                    key={item.id}
-                    id={`subtask-${item.id}`}
-                    tabIndex={-1}
-                    className="task-card"
-                  >
-                    <label>
-                      <input
-                        type="checkbox"
-                        id={`subtask-toggle-${item.id}`}
-                        checked={item.isCompleted}
-                        onChange={() => {
-                          void run(
-                            () =>
-                              mutateSubtask(
-                                task.id,
-                                `/subtasks/${item.id}`,
-                                'PATCH',
-                                { isCompleted: !item.isCompleted },
-                              ),
-                            item.isCompleted
-                              ? 'Subtarefa reaberta.'
-                              : 'Subtarefa concluída.',
-                            `subtask-toggle-${item.id}`,
-                          );
-                        }}
-                      />{' '}
-                      {item.title}
-                    </label>
-                    <p>
-                      Posição {item.position + 1} de {data.items.length}
-                    </p>
-                    <div className="task-actions">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setEditing({ id: item.id, title: item.title });
-                          setEditError('');
-                          setSuccess('');
-                          setFocusId('subtask-edit-title');
-                        }}
-                      >
-                        Editar {item.title}
-                      </button>
-                      <button
-                        id={`subtask-delete-${item.id}`}
-                        type="button"
-                        onClick={() => {
-                          setConfirmation({ kind: 'delete', item });
-                          setSuccess('');
-                        }}
-                      >
-                        Excluir {item.title}
-                      </button>
-                      <button
-                        type="button"
-                        aria-label={`Mover ${item.title} para cima`}
-                        disabled={item.position === 0}
-                        onClick={() => {
-                          void move(item, -1);
-                        }}
-                      >
-                        Mover para cima
-                      </button>
-                      <button
-                        type="button"
-                        aria-label={`Mover ${item.title} para baixo`}
-                        disabled={item.position === data.items.length - 1}
-                        onClick={() => {
-                          void move(item, 1);
-                        }}
-                      >
-                        Mover para baixo
-                      </button>
-                    </div>
-                  </li>
+                  <Card key={item.id} asChild>
+                    <li
+                      id={`subtask-${item.id}`}
+                      tabIndex={-1}
+                      className="task-card"
+                    >
+                      <CardContent>
+                        <Label>
+                          <Checkbox
+                            id={`subtask-toggle-${item.id}`}
+                            checked={item.isCompleted}
+                            onCheckedChange={() => {
+                              void run(
+                                () =>
+                                  mutateSubtask(
+                                    task.id,
+                                    `/subtasks/${item.id}`,
+                                    'PATCH',
+                                    { isCompleted: !item.isCompleted },
+                                  ),
+                                item.isCompleted
+                                  ? 'Subtarefa reaberta.'
+                                  : 'Subtarefa concluída.',
+                                `subtask-toggle-${item.id}`,
+                              );
+                            }}
+                          />{' '}
+                          {item.title}
+                        </Label>
+                        <p>
+                          Posição {item.position + 1} de {data.items.length}
+                        </p>
+                        <div className="task-actions">
+                          <Button
+                            type="button"
+                            onClick={() => {
+                              setEditing({ id: item.id, title: item.title });
+                              setEditError('');
+                              setSuccess('');
+                              setFocusId('subtask-edit-title');
+                            }}
+                          >
+                            Editar {item.title}
+                          </Button>
+                          <Button
+                            id={`subtask-delete-${item.id}`}
+                            type="button"
+                            onClick={() => {
+                              setConfirmation({ kind: 'delete', item });
+                              setSuccess('');
+                            }}
+                          >
+                            Excluir {item.title}
+                          </Button>
+                          <Button
+                            type="button"
+                            aria-label={`Mover ${item.title} para cima`}
+                            disabled={item.position === 0}
+                            onClick={() => {
+                              void move(item, -1);
+                            }}
+                          >
+                            Mover para cima
+                          </Button>
+                          <Button
+                            type="button"
+                            aria-label={`Mover ${item.title} para baixo`}
+                            disabled={item.position === data.items.length - 1}
+                            onClick={() => {
+                              void move(item, 1);
+                            }}
+                          >
+                            Mover para baixo
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </li>
+                  </Card>
                 ))}
               </ol>
             )}
@@ -251,8 +274,8 @@ export function SubtasksSection({
                     setEditing(null);
                 }}
               >
-                <label htmlFor="subtask-edit-title">Título da subtarefa</label>
-                <input
+                <Label htmlFor="subtask-edit-title">Título da subtarefa</Label>
+                <Input
                   id="subtask-edit-title"
                   maxLength={160}
                   value={editing.title}
@@ -266,8 +289,8 @@ export function SubtasksSection({
                 />
                 {editError && <p id="subtask-edit-error">{editError}</p>}
                 <div className="task-actions">
-                  <button type="submit">Salvar subtarefa</button>
-                  <button
+                  <Button type="submit">Salvar subtarefa</Button>
+                  <Button
                     type="button"
                     onClick={() => {
                       setFocusId(`subtask-${editing.id}`);
@@ -275,7 +298,7 @@ export function SubtasksSection({
                     }}
                   >
                     Cancelar edição da subtarefa
-                  </button>
+                  </Button>
                 </div>
               </form>
             )}
@@ -303,8 +326,8 @@ export function SubtasksSection({
                   setTitle('');
               }}
             >
-              <label htmlFor="subtask-title">Nova subtarefa</label>
-              <input
+              <Label htmlFor="subtask-title">Nova subtarefa</Label>
+              <Input
                 id="subtask-title"
                 maxLength={160}
                 value={title}
@@ -315,12 +338,12 @@ export function SubtasksSection({
                 onChange={(event) => setTitle(event.target.value)}
               />
               {titleError && <p id="subtask-title-error">{titleError}</p>}
-              <button type="submit">
+              <Button type="submit">
                 {busy ? 'Aguarde…' : 'Adicionar subtarefa'}
-              </button>
+              </Button>
             </form>
             {data.items.some((item) => !item.isCompleted) && (
-              <button
+              <Button
                 id="subtask-complete"
                 type="button"
                 onClick={() => {
@@ -329,9 +352,9 @@ export function SubtasksSection({
                 }}
               >
                 Concluir tarefa
-              </button>
+              </Button>
             )}
-          </fieldset>
+          </FieldSet>
         </>
       )}
       {confirmation && (
