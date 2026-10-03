@@ -2,7 +2,7 @@
 
 ## Context
 
-Ver [proposal.md](proposal.md). `apps/web` é uma aplicação React/Vite sem roteador. `App.tsx` contém somente a tela técnica com `ApiStatus`; `main.css` já define largura mínima de 320 px, foco visível e redução de movimento. A API e o banco não precisam mudar. Ainda não há specs publicadas em `openspec/specs/`; a spec da tela técnica está na mudança `bootstrap-study-platform` e assume a URL inicial.
+Ver [proposal.md](proposal.md). A fundação original de `apps/web` é uma aplicação React/Vite sem roteador, com a tela técnica e `ApiStatus` na URL inicial. `main.css` já definia largura mínima de 320 px, foco visível e redução de movimento. A API e o banco não precisam mudar. A spec principal `web-runtime`, sincronizada após a fundação, descreve a página técnica na URL inicial e precisa acompanhar sua migração para `/status`.
 
 ## Goals / Non-Goals
 
@@ -41,7 +41,7 @@ Usar CSS mobile-first e semântica HTML (`header`, `nav`, `main`, `section`, `fo
 ## Risks / Trade-offs
 
 - [Rota direta em hospedagem estática] → documentar/configurar fallback de `/acesso` e `/status` para `index.html` no ambiente de publicação; verificar navegação direta no preview local.
-- [Spec antiga da página técnica fala em URL inicial] → preservar o comportamento em `/status` e atualizar/reconciliar a spec de `bootstrap-study-platform` quando suas specs forem sincronizadas ou arquivadas; não publicar duas exigências contraditórias para `/`.
+- [Spec da página técnica fala em URL inicial] → incluir neste change um delta `MODIFIED` de `web-runtime` que atualiza a URL para `/status`, preservando cenários de health check e evitando exigências contraditórias para `/`.
 - [Avanço automático atrapalha leitura] → intervalo de leitura, pausa por interação, controles manuais e desativação com movimento reduzido; cobrir com testes de temporizador e interação.
 - [Texto sugere módulos prontos] → revisão editorial dos rótulos e CTAs antes do aceite; `/acesso` informa indisponibilidade real.
 - [Header ocupa largura no celular] → no mobile, fora do menu ficam somente CTA e ícone; validar visualmente a 320 px e com texto ampliado.

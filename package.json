@@ -9,6 +9,7 @@
   "scripts": {
     "dev:web": "pnpm --filter @study-platform/web dev",
     "dev:api": "pnpm --filter @study-platform/api dev",
+    "dev:email": "pnpm --filter @study-platform/api email:worker",
     "db:migration:show": "pnpm --filter @study-platform/api migration:show",
     "db:migration:run": "pnpm --filter @study-platform/api migration:run",
     "lint": "pnpm -r --if-present lint && prettier --check apps packages package.json pnpm-workspace.yaml eslint.config.mjs prettier.config.mjs .github README.md AGENTS.md",

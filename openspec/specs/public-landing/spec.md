@@ -1,11 +1,9 @@
-# Spec Delta
-
+# public-landing Specification
 ## Purpose
 
 Apresentar a EduTrack a visitantes sem autenticação, permitindo conhecer os recursos planejados, navegar pela página e encontrar um caminho claro para o acesso futuro.
 
-## ADDED Requirements
-
+## Requirements
 ### Requirement: Página pública de apresentação
 A aplicação SHALL exibir a landing da EduTrack em `/` sem exigir autenticação ou disponibilidade da API. A página SHALL conter uma chamada principal, apresentação dos recursos de estudo, seção **Funcionalidades**, seção **Tecnologias** e convite final para cadastro. O texto SHALL distinguir recursos planejados dos que já estão disponíveis.
 
@@ -89,15 +87,6 @@ Todas as ações **Login / Inscreva-se** e os convites para cadastro SHALL levar
 - **WHEN** seleciona **Login / Inscreva-se**
 - **THEN** acessa `/acesso` e lê o aviso **Em breve**
 - **AND** encontra uma ação para voltar à landing.
-
-### Requirement: Diagnóstico técnico preservado
-A página técnica existente SHALL permanecer acessível em `/status` e continuar mostrando os estados de verificação da API, independentemente da landing.
-
-#### Scenario: Abrir página técnica
-- **GIVEN** a aplicação web iniciada
-- **WHEN** uma pessoa abre `/status`
-- **THEN** a página técnica é exibida
-- **AND** a verificação da API apresenta carregamento, sucesso ou erro conforme a resposta.
 
 ### Requirement: Acessibilidade e largura mínima
 A landing e a página provisória de acesso SHALL ser utilizáveis por teclado, apresentar foco visível, usar estrutura semântica e manter conteúdo essencial legível a partir de 320 px sem rolagem horizontal causada pelo layout.

@@ -25,3 +25,4 @@
 
 - [x] 4.1 Executar `pnpm lint`, `pnpm typecheck`, `pnpm test` e `pnpm build`; verificar saída com código zero para os quatro comandos.
 - [x] 4.2 Executar `openspec validate add-public-landing --strict` e conferir manualmente as rotas `/`, `/acesso` e `/status`; verificar validação sem erros e todos os cenários da spec atendidos.
+- [x] 4.3 Reconciliar o delta de `web-runtime` com a rota técnica `/status` e a spec `public-landing` com `/`; verificar que a validação estrita passa sem requisitos conflitantes para a URL inicial.

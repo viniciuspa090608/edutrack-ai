@@ -25,13 +25,17 @@ Para confirmação de e-mail e recuperação de senha, configure `SMTP_HOST`, `S
 
 ### E-mail no desenvolvimento local
 
-Para usar Mailpit nativo, baixe o binário para seu sistema na [página oficial de instalação](https://mailpit.axllent.org/docs/install/) e extraia-o fora do repositório. No Windows, use o arquivo para Windows amd64. Configure `SMTP_HOST=localhost`, `SMTP_PORT=1025` e `SMTP_FROM=no-reply@localhost.test` no `.env`, mantendo `SMTP_USER` e `SMTP_PASSWORD` vazios e as duas chaves de e-mail existentes. Na pasta do executável, mantenha este comando em um terminal separado:
+O `.env` fica na raiz do repositório, ao lado de `package.json`, e é compartilhado pela API, pelo worker e pela configuração da web. Ele é ignorado pelo Git; em um checkout novo, copie `.env.example` somente se ainda não existir um `.env`. Preserve as credenciais e as chaves já configuradas.
+
+O exemplo usa Mailpit em `localhost:1025`, sem usuário ou senha. Baixe o binário nativo para seu sistema na [página oficial de instalação](https://mailpit.axllent.org/docs/install/) e extraia-o em uma pasta fora do repositório. No Windows, use o arquivo para Windows amd64. Não é necessário instalar Docker. Gere as duas chaves de e-mail descritas acima e mantenha a caixa local em um terminal separado, a partir da pasta do executável:
 
 ```powershell
 .\mailpit.exe --smtp 127.0.0.1:1025 --listen 127.0.0.1:8025
 ```
 
-Mantenha o worker `pnpm --filter @study-platform/api email:worker` ativo e abra <http://localhost:8025> para ler as mensagens de teste. Para entrega real, configure os dados do seu provedor SMTP e reinicie API e worker.
+Mantenha `pnpm dev:email` em um terminal separado da API e da web. O cadastro coloca a mensagem em uma fila no MySQL; é o worker que envia o código. Abra <http://localhost:8025> para ler o e-mail de confirmação. O Mailpit captura mensagens de teste e não as entrega à caixa real do destinatário. Se a conta já foi criada, use o reenvio de código na tela de confirmação após iniciar o SMTP e o worker.
+
+Para receber mensagens na caixa real, substitua `SMTP_HOST`, `SMTP_PORT`, `SMTP_FROM`, `SMTP_USER` e `SMTP_PASSWORD` pelos dados do seu provedor SMTP e reinicie a API e o worker. Mantenha as chaves de e-mail existentes. Se nada chegar, confira os eventos do worker: `email.worker_ready`, `email.sent` e `email.delivery_failed`. Verifique também spam e as regras de remetente do provedor.
 
 ### Banco local e migrations
 
@@ -64,7 +68,7 @@ Em terminais separados:
 ```powershell
 pnpm dev:api
 pnpm dev:web
-pnpm --filter @study-platform/api email:worker
+pnpm dev:email
 ```
 
 A landing abre em <http://localhost:5173/> sem depender da API. Cadastro e login ficam em `/acesso`; a área protegida fica em `/app` e a vinculação explícita do Google em `/conta`. O diagnóstico técnico fica em `/status`. A API abre em <http://localhost:3001>; `GET http://localhost:3001/health` responde `{"status":"ok"}` após a conexão com o banco. Para executar o build da API, use `pnpm build` e depois `pnpm --filter @study-platform/api start`.

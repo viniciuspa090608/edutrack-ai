@@ -20,7 +20,7 @@ A aplicação abre hoje em uma página de diagnóstico da fundação técnica. E
 
 ### Modified Capabilities
 
-Nenhuma capability publicada em `openspec/specs/` será modificada; atualmente não há specs principais. A mudança desloca a página técnica do caminho inicial para `/status`, o que exige reconciliar a spec ainda não sincronizada de `bootstrap-study-platform` antes do arquivamento das duas mudanças.
+- `web-runtime`: a página técnica e a consulta do health check deixam a URL inicial `/` e permanecem acessíveis em `/status`.
 
 ## Impact
 
