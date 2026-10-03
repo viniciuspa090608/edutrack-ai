@@ -23,7 +23,7 @@
 .auth-hint {
   margin: 0;
   font-size: 0.85rem;
-  color: var(--primary);
+  color: var(--muted-foreground);
 }
 .auth-submit {
   width: 100%;
@@ -162,5 +162,5 @@
   height: 1.25rem;
 }
 .account-preference small {
-  color: var(--primary);
+  color: var(--muted-foreground);
 }

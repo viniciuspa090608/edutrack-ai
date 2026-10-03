@@ -25,7 +25,13 @@ export function StatusPanel({
         <CardContent>
           <Alert
             role={tone === 'error' ? 'alert' : 'status'}
-            variant={tone === 'error' ? 'destructive' : 'default'}
+            variant={
+              tone === 'error'
+                ? 'destructive'
+                : tone === 'success'
+                  ? 'success'
+                  : 'info'
+            }
           >
             <AlertTitle>
               <h2>{title}</h2>

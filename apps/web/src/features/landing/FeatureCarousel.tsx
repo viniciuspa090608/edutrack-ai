@@ -42,10 +42,13 @@ export function FeatureCarousel() {
   const [focused, setFocused] = useState(false);
   const [hidden, setHidden] = useState(document.hidden);
   const [reducedMotion, setReducedMotion] = useState(
-    () => window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+    () =>
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches,
   );
 
   useEffect(() => {
+    if (typeof window.matchMedia !== 'function') return;
     const media = window.matchMedia('(prefers-reduced-motion: reduce)');
     const onChange = () => setReducedMotion(media.matches);
     media.addEventListener('change', onChange);

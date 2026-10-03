@@ -12,7 +12,7 @@
   z-index: 20;
   inset: 0 0 auto;
   min-height: 70px;
-  background: color-mix(in srgb, var(--foreground) 12%, transparent);
+  background: var(--background);
   border-bottom: 1px solid var(--border);
   backdrop-filter: blur(14px);
 }
@@ -39,7 +39,7 @@
 .access-mark {
   display: inline-grid;
   place-items: center;
-  color: var(--background);
+  color: var(--primary-foreground);
   background: var(--primary);
   border-radius: 13px;
   width: 32px;
@@ -82,7 +82,8 @@
   text-decoration: none;
 }
 .mobile-nav a:hover {
-  background: var(--background);
+  background: var(--accent);
+  color: var(--accent-foreground);
 }
 .landing-page main {
   padding-top: 70px;
@@ -158,7 +159,7 @@
   border-radius: 30px;
   background: radial-gradient(
     circle at 50% 45%,
-    var(--border),
+    var(--accent),
     var(--background) 66%,
     var(--background)
   );
@@ -204,9 +205,9 @@
   align-items: center;
   gap: 9px;
   padding: 10px 0;
-  border-top: 1px solid var(--background);
+  border-top: 1px solid var(--border);
   font-size: 0.8rem;
-  color: var(--primary);
+  color: var(--muted-foreground);
 }
 .hero-card-row svg {
   flex: none;
@@ -221,15 +222,15 @@
   gap: 7px;
   padding: 10px 14px;
   border-radius: 50px;
-  background: var(--background);
-  color: var(--primary);
+  background: var(--accent);
+  color: var(--accent-foreground);
   box-shadow: 0 12px 28px color-mix(in srgb, var(--foreground) 12%, transparent);
   font-size: 0.7rem;
   font-weight: 750;
   transform: rotate(4deg);
 }
 .showcase-section {
-  background: var(--background);
+  background: var(--muted);
   padding-block: 82px;
 }
 .section-intro {
@@ -265,7 +266,7 @@
   display: grid;
   place-items: center;
   min-height: 260px;
-  background: var(--background);
+  background: var(--accent);
 }
 .carousel-art img {
   width: min(100%, 470px);
@@ -334,9 +335,9 @@
   height: 42px;
   display: grid;
   place-items: center;
-  color: var(--primary);
+  color: var(--accent-foreground);
   border-radius: 11px;
-  background: var(--background);
+  background: var(--accent);
 }
 .feature-card h3 {
   margin: 17px 0 7px;
@@ -350,7 +351,7 @@
 }
 .tech-section {
   padding-block: 80px;
-  background: var(--background);
+  background: var(--muted);
 }
 .tech-layout {
   display: grid;
@@ -373,12 +374,12 @@
   margin-block: 80px;
   padding: 54px 22px;
   border-radius: 25px;
-  background: var(--foreground);
-  color: var(--background);
+  background: var(--accent);
+  color: var(--accent-foreground);
   text-align: center;
 }
 .closing-section h2 {
-  color: var(--background);
+  color: var(--accent-foreground);
 }
 .closing-section p:not(.section-kicker) {
   max-width: 560px;
@@ -386,13 +387,13 @@
   line-height: 1.7;
 }
 .closing-section .section-kicker {
-  color: var(--border);
+  color: var(--accent-foreground);
 }
 .closing-spark {
   display: inline-grid;
   place-items: center;
   margin-bottom: 17px;
-  color: var(--border);
+  color: var(--accent-foreground);
 }
 .landing-footer {
   border-top: 1px solid var(--border);

@@ -59,7 +59,7 @@ h1 {
 }
 .lead {
   max-width: 610px;
-  color: var(--primary);
+  color: var(--muted-foreground);
   font-size: 1.05rem;
   line-height: 1.65;
 }
@@ -69,10 +69,10 @@ h1 {
   overflow-wrap: anywhere;
 }
 .status-panel--success {
-  border-color: var(--border);
+  border-color: var(--success);
 }
 .status-panel--error {
-  border-color: var(--border);
+  border-color: var(--destructive);
 }
 .status-panel h2 {
   margin: 0 0 8px;
@@ -80,7 +80,7 @@ h1 {
 }
 .status-panel p {
   margin: 0;
-  color: var(--primary);
+  color: var(--muted-foreground);
   line-height: 1.5;
 }
 .status-panel button {
@@ -88,7 +88,7 @@ h1 {
 }
 .site-footer {
   padding-block: 28px;
-  color: var(--primary);
+  color: var(--muted-foreground);
   font-size: 0.85rem;
 }
 .animate__animated {
