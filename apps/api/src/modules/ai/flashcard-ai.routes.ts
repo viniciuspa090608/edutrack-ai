@@ -1,3 +1,4 @@
+import { webOrigins } from '../../config/origins.js';
 import { Router } from 'express';
 import { deckSchema } from '@study-platform/contracts';
 import type { ApiEnv } from '../../config/env.js';
@@ -22,7 +23,7 @@ export function flashcardAIRoutes(
     router.post(
       `/:deckId${suffix}`,
       requireSession(auth, env),
-      requireOrigin(env.WEB_ORIGIN),
+      requireOrigin(webOrigins(env)),
       prefs.guard('flashcards', true),
       async (req, res) => {
         res.setHeader('Cache-Control', 'private, no-store');

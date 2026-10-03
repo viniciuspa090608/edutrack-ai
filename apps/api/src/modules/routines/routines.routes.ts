@@ -1,3 +1,4 @@
+import { webOrigins } from '../../config/origins.js';
 import { Router } from 'express';
 import type { Response } from 'express';
 import { routineSchema } from '@study-platform/contracts';
@@ -28,7 +29,7 @@ export function routinesRoutes(
       throw new HttpError(404, 'ROUTINE_NOT_FOUND', 'Rotina não encontrada.');
     return parsed.data;
   };
-  const write = requireOrigin(env.WEB_ORIGIN);
+  const write = requireOrigin(webOrigins(env));
   router.get('/schedule', async (_req, res) => {
     res.json(await service.schedule(owner(res)));
   });

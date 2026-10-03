@@ -23,6 +23,16 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react(), tailwindcss()],
     envDir,
-    server: { port: 5173 },
+    server: {
+      host: '0.0.0.0',
+      port: 5173,
+      strictPort: true,
+      proxy: {
+        '/api': {
+          target: apiUrl,
+          rewrite: (path) => path.replace(/^\/api(?=\/|$)/, ''),
+        },
+      },
+    },
   };
 });

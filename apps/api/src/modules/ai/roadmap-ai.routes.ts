@@ -1,3 +1,4 @@
+import { webOrigins } from '../../config/origins.js';
 import { Router } from 'express';
 import { subjectSchema } from '@study-platform/contracts';
 import type { ApiEnv } from '../../config/env.js';
@@ -20,7 +21,7 @@ export function roadmapAIRoutes(
   const guards = [
     requireSession(auth, env),
     prefs.guard('subjects', true),
-    requireOrigin(env.WEB_ORIGIN),
+    requireOrigin(webOrigins(env)),
   ];
   const id = (value: unknown) => {
     const parsed = subjectSchema.shape.id.safeParse(value);

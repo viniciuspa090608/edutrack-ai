@@ -1,3 +1,4 @@
+import { webOrigins, allowsWebOrigin } from '../../config/origins.js';
 import { Router, raw } from 'express';
 import type { Response } from 'express';
 import {
@@ -38,11 +39,11 @@ export function importRoutes(
       );
     return result.data;
   };
-  const write = requireOrigin(env.WEB_ORIGIN);
+  const write = requireOrigin(webOrigins(env));
   router.post(
     '/:deckId/imports',
     (req, _res, next) => {
-      if (req.headers.origin !== env.WEB_ORIGIN)
+      if (!allowsWebOrigin(env, req.headers.origin))
         return next(
           new HttpError(403, 'ORIGIN_NOT_ALLOWED', 'Origem não permitida.'),
         );

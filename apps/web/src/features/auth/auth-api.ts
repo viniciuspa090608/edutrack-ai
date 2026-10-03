@@ -3,10 +3,7 @@ import {
   pendingVerificationSchema,
 } from '@study-platform/contracts';
 import type { AuthUser } from '@study-platform/contracts';
-
-function apiBase(): string {
-  return import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3001';
-}
+import { apiUrl } from './api-url';
 
 export class AuthApiError extends Error {
   constructor(
@@ -44,7 +41,7 @@ export async function send(
   path: string,
   options: RequestInit = {},
 ): Promise<Response> {
-  const response = await fetch(`${apiBase()}${path}`, {
+  const response = await fetch(apiUrl(path), {
     credentials: 'include',
     ...options,
   });
@@ -152,7 +149,7 @@ export async function startGoogleLink(): Promise<string> {
 }
 
 export function googleLoginUrl(returnTo: string): string {
-  const url = new URL('/auth/google/start', apiBase());
+  const url = new URL(apiUrl('/auth/google/start'), window.location.origin);
   url.searchParams.set('returnTo', allowedReturnTo(returnTo));
   return url.href;
 }

@@ -3,6 +3,7 @@ import express from 'express';
 import type { CustomFetch } from 'openid-client';
 import type { DataSource } from 'typeorm';
 import type { ApiEnv } from './config/env.js';
+import { allowsWebOrigin } from './config/origins.js';
 import { errorHandler, notFound } from './middlewares/error-handler.js';
 import { requestContext } from './middlewares/request-context.js';
 import { healthRoutes } from './modules/health/health.routes.js';
@@ -97,7 +98,11 @@ export function createApp({
     cors({
       credentials: true,
       origin(origin, callback) {
-        if (!origin || origin === webOrigin) callback(null, true);
+        if (
+          !origin ||
+          (env ? allowsWebOrigin(env, origin) : origin === webOrigin)
+        )
+          callback(null, true);
         else
           callback(
             new HttpError(403, 'ORIGIN_NOT_ALLOWED', 'Origem não permitida.'),

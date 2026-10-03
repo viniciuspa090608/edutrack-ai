@@ -15,11 +15,17 @@
     "format": "prettier --write apps packages package.json pnpm-workspace.yaml eslint.config.mjs prettier.config.mjs .github README.md AGENTS.md",
     "typecheck": "pnpm --filter @study-platform/contracts build && pnpm --filter @study-platform/ui build && pnpm -r --if-present typecheck",
     "test": "pnpm --filter @study-platform/contracts build && pnpm --filter @study-platform/ui build && pnpm -r --workspace-concurrency=1 --if-present test",
-    "build": "pnpm -r --if-present build"
+    "build": "pnpm -r --if-present build",
+    "dev": "pnpm run dev:all",
+    "dev:all": "pnpm --filter @study-platform/contracts build && pnpm --filter @study-platform/ui build && concurrently --kill-others --success all --names web,api,email \"pnpm dev:web\" \"pnpm dev:api\" \"pnpm --filter @study-platform/api email:worker\"",
+    "demo:inspect": "pnpm --filter @study-platform/api demo:inspect",
+    "demo:reset": "pnpm --filter @study-platform/api demo:reset",
+    "demo:seed": "pnpm --filter @study-platform/api demo:seed"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.0",
     "@types/node": "24.13.6",
+    "concurrently": "9.2.1",
     "eslint": "10.11.0",
     "globals": "^16.0.0",
     "prettier": "3.9.8",

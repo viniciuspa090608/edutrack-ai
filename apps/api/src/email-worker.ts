@@ -12,6 +12,28 @@ async function main(): Promise<void> {
   const send = createSmtpSender(env);
   const source = createDataSource(env);
   await source.initialize();
+  const workerLock =
+    env.NODE_ENV === 'development' ? source.createQueryRunner() : undefined;
+  if (workerLock) {
+    await workerLock.connect();
+    const lock = await workerLock.manager.query<Array<{ acquired: number }>>(
+      "SELECT GET_LOCK(CONCAT(DATABASE(), ':demo'),0) AS acquired",
+    );
+    if (Number(lock[0]!.acquired) !== 1) {
+      await workerLock.release();
+      await source.destroy();
+      throw new Error('Demo operation is running');
+    }
+    const worker = await workerLock.manager.query<Array<{ acquired: number }>>(
+      "SELECT GET_LOCK(CONCAT(DATABASE(), ':email-worker'),0) AS acquired",
+    );
+    await workerLock.query("SELECT RELEASE_LOCK(CONCAT(DATABASE(), ':demo'))");
+    if (Number(worker[0]!.acquired) !== 1) {
+      await workerLock.release();
+      await source.destroy();
+      throw new Error('Email worker is already running');
+    }
+  }
   const email = new EmailRepository(
     source,
     new EmailCrypto(env.EMAIL_HMAC_KEY, env.EMAIL_ENCRYPTION_KEY),
@@ -33,6 +55,12 @@ async function main(): Promise<void> {
       if (!worked) await new Promise((resolve) => setTimeout(resolve, 1_000));
     }
   } finally {
+    if (workerLock) {
+      await workerLock.query(
+        "SELECT RELEASE_LOCK(CONCAT(DATABASE(), ':email-worker'))",
+      );
+      await workerLock.release();
+    }
     await source.destroy();
   }
 }

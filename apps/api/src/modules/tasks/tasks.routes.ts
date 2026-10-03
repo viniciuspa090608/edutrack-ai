@@ -1,3 +1,4 @@
+import { webOrigins } from '../../config/origins.js';
 import { taskSchema } from '@study-platform/contracts';
 import { Router } from 'express';
 import type { Response } from 'express';
@@ -31,7 +32,7 @@ export function tasksRoutes(
       throw new HttpError(404, 'TASK_NOT_FOUND', 'Tarefa não encontrada.');
     return parsed.data;
   };
-  const write = requireOrigin(env.WEB_ORIGIN);
+  const write = requireOrigin(webOrigins(env));
   router.get('/:taskId/subtasks', async (req, res) => {
     res.json(await service.listSubtasks(owner(res), id(req.params.taskId)));
   });

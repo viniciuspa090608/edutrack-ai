@@ -1,3 +1,4 @@
+import { webOrigins } from '../../config/origins.js';
 import { Router } from 'express';
 import type { Response } from 'express';
 import { deckSchema } from '@study-platform/contracts';
@@ -34,7 +35,7 @@ export function flashcardsRoutes(
       );
     return result.data;
   };
-  const write = requireOrigin(env.WEB_ORIGIN);
+  const write = requireOrigin(webOrigins(env));
   router.get('/', async (req, res) => {
     res.json(await service.list(owner(res), req.query));
   });

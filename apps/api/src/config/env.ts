@@ -36,6 +36,16 @@ const envSchema = z
     DB_NAME: z.string().regex(/^[a-zA-Z][a-zA-Z0-9_]*$/),
     TEST_DB_NAME: z.string().regex(/^[a-zA-Z][a-zA-Z0-9_]*$/),
     WEB_ORIGIN: origin,
+    DEV_WEB_ORIGINS: z.preprocess(
+      (value) =>
+        typeof value === 'string'
+          ? value
+              .split(',')
+              .map((item) => item.trim())
+              .filter(Boolean)
+          : value,
+      z.array(origin).max(10).optional(),
+    ),
     API_PUBLIC_ORIGIN: origin,
     GOOGLE_CLIENT_ID: optionalCredential,
     GOOGLE_CLIENT_SECRET: optionalCredential,

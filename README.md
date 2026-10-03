@@ -271,3 +271,70 @@ Tarefas mostram totais por status, até cinco não concluídas com prazo (`dueDa
 Pomodoro informa sessão aberta e total de sessões `COMPLETED`, excluindo canceladas dessa contagem. **Iniciar Pomodoro** usa o comando público sem vínculos obrigatórios; **Retomar Pomodoro** abre a sessão atual. Conflito ou resposta de rede incerta provoca consulta da sessão atual antes de qualquer novo comando, evitando uma sessão dupla entre abas. Pendências vêm da fila oficial de repetição espaçada; sequência vem do módulo de progresso; semana ISO e métricas vêm de analytics no fuso de estudo salvo. Falha ao ler o fuso torna o resumo semanal indisponível sem simular UTC. As métricas semanais respeitam preferências e limites do histórico dos produtores.
 
 Não há migration nem armazenamento próprios do dashboard. Aplique previamente as migrations dos módulos produtores. Rollback de código pode restaurar a área inicial mínima sem apagar dados de estudo. O layout funciona desde 320 px, com navegação por teclado, foco visível e preferência por movimento reduzido.
+
+## Demonstração local
+
+`npm run dev` na raiz delega a pnpm, compila os pacotes compartilhados e inicia web, API e worker de e-mail juntos. Use Ctrl+C para encerrar os processos; se um deles falhar, os demais também são encerrados. MySQL e Mailpit continuam como pré-requisitos externos. Não é necessário executar `npm install`, e o lockfile do projeto permanece `pnpm-lock.yaml`.
+
+### Reset e população explícitos
+
+Pare a aplicação e qualquer worker iniciado separadamente antes de preparar os dados. Confira primeiro o alvo efetivo:
+
+```powershell
+pnpm demo:inspect
+```
+
+O comando mostra ambiente, host, porta, banco, tabelas, migrations pendentes e possíveis IPs LAN sem imprimir segredos. Reset e seed exigem `NODE_ENV=development`, MySQL no computador local e migrations aplicadas. São recusados em produção e teste, contra bancos de sistema, com tabelas desconhecidas ou enquanto os processos estão ativos.
+
+O reset **apaga todos os dados da aplicação no banco indicado**, incluindo contas, sessões e filas de e-mail. TRUNCATE preserva tabelas, índices, constraints, triggers e histórico de migrations, mas não admite rollback; uma falha pode deixar limpeza parcial. Faça backup manual antes, caso os dados atuais precisem ser preservados. Confirme exatamente o host, porta e banco exibidos por `demo:inspect`; o exemplo abaixo somente é válido se esse for o seu alvo:
+
+```powershell
+pnpm demo:reset --confirm=localhost:3306/study_platform_dev
+pnpm demo:seed
+npm run dev
+```
+
+Reset nunca acontece automaticamente em `npm run dev`. Seed recusa um banco já populado, sem sobrescrever ou duplicar dados. Repita reset confirmado e seed para reconstruir a demonstração. Para repetir o mesmo histórico, passe uma data real de referência:
+
+```powershell
+pnpm demo:seed --date=2026-10-03
+```
+
+Sem `--date`, o seed usa o dia da execução em `America/Sao_Paulo`. Use uma data atual para mostrar sequências recentes e revisões pendentes. O histórico cobre aproximadamente 60 dias; estatísticas são derivadas de eventos e intervalos de estudo reais das fixtures. A população é transacional e não faz chamadas à IA nem dispara e-mails.
+
+### Contas de exemplo
+
+Estas contas já têm e-mail confirmado. A senha comum é **`DemoEduTrack2026!`**, exclusiva do ambiente local de demonstração:
+
+| Perfil        | E-mail                             | Experiência                                                                                                                                                                             |
+| ------------- | ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Ativo         | `ativo@demo.edutrack.test`         | Todos os módulos habilitados, três matérias, tarefas/subtarefas, planos e versões de roadmap, rotina, Pomodoro, flashcards/importações, revisões, estatísticas, sequência e conquistas. |
+| Intermediário | `intermediario@demo.edutrack.test` | Duas matérias, progresso parcial, tarefas, sessões esparsas e revisões pendentes.                                                                                                       |
+| Iniciante     | `iniciante@demo.edutrack.test`     | Uma matéria e uma tarefa; módulos com estados vazios para demonstrar primeiros passos.                                                                                                  |
+
+Abra `/acesso` para entrar e `/app` para o dashboard. Navegue por tarefas, matérias, rotinas, Pomodoro, flashcards, estatísticas e progresso; confira que cada conta apresenta somente seus próprios dados. IA está habilitada nas preferências para apresentar o módulo, mas gerar conteúdo real continua exigindo configuração de provedor; roadmaps e cartões das fixtures funcionam sem essa configuração.
+
+### Computador e rede local
+
+A web usa `--host 0.0.0.0 --port 5173 --strictPort`. No computador, abra <http://localhost:5173>. Se a porta já estiver ocupada, o processo falha em vez de escolher outra. A web encaminha `/api` para a origem indicada em `VITE_API_BASE_URL` (padrão <http://localhost:3001>), preservando o prefixo real das rotas, cookies HttpOnly e a origem da requisição. O navegador usa o mesmo host da web; não configure `localhost` como destino no celular.
+
+Para LAN, encontre o IPv4 Wi-Fi/Ethernet com `pnpm demo:inspect` ou `ipconfig`. No `.env` local, mantenha `WEB_ORIGIN=http://localhost:5173` e adicione o endereço exato autorizado, por exemplo:
+
+```dotenv
+DEV_WEB_ORIGINS=http://192.168.15.12:5173
+```
+
+Reinicie `npm run dev` e abra `http://IP-DO-COMPUTADOR:5173` em outro dispositivo da mesma rede. A lista aceita até dez origens separadas por vírgulas, sem caminhos e sem wildcard. Essa configuração adicional é usada apenas em desenvolvimento; produção mantém as regras de HTTPS, cookies Secure e origem configurada. Se o IP mudar, atualize a lista. Autorize TCP 5173 no firewall somente no perfil de rede privada; a API na porta 3001 não precisa ser exposta para o navegador remoto. Evite abrir a demonstração na internet.
+
+Mailpit abre no computador em <http://localhost:8025>. Para cadastro/recuperação, mantenha SMTP e worker ativos e leia ali os códigos; os três usuários de demonstração não dependem desse fluxo. `API_PUBLIC_ORIGIN` continua necessário para OAuth e `WEB_ORIGIN` para redirecionamentos Google; as credenciais demonstrativas usam login local. Não desative validação de origem para contornar problemas de LAN.
+
+### Verificação
+
+```powershell
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm build
+```
+
+Os testes de demo usam MySQL real em banco temporário isolado com prefixo `TEST_DB_NAME`, verificando reset, migrations, rollback, repetição, perfis e isolamento. Nunca substitua falhas de conexão por mocks. Para verificação manual, entre nas três contas, consulte histórico/progresso, faça uma alteração via LAN e confira os estados vazios do iniciante. Ao terminar, encerre com Ctrl+C e confirme que pode reiniciar nas mesmas portas.

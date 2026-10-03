@@ -1,3 +1,4 @@
+import { webOrigins, allowsWebOrigin } from '../../config/origins.js';
 import {
   emailChangeSchema,
   emailCodeSchema,
@@ -38,7 +39,7 @@ export function profileRoutes(
 ): Router {
   const router = Router();
   router.use(requireSession(auth, env));
-  const write = requireOrigin(env.WEB_ORIGIN);
+  const write = requireOrigin(webOrigins(env));
   router.get('/', async (_req, res) => {
     res.json(await profile.read(authenticatedSession(res).userId));
   });
@@ -66,7 +67,7 @@ export function profileRoutes(
   router.put(
     '/avatar',
     (req, _res, next) => {
-      if (req.headers.origin !== env.WEB_ORIGIN)
+      if (!allowsWebOrigin(env, req.headers.origin))
         return next(
           new HttpError(403, 'ORIGIN_NOT_ALLOWED', 'Origem não permitida.'),
         );

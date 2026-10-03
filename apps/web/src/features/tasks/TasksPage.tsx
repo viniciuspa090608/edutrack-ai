@@ -730,6 +730,7 @@ export function TasksPage({
                       <Button
                         type="button"
                         disabled={detailLoading}
+                        className="h-auto min-h-9 max-w-full whitespace-normal"
                         onClick={async () => {
                           setDetailLoading(true);
                           setSuccess('');
@@ -745,7 +746,9 @@ export function TasksPage({
                           }
                         }}
                       >
-                        Ver detalhes de {task.title}
+                        <span className="max-w-full whitespace-normal break-words">
+                          Ver detalhes de {task.title}
+                        </span>
                       </Button>
                     </CardContent>
                   </li>

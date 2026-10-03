@@ -9,6 +9,7 @@ import {
 import { Router } from 'express';
 import type { Request, RequestHandler, Response } from 'express';
 import type { ApiEnv } from '../../config/env.js';
+import { webOrigins } from '../../config/origins.js';
 import { HttpError } from '../../shared/http-error.js';
 import { AuthService } from './auth.service.js';
 import { allowedReturnTo, GoogleService } from './google.service.js';
@@ -93,9 +94,16 @@ function shortToken(
   );
 }
 
-export function requireOrigin(webOrigin: string): RequestHandler {
+export function requireOrigin(
+  webOrigin: string | readonly string[],
+): RequestHandler {
   return (request, _response, next) => {
-    if (request.headers.origin !== webOrigin) {
+    if (
+      !request.headers.origin ||
+      !(typeof webOrigin === 'string' ? [webOrigin] : webOrigin).includes(
+        request.headers.origin,
+      )
+    ) {
       next(new HttpError(403, 'ORIGIN_NOT_ALLOWED', 'Origem não permitida.'));
       return;
     }
@@ -143,7 +151,7 @@ export function authRoutes(
   env: ApiEnv,
 ): Router {
   const router = Router();
-  const write = requireOrigin(env.WEB_ORIGIN);
+  const write = requireOrigin(webOrigins(env));
   const secure = requireSession(service, env);
 
   router.post('/register', write, async (request, response) => {

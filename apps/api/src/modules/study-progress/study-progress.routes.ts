@@ -1,3 +1,4 @@
+import { webOrigins } from '../../config/origins.js';
 import { Router } from 'express';
 import type { AuthService } from '../auth/auth.service.js';
 import {
@@ -43,7 +44,7 @@ export function studyProgressRoutes(
   });
   router.patch(
     '/account/study-timezone',
-    requireOrigin(env.WEB_ORIGIN),
+    requireOrigin(webOrigins(env)),
     async (req, res) => {
       noQuery(req.query);
       res.json(

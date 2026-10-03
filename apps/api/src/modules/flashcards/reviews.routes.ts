@@ -1,3 +1,4 @@
+import { webOrigins } from '../../config/origins.js';
 import { Router } from 'express';
 import type { Response } from 'express';
 import { deckSchema } from '@study-platform/contracts';
@@ -67,7 +68,7 @@ export function reviewsRoutes(
   });
   router.post(
     '/:deckId/cards/:cardId/reviews',
-    requireOrigin(env.WEB_ORIGIN),
+    requireOrigin(webOrigins(env)),
     async (req, res) => {
       res.json(
         await service.rate(

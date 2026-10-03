@@ -1,3 +1,4 @@
+import { webOrigins } from '../../config/origins.js';
 import { Router } from 'express';
 import {
   pomodoroSessionSchema,
@@ -30,7 +31,7 @@ export function pomodoroRoutes(
       throw new HttpError(404, 'POMODORO_NOT_FOUND', 'Sessão não encontrada.');
     return parsed.data;
   };
-  router.post('/sessions', requireOrigin(env.WEB_ORIGIN), async (req, res) => {
+  router.post('/sessions', requireOrigin(webOrigins(env)), async (req, res) => {
     res
       .status(201)
       .json(await service.start(authenticatedSession(res).userId, req.body));
@@ -60,7 +61,7 @@ export function pomodoroRoutes(
   ] as const)
     router.post(
       `/sessions/:id/${action}`,
-      requireOrigin(env.WEB_ORIGIN),
+      requireOrigin(webOrigins(env)),
       async (req, res) => {
         res.json(
           await service.transition(

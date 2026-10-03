@@ -1,3 +1,4 @@
+import { webOrigins } from '../../config/origins.js';
 import { Router } from 'express';
 import type { Response } from 'express';
 import { subjectSchema } from '@study-platform/contracts';
@@ -30,7 +31,7 @@ export function subjectsRoutes(
       throw new HttpError(404, 'SUBJECT_NOT_FOUND', 'Matéria não encontrada.');
     return result.data;
   };
-  const write = requireOrigin(env.WEB_ORIGIN);
+  const write = requireOrigin(webOrigins(env));
   router.get('/:id/roadmaps/:roadmapId/revisions', async (req, res) => {
     res.json(
       await service.roadmapHistory(

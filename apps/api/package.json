@@ -13,7 +13,10 @@
     "test": "vitest run",
     "migration:show": "tsx src/database/show-migrations.ts",
     "migration:run": "tsx src/database/run-migrations.ts",
-    "email:worker": "tsx src/email-worker.ts"
+    "email:worker": "tsx src/email-worker.ts",
+    "demo:inspect": "tsx src/demo/cli.ts inspect",
+    "demo:reset": "tsx src/demo/cli.ts reset",
+    "demo:seed": "tsx src/demo/cli.ts seed"
   },
   "dependencies": {
     "@js-temporal/polyfill": "^0.5.1",

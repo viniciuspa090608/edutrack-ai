@@ -1,6 +1,7 @@
 import { healthResponseSchema } from '@study-platform/contracts';
 import { StatusPanel } from '@study-platform/ui';
 import { useEffect, useState } from 'react';
+import { apiUrl } from '../auth/api-url';
 
 type Status = 'loading' | 'success' | 'error';
 
@@ -14,12 +15,9 @@ export function ApiStatus() {
 
     async function check() {
       try {
-        const response = await fetch(
-          new URL('/health', import.meta.env.VITE_API_BASE_URL),
-          {
-            signal: controller.signal,
-          },
-        );
+        const response = await fetch(apiUrl('/health'), {
+          signal: controller.signal,
+        });
         if (!response.ok) throw new Error('API indisponível');
         healthResponseSchema.parse(await response.json());
         if (!controller.signal.aborted) setStatus('success');
