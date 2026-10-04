@@ -7,6 +7,7 @@ import { DashboardPage } from './DashboardPage.js';
 import { dashboard } from './dashboard-api.js';
 import { currentPomodoro, startPomodoro } from '../pomodoro/pomodoro-api.js';
 import { App } from '../../app/App.js';
+import { within } from '@testing-library/react';
 vi.mock('./dashboard-api.js', () => ({ dashboard: vi.fn() }));
 vi.mock('../pomodoro/pomodoro-api.js', () => ({
   currentPomodoro: vi.fn(),
@@ -85,6 +86,71 @@ const session: PomodoroSession = {
   endedAt: null,
   serverTime: empty.asOf,
 };
+it('keeps official weekly totals and coverage even when the chart has different observations', async () => {
+  if (empty.week.state === 'error') throw new Error('Invalid fixture');
+  vi.mocked(dashboard).mockResolvedValue({
+    ...empty,
+    week: {
+      state: 'ready',
+      data: {
+        ...empty.week.data,
+        metrics: {
+          activeMs: {
+            current: 600000,
+            previous: null,
+            difference: null,
+            percent: null,
+            coverageStart: empty.asOf,
+            currentStatus: 'available',
+            previousStatus: 'history_unavailable',
+          },
+          tasks: {
+            current: null,
+            previous: null,
+            difference: null,
+            percent: null,
+            coverageStart: empty.asOf,
+            currentStatus: 'history_unavailable',
+            previousStatus: 'history_unavailable',
+          },
+        },
+        series: [{ date: '2026-10-05', values: { activeMs: 60000 } }],
+        frequency: { activeDays: 1, days: 7, status: 'history_unavailable' },
+      },
+    },
+  });
+  render(<DashboardPage displayName="Ana" />);
+  const section = await screen.findByRole('region', { name: 'Estatísticas' });
+  expect(within(section).getByText('10 min')).toBeTruthy();
+  expect(within(section).getByText('1 min')).toBeTruthy();
+  expect(within(section).getByText('Histórico indisponível')).toBeTruthy();
+  expect(within(section).getByText(/Histórico incompleto/)).toBeTruthy();
+});
+
+it('does not turn a null manual-plan progress into a zero progress bar', async () => {
+  vi.mocked(dashboard).mockResolvedValue({
+    ...empty,
+    subjects: {
+      state: 'ready',
+      data: {
+        id: session.id,
+        name: 'Plano manual',
+        dueDate: '2026-12-01',
+        hasPending: false,
+        source: 'manual',
+        roadmapId: null,
+        title: 'Plano',
+        total: 0,
+        completed: 0,
+        progressPercent: null,
+      },
+    },
+  });
+  render(<DashboardPage displayName="Ana" />);
+  const section = await screen.findByRole('region', { name: 'Matérias' });
+  expect(within(section).queryByRole('progressbar')).toBeNull();
+  expect(within(section).getByText(/0 de 0 concluídos/)).toBeTruthy();
+});
 it('shows loading, recoverable failure and genuine first steps for a new account', async () => {
   vi.mocked(dashboard).mockImplementationOnce(() => new Promise(() => {}));
   const first = render(<DashboardPage displayName="Ana" />);

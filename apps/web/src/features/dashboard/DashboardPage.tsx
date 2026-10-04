@@ -10,6 +10,18 @@ import {
 import { Skeleton } from '@study-platform/ui/components/ui/skeleton';
 
 import { Button } from '@study-platform/ui/components/ui/button';
+import { Badge } from '@study-platform/ui/components/ui/badge';
+import { Progress } from '@study-platform/ui/components/ui/progress';
+import {
+  ArrowUpRight,
+  BookOpen,
+  CheckCircle2,
+  Clock3,
+  Flame,
+  Layers3,
+  BarChart3,
+} from 'lucide-react';
+import { DashboardWeeklyChart } from './DashboardWeeklyChart.js';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { Dashboard } from '@study-platform/contracts';
@@ -32,6 +44,15 @@ const metrics = {
   planItems: 'Itens de plano concluídos',
   roadmapBlocks: 'Blocos de roadmap concluídos',
 };
+const sectionIcons = {
+  tasks: CheckCircle2,
+  subjects: BookOpen,
+  pomodoro: Clock3,
+  flashcards: Layers3,
+  streak: Flame,
+  week: BarChart3,
+};
+const priorities = { LOW: 'Baixa', MEDIUM: 'Média', HIGH: 'Alta' };
 export function DashboardPage({ displayName }: { displayName: string }) {
   const [data, setData] = useState<Dashboard | null>(null);
   const [error, setError] = useState('');
@@ -131,13 +152,17 @@ export function DashboardPage({ displayName }: { displayName: string }) {
   ) {
     const section = data?.[key];
     if (!section) return null;
+    const Icon = sectionIcons[key];
     return (
       <Card asChild>
         <section
-          className="dashboard-card"
+          className={`dashboard-card dashboard-card-${key}`}
           aria-labelledby={`dashboard-${key}`}
         >
           <CardHeader>
+            <span className="dashboard-section-icon" aria-hidden="true">
+              <Icon size={20} />
+            </span>
             <h2 id={`dashboard-${key}`}>{title}</h2>
           </CardHeader>
           <CardContent>
@@ -158,7 +183,10 @@ export function DashboardPage({ displayName }: { displayName: string }) {
             ) : (
               content
             )}
-            <a href={href}>Abrir {title.toLowerCase()}</a>
+            <a className="dashboard-module-link" href={href}>
+              Abrir {title.toLowerCase()}{' '}
+              <ArrowUpRight size={16} aria-hidden="true" />
+            </a>
           </CardContent>
         </section>
       </Card>
@@ -185,8 +213,11 @@ export function DashboardPage({ displayName }: { displayName: string }) {
     : null;
   return (
     <div className="dashboard">
-      <h1>Olá, {displayName}</h1>
-      <p>Escolha seu próximo passo de estudo.</p>
+      <div className="dashboard-welcome">
+        <span className="dashboard-eyebrow">SEU ESPAÇO DE ESTUDO</span>
+        <h1>Olá, {displayName}</h1>
+        <p>Escolha seu próximo passo de estudo.</p>
+      </div>
       {loading && (
         <div>
           <Skeleton aria-hidden="true" className="my-2 h-3 w-2/3" />
@@ -225,6 +256,42 @@ export function DashboardPage({ displayName }: { displayName: string }) {
               <a href="/conta">Reativar nas preferências</a>
             </p>
           )}
+          <div className="dashboard-indicators" aria-label="Resumo dos estudos">
+            {data.tasks && (
+              <div>
+                <CheckCircle2 aria-hidden="true" />
+                <span>Tarefas concluídas</span>
+                <strong>
+                  {tasks ? tasks.counts.COMPLETED : 'Indisponível'}
+                </strong>
+              </div>
+            )}
+            <div>
+              <Flame aria-hidden="true" />
+              <span>Sequência atual</span>
+              <strong>
+                {streak ? `${streak.currentStreak} dias` : 'Indisponível'}
+              </strong>
+            </div>
+            <div>
+              <Clock3 aria-hidden="true" />
+              <span>Foco nesta semana</span>
+              <strong>
+                {week?.metrics.activeMs
+                  ? week.metrics.activeMs.current === null
+                    ? 'Histórico indisponível'
+                    : `${(week.metrics.activeMs.current / 60000).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} min`
+                  : 'Indisponível'}
+              </strong>
+            </div>
+            {data.flashcards && (
+              <div>
+                <Layers3 aria-hidden="true" />
+                <span>Revisões pendentes</span>
+                <strong>{pending ?? 'Indisponível'}</strong>
+              </div>
+            )}
+          </div>
           <div className="dashboard-grid">
             {card(
               'pomodoro',
@@ -283,10 +350,18 @@ export function DashboardPage({ displayName }: { displayName: string }) {
                     {tasks.counts.COMPLETED} concluídas.
                   </p>
                   {tasks.upcoming.length ? (
-                    <ul>
+                    <ul className="dashboard-task-list">
                       {tasks.upcoming.map((task) => (
                         <li key={task.id}>
                           <strong>{task.title}</strong>
+                          <div className="dashboard-task-badges">
+                            <Badge variant="secondary">
+                              Prioridade {priorities[task.priority]}
+                            </Badge>
+                            <Badge variant="outline">
+                              {status[task.status]}
+                            </Badge>
+                          </div>
                           <p>
                             Prazo:{' '}
                             <time dateTime={task.dueDate!}>{task.dueDate}</time>
@@ -294,6 +369,18 @@ export function DashboardPage({ displayName }: { displayName: string }) {
                               ? ' · Atrasada'
                               : ''}
                           </p>
+                          {task.subtaskTotal > 0 && (
+                            <p>
+                              {task.subtaskCompleted}/{task.subtaskTotal}{' '}
+                              subtarefas concluídas
+                            </p>
+                          )}
+                          {task.progressPercent !== null && (
+                            <Progress
+                              value={task.progressPercent}
+                              aria-label={`Progresso de ${task.title}`}
+                            />
+                          )}
                           <p>
                             {task.progressPercent === null
                               ? status[task.status]
@@ -342,6 +429,12 @@ export function DashboardPage({ displayName }: { displayName: string }) {
                       : ''}
                     .
                   </p>
+                  {subject.progressPercent !== null && (
+                    <Progress
+                      value={subject.progressPercent}
+                      aria-label={`Progresso de ${subject.name}`}
+                    />
+                  )}
                 </>
               ) : (
                 <p>
@@ -378,6 +471,7 @@ export function DashboardPage({ displayName }: { displayName: string }) {
                   {streak?.trackingStartedAt.slice(0, 10)}. Atividades
                   anteriores não contam.
                 </p>
+                <p>{streak?.activeDays} dias ativos no histórico rastreado.</p>
                 {streak?.activeDays === 0 && (
                   <p>
                     Conclua uma atividade de estudo para registrar seu primeiro
@@ -404,6 +498,7 @@ export function DashboardPage({ displayName }: { displayName: string }) {
                       : ''}
                     .
                   </p>
+                  <DashboardWeeklyChart series={week.series} />
                   <dl>
                     {Object.entries(week.metrics).map(([key, metric]) => (
                       <div key={key}>
