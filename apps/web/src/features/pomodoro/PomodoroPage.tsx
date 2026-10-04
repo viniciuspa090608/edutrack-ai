@@ -1,3 +1,16 @@
+import { Badge } from '@study-platform/ui/components/ui/badge';
+import { Card, CardContent } from '@study-platform/ui/components/ui/card';
+import {
+  Timer,
+  Play,
+  Pause,
+  CircleCheck,
+  Square,
+  RefreshCw,
+  History,
+  Clock3,
+  Layers,
+} from 'lucide-react';
 import { Skeleton } from '@study-platform/ui/components/ui/skeleton';
 import {
   AlertDescription,
@@ -218,255 +231,490 @@ export function PomodoroPage({
       setBusy(false);
     }
   }
+
+  const remaining = session
+    ? Math.max(0, session.remainingSeconds - elapsed)
+    : 1500;
+  const progress = Math.min(100, Math.max(0, (1 - remaining / 1500) * 100));
+  const taskLabel = (id: string | null) =>
+    id
+      ? (tasks.find((task) => task.id === id)?.title ?? `Tarefa ${id}`)
+      : 'Sem tarefa';
   return (
-    <section className="pomodoro-page" aria-busy={busy}>
-      <h1 ref={heading} tabIndex={-1}>
-        Pomodoro
-      </h1>
-      <p>Blocos de 25 minutos de foco. As pausas não contam como estudo.</p>
-      {busy && (
+    <section className="pomodoro-page pomodoro-surface" aria-busy={busy}>
+      <header className="pomodoro-heading">
         <div>
-          <Skeleton aria-hidden="true" className="my-2 h-3 w-2/3" />
+          <p className="pomodoro-eyebrow">SEU TEMPO DE ESTUDO</p>
+          <h1 ref={heading} tabIndex={-1}>
+            Pomodoro
+          </h1>
+          <p className="pomodoro-muted">
+            Blocos de 25 minutos de foco. As pausas não contam como estudo.
+          </p>
+        </div>
+        <Button variant="outline" disabled={busy} onClick={() => void retry()}>
+          <RefreshCw aria-hidden="true" />
+          Sincronizar
+        </Button>
+      </header>
+      {busy && (
+        <div className="pomodoro-loading">
+          <Skeleton aria-hidden="true" className="h-3 w-2/3" />
           <p role="status">Carregando…</p>
         </div>
       )}
       {error && !canceling && (
-        <Alert variant="destructive" role="alert">
+        <Alert className="pomodoro-feedback" variant="destructive" role="alert">
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
-      {message && <p role="status">{message}</p>}
-      <Button disabled={busy} onClick={() => void retry()}>
-        Sincronizar
-      </Button>
-      {ready && !session && (
-        <div>
-          <p>Nenhuma sessão em andamento.</p>
-          {tasksEnabled && (
-            <>
-              <Label>
-                Tarefa opcional
-                <NativeSelect
-                  value={taskId}
-                  onChange={(event) => setTaskId(event.target.value)}
+      {message && (
+        <p className="pomodoro-success" role="status">
+          <CircleCheck aria-hidden="true" />
+          {message}
+        </p>
+      )}
+      <div className="pomodoro-layout">
+        <Card
+          className="pomodoro-card pomodoro-focus"
+          data-state={session ? state : 'IDLE'}
+        >
+          <CardContent>
+            <div className="pomodoro-card-heading">
+              <span className="pomodoro-icon">
+                <Timer aria-hidden="true" />
+              </span>
+              <h2>
+                {session ? 'Sua sessão de foco' : 'Prepare seu próximo foco'}
+              </h2>
+            </div>
+            {ready && !session && (
+              <>
+                <Badge className="pomodoro-status" variant="secondary">
+                  Não iniciado
+                </Badge>
+                <div className="pomodoro-preparation">
+                  <Timer aria-hidden="true" />
+                  <p>Nenhuma sessão em andamento.</p>
+                  <p className="pomodoro-muted">
+                    Escolha o que estudar e reserve um bloco de foco.
+                  </p>
+                  <span className="pomodoro-duration">
+                    25 minutos por bloco
+                  </span>
+                </div>
+                <div className="pomodoro-fields">
+                  {tasksEnabled && (
+                    <div>
+                      <Label>
+                        Tarefa opcional
+                        <NativeSelect
+                          value={taskId}
+                          onChange={(event) => setTaskId(event.target.value)}
+                          disabled={busy}
+                        >
+                          <NativeSelectOption value="">
+                            Sem tarefa
+                          </NativeSelectOption>
+                          {tasks.map((task) => (
+                            <NativeSelectOption key={task.id} value={task.id}>
+                              {task.title}
+                            </NativeSelectOption>
+                          ))}
+                        </NativeSelect>
+                      </Label>
+                      {taskPages > 1 && (
+                        <div className="pomodoro-actions">
+                          <Button
+                            variant="outline"
+                            disabled={taskPage === 1 || busy}
+                            onClick={() => setTaskPage(taskPage - 1)}
+                          >
+                            Tarefas anteriores
+                          </Button>
+                          <Button
+                            variant="outline"
+                            disabled={taskPage >= taskPages || busy}
+                            onClick={() => setTaskPage(taskPage + 1)}
+                          >
+                            Mais tarefas
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {subjectsEnabled && (
+                    <SubjectSelect
+                      value={subjectId}
+                      onChange={setSubjectId}
+                      disabled={busy}
+                    />
+                  )}
+                </div>
+                <Button
+                  className="pomodoro-start"
                   disabled={busy}
+                  onClick={() => void act()}
                 >
-                  <NativeSelectOption value="">Sem tarefa</NativeSelectOption>
-                  {tasks.map((task) => (
-                    <NativeSelectOption key={task.id} value={task.id}>
-                      {task.title}
-                    </NativeSelectOption>
-                  ))}
-                </NativeSelect>
-              </Label>
-              {taskPages > 1 && (
-                <div>
-                  <Button
-                    disabled={taskPage === 1 || busy}
-                    onClick={() => setTaskPage(taskPage - 1)}
+                  <Play aria-hidden="true" />
+                  Iniciar sessão
+                </Button>
+              </>
+            )}
+            {session && (
+              <>
+                <p role="status" className="pomodoro-session-status">
+                  <Badge className="pomodoro-status" variant="secondary">
+                    {state === 'RUNNING'
+                      ? 'Em execução'
+                      : state === 'PAUSED'
+                        ? 'Em pausa'
+                        : 'Bloco concluído'}
+                  </Badge>
+                </p>
+                <div className="pomodoro-timer">
+                  <svg
+                    className="pomodoro-ring"
+                    viewBox="0 0 120 120"
+                    aria-hidden="true"
                   >
-                    Tarefas anteriores
-                  </Button>
+                    <circle
+                      className="pomodoro-ring-track"
+                      cx="60"
+                      cy="60"
+                      r="54"
+                    />
+                    <circle
+                      className="pomodoro-ring-value"
+                      cx="60"
+                      cy="60"
+                      r="54"
+                      pathLength="100"
+                      strokeDasharray="100"
+                      strokeDashoffset={100 - progress}
+                    />
+                  </svg>
+                  <div className="pomodoro-timer-content">
+                    <span className="pomodoro-eyebrow">TEMPO RESTANTE</span>
+                    <p
+                      className="pomodoro-clock"
+                      aria-label="Tempo restante no bloco"
+                    >
+                      {format(remaining)}
+                    </p>
+                    <span className="pomodoro-duration">
+                      25 minutos por bloco
+                    </span>
+                  </div>
+                </div>
+                <div className="pomodoro-context">
+                  {subjectsEnabled && <SubjectName id={session.subjectId} />}
+                  <p>{taskLabel(session.taskId)}</p>
+                </div>
+                <div className="pomodoro-actions pomodoro-main-actions">
+                  {state === 'RUNNING' && (
+                    <Button
+                      disabled={busy || !ready}
+                      onClick={() => void act('pause')}
+                    >
+                      <Pause aria-hidden="true" />
+                      Pausar
+                    </Button>
+                  )}
+                  {state === 'PAUSED' && (
+                    <Button
+                      disabled={busy || !ready}
+                      onClick={() => void act('resume')}
+                    >
+                      <Play aria-hidden="true" />
+                      Continuar
+                    </Button>
+                  )}
+                  {state === 'BETWEEN_BLOCKS' && (
+                    <Button
+                      disabled={busy || !ready}
+                      onClick={() => void act('next-block')}
+                    >
+                      <Play aria-hidden="true" />
+                      Iniciar próximo bloco
+                    </Button>
+                  )}
+                  {blocks > 0 && (
+                    <Button
+                      variant="outline"
+                      disabled={busy || !ready}
+                      onClick={() => void act('complete')}
+                    >
+                      <CircleCheck aria-hidden="true" />
+                      Concluir
+                    </Button>
+                  )}
                   <Button
-                    disabled={taskPage >= taskPages || busy}
-                    onClick={() => setTaskPage(taskPage + 1)}
+                    variant="outline"
+                    ref={cancelButton}
+                    disabled={busy || !ready}
+                    onClick={() => setCanceling(true)}
                   >
-                    Mais tarefas
+                    <Square aria-hidden="true" />
+                    Cancelar sessão
                   </Button>
                 </div>
-              )}
-            </>
-          )}
-          {subjectsEnabled && (
-            <SubjectSelect
-              value={subjectId}
-              onChange={setSubjectId}
-              disabled={busy}
-            />
-          )}
-          <Button disabled={busy} onClick={() => void act()}>
-            Iniciar sessão
-          </Button>
-        </div>
-      )}
-      {session && (
-        <div>
-          <p role="status">
-            {state === 'RUNNING'
-              ? 'Em execução'
-              : state === 'PAUSED'
-                ? 'Em pausa'
-                : 'Bloco concluído'}
-          </p>
-          <p className="pomodoro-clock" aria-label="Tempo restante no bloco">
-            {format(Math.max(0, session.remainingSeconds - elapsed))}
-          </p>
-          <p>
-            Tempo ativo total: {format(session.activeSeconds + elapsed)} ·
-            Blocos concluídos: {blocks}
-          </p>
-          <div className="pomodoro-actions">
-            {state === 'RUNNING' && (
-              <Button
-                disabled={busy || !ready}
-                onClick={() => void act('pause')}
-              >
-                Pausar
-              </Button>
-            )}
-            {state === 'PAUSED' && (
-              <Button
-                disabled={busy || !ready}
-                onClick={() => void act('resume')}
-              >
-                Continuar
-              </Button>
-            )}
-            {state === 'BETWEEN_BLOCKS' && (
-              <Button
-                disabled={busy || !ready}
-                onClick={() => void act('next-block')}
-              >
-                Iniciar próximo bloco
-              </Button>
-            )}
-            {blocks > 0 && (
-              <Button
-                disabled={busy || !ready}
-                onClick={() => void act('complete')}
-              >
-                Concluir
-              </Button>
-            )}
-            <Button
-              ref={cancelButton}
-              disabled={busy || !ready}
-              onClick={() => setCanceling(true)}
-            >
-              Cancelar sessão
-            </Button>
-          </div>
-          {canceling && (
-            <AlertDialog
-              open
-              onOpenChange={(open) => {
-                if (!open && !busy) setCanceling(false);
-              }}
-            >
-              <AlertDialogContent
-                onEscapeKeyDown={(event) => {
-                  event.preventDefault();
-                  if (!busy) setCanceling(false);
-                }}
-                onCloseAutoFocus={(event) => {
-                  event.preventDefault();
-                  cancelButton.current?.focus();
-                }}
-              >
-                <AlertDialogTitle className="sr-only">
-                  Confirmar cancelamento
-                </AlertDialogTitle>
-                <div role="group" aria-label="Confirmar cancelamento">
-                  {error && (
-                    <Alert variant="destructive">
-                      <AlertDescription>{error}</AlertDescription>
-                    </Alert>
-                  )}
-                  <AlertDialogDescription asChild>
-                    <p>
-                      Cancelar a sessão? O tempo estudado e os blocos serão
-                      preservados.
-                    </p>
-                  </AlertDialogDescription>
-                  <Button
-                    autoFocus
-                    onClick={() => {
-                      setCanceling(false);
-                      cancelButton.current?.focus();
+                <div className="pomodoro-session-summary">
+                  <p>
+                    Tempo ativo total:{' '}
+                    <strong>{format(session.activeSeconds + elapsed)}</strong>
+                  </p>
+                  <p>
+                    Blocos concluídos: <strong>{blocks}</strong>
+                  </p>
+                </div>
+                {state === 'PAUSED' && (
+                  <p className="pomodoro-state-note">
+                    Seu tempo está preservado. Continue quando estiver pronto.
+                  </p>
+                )}
+                {state === 'BETWEEN_BLOCKS' && (
+                  <p className="pomodoro-state-note">
+                    O timer está parado. Inicie outro bloco, conclua ou cancele
+                    a sessão.
+                  </p>
+                )}
+                {canceling && (
+                  <AlertDialog
+                    open
+                    onOpenChange={(open) => {
+                      if (!open && !busy) setCanceling(false);
                     }}
                   >
-                    Manter sessão
-                  </Button>
-                  <Button onClick={() => void act('cancel')}>
-                    Confirmar cancelamento
-                  </Button>
-                </div>
-              </AlertDialogContent>
-            </AlertDialog>
-          )}
-        </div>
-      )}
-      <h2>Histórico</h2>
-      {subjectsEnabled && (
-        <SubjectSelect
-          label="Filtrar histórico por matéria"
-          value={historySubject}
-          onChange={(value) => {
-            setHistorySubject(value);
-            setPage(1);
-          }}
-          disabled={busy}
-        />
-      )}
-      {session && subjectsEnabled && (
-        <p>
-          <SubjectName id={session.subjectId} />
-        </p>
-      )}
-      {summary && (
-        <p>
-          Total estudado: {format(summary.activeSeconds)} ·{' '}
-          {summary.completedBlocks} blocos
-        </p>
-      )}
-      {history &&
-        (history.items.length ? (
-          <ul>
-            {history.items.map((item) => (
-              <li key={item.id}>
-                {new Date(item.startedAt).toLocaleString('pt-BR')} ·{' '}
-                {item.state === 'COMPLETED' ? 'Concluída' : 'Cancelada'} ·{' '}
-                {format(item.activeSeconds)} · {item.completedBlocks} blocos ·{' '}
-                {item.taskId ? `Tarefa ${item.taskId}` : 'Sem tarefa'}
-                {subjectsEnabled && (
-                  <>
-                    {' '}
-                    · <SubjectName id={item.subjectId} />
-                  </>
+                    <AlertDialogContent
+                      className="pomodoro-surface pomodoro-confirmation"
+                      onEscapeKeyDown={(event) => {
+                        event.preventDefault();
+                        if (!busy) setCanceling(false);
+                      }}
+                      onCloseAutoFocus={(event) => {
+                        event.preventDefault();
+                        cancelButton.current?.focus();
+                      }}
+                    >
+                      <AlertDialogTitle>
+                        Confirmar cancelamento
+                      </AlertDialogTitle>
+                      <div role="group" aria-label="Confirmar cancelamento">
+                        {error && (
+                          <Alert variant="destructive">
+                            <AlertDescription>{error}</AlertDescription>
+                          </Alert>
+                        )}
+                        <AlertDialogDescription asChild>
+                          <p>
+                            Cancelar a sessão? O tempo estudado e os blocos
+                            serão preservados.
+                          </p>
+                        </AlertDialogDescription>
+                        <div className="pomodoro-actions">
+                          <Button
+                            variant="outline"
+                            autoFocus
+                            onClick={() => {
+                              setCanceling(false);
+                              cancelButton.current?.focus();
+                            }}
+                          >
+                            Manter sessão
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            onClick={() => void act('cancel')}
+                          >
+                            Confirmar cancelamento
+                          </Button>
+                        </div>
+                      </div>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 )}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p>Nenhuma sessão encerrada.</p>
-        ))}
-      {history && history.totalPages > 1 && (
-        <Pagination aria-label="Páginas do histórico">
-          <PaginationContent className="flex-wrap">
-            <PaginationItem>
-              <Button
-                disabled={busy || page === 1}
-                onClick={() => setPage(page - 1)}
-              >
-                Anterior
-              </Button>
-            </PaginationItem>
-            <PaginationItem>
-              <span>
-                Página {page} de {history.totalPages}
+              </>
+            )}
+            {!ready && !session && (
+              <div className="pomodoro-empty">
+                <Timer aria-hidden="true" />
+                <p className="pomodoro-muted">
+                  {busy
+                    ? 'Consultando sua sessão…'
+                    : 'Sincronize para recuperar sua sessão antes de iniciar.'}
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+        <aside
+          className="pomodoro-totals"
+          aria-label="Totais das sessões encerradas"
+        >
+          <Card className="pomodoro-card">
+            <CardContent>
+              <div className="pomodoro-card-heading">
+                <span className="pomodoro-icon">
+                  <Clock3 aria-hidden="true" />
+                </span>
+                <h2>Tempo estudado</h2>
+              </div>
+              {summary ? (
+                <p className="pomodoro-total" aria-label="Total estudado">
+                  Total estudado:{' '}
+                  <strong>{format(summary.activeSeconds)}</strong>
+                </p>
+              ) : (
+                <p className="pomodoro-muted">
+                  {busy
+                    ? 'Carregando totais…'
+                    : 'Totais indisponíveis. Sincronize para tentar novamente.'}
+                </p>
+              )}
+              <p className="pomodoro-muted">
+                Tempo ativo das sessões encerradas, sem contar as pausas.
+              </p>
+            </CardContent>
+          </Card>
+          <Card className="pomodoro-card">
+            <CardContent>
+              <div className="pomodoro-card-heading">
+                <span className="pomodoro-icon">
+                  <Layers aria-hidden="true" />
+                </span>
+                <h2>Blocos de foco</h2>
+              </div>
+              {summary && (
+                <p className="pomodoro-total">
+                  <strong>{summary.completedBlocks}</strong> blocos
+                </p>
+              )}
+              <p className="pomodoro-muted">
+                Blocos completos registrados nas sessões encerradas.
+              </p>
+            </CardContent>
+          </Card>
+        </aside>
+      </div>
+      <Card className="pomodoro-card pomodoro-history">
+        <CardContent>
+          <div className="pomodoro-history-heading">
+            <div className="pomodoro-card-heading">
+              <span className="pomodoro-icon">
+                <History aria-hidden="true" />
               </span>
-            </PaginationItem>
-            <PaginationItem>
-              <Button
-                disabled={busy || page >= history.totalPages}
-                onClick={() => setPage(page + 1)}
-              >
-                Próxima
-              </Button>
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
-      )}
+              <div>
+                <h2>Histórico</h2>
+                <p className="pomodoro-muted">
+                  Cada bloco faz parte do seu caminho.
+                </p>
+              </div>
+            </div>
+            {subjectsEnabled && (
+              <SubjectSelect
+                label="Filtrar histórico por matéria"
+                value={historySubject}
+                onChange={(value) => {
+                  setHistorySubject(value);
+                  setPage(1);
+                }}
+                disabled={busy}
+              />
+            )}
+          </div>
+          {history ? (
+            history.items.length ? (
+              <ul className="pomodoro-history-list">
+                {history.items.map((item) => (
+                  <li
+                    key={item.id}
+                    className="pomodoro-history-item"
+                    data-state={item.state}
+                  >
+                    <div className="pomodoro-history-item-heading">
+                      <Badge className="pomodoro-status" variant="secondary">
+                        {item.state === 'COMPLETED' ? 'Concluída' : 'Cancelada'}
+                      </Badge>
+                      <strong>
+                        {format(item.activeSeconds)}{' '}
+                        <span className="pomodoro-muted">
+                          de estudo · {item.completedBlocks} blocos
+                        </span>
+                      </strong>
+                    </div>
+                    <div className="pomodoro-history-context">
+                      <p>{taskLabel(item.taskId)}</p>
+                      {subjectsEnabled && <SubjectName id={item.subjectId} />}
+                    </div>
+                    <div className="pomodoro-dates">
+                      <p>
+                        Início:{' '}
+                        <time dateTime={item.startedAt}>
+                          {new Date(item.startedAt).toLocaleString('pt-BR')}
+                        </time>
+                      </p>
+                      {item.endedAt && (
+                        <p>
+                          Término:{' '}
+                          <time dateTime={item.endedAt}>
+                            {new Date(item.endedAt).toLocaleString('pt-BR')}
+                          </time>
+                        </p>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="pomodoro-empty">
+                <History aria-hidden="true" />
+                <h3>Nenhuma sessão encerrada.</h3>
+                <p className="pomodoro-muted">
+                  Suas sessões concluídas e canceladas aparecerão aqui.
+                </p>
+              </div>
+            )
+          ) : (
+            <div className="pomodoro-empty">
+              <p className="pomodoro-muted">
+                {busy
+                  ? 'Carregando histórico…'
+                  : 'Histórico indisponível. Sincronize para tentar novamente.'}
+              </p>
+            </div>
+          )}
+          {history && history.totalPages > 1 && (
+            <Pagination aria-label="Páginas do histórico">
+              <PaginationContent className="flex-wrap">
+                <PaginationItem>
+                  <Button
+                    variant="outline"
+                    disabled={busy || page === 1}
+                    onClick={() => setPage(page - 1)}
+                  >
+                    Anterior
+                  </Button>
+                </PaginationItem>
+                <PaginationItem>
+                  <span>
+                    Página {page} de {history.totalPages}
+                  </span>
+                </PaginationItem>
+                <PaginationItem>
+                  <Button
+                    variant="outline"
+                    disabled={busy || page >= history.totalPages}
+                    onClick={() => setPage(page + 1)}
+                  >
+                    Próxima
+                  </Button>
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          )}
+        </CardContent>
+      </Card>
     </section>
   );
 }

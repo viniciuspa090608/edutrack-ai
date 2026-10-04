@@ -1,4 +1,5 @@
 import {
+  act,
   cleanup,
   fireEvent,
   render,
@@ -71,7 +72,11 @@ beforeEach(() => {
     totalPages: 0,
   });
 });
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.useRealTimers();
+  document.documentElement.classList.remove('dark');
+});
 it('protects the Pomodoro route and keeps its return path for login', async () => {
   window.history.replaceState({}, '', '/app/pomodoro');
   vi.mocked(currentUser).mockRejectedValue(
@@ -143,7 +148,7 @@ it('recovers server state after a lost pause response and resumes without paused
   fireEvent.click(screen.getByRole('button', { name: 'Pausar' }));
   await screen.findByRole('button', { name: 'Continuar' });
   expect(api.currentPomodoro).toHaveBeenCalledTimes(2);
-  expect(screen.getByText(/Tempo ativo total: 10:00/)).toBeTruthy();
+  expect(screen.getByText('Tempo ativo total:').textContent).toContain('10:00');
   expect(screen.getByRole('alert').textContent).toContain(
     'Confira o estado recuperado',
   );
@@ -231,8 +236,12 @@ it('offers own task selection and terminal history totals', async () => {
   await waitFor(() =>
     expect(api.startPomodoro).toHaveBeenCalledWith(row.id, undefined),
   );
-  expect(screen.getByText(/Total estudado: 10:00/)).toBeTruthy();
-  expect(screen.getByText(/Cancelada · 10:00/)).toBeTruthy();
+  expect(screen.getByLabelText('Total estudado').textContent).toContain(
+    '10:00',
+  );
+  expect(screen.getByText('Cancelada').closest('li')?.textContent).toContain(
+    '10:00',
+  );
 });
 
 it('selects a subject without a task, filters history and hides selectors when disabled', async () => {
@@ -284,4 +293,186 @@ it('selects a subject without a task, filters history and hides selectors when d
   view.unmount();
   render(<PomodoroPage tasksEnabled={false} subjectsEnabled={false} />);
   expect(screen.queryByLabelText('Filtrar histórico por matéria')).toBeNull();
+});
+
+it('updates the clock from elapsed time, freezes on pause and waits at the block boundary', async () => {
+  current = { ...row, remainingSeconds: 2, activeSeconds: 1498 };
+  vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval', 'performance'] });
+  const view = render(<PomodoroPage tasksEnabled={false} />);
+  await act(async () => {});
+  fireEvent(window, new Event('focus'));
+  await act(async () => {});
+  expect(screen.getByLabelText('Tempo restante no bloco').textContent).toBe(
+    '0:02',
+  );
+  await act(async () => {
+    vi.advanceTimersByTime(1000);
+  });
+  expect(screen.getByLabelText('Tempo restante no bloco').textContent).toBe(
+    '0:01',
+  );
+  current = {
+    ...row,
+    state: 'PAUSED',
+    remainingSeconds: 1,
+    activeSeconds: 1499,
+  };
+  fireEvent(window, new Event('focus'));
+  await act(async () => {});
+  await act(async () => {
+    vi.advanceTimersByTime(5000);
+  });
+  expect(screen.getByLabelText('Tempo restante no bloco').textContent).toBe(
+    '0:01',
+  );
+  current = { ...row, remainingSeconds: 1, activeSeconds: 1499 };
+  fireEvent(window, new Event('focus'));
+  await act(async () => {});
+  current = {
+    ...row,
+    state: 'BETWEEN_BLOCKS',
+    remainingSeconds: 0,
+    activeSeconds: 1500,
+    completedBlocks: 1,
+  };
+  await act(async () => {
+    vi.advanceTimersByTime(1000);
+  });
+  expect(screen.getByLabelText('Tempo restante no bloco').textContent).toBe(
+    '0:00',
+  );
+  expect(
+    screen.getByRole('button', { name: 'Iniciar próximo bloco' }),
+  ).toBeTruthy();
+  expect(screen.queryByRole('button', { name: 'Pausar' })).toBeNull();
+  expect(api.commandPomodoro).not.toHaveBeenCalled();
+  view.unmount();
+});
+
+it('keeps session and confirmation controls when the theme changes without sending a command', async () => {
+  current = { ...row, state: 'PAUSED' };
+  const view = render(<PomodoroPage tasksEnabled={false} />);
+  await screen.findByRole('button', { name: 'Continuar' });
+  const user = userEvent.setup();
+  await user.click(screen.getByRole('button', { name: 'Cancelar sessão' }));
+  document.documentElement.classList.add('dark');
+  view.rerender(<PomodoroPage tasksEnabled={false} />);
+  expect(screen.getByRole('alertdialog').className).toContain(
+    'pomodoro-surface',
+  );
+  expect(document.activeElement).toBe(
+    screen.getByRole('button', { name: 'Manter sessão' }),
+  );
+  expect(screen.getByLabelText('Tempo restante no bloco').textContent).toBe(
+    '15:00',
+  );
+  await user.keyboard('{Escape}');
+  expect(document.activeElement).toBe(
+    screen.getByRole('button', { name: 'Cancelar sessão' }),
+  );
+  expect(api.commandPomodoro).not.toHaveBeenCalled();
+});
+
+it('confirms the next block and completion using the same session version and API totals', async () => {
+  current = {
+    ...row,
+    state: 'BETWEEN_BLOCKS',
+    remainingSeconds: 0,
+    activeSeconds: 1500,
+    completedBlocks: 1,
+    version: 3,
+  };
+  render(<PomodoroPage tasksEnabled={false} />);
+  await screen.findByRole('button', { name: 'Iniciar próximo bloco' });
+  vi.mocked(api.commandPomodoro).mockImplementationOnce(async () => {
+    current = {
+      ...current!,
+      state: 'RUNNING',
+      remainingSeconds: 1500,
+      version: 4,
+    };
+    return current;
+  });
+  fireEvent.click(
+    screen.getByRole('button', { name: 'Iniciar próximo bloco' }),
+  );
+  await screen.findByRole('button', { name: 'Pausar' });
+  expect(api.commandPomodoro).toHaveBeenLastCalledWith(row.id, 'next-block', 3);
+  vi.mocked(api.commandPomodoro).mockImplementationOnce(async () => {
+    const ended = {
+      ...current!,
+      state: 'COMPLETED' as const,
+      endedAt: row.serverTime,
+      version: 5,
+    };
+    current = null;
+    return ended;
+  });
+  fireEvent.click(screen.getByRole('button', { name: 'Concluir' }));
+  await screen.findByText('Sessão concluída.');
+  expect(api.commandPomodoro).toHaveBeenLastCalledWith(row.id, 'complete', 4);
+  expect(screen.getByLabelText('Total estudado').textContent).toContain('0:00');
+});
+
+it('shows loading, recovery error and both empty surfaces without inventing an active timer', async () => {
+  let resolveCurrent!: (value: PomodoroSession | null) => void;
+  vi.mocked(api.currentPomodoro).mockImplementationOnce(
+    () =>
+      new Promise((resolve) => {
+        resolveCurrent = resolve;
+      }),
+  );
+  render(<PomodoroPage tasksEnabled={false} />);
+  expect(screen.getByText('Carregando…')).toBeTruthy();
+  expect(screen.queryByLabelText('Tempo restante no bloco')).toBeNull();
+  await act(async () => {
+    resolveCurrent(null);
+  });
+  await screen.findByRole('button', { name: 'Iniciar sessão' });
+  expect(screen.getByText('Nenhuma sessão encerrada.')).toBeTruthy();
+  vi.mocked(api.currentPomodoro).mockRejectedValueOnce(new Error('offline'));
+  fireEvent.click(screen.getByRole('button', { name: 'Sincronizar' }));
+  await screen.findByRole('alert');
+  expect(screen.queryByRole('button', { name: 'Iniciar sessão' })).toBeNull();
+  expect(
+    screen.getByText('Sincronize para recuperar sua sessão antes de iniciar.'),
+  ).toBeTruthy();
+  fireEvent.click(screen.getByRole('button', { name: 'Sincronizar' }));
+  await screen.findByRole('button', { name: 'Iniciar sessão' });
+});
+
+it('preserves history pagination, ended dates and unresolved task references', async () => {
+  vi.mocked(api.pomodoroHistory).mockImplementation(async (page = 1) => ({
+    items: [
+      {
+        ...row,
+        id: row.id,
+        taskId: row.id,
+        state: 'COMPLETED',
+        endedAt: row.serverTime,
+        activeSeconds: 1500,
+        completedBlocks: 1,
+      },
+    ],
+    page,
+    pageSize: 20,
+    total: 21,
+    totalPages: 2,
+  }));
+  render(<PomodoroPage tasksEnabled={false} />);
+  await screen.findByText('Concluída');
+  const entry = screen.getByText('Concluída').closest('li');
+  expect(entry?.textContent).toContain(`Tarefa ${row.id}`);
+  expect(
+    entry?.querySelector('time[datetime="2026-09-26T12:10:00.000Z"]'),
+  ).toBeTruthy();
+  fireEvent.click(screen.getByRole('button', { name: 'Próxima' }));
+  await screen.findByText('Página 2 de 2');
+  expect(api.pomodoroHistory).toHaveBeenLastCalledWith(2, undefined);
+  expect(
+    screen.getByRole('button', { name: 'Próxima' }).hasAttribute('disabled'),
+  ).toBe(true);
+  fireEvent.click(screen.getByRole('button', { name: 'Anterior' }));
+  await screen.findByText('Página 1 de 2');
+  expect(listTasks).not.toHaveBeenCalled();
 });
