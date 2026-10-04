@@ -1,4 +1,18 @@
-import { Skeleton } from '@study-platform/ui/components/ui/skeleton';
+import {
+  CalendarDays,
+  ChartNoAxesCombined,
+  CheckCheck,
+  Layers,
+  ListChecks,
+  Milestone,
+  Timer,
+} from 'lucide-react';
+import { Badge } from '@study-platform/ui/components/ui/badge';
+import {
+  ProgressEmpty,
+  ProgressHeader,
+  ProgressLoading,
+} from '../study-progress/ProgressPresentation.js';
 import {
   AlertDescription,
   Alert,
@@ -32,6 +46,14 @@ const labels: Record<AnalyticsMetric, string> = {
   planItems: 'Itens do plano manual concluídos',
   roadmapBlocks: 'Blocos de roadmap concluídos',
 };
+const metricIcons = {
+  activeMs: Timer,
+  pomodoroSessions: Timer,
+  tasks: CheckCheck,
+  reviews: Layers,
+  planItems: ListChecks,
+  roadmapBlocks: Milestone,
+};
 function value(metric: AnalyticsMetric, amount: number | null | undefined) {
   if (amount === null || amount === undefined) return 'Histórico indisponível';
   return metric === 'activeMs'
@@ -52,6 +74,83 @@ function defaults(): AnalyticsQuery {
     day: '2-digit',
   }).format(new Date());
   return { granularity: 'week', date, timeZone };
+}
+function DailyChart({
+  metric,
+  data,
+}: {
+  metric: AnalyticsMetric;
+  data: StudyAnalytics;
+}) {
+  const maximum = Math.max(
+    1,
+    ...data.series.map((day) => day.values[metric] ?? 0),
+  );
+  const hasValues = data.series.some((day) => day.values[metric] !== undefined);
+  return (
+    <figure
+      className="evolution-card analytics-chart"
+      aria-labelledby={`chart-${metric}`}
+    >
+      <figcaption id={`chart-${metric}`}>
+        <ChartNoAxesCombined aria-hidden="true" />
+        {labels[metric]}
+      </figcaption>
+      <p className="analytics-chart-legend">
+        {metric === 'activeMs' ? 'Minutos por dia' : 'Quantidade por dia'} ·
+        Valores diários, sem agrupamento
+      </p>
+      {!hasValues ? (
+        <p className="evolution-muted">
+          Sem valores disponíveis para este gráfico.
+        </p>
+      ) : (
+        <div
+          className="analytics-chart-scroll"
+          role="region"
+          tabIndex={0}
+          aria-label={`Série diária: ${labels[metric]}`}
+          aria-describedby="analytics-chart-help"
+        >
+          <div className="analytics-bars">
+            {data.series.map((day) => {
+              const amount = day.values[metric];
+              return (
+                <div className="analytics-sample" key={day.date}>
+                  <span className="analytics-sample-value">
+                    {amount === undefined ? '—' : value(metric, amount)}
+                  </span>
+                  <div className="analytics-plot" aria-hidden="true">
+                    {amount === undefined ? (
+                      <span className="analytics-missing">?</span>
+                    ) : (
+                      <span
+                        className={`analytics-bar${amount === 0 ? ' analytics-bar-zero' : ''}`}
+                        style={{ height: `${(amount / maximum) * 100}%` }}
+                      />
+                    )}
+                  </div>
+                  <time dateTime={day.date}>{day.date}</time>
+                  {amount === undefined && (
+                    <span className="analytics-sample-unavailable">
+                      Indisponível
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+      <p className="analytics-coverage">
+        Cobertura completa a partir de{' '}
+        {new Date(data.metrics[metric]!.coverageStart).toLocaleString('pt-BR', {
+          timeZone: data.timeZone,
+        })}
+        . Valores anteriores são amostras e podem estar incompletos.
+      </p>
+    </figure>
+  );
 }
 export function AnalyticsPage() {
   const [draft, setDraft] = useState(defaults);
@@ -91,12 +190,24 @@ export function AnalyticsPage() {
       window.removeEventListener('focus', refresh);
     };
   }, []);
-  const metrics = data ? (Object.keys(data.metrics) as AnalyticsMetric[]) : [];
+  const metrics = data
+    ? (Object.keys(data.metrics) as AnalyticsMetric[]).sort((a, b) =>
+        a === 'activeMs' ? -1 : b === 'activeMs' ? 1 : 0,
+      )
+    : [];
   return (
-    <section className="analytics-page">
-      <h1>Estatísticas de estudo</h1>
+    <section
+      className="analytics-page evolution-surface"
+      aria-labelledby="analytics-title"
+    >
+      <ProgressHeader
+        title="Estatísticas de estudo"
+        titleId="analytics-title"
+        current="analytics"
+        description="Entenda seu ritmo de estudos e acompanhe a evolução das suas atividades ao longo do tempo."
+      />
       <form
-        className="analytics-controls"
+        className="analytics-controls evolution-card"
         onSubmit={(event) => {
           event.preventDefault();
           const result = analyticsQuerySchema.safeParse(draft);
@@ -121,7 +232,7 @@ export function AnalyticsPage() {
             <SelectTrigger id="analytics-period">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="analytics-period-options">
               {[
                 ['day', 'Dia'],
                 ['week', 'Semana'],
@@ -160,16 +271,11 @@ export function AnalyticsPage() {
         </Label>
         <Button type="submit">Consultar</Button>
       </form>
-      <p id="analytics-zone-help">
+      <p id="analytics-zone-help" className="evolution-context">
         Fuso selecionado: {query.timeZone}. UTC é usado quando o navegador não
         informa um fuso. Exemplo: America/Sao_Paulo.
       </p>
-      {loading && (
-        <div>
-          <Skeleton aria-hidden="true" className="my-2 h-3 w-2/3" />
-          <p role="status">Carregando estatísticas…</p>
-        </div>
-      )}
+      {loading && <ProgressLoading>Carregando estatísticas…</ProgressLoading>}
       {error && (
         <Alert variant="destructive" role="alert">
           <AlertDescription>
@@ -182,52 +288,79 @@ export function AnalyticsPage() {
       )}
       {data && (
         <>
-          <p>
-            Período: {data.period.start} até {data.period.end} (fim exclusivo),
-            em {data.timeZone}.
-          </p>
-          <p>
-            Comparação: {data.previousPeriod.start} até{' '}
-            {data.previousPeriod.end} (fim exclusivo).
-          </p>
-          {data.period.partial && (
+          <div className="evolution-card evolution-context analytics-period-context">
             <p>
-              Período atual parcial, comparado ao período anterior completo.
+              Período: {data.period.start} até {data.period.end} (fim
+              exclusivo), em {data.timeZone}.
             </p>
-          )}
-          <p>
-            Frequência: {data.frequency.activeDays} dias ativos em{' '}
-            {data.frequency.days} dias transcorridos.
-            {data.frequency.status === 'history_unavailable' &&
-              ' Histórico incompleto: a frequência mostra apenas atividades registradas.'}
-          </p>
-          {data.frequency.activeDays === 0 && (
             <p>
+              Comparação: {data.previousPeriod.start} até{' '}
+              {data.previousPeriod.end} (fim exclusivo).
+            </p>
+            {data.period.partial && (
+              <p className="analytics-partial">
+                Período atual parcial, comparado ao período anterior completo.
+              </p>
+            )}
+          </div>
+          <div className="evolution-card analytics-frequency">
+            <span className="evolution-icon">
+              <CalendarDays aria-hidden="true" />
+            </span>
+            <div>
+              <h2>Frequência de estudo</h2>
+              <p>
+                Frequência: {data.frequency.activeDays} dias ativos em{' '}
+                {data.frequency.days} dias transcorridos.
+                {data.frequency.status === 'history_unavailable' &&
+                  ' Histórico incompleto: a frequência mostra apenas atividades registradas.'}
+              </p>
+            </div>
+          </div>
+          {data.frequency.activeDays === 0 && (
+            <ProgressEmpty title="Seu ritmo de estudo">
               {data.frequency.status === 'available'
                 ? 'Nenhuma atividade neste período.'
                 : 'Nenhuma atividade registrada; o histórico anterior ao início da cobertura está indisponível.'}
-            </p>
+            </ProgressEmpty>
           )}
-          <p>
+          <p className="evolution-context">
             Métricas de módulos desativados são omitidas.{' '}
             <a href="/conta">Ver preferências</a>
           </p>
-          <div className="analytics-cards">
+          <div className="analytics-cards evolution-metrics">
             {metrics.map((metric) => {
               const item = data.metrics[metric]!;
+              const Icon = metricIcons[metric];
               return (
-                <article key={metric}>
-                  <h2>{labels[metric]}</h2>
-                  <p>Atual: {value(metric, item.current)}</p>
-                  <p>Anterior: {value(metric, item.previous)}</p>
-                  <p>Diferença: {value(metric, item.difference)}</p>
-                  <p>
-                    Variação:{' '}
-                    {item.percent === null
-                      ? 'Não calculável'
-                      : `${item.percent.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`}
+                <article
+                  key={metric}
+                  className={`evolution-card analytics-metric${metric === 'activeMs' ? ' analytics-metric-featured' : ''}`}
+                  aria-labelledby={`metric-${metric}`}
+                >
+                  <span className="evolution-icon">
+                    <Icon aria-hidden="true" />
+                  </span>
+                  <h2 id={`metric-${metric}`}>{labels[metric]}</h2>
+                  <p
+                    className={`analytics-current${item.current === null ? ' analytics-unavailable' : ''}`}
+                  >
+                    <span>Atual: </span>
+                    {value(metric, item.current)}
                   </p>
-                  <p>
+                  <div className="analytics-comparison">
+                    <p>Anterior: {value(metric, item.previous)}</p>
+                    <p>Diferença: {value(metric, item.difference)}</p>
+                  </div>
+                  <p className="analytics-variation">
+                    Variação:{' '}
+                    <Badge variant="outline">
+                      {item.percent === null
+                        ? 'Não calculável'
+                        : `${item.percent.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`}
+                    </Badge>
+                  </p>
+                  <p className="analytics-coverage">
                     Cobertura completa a partir de{' '}
                     {new Date(item.coverageStart).toLocaleString('pt-BR', {
                       timeZone: data.timeZone,
@@ -238,26 +371,44 @@ export function AnalyticsPage() {
               );
             })}
           </div>
-          <h2>Série diária</h2>
-          <p>
-            Valores ausentes indicam histórico indisponível. Valores registrados
-            antes da cobertura completa são amostras e podem estar incompletos.
-          </p>
-          <ol className="analytics-series">
-            {data.series.map((day) => (
-              <li key={day.date}>
-                <h3>{day.date}</h3>
-                <dl>
-                  {metrics.map((metric) => (
-                    <div key={metric}>
-                      <dt>{labels[metric]}</dt>
-                      <dd>{value(metric, day.values[metric])}</dd>
-                    </div>
-                  ))}
-                </dl>
-              </li>
-            ))}
-          </ol>
+          <section aria-labelledby="analytics-series-title">
+            <div className="evolution-section-heading">
+              <div>
+                <p className="evolution-eyebrow">Evolução ao longo do tempo</p>
+                <h2 id="analytics-series-title">Série diária</h2>
+              </div>
+            </div>
+            <p className="evolution-context" id="analytics-chart-help">
+              Role cada gráfico para explorar as datas. Valores ausentes são
+              indicados por — e ?. Consulte todos os valores em texto abaixo.
+            </p>
+            <p className="evolution-context">
+              Valores ausentes indicam histórico indisponível. Valores
+              registrados antes da cobertura completa são amostras e podem estar
+              incompletos.
+            </p>
+            <div className="analytics-charts">
+              {metrics.map((metric) => (
+                <DailyChart key={metric} metric={metric} data={data} />
+              ))}
+            </div>
+            <h3 className="analytics-text-title">Valores diários em texto</h3>
+            <ol className="analytics-series">
+              {data.series.map((day) => (
+                <li key={day.date} className="evolution-card">
+                  <h3>{day.date}</h3>
+                  <dl>
+                    {metrics.map((metric) => (
+                      <div key={metric}>
+                        <dt>{labels[metric]}</dt>
+                        <dd>{value(metric, day.values[metric])}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </li>
+              ))}
+            </ol>
+          </section>
         </>
       )}
     </section>

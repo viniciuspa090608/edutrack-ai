@@ -1,28 +1,150 @@
-.study-progress {
-  min-width: 0;
-  overflow-wrap: anywhere;
+.progress-stat {
+  position: relative;
 }
-.progress-summary {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
+.progress-stat dt .evolution-icon {
+  float: right;
 }
-.progress-summary dd {
-  margin: 0.5rem 0 0;
-  font-size: 1.5rem;
+.progress-stat dt {
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: flow-root;
+  line-height: 2.75rem;
+}
+.progress-stat dd {
+  margin: 1.5rem 0 0.5rem;
+  font-size: 2.5rem;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+}
+.progress-stat dd small {
+  font-size: 1rem;
+  font-weight: 500;
+  letter-spacing: normal;
+}
+.progress-stat .progress-stat-note {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 400;
+  letter-spacing: normal;
+  line-height: 1.5;
+  color: var(--muted-foreground);
+}
+.progress-stat-featured {
+  background: linear-gradient(
+    135deg,
+    var(--progress-panel),
+    var(--progress-inset)
+  );
+}
+.progress-stat-featured dd {
+  color: var(--primary);
 }
 .progress-achievements {
   list-style: none;
+  padding: 0;
+  margin: 1rem 0;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
   gap: 1rem;
 }
-.progress-achievements progress {
-  display: block;
-  width: 100%;
-  max-width: 100%;
-  margin-top: 0.5rem;
+.achievement-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
-.progress-achievements h3 {
-  margin-top: 0;
+.achievement-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.achievement-card h3 {
+  font-size: 1.05rem;
+  line-height: 1.4;
+}
+.achievement-card .achievement-criterion {
+  color: var(--muted-foreground);
+  font-size: 0.9rem;
+  margin: 0;
+}
+.achievement-card .achievement-status {
+  white-space: normal;
+  gap: 0.35rem;
+  color: var(--muted-foreground);
+  border-color: var(--progress-line);
+  background: var(--progress-inset);
+}
+.achievement-status svg {
+  width: 0.85rem;
+  height: 0.85rem;
+  flex-shrink: 0;
+}
+.achievement-earned .achievement-status,
+.achievement-earned .evolution-icon {
+  color: var(--success);
+}
+.achievement-in-progress .achievement-status {
+  color: var(--info);
+}
+.achievement-locked .evolution-icon {
+  color: var(--muted-foreground);
+}
+.achievement-earned {
+  border-color: color-mix(in srgb, var(--success) 45%, var(--progress-line));
+}
+.achievement-footer {
+  margin-top: auto;
+  display: grid;
+  gap: 0.75rem;
+  border-top: 1px solid var(--progress-line);
+  padding-top: 1rem;
+}
+.achievement-footer label {
+  font-size: 0.8rem;
+}
+.achievement-date {
+  margin: 0;
+  color: var(--success);
+  font-size: 0.8rem;
+}
+.achievement-footer [data-slot='progress'] {
+  background: var(--progress-inset);
+}
+.achievement-earned [data-slot='progress-indicator'] {
+  background: var(--success);
+}
+.study-timezone.evolution-surface {
+  display: block;
+  padding: 0;
+}
+.study-timezone [data-slot='card-header'] {
+  padding: 1.25rem;
+}
+.study-timezone [data-slot='card-content'] {
+  display: grid;
+  gap: 1rem;
+  padding: 0 1.25rem 1.25rem;
+}
+.study-timezone p {
+  margin: 0;
+  color: var(--muted-foreground);
+}
+.study-timezone form {
+  display: grid;
+  gap: 0.8rem;
+  min-width: 0;
+}
+.study-timezone .study-timezone-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+.study-timezone form [role='status']:not(:empty) {
+  color: var(--success);
+  padding: 0.75rem;
+  background: var(--progress-inset);
+  border-radius: 0.75rem;
 }

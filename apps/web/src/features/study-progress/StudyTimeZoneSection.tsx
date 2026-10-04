@@ -7,7 +7,9 @@ import {
   AlertDescription,
   Alert,
 } from '@study-platform/ui/components/ui/alert';
-import { Skeleton } from '@study-platform/ui/components/ui/skeleton';
+import { Globe } from 'lucide-react';
+import { ProgressLoading } from './ProgressPresentation.js';
+import '../../styles/study-progress.css';
 
 import { Button } from '@study-platform/ui/components/ui/button';
 import { Label } from '@study-platform/ui/components/ui/label';
@@ -67,8 +69,14 @@ export function StudyTimeZoneSection() {
   }
   return (
     <Card asChild>
-      <section className="account-card" aria-labelledby="study-timezone-title">
+      <section
+        className="account-card study-timezone evolution-surface evolution-card"
+        aria-labelledby="study-timezone-title"
+      >
         <CardHeader>
+          <span className="evolution-icon">
+            <Globe aria-hidden="true" />
+          </span>
           <h2 id="study-timezone-title">Fuso de estudo</h2>
         </CardHeader>
         <CardContent>
@@ -87,10 +95,7 @@ export function StudyTimeZoneSection() {
                 Tentar carregar fuso novamente
               </Button>
             ) : (
-              <div>
-                <Skeleton aria-hidden="true" className="my-2 h-3 w-2/3" />
-                <p role="status">Carregando fuso…</p>
-              </div>
+              <ProgressLoading>Carregando fuso…</ProgressLoading>
             )
           ) : (
             <form
@@ -116,16 +121,18 @@ export function StudyTimeZoneSection() {
                 Exemplos: UTC, America/Sao_Paulo. Sugestão do navegador:{' '}
                 {suggestion}. A sugestão só será aplicada se você salvar.
               </p>
-              <Button
-                type="button"
-                disabled={busy}
-                onClick={() => setDraft(suggestion)}
-              >
-                Usar sugestão no campo
-              </Button>
-              <Button disabled={busy}>
-                {busy ? 'Salvando fuso…' : 'Salvar fuso de estudo'}
-              </Button>
+              <div className="study-timezone-actions">
+                <Button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => setDraft(suggestion)}
+                >
+                  Usar sugestão no campo
+                </Button>
+                <Button disabled={busy}>
+                  {busy ? 'Salvando fuso…' : 'Salvar fuso de estudo'}
+                </Button>
+              </div>
               <p role="status">{message}</p>
             </form>
           )}

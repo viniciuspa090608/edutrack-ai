@@ -1,0 +1,3 @@
+?? openspec/changes/update-account-and-profile-from-stitch/
+?? openspec/changes/update-progress-and-achievements-from-stitch/
+d51ee97dd8123a83b7064da0e6b8d9c8d91810fd
