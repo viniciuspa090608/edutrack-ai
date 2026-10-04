@@ -13,6 +13,7 @@ import { Button } from '@study-platform/ui/components/ui/button';
 import { useEffect, useState } from 'react';
 import type { SubjectList } from '@study-platform/contracts';
 import { listSubjects } from './subjects-api.js';
+import '../../styles/subject-associations.css';
 export function SubjectSelect({
   value,
   onChange,
@@ -75,7 +76,11 @@ export function SubjectSelect({
         <Alert variant="destructive" role="alert">
           <AlertDescription>
             Não foi possível carregar matérias.{' '}
-            <Button type="button" onClick={() => setRevision(revision + 1)}>
+            <Button
+              variant="outline"
+              type="button"
+              onClick={() => setRevision(revision + 1)}
+            >
               Tentar novamente
             </Button>
           </AlertDescription>
@@ -84,6 +89,7 @@ export function SubjectSelect({
       {result && result.totalPages > 1 && (
         <div>
           <Button
+            variant="outline"
             type="button"
             disabled={disabled || page === 1}
             onClick={() => setPage(page - 1)}
@@ -91,6 +97,7 @@ export function SubjectSelect({
             Matérias anteriores
           </Button>
           <Button
+            variant="outline"
             type="button"
             disabled={disabled || page >= result.totalPages}
             onClick={() => setPage(page + 1)}

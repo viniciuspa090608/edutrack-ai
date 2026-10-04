@@ -28,6 +28,17 @@ import {
 } from '@study-platform/ui/components/ui/native-select';
 import { Textarea } from '@study-platform/ui/components/ui/textarea';
 import { Button } from '@study-platform/ui/components/ui/button';
+import { Badge } from '@study-platform/ui/components/ui/badge';
+import {
+  ArrowRight,
+  BookOpen,
+  CalendarDays,
+  Clock3,
+  ListChecks,
+  Plus,
+  Pencil,
+  Trash2,
+} from 'lucide-react';
 
 import { useEffect, useRef, useState } from 'react';
 import {
@@ -97,7 +108,7 @@ function SubjectForm({
   return (
     <Card asChild>
       <form
-        className="subject-card"
+        className="subject-card subject-form"
         aria-label={subject ? 'Editar matéria' : 'Criar matéria'}
         onSubmit={async (event) => {
           event.preventDefault();
@@ -130,10 +141,12 @@ function SubjectForm({
         }}
       >
         <CardHeader>
+          <span className="subject-eyebrow">Seu planejamento</span>
           <h2>{subject ? 'Editar matéria' : 'Nova matéria'}</h2>
+          <p>Defina seu objetivo e o tempo disponível para estudar.</p>
         </CardHeader>
         <CardContent>
-          <FieldSet disabled={busy}>
+          <FieldSet disabled={busy} className="subject-form-fields">
             <Label>
               Nome
               <Input
@@ -159,7 +172,7 @@ function SubjectForm({
                 ))}
               </NativeSelect>
             </Label>
-            <Label>
+            <Label className="subject-field-wide">
               Objetivo
               <Textarea
                 required
@@ -191,16 +204,16 @@ function SubjectForm({
                 onChange={(event) => setHours(event.target.value)}
               />
             </Label>
-            <Label>
+            <Label className="subject-field-wide">
               Assuntos conhecidos (um por linha, opcional)
               <Textarea
                 value={topics}
                 onChange={(event) => setTopics(event.target.value)}
               />
             </Label>
-            <div className="subject-actions">
+            <div className="subject-actions subject-field-wide">
               <Button>{busy ? 'Salvando…' : 'Salvar matéria'}</Button>
-              <Button type="button" onClick={onCancel}>
+              <Button variant="outline" type="button" onClick={onCancel}>
                 Cancelar edição
               </Button>
             </div>
@@ -258,9 +271,13 @@ function PlanEditor({
     void mutate('/order', 'PUT', { ids });
   }
   return (
-    <section aria-label="Plano manual">
-      <h3>Plano manual</h3>
+    <section className="subject-panel subject-plan" aria-label="Plano manual">
+      <h3>
+        <ListChecks aria-hidden="true" />
+        Plano manual
+      </h3>
       <form
+        className="subject-plan-form"
         onSubmit={(event) => {
           event.preventDefault();
           const parsed = createPlanItemSchema.safeParse({ title });
@@ -290,6 +307,7 @@ function PlanEditor({
         </Button>
         {editing && (
           <Button
+            variant="outline"
             type="button"
             disabled={busy}
             onClick={() => {
@@ -308,11 +326,17 @@ function PlanEditor({
       )}
       {busy && <p role="status">Salvando plano…</p>}
       {!subject.planItems.length && (
-        <p>Seu plano está vazio. Adicione o primeiro assunto.</p>
+        <p className="subject-empty">
+          Seu plano está vazio. Adicione o primeiro assunto.
+        </p>
       )}
       <ol>
         {subject.planItems.map((item, index) => (
-          <li key={item.id}>
+          <li
+            key={item.id}
+            className="subject-plan-item"
+            data-status={item.status}
+          >
             <h4>{item.title}</h4>
             <Label>
               Status de {item.title}
@@ -334,6 +358,7 @@ function PlanEditor({
             </Label>
             <div className="subject-actions">
               <Button
+                variant="outline"
                 disabled={busy}
                 onClick={() => {
                   setEditing(item);
@@ -343,18 +368,22 @@ function PlanEditor({
                 Renomear {item.title}
               </Button>
               <Button
+                variant="ghost"
                 disabled={busy || index === 0}
                 onClick={() => move(index, -1)}
               >
                 Subir {item.title}
               </Button>
               <Button
+                variant="ghost"
                 disabled={busy || index === subject.planItems.length - 1}
                 onClick={() => move(index, 1)}
               >
                 Descer {item.title}
               </Button>
               <Button
+                variant="ghost"
+                className="subject-danger"
                 disabled={busy}
                 onClick={() => void mutate(`/${item.id}`, 'DELETE', {})}
               >
@@ -411,7 +440,7 @@ function LinkedRecords({
     };
   }, [subjectId, tasksEnabled]);
   return (
-    <section>
+    <section className="subject-panel subject-linked">
       <h3>Registros vinculados recentes</h3>
       {busy && (
         <div>
@@ -523,17 +552,20 @@ export function SubjectsPage({
   };
   return (
     <div className="subjects-page">
-      <p>Organize objetivos e assuntos no seu ritmo.</p>
-      <Button
-        ref={newButton}
-        onClick={() => {
-          setEditor({ subject: null });
-          setDetail(null);
-          setSuccess('');
-        }}
-      >
-        Criar matéria
-      </Button>
+      <div className="subjects-toolbar">
+        <p>Organize objetivos e assuntos no seu ritmo.</p>
+        <Button
+          ref={newButton}
+          onClick={() => {
+            setEditor({ subject: null });
+            setDetail(null);
+            setSuccess('');
+          }}
+        >
+          <Plus aria-hidden="true" />
+          Criar matéria
+        </Button>
+      </div>
       {loading && (
         <div>
           <Skeleton aria-hidden="true" className="my-2 h-3 w-2/3" />
@@ -570,52 +602,67 @@ export function SubjectsPage({
       )}
       {detail && (
         <Card asChild>
-          <section className="subject-card">
+          <section className="subject-card subject-detail">
             <CardHeader>
+              <span className="subject-eyebrow">Sua matéria</span>
               <h2 ref={heading} tabIndex={-1}>
                 {detail.name}
               </h2>
             </CardHeader>
             <CardContent>
-              <p>{detail.objective}</p>
-              <dl>
-                <dt>Nível</dt>
-                <dd>{levels[detail.currentLevel]}</dd>
-                <dt>Prazo</dt>
-                <dd>{detail.dueDate}</dd>
-                <dt>Horas semanais</dt>
-                <dd>{detail.weeklyHours}</dd>
+              <p className="subject-objective">{detail.objective}</p>
+              <dl className="subject-metadata">
+                <div>
+                  <dt>Nível</dt>
+                  <dd>{levels[detail.currentLevel]}</dd>
+                </div>
+                <div>
+                  <dt>Prazo</dt>
+                  <dd>{detail.dueDate}</dd>
+                </div>
+                <div>
+                  <dt>Horas semanais</dt>
+                  <dd>{detail.weeklyHours}</dd>
+                </div>
               </dl>
-              <h3>Assuntos conhecidos</h3>
-              {detail.knownTopics.length ? (
-                <ul>
-                  {detail.knownTopics.map((topic) => (
-                    <li key={topic}>{topic}</li>
-                  ))}
-                </ul>
-              ) : (
-                <p>Nenhum assunto conhecido informado.</p>
-              )}
+              <section className="subject-known">
+                <h3>Assuntos conhecidos</h3>
+                {detail.knownTopics.length ? (
+                  <ul>
+                    {detail.knownTopics.map((topic) => (
+                      <li key={topic}>{topic}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p>Nenhum assunto conhecido informado.</p>
+                )}
+              </section>
               <div className="subject-actions">
                 <Button
+                  variant="outline"
                   disabled={busy}
                   onClick={() => {
                     setSuccess('');
                     setEditor({ subject: detail });
                   }}
                 >
+                  <Pencil aria-hidden="true" />
                   Editar matéria
                 </Button>
                 <Button
+                  variant="outline"
+                  className="subject-danger"
                   disabled={busy}
                   onClick={() => {
                     setSuccess('');
                     setDeleting(true);
                   }}
                 >
+                  <Trash2 aria-hidden="true" />
                   Excluir matéria
                 </Button>
                 <Button
+                  variant="ghost"
                   disabled={busy}
                   onClick={() => {
                     setDetail(null);
@@ -634,6 +681,7 @@ export function SubjectsPage({
                   }}
                 >
                   <AlertDialogContent
+                    className="subject-dialog"
                     onEscapeKeyDown={(event) => {
                       event.preventDefault();
                       if (!busy) setDeleting(false);
@@ -643,9 +691,7 @@ export function SubjectsPage({
                       newButton.current?.focus();
                     }}
                   >
-                    <AlertDialogTitle className="sr-only">
-                      Confirmar exclusão
-                    </AlertDialogTitle>
+                    <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
                     <div role="group" aria-label="Confirmar exclusão">
                       {error && (
                         <Alert variant="destructive">
@@ -659,6 +705,7 @@ export function SubjectsPage({
                         </p>
                       </AlertDialogDescription>
                       <Button
+                        variant="outline"
                         autoFocus
                         disabled={busy}
                         onClick={() => setDeleting(false)}
@@ -666,6 +713,7 @@ export function SubjectsPage({
                         Cancelar exclusão
                       </Button>
                       <Button
+                        variant="destructive"
                         disabled={busy}
                         onClick={async () => {
                           setBusy(true);
@@ -720,22 +768,40 @@ export function SubjectsPage({
         </Card>
       )}
       {result && (
-        <section aria-label="Lista de matérias">
+        <section className="subjects-collection" aria-label="Lista de matérias">
           {!result.items.length ? (
-            <p>Você ainda não tem matérias. Use Criar matéria para começar.</p>
+            <div className="subject-empty">
+              <BookOpen aria-hidden="true" />
+              <p>
+                Você ainda não tem matérias. Use Criar matéria para começar.
+              </p>
+            </div>
           ) : (
             <ul className="subject-list">
               {result.items.map((subject) => (
                 <Card key={subject.id} asChild>
-                  <li className="subject-card">
-                    <CardHeader>
+                  <li className="subject-card subject-summary">
+                    <CardHeader className="subject-summary-heading">
+                      <span className="subject-icon">
+                        <BookOpen aria-hidden="true" />
+                      </span>
                       <h2>{subject.name}</h2>
+                      <Badge variant="secondary">
+                        {levels[subject.currentLevel]}
+                      </Badge>
                     </CardHeader>
                     <CardContent>
-                      <p>
-                        {levels[subject.currentLevel]} · {subject.weeklyHours}{' '}
-                        horas por semana
-                      </p>
+                      <p className="subject-objective">{subject.objective}</p>
+                      <div className="subject-summary-meta">
+                        <span>
+                          <Clock3 aria-hidden="true" />
+                          {subject.weeklyHours} horas por semana
+                        </span>
+                        <span>
+                          <CalendarDays aria-hidden="true" />
+                          Prazo: {subject.dueDate}
+                        </span>
+                      </div>
                       <Button
                         disabled={busy}
                         onClick={async () => {
@@ -755,6 +821,7 @@ export function SubjectsPage({
                         }}
                       >
                         Ver {subject.name}
+                        <ArrowRight aria-hidden="true" />
                       </Button>
                     </CardContent>
                   </li>
@@ -767,6 +834,7 @@ export function SubjectsPage({
               <PaginationContent className="flex-wrap">
                 <PaginationItem>
                   <Button
+                    variant="outline"
                     disabled={page === 1 || busy}
                     onClick={() => setPage(page - 1)}
                   >
@@ -780,6 +848,7 @@ export function SubjectsPage({
                 </PaginationItem>
                 <PaginationItem>
                   <Button
+                    variant="outline"
                     disabled={page >= result.totalPages || busy}
                     onClick={() => setPage(page + 1)}
                   >

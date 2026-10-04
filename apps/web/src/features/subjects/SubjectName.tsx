@@ -1,6 +1,7 @@
 import { Badge } from '@study-platform/ui/components/ui/badge';
 import { useEffect, useState } from 'react';
 import { subjectDetail } from './subjects-api.js';
+import '../../styles/subject-associations.css';
 export function SubjectName({ id }: { id: string | null }) {
   const [name, setName] = useState('');
   useEffect(() => {
@@ -19,7 +20,7 @@ export function SubjectName({ id }: { id: string | null }) {
     };
   }, [id]);
   return (
-    <Badge variant="secondary">
+    <Badge className="subject-name" variant="secondary">
       {id ? name || 'Carregando matéria…' : 'Sem matéria'}
     </Badge>
   );

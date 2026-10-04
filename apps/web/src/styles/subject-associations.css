@@ -1,0 +1,39 @@
+.subject-select {
+  min-width: 0;
+  display: grid;
+  gap: 10px;
+}
+.subject-select label {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  font-size: 0.875rem;
+}
+.subject-select [data-slot='native-select-wrapper'],
+.subject-select select {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+.subject-select select {
+  border-radius: 8px;
+}
+.subject-select > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.subject-select button {
+  max-width: 100%;
+  height: auto;
+  min-height: 36px;
+  white-space: normal;
+}
+.subject-name {
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  border-radius: 20px;
+  padding: 4px 10px;
+  line-height: 1.5;
+}

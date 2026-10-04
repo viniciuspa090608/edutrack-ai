@@ -50,7 +50,11 @@ export function RoadmapEditor({
       .slice(0, index)
       .reduce((sum, block) => sum + block.steps.length, 0);
   return (
-    <FieldSet disabled={disabled} aria-label="Conteúdo do roadmap">
+    <FieldSet
+      className="roadmap-editor"
+      disabled={disabled}
+      aria-label="Conteúdo do roadmap"
+    >
       <Label>
         Título do roadmap
         <Input
@@ -101,6 +105,7 @@ export function RoadmapEditor({
           </Label>
           <div className="subject-actions">
             <Button
+              variant="outline"
               type="button"
               disabled={index === 0 || offset(index - 1) < boundary}
               onClick={() =>
@@ -110,6 +115,7 @@ export function RoadmapEditor({
               Subir bloco {index + 1}
             </Button>
             <Button
+              variant="outline"
               type="button"
               disabled={
                 index === value.blocks.length - 1 || offset(index) < boundary
@@ -121,6 +127,8 @@ export function RoadmapEditor({
               Descer bloco {index + 1}
             </Button>
             <Button
+              variant="ghost"
+              className="subject-danger"
               type="button"
               disabled={value.blocks.length === 1 || offset(index) < boundary}
               onClick={() =>
@@ -178,6 +186,7 @@ export function RoadmapEditor({
               </Label>
               <div className="subject-actions">
                 <Button
+                  variant="outline"
                   type="button"
                   disabled={
                     stepIndex === 0 || offset(index) + stepIndex - 1 < boundary
@@ -191,6 +200,7 @@ export function RoadmapEditor({
                   Subir passo {index + 1}.{stepIndex + 1}
                 </Button>
                 <Button
+                  variant="outline"
                   type="button"
                   disabled={stepIndex === block.steps.length - 1}
                   onClick={() =>
@@ -202,6 +212,8 @@ export function RoadmapEditor({
                   Descer passo {index + 1}.{stepIndex + 1}
                 </Button>
                 <Button
+                  variant="ghost"
+                  className="subject-danger"
                   type="button"
                   disabled={block.steps.length === 1}
                   onClick={() =>

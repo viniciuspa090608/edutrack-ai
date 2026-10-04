@@ -25,6 +25,7 @@ import { Textarea } from '@study-platform/ui/components/ui/textarea';
 import { Input } from '@study-platform/ui/components/ui/input';
 import { Button } from '@study-platform/ui/components/ui/button';
 import { Card, CardContent } from '@study-platform/ui/components/ui/card';
+import { Map, Plus, Sparkles } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import {
   generationParametersSchema,
@@ -108,6 +109,7 @@ function ParametersForm({
   });
   return (
     <form
+      className="subject-panel roadmap-parameters"
       ref={form}
       noValidate
       aria-label="Parâmetros da geração"
@@ -394,8 +396,11 @@ export function RoadmapsSection({
     }
   };
   return (
-    <section aria-label="Roadmaps" className="roadmaps-section">
-      <h3>Roadmaps</h3>
+    <section aria-label="Roadmaps" className="roadmaps-section subject-panel">
+      <h3>
+        <Map aria-hidden="true" />
+        Roadmaps
+      </h3>
       <div className="subject-actions">
         <Button
           ref={newButton}
@@ -408,10 +413,12 @@ export function RoadmapsSection({
             setSuccess('');
           }}
         >
+          <Plus aria-hidden="true" />
           Criar roadmap manual
         </Button>
         {aiEnabled && (
           <Button
+            variant="outline"
             ref={aiButton}
             disabled={!!busy || !!mode || !!deleting}
             onClick={() => {
@@ -421,6 +428,7 @@ export function RoadmapsSection({
               setSuccess('');
             }}
           >
+            <Sparkles aria-hidden="true" />
             Aprimorar com IA
           </Button>
         )}
@@ -468,6 +476,8 @@ export function RoadmapsSection({
       )}
       {(mode === 'manual' || mode === 'preview') && (
         <form
+          className="subject-panel roadmap-edit-form"
+          data-preview={mode === 'preview' || undefined}
           aria-label={
             mode === 'preview' ? 'Revisar prévia' : 'Editor manual de roadmap'
           }
@@ -542,14 +552,19 @@ export function RoadmapsSection({
             <Button type="submit" disabled={!!busy || expired}>
               Salvar roadmap
             </Button>
-            <Button type="button" disabled={!!busy} onClick={close}>
+            <Button
+              variant="outline"
+              type="button"
+              disabled={!!busy}
+              onClick={close}
+            >
               Cancelar
             </Button>
           </div>
         </form>
       )}
       {result && !result.items.length && (
-        <p>
+        <p className="subject-empty">
           Você ainda não tem roadmaps. Crie um roadmap para organizar blocos e
           passos.
         </p>
@@ -557,7 +572,7 @@ export function RoadmapsSection({
       {result?.items.map((roadmap) => (
         <Card key={roadmap.id} asChild>
           <article
-            className="subject-card"
+            className="subject-card roadmap-card"
 
             id={`roadmap-${roadmap.id}`}
             tabIndex={-1}
@@ -565,7 +580,7 @@ export function RoadmapsSection({
             <CardContent>
               <h4>{roadmap.title}</h4>
               <p>{roadmap.description}</p>
-              <ol>
+              <ol className="roadmap-content">
                 {roadmap.blocks.map((block, index) => (
                   <li key={index}>
                     <h5>{block.title}</h5>
@@ -583,6 +598,7 @@ export function RoadmapsSection({
               </ol>
               <div className="subject-actions">
                 <Button
+                  variant="outline"
                   disabled={!!mode || !!busy || !!deleting}
                   onClick={() => {
                     setEditingId(roadmap.id);
@@ -600,6 +616,8 @@ export function RoadmapsSection({
                   Editar roadmap {roadmap.title}
                 </Button>
                 <Button
+                  variant="ghost"
+                  className="subject-danger"
                   disabled={!!mode || !!busy || !!deleting}
                   onClick={() => {
                     setDeleting(roadmap);
@@ -632,6 +650,7 @@ export function RoadmapsSection({
           }}
         >
           <AlertDialogContent
+            className="subject-dialog"
             onEscapeKeyDown={(event) => {
               event.preventDefault();
               if (!busy) setDeleting(null);
@@ -641,9 +660,7 @@ export function RoadmapsSection({
               newButton.current?.focus();
             }}
           >
-            <AlertDialogTitle className="sr-only">
-              Confirmar exclusão do roadmap
-            </AlertDialogTitle>
+            <AlertDialogTitle>Confirmar exclusão do roadmap</AlertDialogTitle>
             <div role="group" aria-label="Confirmar exclusão do roadmap">
               {error && (
                 <Alert variant="destructive">
@@ -654,6 +671,7 @@ export function RoadmapsSection({
                 <p>Excluir {deleting.title} e seus blocos e passos?</p>
               </AlertDialogDescription>
               <Button
+                variant="outline"
                 autoFocus
                 disabled={!!busy}
                 onClick={() => {
@@ -664,6 +682,7 @@ export function RoadmapsSection({
                 Cancelar exclusão do roadmap
               </Button>
               <Button
+                variant="destructive"
                 disabled={!!busy}
                 onClick={async () => {
                   if (saving.current) return;

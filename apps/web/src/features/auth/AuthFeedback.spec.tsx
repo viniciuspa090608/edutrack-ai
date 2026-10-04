@@ -21,13 +21,11 @@ it.each([
   'preserves the real %s error and payload',
   async (mode, status, code, message) => {
     window.history.replaceState({}, '', `/acesso?mode=${mode}`);
-    const request = vi
-      .fn()
-      .mockResolvedValue({
-        ok: false,
-        status,
-        json: async () => ({ error: { code } }),
-      });
+    const request = vi.fn().mockResolvedValue({
+      ok: false,
+      status,
+      json: async () => ({ error: { code } }),
+    });
     vi.stubGlobal('fetch', request);
     render(<App />);
     const user = userEvent.setup();

@@ -284,6 +284,7 @@ export function RoadmapRevisionTools({
         protegidos.
       </p>
       <FieldSet
+        className="roadmap-progress-list"
         disabled={disabled || busy || !!mode}
         aria-label="Progresso dos passos"
       >
@@ -345,6 +346,7 @@ export function RoadmapRevisionTools({
           </Button>
         )}
         <Button
+          variant="outline"
           disabled={disabled || busy || !!mode}
           onClick={() => {
             setHistoryOpen(!historyOpen);
@@ -381,7 +383,10 @@ export function RoadmapRevisionTools({
         </Button>
       )}
       {mode === 'order' && aiEnabled && (
-        <section aria-label="Reordenar passos pendentes">
+        <section
+          className="subject-panel roadmap-order"
+          aria-label="Reordenar passos pendentes"
+        >
           <h5 ref={heading} tabIndex={-1}>
             Reordenar passos
           </h5>
@@ -403,6 +408,7 @@ export function RoadmapRevisionTools({
                 </p>
                 <div className="subject-actions">
                   <Button
+                    variant="outline"
                     disabled={busy || index <= boundary}
                     onClick={() => {
                       setOrdered(moved(ordered, index, -1));
@@ -412,6 +418,7 @@ export function RoadmapRevisionTools({
                     Subir {step.title}
                   </Button>
                   <Button
+                    variant="outline"
                     disabled={
                       busy || index < boundary || index === ordered.length - 1
                     }
@@ -435,12 +442,15 @@ export function RoadmapRevisionTools({
             >
               Regenerar continuação
             </Button>
-            <Button onClick={close}>Cancelar revisão</Button>
+            <Button variant="outline" onClick={close}>
+              Cancelar revisão
+            </Button>
           </div>
         </section>
       )}
       {mode === 'preview' && preview && (
         <form
+          className="subject-panel roadmap-revision-preview"
           aria-label="Prévia da revisão"
           onSubmit={(event) => {
             event.preventDefault();
@@ -538,6 +548,7 @@ export function RoadmapRevisionTools({
                     </Label>
                     <div className="subject-actions">
                       <Button
+                        variant="outline"
                         type="button"
                         disabled={index === preview.preservedCount}
                         onClick={() => setSteps(moved(steps, index, -1))}
@@ -545,6 +556,7 @@ export function RoadmapRevisionTools({
                         Subir sugestão {index + 1}
                       </Button>
                       <Button
+                        variant="outline"
                         type="button"
                         disabled={index === steps.length - 1}
                         onClick={() => setSteps(moved(steps, index, 1))}
@@ -552,6 +564,8 @@ export function RoadmapRevisionTools({
                         Descer sugestão {index + 1}
                       </Button>
                       <Button
+                        variant="ghost"
+                        className="subject-danger"
                         type="button"
                         onClick={() =>
                           setSteps(steps.filter((_, i) => i !== index))
@@ -572,14 +586,22 @@ export function RoadmapRevisionTools({
             >
               Confirmar revisão
             </Button>
-            <Button type="button" disabled={busy} onClick={close}>
+            <Button
+              variant="outline"
+              type="button"
+              disabled={busy}
+              onClick={close}
+            >
               Cancelar revisão
             </Button>
           </div>
         </form>
       )}
       {historyOpen && (
-        <section aria-label="Histórico de revisões">
+        <section
+          className="subject-panel roadmap-history"
+          aria-label="Histórico de revisões"
+        >
           <h5>Histórico de revisões</h5>
           {historyLoading && (
             <div>
@@ -600,13 +622,14 @@ export function RoadmapRevisionTools({
           {history && !history.items.length && (
             <p>Nenhuma revisão disponível.</p>
           )}
-          <ul className="subject-list">
+          <ul className="roadmap-history-list">
             {history?.items.map((item) => (
               <li key={item.revision}>
                 Revisão {item.revision} · {origins[item.origin]} ·{' '}
                 {new Date(item.createdAt).toLocaleString('pt-BR')}
                 {item.revision === roadmap.revision ? ' · ativa' : ''}
                 <Button
+                  variant="outline"
                   disabled={disabled || busy || !!mode}
                   onClick={async () => {
                     if (submitting.current) return;
@@ -663,7 +686,10 @@ export function RoadmapRevisionTools({
             </Pagination>
           )}
           {selected && (
-            <section aria-label="Revisão histórica">
+            <section
+              className="subject-panel roadmap-snapshot"
+              aria-label="Revisão histórica"
+            >
               <h5 ref={historyHeading} tabIndex={-1}>
                 Revisão {selected.revision} — {origins[selected.origin]}
               </h5>
