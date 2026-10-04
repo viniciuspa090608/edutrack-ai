@@ -1,0 +1,15 @@
+{
+  "environment": "API local real, conta demo existente",
+  "temporaryTaskRemoved": true,
+  "temporarySubtasksRemoved": true,
+  "previousTaskCount": 18,
+  "finalTaskCount": 18,
+  "verified": [
+    "estado parcial 1/2 e 50%",
+    "ordem de subtarefas persistida",
+    "prazo date-only preservado",
+    "exclusão de subtarefa atualiza total/progresso/status",
+    "exclusão de tarefa e GET 404",
+    "dados preexistentes preservados"
+  ]
+}

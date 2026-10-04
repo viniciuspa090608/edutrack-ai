@@ -18,6 +18,7 @@ export function TaskConfirmation({
   returnFocusId,
   onConfirm,
   onCancel,
+  destructive = true,
 }: {
   title: string;
   description: string;
@@ -25,6 +26,7 @@ export function TaskConfirmation({
   returnFocusId: string;
   onConfirm: () => Promise<void>;
   onCancel: () => void;
+  destructive?: boolean;
 }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -37,6 +39,7 @@ export function TaskConfirmation({
       }}
     >
       <AlertDialogContent
+        className="tasks-surface task-confirmation"
         aria-labelledby="subtask-confirm-heading"
         aria-describedby="subtask-confirm-description"
         onEscapeKeyDown={(event) => {
@@ -73,7 +76,7 @@ export function TaskConfirmation({
             Cancelar
           </Button>
           <Button
-            variant="destructive"
+            variant={destructive ? 'destructive' : 'default'}
             type="button"
             disabled={busy}
             onClick={async () => {

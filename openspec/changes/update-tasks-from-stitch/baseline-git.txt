@@ -1,0 +1,8 @@
+Branch:
+master
+HEAD:
+36c980afbe4b636e92e9e4d4226a5d2a5319418b
+Status:
+?? openspec/changes/update-tasks-from-stitch/
+Diff stat:
+Staged stat:

@@ -1,3 +1,4 @@
+import { CheckCheck, ListChecks, Plus, Pencil, Trash2 } from 'lucide-react';
 import { Skeleton } from '@study-platform/ui/components/ui/skeleton';
 import {
   AlertDescription,
@@ -132,7 +133,13 @@ export function SubtasksSection({
   }
   return (
     <section className="subtasks-section" aria-labelledby="subtasks-heading">
-      <h3 id="subtasks-heading">Subtarefas</h3>
+      <div className="task-section-heading">
+        <ListChecks aria-hidden="true" />
+        <div>
+          <h3 id="subtasks-heading">Subtarefas</h3>
+          <p className="task-muted">Um passo de cada vez.</p>
+        </div>
+      </div>
       {loading && (
         <div>
           <Skeleton aria-hidden="true" className="my-2 h-3 w-2/3" />
@@ -145,7 +152,11 @@ export function SubtasksSection({
         </Alert>
       )}
       {success && (
-        <p role="status" aria-live="polite">
+        <p
+          className="task-feedback task-feedback-success"
+          role="status"
+          aria-live="polite"
+        >
           {success}
         </p>
       )}
@@ -158,7 +169,9 @@ export function SubtasksSection({
         <>
           <FieldSet disabled={busy || loading} className="subtasks-controls">
             {data.items.length === 0 ? (
-              <p>Sem subtarefas. Adicione o primeiro passo.</p>
+              <p className="task-empty">
+                Sem subtarefas. Adicione o primeiro passo.
+              </p>
             ) : (
               <ol className="subtask-list">
                 {data.items.map((item) => (
@@ -166,7 +179,8 @@ export function SubtasksSection({
                     <li
                       id={`subtask-${item.id}`}
                       tabIndex={-1}
-                      className="task-card"
+                      className="task-card subtask-card"
+                      data-completed={item.isCompleted}
                     >
                       <CardContent>
                         <Label>
@@ -189,13 +203,16 @@ export function SubtasksSection({
                               );
                             }}
                           />{' '}
-                          {item.title}
+                          <span className="subtask-title">{item.title}</span>
                         </Label>
-                        <p>
+                        <p className="subtask-meta">
+                          {item.isCompleted ? 'Concluída · ' : 'Pendente · '}
                           Posição {item.position + 1} de {data.items.length}
                         </p>
                         <div className="task-actions">
                           <Button
+                            variant="outline"
+                            aria-label={`Editar ${item.title}`}
                             type="button"
                             onClick={() => {
                               setEditing({ id: item.id, title: item.title });
@@ -204,9 +221,11 @@ export function SubtasksSection({
                               setFocusId('subtask-edit-title');
                             }}
                           >
-                            Editar {item.title}
+                            <Pencil aria-hidden="true" /> Editar
                           </Button>
                           <Button
+                            variant="outline"
+                            aria-label={`Excluir ${item.title}`}
                             id={`subtask-delete-${item.id}`}
                             type="button"
                             onClick={() => {
@@ -214,10 +233,11 @@ export function SubtasksSection({
                               setSuccess('');
                             }}
                           >
-                            Excluir {item.title}
+                            <Trash2 aria-hidden="true" /> Excluir
                           </Button>
                           <Button
                             type="button"
+                            variant="ghost"
                             aria-label={`Mover ${item.title} para cima`}
                             disabled={item.position === 0}
                             onClick={() => {
@@ -228,6 +248,7 @@ export function SubtasksSection({
                           </Button>
                           <Button
                             type="button"
+                            variant="ghost"
                             aria-label={`Mover ${item.title} para baixo`}
                             disabled={item.position === data.items.length - 1}
                             onClick={() => {
@@ -339,6 +360,7 @@ export function SubtasksSection({
               />
               {titleError && <p id="subtask-title-error">{titleError}</p>}
               <Button type="submit">
+                <Plus aria-hidden="true" />
                 {busy ? 'Aguarde…' : 'Adicionar subtarefa'}
               </Button>
             </form>
@@ -351,7 +373,7 @@ export function SubtasksSection({
                   setConfirmation({ kind: 'complete' });
                 }}
               >
-                Concluir tarefa
+                <CheckCheck aria-hidden="true" /> Concluir tarefa
               </Button>
             )}
           </FieldSet>
@@ -359,6 +381,7 @@ export function SubtasksSection({
       )}
       {confirmation && (
         <TaskConfirmation
+          destructive={confirmation.kind === 'delete'}
           returnFocusId={
             confirmation.kind === 'delete'
               ? `subtask-delete-${confirmation.item.id}`

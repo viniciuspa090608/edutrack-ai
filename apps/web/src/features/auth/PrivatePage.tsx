@@ -214,7 +214,9 @@ export function PrivatePage({
             className={
               window.location.pathname === '/app/materias'
                 ? 'subjects-module'
-                : undefined
+                : window.location.pathname === '/app/tarefas'
+                  ? 'tasks-module'
+                  : undefined
             }
           >
             <h1>{moduleAtPath(window.location.pathname)?.label}</h1>

@@ -1,0 +1,290 @@
+[
+  {
+    "documentScroll": 305,
+    "surface": "list",
+    "taskScroll": 225,
+    "taskWidth": 225,
+    "theme": "light",
+    "width": 320
+  },
+  {
+    "dialogScroll": 287,
+    "dialogWidth": 287,
+    "documentScroll": 320,
+    "surface": "create",
+    "theme": "light",
+    "width": 320
+  },
+  {
+    "documentScroll": 305,
+    "surface": "detail/subtasks",
+    "taskScroll": 225,
+    "taskWidth": 225,
+    "theme": "light",
+    "width": 320
+  },
+  {
+    "dialogScroll": 286,
+    "dialogWidth": 286,
+    "documentScroll": 320,
+    "surface": "delete-confirmation",
+    "theme": "light",
+    "width": 320
+  },
+  {
+    "documentScroll": 360,
+    "surface": "list",
+    "taskScroll": 280,
+    "taskWidth": 280,
+    "theme": "light",
+    "width": 375
+  },
+  {
+    "dialogScroll": 342,
+    "dialogWidth": 342,
+    "documentScroll": 375,
+    "surface": "create",
+    "theme": "light",
+    "width": 375
+  },
+  {
+    "documentScroll": 360,
+    "surface": "detail/subtasks",
+    "taskScroll": 280,
+    "taskWidth": 280,
+    "theme": "light",
+    "width": 375
+  },
+  {
+    "dialogScroll": 342,
+    "dialogWidth": 342,
+    "documentScroll": 375,
+    "surface": "delete-confirmation",
+    "theme": "light",
+    "width": 375
+  },
+  {
+    "documentScroll": 753,
+    "surface": "list",
+    "taskScroll": 673,
+    "taskWidth": 673,
+    "theme": "light",
+    "width": 768
+  },
+  {
+    "dialogScroll": 670,
+    "dialogWidth": 670,
+    "documentScroll": 768,
+    "surface": "create",
+    "theme": "light",
+    "width": 768
+  },
+  {
+    "documentScroll": 753,
+    "surface": "detail/subtasks",
+    "taskScroll": 673,
+    "taskWidth": 673,
+    "theme": "light",
+    "width": 768
+  },
+  {
+    "dialogScroll": 510,
+    "dialogWidth": 510,
+    "documentScroll": 768,
+    "surface": "delete-confirmation",
+    "theme": "light",
+    "width": 768
+  },
+  {
+    "documentScroll": 1265,
+    "surface": "list",
+    "taskScroll": 932,
+    "taskWidth": 932,
+    "theme": "light",
+    "width": 1280
+  },
+  {
+    "dialogScroll": 670,
+    "dialogWidth": 670,
+    "documentScroll": 1280,
+    "surface": "create",
+    "theme": "light",
+    "width": 1280
+  },
+  {
+    "documentScroll": 1265,
+    "surface": "detail/subtasks",
+    "taskScroll": 932,
+    "taskWidth": 932,
+    "theme": "light",
+    "width": 1280
+  },
+  {
+    "dialogScroll": 510,
+    "dialogWidth": 510,
+    "documentScroll": 1280,
+    "surface": "delete-confirmation",
+    "theme": "light",
+    "width": 1280
+  },
+  {
+    "documentScroll": 305,
+    "surface": "list",
+    "taskScroll": 225,
+    "taskWidth": 225,
+    "theme": "dark",
+    "width": 320
+  },
+  {
+    "dialogScroll": 287,
+    "dialogWidth": 287,
+    "documentScroll": 320,
+    "surface": "create",
+    "theme": "dark",
+    "width": 320
+  },
+  {
+    "documentScroll": 305,
+    "surface": "detail/subtasks",
+    "taskScroll": 225,
+    "taskWidth": 225,
+    "theme": "dark",
+    "width": 320
+  },
+  {
+    "dialogScroll": 287,
+    "dialogWidth": 287,
+    "documentScroll": 320,
+    "surface": "edit-derived-status",
+    "theme": "dark",
+    "width": 320
+  },
+  {
+    "dialogScroll": 286,
+    "dialogWidth": 286,
+    "documentScroll": 320,
+    "surface": "delete-confirmation",
+    "theme": "dark",
+    "width": 320
+  },
+  {
+    "documentScroll": 360,
+    "surface": "list",
+    "taskScroll": 280,
+    "taskWidth": 280,
+    "theme": "dark",
+    "width": 375
+  },
+  {
+    "dialogScroll": 342,
+    "dialogWidth": 342,
+    "documentScroll": 375,
+    "surface": "create",
+    "theme": "dark",
+    "width": 375
+  },
+  {
+    "documentScroll": 360,
+    "surface": "detail/subtasks",
+    "taskScroll": 280,
+    "taskWidth": 280,
+    "theme": "dark",
+    "width": 375
+  },
+  {
+    "dialogScroll": 342,
+    "dialogWidth": 342,
+    "documentScroll": 375,
+    "surface": "edit-derived-status",
+    "theme": "dark",
+    "width": 375
+  },
+  {
+    "dialogScroll": 342,
+    "dialogWidth": 342,
+    "documentScroll": 375,
+    "surface": "delete-confirmation",
+    "theme": "dark",
+    "width": 375
+  },
+  {
+    "documentScroll": 753,
+    "surface": "list",
+    "taskScroll": 673,
+    "taskWidth": 673,
+    "theme": "dark",
+    "width": 768
+  },
+  {
+    "dialogScroll": 670,
+    "dialogWidth": 670,
+    "documentScroll": 768,
+    "surface": "create",
+    "theme": "dark",
+    "width": 768
+  },
+  {
+    "documentScroll": 753,
+    "surface": "detail/subtasks",
+    "taskScroll": 673,
+    "taskWidth": 673,
+    "theme": "dark",
+    "width": 768
+  },
+  {
+    "dialogScroll": 670,
+    "dialogWidth": 670,
+    "documentScroll": 768,
+    "surface": "edit-derived-status",
+    "theme": "dark",
+    "width": 768
+  },
+  {
+    "dialogScroll": 510,
+    "dialogWidth": 510,
+    "documentScroll": 768,
+    "surface": "delete-confirmation",
+    "theme": "dark",
+    "width": 768
+  },
+  {
+    "documentScroll": 1265,
+    "surface": "list",
+    "taskScroll": 932,
+    "taskWidth": 932,
+    "theme": "dark",
+    "width": 1280
+  },
+  {
+    "dialogScroll": 670,
+    "dialogWidth": 670,
+    "documentScroll": 1280,
+    "surface": "create",
+    "theme": "dark",
+    "width": 1280
+  },
+  {
+    "documentScroll": 1265,
+    "surface": "detail/subtasks",
+    "taskScroll": 932,
+    "taskWidth": 932,
+    "theme": "dark",
+    "width": 1280
+  },
+  {
+    "dialogScroll": 670,
+    "dialogWidth": 670,
+    "documentScroll": 1280,
+    "surface": "edit-derived-status",
+    "theme": "dark",
+    "width": 1280
+  },
+  {
+    "dialogScroll": 510,
+    "dialogWidth": 510,
+    "documentScroll": 1280,
+    "surface": "delete-confirmation",
+    "theme": "dark",
+    "width": 1280
+  }
+]

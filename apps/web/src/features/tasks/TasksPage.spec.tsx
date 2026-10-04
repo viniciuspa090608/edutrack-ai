@@ -12,6 +12,7 @@ import { StrictMode } from 'react';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import type { StudyTask } from '@study-platform/contracts';
 import { App } from '../../app/App.js';
+import { setTheme } from '../../app/theme.js';
 import { TasksPage } from './TasksPage.js';
 
 const originalTask: StudyTask = {
@@ -129,6 +130,7 @@ beforeEach(() => {
 });
 afterEach(() => {
   cleanup();
+  setTheme('light');
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
   vi.unstubAllEnvs();
@@ -400,4 +402,110 @@ it('associates and clears an optional subject and omits its controls when disabl
   render(<TasksPage subjectsEnabled={false} />);
   await interaction.click(screen.getByRole('button', { name: 'Criar tarefa' }));
   expect(screen.queryByLabelText('Matéria (opcional)')).toBeNull();
+});
+
+for (const theme of ['light', 'dark'] as const) {
+  it(`shows API data and optional metadata without inventing progress in ${theme} theme`, async () => {
+    setTheme(theme);
+    items = [
+      originalTask,
+      {
+        ...originalTask,
+        id: '00000000-0000-4000-8000-000000000002',
+        title: 'Sem campos opcionais',
+        description: null,
+        dueDate: null,
+        status: 'COMPLETED',
+        priority: 'LOW',
+      },
+    ];
+    render(<TasksPage subjectsEnabled />);
+    const list = await screen.findByRole('region', {
+      name: 'Lista de tarefas',
+    });
+    await within(list).findByRole('button', {
+      name: 'Ver detalhes de Sem campos opcionais',
+    });
+    expect(
+      within(list)
+        .getAllByRole('heading', { level: 3 })
+        .map((node) => node.textContent),
+    ).toEqual(['Revisar álgebra', 'Sem campos opcionais']);
+    expect(within(list).getByText('Capítulo 1')).toBeTruthy();
+    expect(within(list).getByText('Prazo: 01/10/2026')).toBeTruthy();
+    expect(within(list).getByText('Sem prazo')).toBeTruthy();
+    expect(within(list).queryByRole('progressbar')).toBeNull();
+    expect(requests.every((call) => call.url.pathname === '/tasks')).toBe(true);
+    expect(document.documentElement.classList.contains('dark')).toBe(
+      theme === 'dark',
+    );
+  });
+}
+
+it('keeps the same portal and entered fields when the theme changes before save', async () => {
+  render(<TasksPage />);
+  const interaction = userEvent.setup();
+  await interaction.click(screen.getByRole('button', { name: 'Criar tarefa' }));
+  const dialog = screen.getByRole('dialog');
+  await interaction.type(screen.getByLabelText('Título'), 'Meu plano');
+  await interaction.type(
+    screen.getByLabelText('Descrição (opcional)'),
+    'Anotações preservadas',
+  );
+  act(() => setTheme('dark'));
+  expect(screen.getByRole('dialog')).toBe(dialog);
+  expect((screen.getByLabelText('Título') as HTMLInputElement).value).toBe(
+    'Meu plano',
+  );
+  expect(
+    (screen.getByLabelText('Descrição (opcional)') as HTMLTextAreaElement)
+      .value,
+  ).toBe('Anotações preservadas');
+  act(() => setTheme('light'));
+  await interaction.click(
+    screen.getByRole('button', { name: 'Salvar tarefa' }),
+  );
+  await screen.findByText('Tarefa salva.');
+  expect(requests.find((call) => call.method === 'POST')?.body).toEqual({
+    title: 'Meu plano',
+    description: 'Anotações preservadas',
+    priority: 'MEDIUM',
+    dueDate: null,
+    status: 'PENDING',
+    subjectId: null,
+  });
+});
+
+it('omits manual status when editing a task with subtasks and subjects disabled', async () => {
+  items = [
+    {
+      ...originalTask,
+      subjectId: originalTask.id,
+      subtaskTotal: 2,
+      subtaskCompleted: 1,
+      progressPercent: 50,
+      status: 'IN_PROGRESS',
+    },
+  ];
+  render(<TasksPage subjectsEnabled={false} />);
+  await openDetail();
+  const interaction = userEvent.setup();
+  await interaction.click(
+    screen.getByRole('button', { name: 'Editar tarefa' }),
+  );
+  const dialog = screen.getByRole('dialog');
+  expect(within(dialog).queryByLabelText('Status')).toBeNull();
+  expect(within(dialog).queryByLabelText('Matéria (opcional)')).toBeNull();
+  await interaction.clear(screen.getByLabelText('Título'));
+  await interaction.type(screen.getByLabelText('Título'), 'Novo título');
+  await interaction.click(
+    within(dialog).getByRole('button', { name: 'Salvar tarefa' }),
+  );
+  await screen.findByText('Tarefa salva.');
+  expect(requests.find((call) => call.method === 'PATCH')?.body).toEqual({
+    title: 'Novo título',
+    description: 'Capítulo 1',
+    priority: 'HIGH',
+    dueDate: '2026-10-01',
+  });
 });

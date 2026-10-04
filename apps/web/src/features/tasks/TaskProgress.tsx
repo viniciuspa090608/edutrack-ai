@@ -18,8 +18,11 @@ export function TaskProgress({ task }: { task: StudyTask }) {
   if (!task.subtaskTotal || task.progressPercent === null) return null;
   const text = `${task.subtaskCompleted} de ${task.subtaskTotal} subtarefas concluídas (${progressLabel(task)})`;
   return (
-    <div className="task-progress">
-      <p>{text}</p>
+    <div
+      className="task-progress"
+      data-completed={task.subtaskCompleted === task.subtaskTotal}
+    >
+      <p className="task-progress-label">{text}</p>
       <Progress
         max={100}
         value={task.progressPercent}
