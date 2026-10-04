@@ -14,8 +14,9 @@ import { Button } from '@study-platform/ui/components/ui/button';
 import { Label } from '@study-platform/ui/components/ui/label';
 import { Input } from '@study-platform/ui/components/ui/input';
 import { ArrowLeft, Sparkles } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
+import { navigatePublicLink } from './public-navigation.js';
 import {
   allowedReturnTo,
   googleLoginUrl,
@@ -23,15 +24,32 @@ import {
   navigate,
 } from '../auth/auth-api.js';
 
+function modeFromUrl(): 'login' | 'register' {
+  return new URLSearchParams(window.location.search).get('mode') === 'register'
+    ? 'register'
+    : 'login';
+}
+
 export function AccessPage() {
-  const [mode, setMode] = useState<'login' | 'register'>('login');
+  const [mode, setMode] = useState<'login' | 'register'>(modeFromUrl);
+  const [search, setSearch] = useState(() => window.location.search);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
-  const parameters = new URLSearchParams(window.location.search);
+  const parameters = new URLSearchParams(search);
   const returnTo = allowedReturnTo(parameters.get('returnTo'));
   const googleError = parameters.get('google');
+
+  useEffect(() => {
+    const update = () => {
+      setSearch(window.location.search);
+      setMode(modeFromUrl());
+      setError('');
+    };
+    window.addEventListener('popstate', update);
+    return () => window.removeEventListener('popstate', update);
+  }, []);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -82,7 +100,12 @@ export function AccessPage() {
             <Tabs
               value={mode}
               onValueChange={(value) => {
-                setMode(value as 'login' | 'register');
+                if (value !== 'login' && value !== 'register') return;
+                const url = new URL(window.location.href);
+                url.searchParams.set('mode', value);
+                window.history.replaceState({}, '', url.pathname + url.search);
+                setSearch(url.search);
+                setMode(value);
                 setError('');
               }}
             >
@@ -153,7 +176,7 @@ export function AccessPage() {
             <a className="auth-back" href="/recuperar-senha">
               Esqueci minha senha
             </a>
-            <a className="auth-back" href="/">
+            <a className="auth-back" href="/" onClick={navigatePublicLink}>
               <ArrowLeft size={18} aria-hidden="true" /> Voltar à landing
             </a>
           </CardContent>

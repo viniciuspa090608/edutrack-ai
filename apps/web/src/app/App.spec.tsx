@@ -74,64 +74,75 @@ describe('technical page', () => {
 });
 
 describe('public routes', () => {
-  it('shows the landing without checking the API', () => {
+  it('shows the complete public landing without checking the API', () => {
     window.history.replaceState({}, '', '/');
     const fetchMock = vi.fn();
     vi.stubGlobal('fetch', fetchMock);
     render(<App />);
-
     expect(screen.getByRole('heading', { level: 1 }).textContent).toContain(
-      'Seu plano de estudos',
+      'Organize seus estudos.',
     );
-    expect(
-      screen.getByRole('heading', { name: 'Tudo para estudar com intenção.' }),
-    ).toBeTruthy();
-    expect(
-      screen.getByRole('heading', { name: 'Uma base feita para evoluir.' }),
-    ).toBeTruthy();
     for (const name of [
-      'Tarefas',
-      'Matérias e roadmaps',
-      'Pomodoro',
-      'Rotinas',
-      'Flashcards',
-      'Estatísticas',
-      'IA opcional',
+      'Como funciona',
+      'Organize',
+      'Estude',
+      'Revise',
+      'Planejamento e roadmaps por etapas',
+      'Sessões de foco com Pomodoro',
+      'Flashcards com revisão espaçada',
+      'Métricas claras e sequências de estudo',
+      'Um apoio extra quando você precisar.',
+      'Seu espaço, seu jeito de estudar.',
     ]) {
       expect(screen.getByRole('heading', { name })).toBeTruthy();
     }
-    expect(screen.getByText(/Recursos em desenvolvimento/)).toBeTruthy();
-    expect(
-      screen.getAllByRole('link', { name: /Login \/ Inscreva-se/ }).length,
-    ).toBeGreaterThan(0);
+    const previews = document.querySelectorAll('figure');
+    expect(previews).toHaveLength(6);
+    for (const preview of previews) {
+      expect(preview.querySelector('figcaption')?.textContent).toContain(
+        'dados demonstrativos',
+      );
+      expect(preview.querySelector('button, a, input, [tabindex]')).toBeNull();
+    }
+    expect(screen.queryByText(/Recursos em desenvolvimento/)).toBeNull();
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it('shows the access page for every access CTA destination', () => {
+  it('opens the requested mode for every access CTA destination', () => {
     window.history.replaceState({}, '', '/');
     const { unmount } = render(<App />);
-    const links = screen
+    const destinations = screen
       .getAllByRole('link')
-      .filter((link) => link.getAttribute('href') === '/acesso');
-    expect(links.length).toBeGreaterThanOrEqual(3);
+      .map((link) => link.getAttribute('href'))
+      .filter((href): href is string => !!href?.startsWith('/acesso'));
+    expect(destinations.length).toBeGreaterThanOrEqual(5);
+    expect(new Set(destinations)).toEqual(
+      new Set(['/acesso?mode=login', '/acesso?mode=register']),
+    );
     unmount();
-    window.history.replaceState({}, '', '/acesso');
-    render(<App />);
-    expect(
-      screen.getByRole('heading', { name: 'Entre na sua conta' }),
-    ).toBeTruthy();
-    expect(screen.getByRole('textbox', { name: 'E-mail' })).toBeTruthy();
-    expect(screen.getByLabelText('Senha')).toBeTruthy();
-    expect(
-      screen.getByRole('link', { name: 'Continuar com Google' }),
-    ).toBeTruthy();
-    expect(
-      screen
-        .getByRole('link', { name: /Voltar à landing/ })
-        .getAttribute('href'),
-    ).toBe('/');
+    for (const destination of destinations) {
+      window.history.replaceState({}, '', destination);
+      const view = render(<App />);
+      expect(
+        screen.getByRole('heading', {
+          name: destination.includes('register')
+            ? 'Crie sua conta'
+            : 'Entre na sua conta',
+        }),
+      ).toBeTruthy();
+      expect(screen.getByRole('textbox', { name: 'E-mail' })).toBeTruthy();
+      expect(screen.getByLabelText('Senha')).toBeTruthy();
+      expect(
+        screen.getByRole('link', { name: 'Continuar com Google' }),
+      ).toBeTruthy();
+      expect(
+        screen
+          .getByRole('link', { name: /Voltar à landing/ })
+          .getAttribute('href'),
+      ).toBe('/');
+      view.unmount();
+    }
   });
-
   it('shows a fallback for unknown paths', () => {
     window.history.replaceState({}, '', '/desconhecido');
     render(<App />);

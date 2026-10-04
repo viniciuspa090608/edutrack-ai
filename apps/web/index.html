@@ -2,12 +2,27 @@
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
+    <script>
+      (() => {
+        let choice = null;
+        try {
+          choice = localStorage.getItem('edutrack.theme');
+        } catch {}
+        const manual = choice === 'light' || choice === 'dark';
+        const dark = manual
+          ? choice === 'dark'
+          : typeof matchMedia === 'function' &&
+            matchMedia('(prefers-color-scheme: dark)').matches;
+        document.documentElement.classList.toggle('dark', dark);
+        document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
+      })();
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Conheça a EduTrack: uma plataforma em construção para planejar estudos, manter o foco e acompanhar seu progresso."
+      content="Organize tarefas e matérias, estude com Pomodoro e revise com flashcards. Encontre seu ritmo com a EduTrack."
     />
-    <title>EduTrack · Seu plano de estudos em movimento</title>
+    <title>EduTrack · Organize seus estudos. Encontre seu ritmo.</title>
   </head>
   <body>
     <div id="root"></div>
