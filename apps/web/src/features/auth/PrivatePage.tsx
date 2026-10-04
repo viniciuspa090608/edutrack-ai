@@ -142,7 +142,9 @@ export function PrivatePage({
 
   if (checking)
     return (
-      <main className="private-page">
+      <main
+        className={`private-page${page === 'conta' ? ' account-session-state' : ''}`}
+      >
         <div>
           <Skeleton aria-hidden="true" className="my-2 h-3 w-2/3" />
           <p role="status">Verificando sessão…</p>
@@ -151,7 +153,9 @@ export function PrivatePage({
     );
   if (!user)
     return (
-      <main className="private-page">
+      <main
+        className={`private-page${page === 'conta' ? ' account-session-state' : ''}`}
+      >
         <Alert variant="destructive" role="alert">
           <AlertDescription>{error}</AlertDescription>
         </Alert>
@@ -166,7 +170,7 @@ export function PrivatePage({
     );
 
   return (
-    <div className="private-page">
+    <div className={`private-page${page === 'conta' ? ' account-shell' : ''}`}>
       <header className="private-header">
         <a className="private-brand" href="/app">
           EduTrack
@@ -251,33 +255,72 @@ export function PrivatePage({
             <ProfilePage
               onName={updateName}
               onPreferences={updatePreferences}
+              accountActions={
+                <div className="account-access-actions">
+                  <div className="account-detail">
+                    <h3>Google</h3>
+                    <p>
+                      {user.googleLinked
+                        ? 'Google vinculado à sua conta.'
+                        : 'Vincule sua conta Google para usar esse meio de entrada.'}
+                    </p>
+                  </div>
+                  {!user.googleLinked && (
+                    <Button
+                      type="button"
+                      disabled={busy}
+                      onClick={() => {
+                        void linkGoogle();
+                      }}
+                    >
+                      Vincular Google
+                    </Button>
+                  )}
+                  {new URLSearchParams(window.location.search).get('google') ===
+                    'linked' && (
+                    <p role="status">Google vinculado com sucesso.</p>
+                  )}
+                  {['failed', 'conflict'].includes(
+                    new URLSearchParams(window.location.search).get('google') ??
+                      '',
+                  ) && (
+                    <Alert variant="destructive" role="alert">
+                      <AlertDescription>
+                        Não foi possível vincular o Google. Sua conta continua
+                        ativa. Tente novamente.
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                  <div className="account-signout">
+                    <div>
+                      <h3>Sessão atual</h3>
+                      <p>Encerre seu acesso ao EduTrack neste navegador.</p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={busy}
+                      onClick={() => {
+                        void leave();
+                      }}
+                    >
+                      Encerrar sessão
+                    </Button>
+                  </div>
+                  <p role="status">
+                    {busy ? 'Processando ação da conta…' : ''}
+                  </p>
+                  {error && (
+                    <Alert variant="destructive" role="alert">
+                      <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                  )}
+                </div>
+              }
             />
-            {!user.googleLinked && (
-              <Button
-                type="button"
-                disabled={busy}
-                onClick={() => {
-                  void linkGoogle();
-                }}
-              >
-                Vincular Google
-              </Button>
-            )}
-            {new URLSearchParams(window.location.search).get('google') ===
-              'linked' && <p role="status">Google vinculado com sucesso.</p>}
-            {['failed', 'conflict'].includes(
-              new URLSearchParams(window.location.search).get('google') ?? '',
-            ) && (
-              <Alert variant="destructive" role="alert">
-                <AlertDescription>
-                  Não foi possível vincular o Google. Sua conta continua ativa.
-                  Tente novamente.
-                </AlertDescription>
-              </Alert>
-            )}
           </>
         )}
-        {error && (
+        {error && page !== 'conta' && (
           <Alert variant="destructive" role="alert">
             <AlertDescription>{error}</AlertDescription>
           </Alert>

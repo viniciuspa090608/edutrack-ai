@@ -5,18 +5,33 @@ import {
   render,
   screen,
   waitFor,
+  within,
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from '../../app/App.js';
 import type { ModulePreferences, UserProfile } from '@study-platform/contracts';
 import { availableModules, canUseAI } from './module-catalog.js';
+import { setTheme, THEME_STORAGE_KEY } from '../../app/theme.js';
 
 let profile: UserProfile;
 let prefs: ModulePreferences;
 let failed = '';
+let loadFailed = '';
+let mutationGate: Promise<void> | null = null;
 const requests: Array<{ path: string; body: unknown; method: string }> = [];
 beforeEach(() => {
+  // Match browser Storage rather than Node's localStorage placeholder.
+  const values = new Map<string, string>();
+  vi.stubGlobal('localStorage', {
+    getItem: (key: string) => values.get(key) ?? null,
+    setItem: (key: string, value: string) => {
+      values.set(key, value);
+    },
+    removeItem: (key: string) => {
+      values.delete(key);
+    },
+  });
   vi.stubGlobal(
     'Image',
     class extends EventTarget {
@@ -39,6 +54,8 @@ beforeEach(() => {
   };
   prefs = { tasks: true, subjects: true, flashcards: true, ai: false };
   failed = '';
+  loadFailed = '';
+  mutationGate = null;
   requests.length = 0;
   window.history.replaceState({}, '', '/conta');
   vi.stubEnv('VITE_API_BASE_URL', 'http://localhost:3001');
@@ -50,6 +67,8 @@ beforeEach(() => {
       const body: unknown =
         typeof init?.body === 'string' ? JSON.parse(init.body) : init?.body;
       requests.push({ path, body, method });
+      if (path === loadFailed && method === 'GET') throw new Error('Offline');
+      if (method !== 'GET' && mutationGate) await mutationGate;
       if (path === '/account/study-timezone')
         return Response.json({
           timeZone: 'UTC',
@@ -94,6 +113,8 @@ beforeEach(() => {
 });
 afterEach(() => {
   cleanup();
+  setTheme('light');
+  window.localStorage.removeItem(THEME_STORAGE_KEY);
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
   vi.unstubAllEnvs();
@@ -105,6 +126,131 @@ async function open() {
   await screen.findByRole('heading', { name: 'Conta' });
 }
 describe('profile page', () => {
+  it('keeps drafts and confirmed data across section navigation and both themes without reloading APIs', async () => {
+    await open();
+    const interaction = userEvent.setup();
+    const nav = screen.getByRole('navigation', {
+      name: 'Configurações da conta',
+    });
+    const input = screen.getByLabelText('Nome exibido');
+    await interaction.clear(input);
+    await interaction.type(input, 'Nome em edição');
+    for (const link of within(nav).getAllByRole('link')) {
+      const target = link.getAttribute('href')!;
+      expect(document.querySelector(target)).toBeTruthy();
+      await interaction.click(link);
+      // jsdom does not perform browser scrolling; announce the same native hash event.
+      act(() => {
+        window.history.replaceState({}, '', `/conta${target}`);
+        window.dispatchEvent(new HashChangeEvent('hashchange'));
+      });
+      expect(link.getAttribute('aria-current')).toBe('location');
+      expect((input as HTMLInputElement).value).toBe('Nome em edição');
+    }
+    const before = requests.filter((r) => r.method === 'GET').length;
+    await interaction.click(screen.getByRole('button', { name: 'Escuro' }));
+    expect(document.documentElement.classList.contains('dark')).toBe(true);
+    expect(window.localStorage.getItem(THEME_STORAGE_KEY)).toBe('dark');
+    expect(
+      screen
+        .getByRole('button', { name: 'Escuro' })
+        .getAttribute('aria-pressed'),
+    ).toBe('true');
+    await interaction.click(screen.getByRole('button', { name: 'Claro' }));
+    expect(document.documentElement.classList.contains('dark')).toBe(false);
+    expect((input as HTMLInputElement).value).toBe('Nome em edição');
+    expect(screen.getByRole('heading', { name: 'Ana' })).toBeTruthy();
+    expect(requests.filter((r) => r.method === 'GET')).toHaveLength(before);
+    expect(screen.queryByText(/Semestre|2FA|Moodle|Excluir conta/)).toBeNull();
+  });
+  it('announces loading failure and retry without invented account content', async () => {
+    loadFailed = '/profile';
+    render(<App />);
+    expect(screen.getByText('Verificando sessão…')).toBeTruthy();
+    await screen.findByText(
+      'Não foi possível carregar sua conta. Tente novamente.',
+    );
+    expect(
+      screen.queryByRole('navigation', { name: 'Configurações da conta' }),
+    ).toBeNull();
+    expect(screen.getByRole('button', { name: 'Sair' })).toBeTruthy();
+    expect(
+      screen.getByRole('button', { name: 'Vincular Google' }),
+    ).toBeTruthy();
+    loadFailed = '';
+    await userEvent
+      .setup()
+      .click(screen.getByRole('button', { name: 'Tentar novamente' }));
+    expect(
+      await screen.findByRole('heading', { name: 'Seu perfil' }),
+    ).toBeTruthy();
+    expect(screen.getByText(profile.email)).toBeTruthy();
+  });
+  it('blocks repeated submissions and waits for confirmed API data before showing success', async () => {
+    await open();
+    const interaction = userEvent.setup();
+    await interaction.clear(screen.getByLabelText('Nome exibido'));
+    await interaction.type(screen.getByLabelText('Nome exibido'), 'Novo nome');
+    let release!: () => void;
+    mutationGate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    await interaction.click(
+      screen.getByRole('button', { name: 'Salvar nome' }),
+    );
+    expect(screen.getByText('Salvando…')).toBeTruthy();
+    expect(
+      (screen.getByRole('button', { name: 'Salvar nome' }) as HTMLButtonElement)
+        .disabled,
+    ).toBe(true);
+    expect(screen.queryByText('Nome salvo.')).toBeNull();
+    expect(screen.getByRole('heading', { name: 'Ana' })).toBeTruthy();
+    expect(
+      (screen.getByRole('checkbox', { name: 'Matérias' }) as HTMLButtonElement)
+        .disabled,
+    ).toBe(true);
+    await act(async () => {
+      release();
+    });
+    await screen.findByText('Nome salvo.');
+    expect(screen.getByRole('heading', { name: 'Novo nome' })).toBeTruthy();
+  });
+  it('preserves the session and exposes retry after a logout or Google linking failure', async () => {
+    await open();
+    const interaction = userEvent.setup();
+    failed = '/auth/logout';
+    await interaction.click(
+      screen.getByRole('button', { name: 'Encerrar sessão' }),
+    );
+    await screen.findByText('Não foi possível sair agora. Tente novamente.');
+    expect(screen.getByText(profile.email)).toBeTruthy();
+    failed = '/auth/google/link/start';
+    await interaction.click(
+      screen.getByRole('button', { name: 'Vincular Google' }),
+    );
+    await screen.findByText(
+      'Não foi possível vincular o Google. Tente novamente.',
+    );
+    expect(
+      (screen.getByRole('button', { name: 'Sair' }) as HTMLButtonElement)
+        .disabled,
+    ).toBe(false);
+    expect(requests.some((r) => r.path === '/auth/google/link/start')).toBe(
+      true,
+    );
+    expect(window.location.pathname).toBe('/conta');
+  });
+  it('shows Google linking success only on the existing return flag and hides the link action for linked accounts', async () => {
+    profile.googleLinked = true;
+    window.history.replaceState({}, '', '/conta?google=linked');
+    render(<App />);
+    await screen.findByRole('heading', { name: 'Conta' });
+    expect(screen.getByText('Google vinculado com sucesso.')).toBeTruthy();
+    expect(
+      screen.queryByRole('button', { name: 'Vincular Google' }),
+    ).toBeNull();
+    expect(screen.getByText('Google vinculado à sua conta.')).toBeTruthy();
+  });
   it('refuses to disable the last study module even when AI is enabled', async () => {
     prefs = { tasks: true, subjects: false, flashcards: false, ai: true };
     await open();

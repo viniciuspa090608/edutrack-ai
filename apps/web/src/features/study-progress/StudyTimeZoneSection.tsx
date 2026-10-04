@@ -124,6 +124,7 @@ export function StudyTimeZoneSection() {
               <div className="study-timezone-actions">
                 <Button
                   type="button"
+                  variant="outline"
                   disabled={busy}
                   onClick={() => setDraft(suggestion)}
                 >

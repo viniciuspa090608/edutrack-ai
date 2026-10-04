@@ -1,0 +1,1 @@
+Branch: master HEAD: c4b23a8645e7ee290211ec8a3ec8ee474aafe408 Status: ?? openspec/changes/update-account-and-profile-from-stitch/ Tracked diff:  ZIP available: True Inventory delta: StudyTimeZoneSection now has progress visual classes; functionality unchanged.
