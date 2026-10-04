@@ -1,0 +1,10 @@
+# Validação do apply
+
+- Estado inicial: branch `master`, HEAD `f22402728072d93204de923921ef2237e5073a99`; somente a pasta desta proposta estava sem versionamento. As alterações do dashboard observadas durante o planejamento já estavam incorporadas ao HEAD e não foram editadas neste apply.
+- Testes selecionados: `Auth.spec.tsx`, `EmailPages.spec.tsx`, `AccessPage.spec.tsx` e o novo `AuthFeedback.spec.tsx`: **4 arquivos, 25 testes aprovados**. Nenhuma suíte geral, backend ou banco foi executada.
+- `pnpm --filter @study-platform/web lint`, `typecheck` e `build`: aprovados. Build mantém aviso de chunk acima de 500 kB; sem falha de compilação.
+- O sandbox inicialmente impediu processos nativos do Vite (`spawn EPERM`); a execução autorizada fora dele passou sem alterar configuração ou dependências.
+- QA em Edge headless contra a web local: login, cadastro, confirmação de e-mail e recuperação request/code/password/done em 320, 375, 768 e 1440 px, nos temas claro/escuro: **56 combinações aprovadas**, sem overflow horizontal e com controles dentro da largura disponível. Capturas completas foram inspecionadas em painéis por largura. As chamadas de API nos fluxos de QA usam respostas controladas no navegador; não há simulação de resultado no código da aplicação.
+- Teclado: tab inicial, alternância por seta e foco no e-mail preservados. Confirmação/recuperação mantêm foco no título. Verificados erro de credenciais, texto longo de feedback e zoom de 200% em 320 px nos dois temas sem overflow; preferência de movimento reduzido ativada no navegador e estilos sem animação/transição.
+- Evidências locais temporárias: `%TEMP%/edutrack-auth-visual/`, incluindo `results.json`, 56 capturas e quatro painéis `sheet-<largura>.jpg`, além das capturas de zoom/erro. A inspeção identificou e corrigiu contraste do painel no tema escuro antes da conclusão.
+- Revisão de diff: handlers, payloads, contratos, cliente auth, rotas, backend, cookies, sessão, PrivatePage e módulos externos preservados. Estilos novos usam `.auth-layout` e classes próprias, sem modificar regras privadas existentes.
