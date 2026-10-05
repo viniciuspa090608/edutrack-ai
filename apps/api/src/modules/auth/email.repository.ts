@@ -462,8 +462,9 @@ export class EmailRepository {
           [row.challenge_id],
         );
         presentation.displayName ||= users[0]?.display_name ?? 'Estudante';
-        if (payload.purpose === 'email_changed')
-          presentation.newEmail ||= users[0]?.email;
+        const newEmail = users[0]?.email;
+        if (payload.purpose === 'email_changed' && newEmail)
+          presentation.newEmail ||= newEmail;
       }
       await send(payload.email, payload.code, payload.purpose, presentation);
       await this.finishDelivery(row, true);

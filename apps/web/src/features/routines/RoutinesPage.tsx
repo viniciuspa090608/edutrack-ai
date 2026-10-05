@@ -30,6 +30,15 @@ import {
   NativeSelectOption,
 } from '@study-platform/ui/components/ui/native-select';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  CalendarDays,
+  Clock3,
+  Globe2,
+  Pencil,
+  Plus,
+  RefreshCw,
+  Trash2,
+} from 'lucide-react';
 import { createRoutineSchema } from '@study-platform/contracts';
 import type {
   RoutineSlot,
@@ -228,15 +237,33 @@ export function RoutinesPage() {
   }
   return (
     <section className="routines-page" aria-busy={busy}>
-      <h1 ref={heading} tabIndex={-1}>
-        Rotinas de estudo
-      </h1>
-      <p>
-        Planeje sua semana com horários locais recorrentes. Rotinas não criam
-        tarefas nem iniciam Pomodoro.
-      </p>
-      {busy && (
+      <header className="routine-heading">
         <div>
+          <h1 ref={heading} tabIndex={-1}>
+            Rotinas de estudo
+          </h1>
+          <p>
+            Planeje sua semana com horários locais recorrentes. Rotinas não
+            criam tarefas nem iniciam Pomodoro.
+          </p>
+        </div>
+        <div className="routine-actions">
+          <Button disabled={busy} onClick={create}>
+            <Plus aria-hidden="true" />
+            Criar rotina
+          </Button>
+          <Button
+            variant="outline"
+            disabled={busy}
+            onClick={() => void retry()}
+          >
+            <RefreshCw aria-hidden="true" />
+            Atualizar programação
+          </Button>
+        </div>
+      </header>
+      {busy && (
+        <div className="routine-loading">
           <Skeleton aria-hidden="true" className="my-2 h-3 w-2/3" />
           <p role="status">Carregando…</p>
         </div>
@@ -246,48 +273,49 @@ export function RoutinesPage() {
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
-      {message && <p role="status">{message}</p>}
-      <div className="routine-actions">
-        <Button disabled={busy} onClick={create}>
-          Criar rotina
-        </Button>
-        <Button disabled={busy} onClick={() => void retry()}>
-          Atualizar programação
-        </Button>
-      </div>
+      {message && (
+        <p className="routine-success" role="status">
+          {message}
+        </p>
+      )}
       {editing && (
-        <Card asChild>
+        <Card asChild className="routine-card routine-form">
           <form onSubmit={(event) => void save(event)}>
-            <CardHeader>
+            <CardHeader className="routine-section-heading">
+              <span className="routine-icon" aria-hidden="true">
+                <CalendarDays />
+              </span>
               <h2>{id ? 'Editar rotina' : 'Nova rotina'}</h2>
             </CardHeader>
             <CardContent>
-              <Label>
-                Nome
-                <Input
-                  ref={nameField}
-                  value={name}
-                  required
-                  maxLength={120}
-                  disabled={busy}
-                  onChange={(event) => setName(event.target.value)}
-                />
-              </Label>
-              <Label>
-                Fuso horário
-                <Input
-                  value={timeZone}
-                  required
-                  aria-describedby="routine-zone-help"
-                  disabled={busy}
-                  onChange={(event) => setTimeZone(event.target.value)}
-                />
-              </Label>
+              <div className="routine-form-overview">
+                <Label>
+                  Nome
+                  <Input
+                    ref={nameField}
+                    value={name}
+                    required
+                    maxLength={120}
+                    disabled={busy}
+                    onChange={(event) => setName(event.target.value)}
+                  />
+                </Label>
+                <Label>
+                  Fuso horário
+                  <Input
+                    value={timeZone}
+                    required
+                    aria-describedby="routine-zone-help"
+                    disabled={busy}
+                    onChange={(event) => setTimeZone(event.target.value)}
+                  />
+                </Label>
+              </div>
               <p id="routine-zone-help">
                 Use um fuso IANA, como America/Sao_Paulo ou Europe/Lisbon.
                 Alterar o fuso preserva as horas locais.
               </p>
-              <p id="routine-slot-help">
+              <p id="routine-slot-help" className="routine-help">
                 Início e fim devem estar no mesmo dia, com início anterior ao
                 fim. Horários adjacentes são permitidos. Para atravessar a
                 meia-noite, divida o planejamento em horários nos dois dias,
@@ -298,59 +326,66 @@ export function RoutinesPage() {
                   key={index}
                   aria-describedby="routine-slot-help"
                   disabled={busy}
+                  className="routine-slot"
                 >
                   <FieldLegend>Horário {index + 1}</FieldLegend>
-                  <Label>
-                    Dia da semana
-                    <NativeSelect
-                      value={slot.weekday}
-                      onChange={(event) =>
-                        change(index, { weekday: Number(event.target.value) })
-                      }
+                  <div className="routine-slot-fields">
+                    <Label>
+                      Dia da semana
+                      <NativeSelect
+                        value={slot.weekday}
+                        onChange={(event) =>
+                          change(index, { weekday: Number(event.target.value) })
+                        }
+                      >
+                        {days.map((day, i) => (
+                          <NativeSelectOption key={day} value={i + 1}>
+                            {day}
+                          </NativeSelectOption>
+                        ))}
+                      </NativeSelect>
+                    </Label>
+                    <Label>
+                      Início
+                      <Input
+                        type="time"
+                        required
+                        value={slot.startTime}
+                        onChange={(event) =>
+                          change(index, { startTime: event.target.value })
+                        }
+                      />
+                    </Label>
+                    <Label>
+                      Fim
+                      <Input
+                        type="time"
+                        required
+                        value={slot.endTime}
+                        onChange={(event) =>
+                          change(index, { endTime: event.target.value })
+                        }
+                      />
+                    </Label>
+                    <Button
+                      variant="outline"
+                      type="button"
+                      disabled={slots.length === 1}
+                      onClick={() => {
+                        setSlots((items) =>
+                          items.filter((_, i) => i !== index),
+                        );
+                        nameField.current?.focus();
+                      }}
                     >
-                      {days.map((day, i) => (
-                        <NativeSelectOption key={day} value={i + 1}>
-                          {day}
-                        </NativeSelectOption>
-                      ))}
-                    </NativeSelect>
-                  </Label>
-                  <Label>
-                    Início
-                    <Input
-                      type="time"
-                      required
-                      value={slot.startTime}
-                      onChange={(event) =>
-                        change(index, { startTime: event.target.value })
-                      }
-                    />
-                  </Label>
-                  <Label>
-                    Fim
-                    <Input
-                      type="time"
-                      required
-                      value={slot.endTime}
-                      onChange={(event) =>
-                        change(index, { endTime: event.target.value })
-                      }
-                    />
-                  </Label>
-                  <Button
-                    type="button"
-                    disabled={slots.length === 1}
-                    onClick={() => {
-                      setSlots((items) => items.filter((_, i) => i !== index));
-                      nameField.current?.focus();
-                    }}
-                  >
-                    Remover horário {index + 1}
-                  </Button>
+                      Remover horário {index + 1}
+                    </Button>
+                  </div>
                 </FieldSet>
               ))}
-              <div className="routine-actions">
+              <div className="routine-actions routine-form-actions">
                 <Button
+                  variant="outline"
                   type="button"
                   disabled={busy}
                   onClick={() => setSlots((items) => [...items, initialSlot()])}
@@ -361,6 +396,7 @@ export function RoutinesPage() {
                   Salvar rotina
                 </Button>
                 <Button
+                  variant="ghost"
                   disabled={busy}
                   type="button"
                   onClick={() => {
@@ -375,41 +411,70 @@ export function RoutinesPage() {
           </form>
         </Card>
       )}
-      <h2>Minhas rotinas</h2>
+      <h2 className="routine-section-title">
+        <CalendarDays aria-hidden="true" />
+        Minhas rotinas
+      </h2>
       {list &&
         (list.items.length ? (
           <ul className="routine-list">
             {list.items.map((row) => (
-              <li key={row.id}>
-                <h3>{row.name}</h3>
-                <p>Fuso: {row.timeZone}</p>
-                <p>{row.slots.length} horário(s) semanal(is)</p>
-                <div className="routine-actions">
-                  <Button
-                    disabled={busy || !!deleting}
-                    onClick={() => void edit(row)}
-                    aria-label={`Editar ${row.name}`}
-                  >
-                    Editar
-                  </Button>
-                  <Button
-                    disabled={busy || !!deleting}
-                    onClick={(event) => {
-                      trigger.current = event.currentTarget;
-                      setDeleting(row);
-                      setError('');
-                      setMessage('');
-                    }}
-                    aria-label={`Excluir ${row.name}`}
-                  >
-                    Excluir
-                  </Button>
-                </div>
-              </li>
+              <Card
+                asChild
+                key={row.id}
+                className="routine-card routine-list-item"
+              >
+                <li>
+                  <div className="routine-summary">
+                    <h3>{row.name}</h3>
+                    <div className="routine-metadata">
+                      <p>
+                        <Globe2 aria-hidden="true" />
+                        Fuso: {row.timeZone}
+                      </p>
+                      <p>
+                        <Clock3 aria-hidden="true" />
+                        {row.slots.length} horário(s) semanal(is)
+                      </p>
+                    </div>
+                  </div>
+                  <div className="routine-actions">
+                    <Button
+                      variant="outline"
+                      disabled={busy || !!deleting}
+                      onClick={() => void edit(row)}
+                      aria-label={`Editar ${row.name}`}
+                    >
+                      <Pencil aria-hidden="true" />
+                      Editar
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="routine-delete"
+                      disabled={busy || !!deleting}
+                      onClick={(event) => {
+                        trigger.current = event.currentTarget;
+                        setDeleting(row);
+                        setError('');
+                        setMessage('');
+                      }}
+                      aria-label={`Excluir ${row.name}`}
+                    >
+                      <Trash2 aria-hidden="true" />
+                      Excluir
+                    </Button>
+                  </div>
+                </li>
+              </Card>
             ))}
           </ul>
         ) : (
-          <p>Nenhuma rotina cadastrada. Crie sua primeira rotina.</p>
+          <div className="routine-empty">
+            <span className="routine-empty-icon" aria-hidden="true">
+              <CalendarDays />
+            </span>
+            <p>Nenhuma rotina cadastrada. Crie sua primeira rotina.</p>
+          </div>
         ))}
       {deleting && (
         <AlertDialog
@@ -419,6 +484,7 @@ export function RoutinesPage() {
           }}
         >
           <AlertDialogContent
+            className="routine-dialog"
             onEscapeKeyDown={(event) => {
               event.preventDefault();
               if (!busy) setDeleting(null);
@@ -428,9 +494,7 @@ export function RoutinesPage() {
               trigger.current?.focus();
             }}
           >
-            <AlertDialogTitle className="sr-only">
-              Confirmar exclusão
-            </AlertDialogTitle>
+            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
             <div role="group" aria-label="Confirmar exclusão">
               {error && (
                 <Alert variant="destructive">
@@ -443,6 +507,7 @@ export function RoutinesPage() {
                 </p>
               </AlertDialogDescription>
               <Button
+                variant="outline"
                 autoFocus
                 disabled={busy}
                 onClick={() => {
@@ -452,7 +517,11 @@ export function RoutinesPage() {
               >
                 Manter rotina
               </Button>
-              <Button disabled={busy} onClick={() => void remove()}>
+              <Button
+                variant="destructive"
+                disabled={busy}
+                onClick={() => void remove()}
+              >
                 Confirmar exclusão
               </Button>
             </div>
@@ -464,6 +533,7 @@ export function RoutinesPage() {
           <PaginationContent className="flex-wrap">
             <PaginationItem>
               <Button
+                variant="outline"
                 disabled={busy || page === 1}
                 onClick={() => setPage(page - 1)}
               >
@@ -477,6 +547,7 @@ export function RoutinesPage() {
             </PaginationItem>
             <PaginationItem>
               <Button
+                variant="outline"
                 disabled={busy || page >= list.totalPages}
                 onClick={() => setPage(page + 1)}
               >
@@ -486,31 +557,36 @@ export function RoutinesPage() {
           </PaginationContent>
         </Pagination>
       )}
-      <h2>Programação semanal</h2>
+      <h2 className="routine-section-title">
+        <Clock3 aria-hidden="true" />
+        Programação semanal
+      </h2>
       {schedule && (
         <div className="routine-week">
           {days.map((day, index) => (
-            <section key={day} aria-label={day}>
-              <h3>{day}</h3>
-              {schedule.items.filter((item) => item.weekday === index + 1)
-                .length ? (
-                <ul>
-                  {schedule.items
-                    .filter((item) => item.weekday === index + 1)
-                    .map((item, i) => (
-                      <li key={`${item.routineId}-${i}`}>
-                        <strong>{item.name}</strong>
-                        <p>
-                          {item.startTime}–{item.endTime}
-                        </p>
-                        <p>Fuso: {item.timeZone}</p>
-                      </li>
-                    ))}
-                </ul>
-              ) : (
-                <p>Sem horários.</p>
-              )}
-            </section>
+            <Card asChild key={day} className="routine-card routine-day">
+              <section aria-label={day}>
+                <h3>{day}</h3>
+                {schedule.items.filter((item) => item.weekday === index + 1)
+                  .length ? (
+                  <ul>
+                    {schedule.items
+                      .filter((item) => item.weekday === index + 1)
+                      .map((item, i) => (
+                        <li key={`${item.routineId}-${i}`}>
+                          <strong>{item.name}</strong>
+                          <p className="routine-time">
+                            {item.startTime}–{item.endTime}
+                          </p>
+                          <p>Fuso: {item.timeZone}</p>
+                        </li>
+                      ))}
+                  </ul>
+                ) : (
+                  <p>Sem horários.</p>
+                )}
+              </section>
+            </Card>
           ))}
         </div>
       )}
