@@ -58,6 +58,7 @@ import type {
 import { AuthApiError, navigate } from '../auth/auth-api.js';
 import { deleteTask, listTasks, saveTask, taskDetail } from './tasks-api.js';
 import '../../styles/tasks.css';
+import { CollectionEmptyState } from '../../components/CollectionEmptyState.js';
 
 import { SubjectSelect } from '../subjects/SubjectSelect.js';
 import { subjectDetail } from '../subjects/subjects-api.js';
@@ -482,6 +483,11 @@ export function TasksPage({
     filters.dueTo
   );
   const refresh = () => setRevision((value) => value + 1);
+  const createTask = () => {
+    setEditor({ task: null });
+    setDetail(null);
+    setSuccess('');
+  };
   return (
     <div className="tasks-page tasks-surface">
       <div className="tasks-toolbar">
@@ -495,11 +501,7 @@ export function TasksPage({
           ref={newButton}
           id="task-create"
           type="button"
-          onClick={() => {
-            setEditor({ task: null });
-            setDetail(null);
-            setSuccess('');
-          }}
+          onClick={createTask}
         >
           <Plus aria-hidden="true" /> Criar tarefa
         </Button>
@@ -816,14 +818,23 @@ export function TasksPage({
             <span className="task-count">{result.total} tarefa(s)</span>
           </div>
           {result.items.length === 0 ? (
-            <div className="task-empty">
-              <ClipboardList aria-hidden="true" />
-              <p>
-                {filtered
-                  ? 'Nenhum resultado para estes filtros. Limpe os filtros para ver suas tarefas.'
-                  : 'Você ainda não tem tarefas. Use Criar tarefa para começar.'}
-              </p>
-            </div>
+            filtered ? (
+              <div className="task-empty">
+                <ClipboardList aria-hidden="true" />
+                <p>
+                  Nenhum resultado para estes filtros. Limpe os filtros para ver
+                  suas tarefas.
+                </p>
+              </div>
+            ) : !loading && !error && result.total === 0 ? (
+              <CollectionEmptyState
+                icon={<ClipboardList />}
+                title="Nenhuma tarefa ainda"
+                description="Crie sua primeira tarefa para começar a organizar o que precisa estudar."
+                actionLabel="Adicionar tarefa"
+                onAction={createTask}
+              />
+            ) : null
           ) : (
             <ul className="task-list">
               {result.items.map((task) => (

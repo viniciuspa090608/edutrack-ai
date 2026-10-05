@@ -1,0 +1,338 @@
+[
+  {
+    "module": "subjects",
+    "theme": "light",
+    "width": 240,
+    "left": 40,
+    "right": 280,
+    "viewport": 320,
+    "overflow": false,
+    "centered": true,
+    "titleColor": "rgb(33, 37, 41)",
+    "descriptionColor": "rgb(73, 80, 87)",
+    "background": "rgb(233, 236, 239)",
+    "buttonColor": "rgb(248, 249, 250)",
+    "buttonBackground": "rgb(2, 62, 138)",
+    "buttonWidth": 206,
+    "buttonHeight": 44,
+    "dark": false,
+    "focus": {
+      "focused": true,
+      "outline": "solid",
+      "outlineWidth": "3px"
+    },
+    "contrast": {
+      "title": 13.01,
+      "description": 6.9,
+      "button": 9.68
+    }
+  },
+  {
+    "module": "subjects",
+    "theme": "light",
+    "width": 688,
+    "left": 40,
+    "right": 728,
+    "viewport": 768,
+    "overflow": false,
+    "centered": true,
+    "titleColor": "rgb(33, 37, 41)",
+    "descriptionColor": "rgb(73, 80, 87)",
+    "background": "rgb(233, 236, 239)",
+    "buttonColor": "rgb(248, 249, 250)",
+    "buttonBackground": "rgb(2, 62, 138)",
+    "buttonWidth": 160.875,
+    "buttonHeight": 44,
+    "dark": false,
+    "focus": {
+      "focused": true,
+      "outline": "solid",
+      "outlineWidth": "3px"
+    },
+    "contrast": {
+      "title": 13.01,
+      "description": 6.9,
+      "button": 9.68
+    }
+  },
+  {
+    "module": "subjects",
+    "theme": "light",
+    "width": 932,
+    "left": 174,
+    "right": 1106,
+    "viewport": 1280,
+    "overflow": false,
+    "centered": true,
+    "titleColor": "rgb(33, 37, 41)",
+    "descriptionColor": "rgb(73, 80, 87)",
+    "background": "rgb(233, 236, 239)",
+    "buttonColor": "rgb(248, 249, 250)",
+    "buttonBackground": "rgb(2, 62, 138)",
+    "buttonWidth": 160.875,
+    "buttonHeight": 44,
+    "dark": false,
+    "focus": {
+      "focused": true,
+      "outline": "solid",
+      "outlineWidth": "3px"
+    },
+    "contrast": {
+      "title": 13.01,
+      "description": 6.9,
+      "button": 9.68
+    }
+  },
+  {
+    "module": "subjects",
+    "theme": "dark",
+    "width": 240,
+    "left": 40,
+    "right": 280,
+    "viewport": 320,
+    "overflow": false,
+    "centered": true,
+    "titleColor": "rgb(248, 249, 250)",
+    "descriptionColor": "rgb(173, 181, 189)",
+    "background": "rgb(52, 58, 64)",
+    "buttonColor": "rgb(33, 37, 41)",
+    "buttonBackground": "rgb(72, 202, 228)",
+    "buttonWidth": 206,
+    "buttonHeight": 44,
+    "dark": true,
+    "focus": {
+      "focused": true,
+      "outline": "solid",
+      "outlineWidth": "3px"
+    },
+    "contrast": {
+      "title": 10.91,
+      "description": 5.55,
+      "button": 7.97
+    }
+  },
+  {
+    "module": "subjects",
+    "theme": "dark",
+    "width": 688,
+    "left": 40,
+    "right": 728,
+    "viewport": 768,
+    "overflow": false,
+    "centered": true,
+    "titleColor": "rgb(248, 249, 250)",
+    "descriptionColor": "rgb(173, 181, 189)",
+    "background": "rgb(52, 58, 64)",
+    "buttonColor": "rgb(33, 37, 41)",
+    "buttonBackground": "rgb(72, 202, 228)",
+    "buttonWidth": 160.875,
+    "buttonHeight": 44,
+    "dark": true,
+    "focus": {
+      "focused": true,
+      "outline": "solid",
+      "outlineWidth": "3px"
+    },
+    "contrast": {
+      "title": 10.91,
+      "description": 5.55,
+      "button": 7.97
+    }
+  },
+  {
+    "module": "subjects",
+    "theme": "dark",
+    "width": 932,
+    "left": 174,
+    "right": 1106,
+    "viewport": 1280,
+    "overflow": false,
+    "centered": true,
+    "titleColor": "rgb(248, 249, 250)",
+    "descriptionColor": "rgb(173, 181, 189)",
+    "background": "rgb(52, 58, 64)",
+    "buttonColor": "rgb(33, 37, 41)",
+    "buttonBackground": "rgb(72, 202, 228)",
+    "buttonWidth": 160.875,
+    "buttonHeight": 44,
+    "dark": true,
+    "focus": {
+      "focused": true,
+      "outline": "solid",
+      "outlineWidth": "2px"
+    },
+    "contrast": {
+      "title": 10.91,
+      "description": 5.55,
+      "button": 7.97
+    }
+  },
+  {
+    "module": "tasks",
+    "theme": "light",
+    "width": 216,
+    "left": 52,
+    "right": 268,
+    "viewport": 320,
+    "overflow": false,
+    "centered": true,
+    "titleColor": "rgb(33, 37, 41)",
+    "descriptionColor": "rgb(73, 80, 87)",
+    "background": "rgb(233, 236, 239)",
+    "buttonColor": "rgb(248, 249, 250)",
+    "buttonBackground": "rgb(2, 62, 138)",
+    "buttonWidth": 182,
+    "buttonHeight": 44,
+    "dark": false,
+    "focus": {
+      "focused": true,
+      "outline": "solid",
+      "outlineWidth": "2px"
+    },
+    "contrast": {
+      "title": 13.01,
+      "description": 6.9,
+      "button": 9.68
+    }
+  },
+  {
+    "module": "tasks",
+    "theme": "light",
+    "width": 648,
+    "left": 60,
+    "right": 708,
+    "viewport": 768,
+    "overflow": false,
+    "centered": true,
+    "titleColor": "rgb(33, 37, 41)",
+    "descriptionColor": "rgb(73, 80, 87)",
+    "background": "rgb(233, 236, 239)",
+    "buttonColor": "rgb(248, 249, 250)",
+    "buttonBackground": "rgb(2, 62, 138)",
+    "buttonWidth": 151.203125,
+    "buttonHeight": 44,
+    "dark": false,
+    "focus": {
+      "focused": true,
+      "outline": "solid",
+      "outlineWidth": "2px"
+    },
+    "contrast": {
+      "title": 13.01,
+      "description": 6.9,
+      "button": 9.68
+    }
+  },
+  {
+    "module": "tasks",
+    "theme": "light",
+    "width": 892,
+    "left": 194,
+    "right": 1086,
+    "viewport": 1280,
+    "overflow": false,
+    "centered": true,
+    "titleColor": "rgb(33, 37, 41)",
+    "descriptionColor": "rgb(73, 80, 87)",
+    "background": "rgb(233, 236, 239)",
+    "buttonColor": "rgb(248, 249, 250)",
+    "buttonBackground": "rgb(2, 62, 138)",
+    "buttonWidth": 151.203125,
+    "buttonHeight": 44,
+    "dark": false,
+    "focus": {
+      "focused": true,
+      "outline": "solid",
+      "outlineWidth": "2px"
+    },
+    "contrast": {
+      "title": 13.01,
+      "description": 6.9,
+      "button": 9.68
+    }
+  },
+  {
+    "module": "tasks",
+    "theme": "dark",
+    "width": 216,
+    "left": 52,
+    "right": 268,
+    "viewport": 320,
+    "overflow": false,
+    "centered": true,
+    "titleColor": "rgb(248, 249, 250)",
+    "descriptionColor": "rgb(173, 181, 189)",
+    "background": "rgb(52, 58, 64)",
+    "buttonColor": "rgb(33, 37, 41)",
+    "buttonBackground": "rgb(72, 202, 228)",
+    "buttonWidth": 182,
+    "buttonHeight": 44,
+    "dark": true,
+    "focus": {
+      "focused": true,
+      "outline": "solid",
+      "outlineWidth": "2px"
+    },
+    "contrast": {
+      "title": 10.91,
+      "description": 5.55,
+      "button": 7.97
+    }
+  },
+  {
+    "module": "tasks",
+    "theme": "dark",
+    "width": 648,
+    "left": 60,
+    "right": 708,
+    "viewport": 768,
+    "overflow": false,
+    "centered": true,
+    "titleColor": "rgb(248, 249, 250)",
+    "descriptionColor": "rgb(173, 181, 189)",
+    "background": "rgb(52, 58, 64)",
+    "buttonColor": "rgb(33, 37, 41)",
+    "buttonBackground": "rgb(72, 202, 228)",
+    "buttonWidth": 151.203125,
+    "buttonHeight": 44,
+    "dark": true,
+    "focus": {
+      "focused": true,
+      "outline": "solid",
+      "outlineWidth": "2px"
+    },
+    "contrast": {
+      "title": 10.91,
+      "description": 5.55,
+      "button": 7.97
+    }
+  },
+  {
+    "module": "tasks",
+    "theme": "dark",
+    "width": 892,
+    "left": 194,
+    "right": 1086,
+    "viewport": 1280,
+    "overflow": false,
+    "centered": true,
+    "titleColor": "rgb(248, 249, 250)",
+    "descriptionColor": "rgb(173, 181, 189)",
+    "background": "rgb(52, 58, 64)",
+    "buttonColor": "rgb(33, 37, 41)",
+    "buttonBackground": "rgb(72, 202, 228)",
+    "buttonWidth": 151.203125,
+    "buttonHeight": 44,
+    "dark": true,
+    "focus": {
+      "focused": true,
+      "outline": "solid",
+      "outlineWidth": "2px"
+    },
+    "contrast": {
+      "title": 10.91,
+      "description": 5.55,
+      "button": 7.97
+    }
+  }
+]

@@ -33,6 +33,7 @@ let items: StudyTask[];
 let failed: string;
 let listTotal: number | null;
 let pendingSave: Promise<Response> | null;
+let pendingList: Promise<Response> | null;
 const requests: Array<{
   url: URL;
   method: string;
@@ -44,6 +45,7 @@ beforeEach(() => {
   failed = '';
   listTotal = null;
   pendingSave = null;
+  pendingList = null;
   requests.length = 0;
   window.history.replaceState({}, '', '/app/tarefas');
   vi.stubEnv('VITE_API_BASE_URL', 'http://localhost:3001');
@@ -99,6 +101,7 @@ beforeEach(() => {
           totalPages: 1,
         });
       if (method === 'GET' && url.pathname === '/tasks') {
+        if (pendingList) return pendingList;
         const filtered = items.filter(
           (task) =>
             !url.searchParams.get('status') ||
@@ -143,6 +146,69 @@ async function openDetail() {
   );
   return screen.findByRole('region', { name: 'Revisar álgebra' });
 }
+it('waits for the actual task response before offering the first creation', async () => {
+  let resolve!: (response: Response) => void;
+  pendingList = new Promise((done) => {
+    resolve = done;
+  });
+  render(<TasksPage />);
+  expect(screen.getByText('Carregando tarefas…')).toBeTruthy();
+  expect(
+    screen.queryByRole('heading', { name: 'Nenhuma tarefa ainda' }),
+  ).toBeNull();
+  await act(async () => {
+    resolve(
+      Response.json({
+        items: [],
+        total: 0,
+        page: 1,
+        pageSize: 20,
+        totalPages: 0,
+      }),
+    );
+  });
+  expect(
+    await screen.findByRole('heading', { name: 'Nenhuma tarefa ainda' }),
+  ).toBeTruthy();
+  expect(
+    screen.getByText(
+      'Crie sua primeira tarefa para começar a organizar o que precisa estudar.',
+    ),
+  ).toBeTruthy();
+  expect(
+    requests.filter((request) => request.url.pathname === '/tasks'),
+  ).toHaveLength(1);
+});
+it('does not claim a task collection is empty when only its page is empty', async () => {
+  listTotal = 21;
+  render(<TasksPage />);
+  await screen.findByText(/Página 1 de 2/);
+  expect(
+    screen.queryByRole('heading', { name: 'Nenhuma tarefa ainda' }),
+  ).toBeNull();
+  expect(screen.queryByRole('button', { name: 'Adicionar tarefa' })).toBeNull();
+  expect(
+    screen.getByRole('button', { name: 'Próxima página' }).matches(':disabled'),
+  ).toBe(false);
+});
+it('opens the existing task editor from the empty CTA and restores focus on cancel', async () => {
+  render(<TasksPage />);
+  const interaction = userEvent.setup();
+  (await screen.findByRole('button', { name: 'Adicionar tarefa' })).focus();
+  await interaction.keyboard('{Enter}');
+  expect(document.activeElement).toBe(screen.getByLabelText('Título'));
+  expect(screen.getByRole('form', { name: 'Criar tarefa' })).toBeTruthy();
+  await interaction.click(
+    screen.getByRole('button', { name: 'Cancelar edição' }),
+  );
+  expect(screen.queryByRole('form', { name: 'Criar tarefa' })).toBeNull();
+  await waitFor(() =>
+    expect(document.activeElement).toBe(
+      screen.getByRole('button', { name: 'Criar tarefa' }),
+    ),
+  );
+  expect(requests.some((request) => request.method === 'POST')).toBe(false);
+});
 
 it('protects direct access and preserves the internal login destination', async () => {
   failed = 'AUTH';
@@ -160,7 +226,7 @@ it('protects direct access and preserves the internal login destination', async 
 it('loads behind session/preferences and offers the first task action', async () => {
   render(<App />);
   expect(screen.getByText('Verificando sessão…')).toBeTruthy();
-  expect(await screen.findByText(/Você ainda não tem tarefas/)).toBeTruthy();
+  expect(await screen.findByText(/Nenhuma tarefa ainda/)).toBeTruthy();
   expect(
     screen.getByRole('link', { name: 'Tarefas' }).getAttribute('href'),
   ).toBe('/app/tarefas');
@@ -210,6 +276,7 @@ it('keeps combined filters when paging, resets to page one and clears empty resu
     screen.getByRole('button', { name: 'Aplicar filtros' }),
   );
   await screen.findByText(/Nenhum resultado/);
+  expect(screen.queryByRole('button', { name: 'Adicionar tarefa' })).toBeNull();
   expect(requests.at(-1)!.url.searchParams.get('page')).toBe('1');
   await interaction.click(
     screen.getByRole('button', { name: 'Limpar filtros' }),
@@ -221,11 +288,12 @@ it('rejects an inverted calendar range and recovers from a list network error', 
   failed = 'GET';
   render(<TasksPage />);
   await screen.findByRole('alert');
+  expect(screen.queryByRole('button', { name: 'Adicionar tarefa' })).toBeNull();
   failed = '';
   await userEvent
     .setup()
     .click(screen.getByRole('button', { name: 'Tentar novamente' }));
-  await screen.findByText(/Você ainda não tem tarefas/);
+  await screen.findByText(/Nenhuma tarefa ainda/);
   fireEvent.change(screen.getByLabelText('Prazo de'), {
     target: { value: '2026-10-30' },
   });
@@ -242,9 +310,9 @@ it('rejects an inverted calendar range and recovers from a list network error', 
 });
 it('creates using keyboard/defaults, validates whitespace and retains input after failure', async () => {
   render(<TasksPage />);
-  await screen.findByText(/Você ainda não tem tarefas/);
+  await screen.findByText(/Nenhuma tarefa ainda/);
   const interaction = userEvent.setup();
-  screen.getByRole('button', { name: 'Criar tarefa' }).focus();
+  screen.getByRole('button', { name: 'Adicionar tarefa' }).focus();
   await interaction.keyboard('{Enter}');
   const title = screen.getByLabelText('Título');
   expect(document.activeElement).toBe(title);
@@ -271,6 +339,10 @@ it('creates using keyboard/defaults, validates whitespace and retains input afte
   failed = '';
   await interaction.keyboard('{Enter}');
   await screen.findByText('Tarefa salva.');
+  await screen.findByRole('button', {
+    name: 'Ver detalhes de Revisar álgebra',
+  });
+  expect(screen.queryByRole('button', { name: 'Adicionar tarefa' })).toBeNull();
   expect(requests.filter((r) => r.method === 'POST').at(-1)!.body).toEqual({
     title: 'Revisar álgebra',
     subjectId: null,
@@ -286,7 +358,7 @@ it('blocks duplicate saves while pending', async () => {
     resolve = done;
   });
   render(<TasksPage />);
-  await screen.findByText(/Você ainda não tem tarefas/);
+  await screen.findByText(/Nenhuma tarefa ainda/);
   const interaction = userEvent.setup();
   await interaction.click(screen.getByRole('button', { name: 'Criar tarefa' }));
   await interaction.type(screen.getByLabelText('Título'), 'Revisar álgebra');
@@ -360,14 +432,14 @@ it('cancels deletion, keeps records on failure, then confirms deletion by keyboa
   await interaction.keyboard('{Enter}');
   await screen.findByText('Tarefa excluída.');
   expect(screen.queryByRole('dialog')).toBeNull();
-  await screen.findByText(/Você ainda não tem tarefas/);
+  await screen.findByText(/Nenhuma tarefa ainda/);
   expect(items).toHaveLength(0);
 });
 
 it('associates and clears an optional subject and omits its controls when disabled', async () => {
   const interaction = userEvent.setup();
   const view = render(<TasksPage subjectsEnabled />);
-  await screen.findByText(/Você ainda não tem tarefas/);
+  await screen.findByText(/Nenhuma tarefa ainda/);
   await interaction.click(screen.getByRole('button', { name: 'Criar tarefa' }));
   await screen.findByRole('option', { name: 'Matemática' });
   await interaction.selectOptions(

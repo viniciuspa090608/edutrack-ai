@@ -62,6 +62,7 @@ import {
 } from './subjects-api.js';
 import '../../styles/subjects.css';
 import { RoadmapsSection } from './RoadmapsSection.js';
+import { CollectionEmptyState } from '../../components/CollectionEmptyState.js';
 const levels = {
   BEGINNER: 'Iniciante',
   INTERMEDIATE: 'Intermediário',
@@ -550,18 +551,16 @@ export function SubjectsPage({
     setSuccess('Matéria salva.');
     setRevision(revision + 1);
   };
+  const createSubject = () => {
+    setEditor({ subject: null });
+    setDetail(null);
+    setSuccess('');
+  };
   return (
     <div className="subjects-page">
       <div className="subjects-toolbar">
         <p>Organize objetivos e assuntos no seu ritmo.</p>
-        <Button
-          ref={newButton}
-          onClick={() => {
-            setEditor({ subject: null });
-            setDetail(null);
-            setSuccess('');
-          }}
-        >
+        <Button ref={newButton} onClick={createSubject}>
           <Plus aria-hidden="true" />
           Criar matéria
         </Button>
@@ -770,12 +769,15 @@ export function SubjectsPage({
       {result && (
         <section className="subjects-collection" aria-label="Lista de matérias">
           {!result.items.length ? (
-            <div className="subject-empty">
-              <BookOpen aria-hidden="true" />
-              <p>
-                Você ainda não tem matérias. Use Criar matéria para começar.
-              </p>
-            </div>
+            !loading && !error && result.total === 0 ? (
+              <CollectionEmptyState
+                icon={<BookOpen />}
+                title="Nenhuma matéria ainda"
+                description="Adicione sua primeira matéria para começar a organizar seus estudos."
+                actionLabel="Adicionar matéria"
+                onAction={createSubject}
+              />
+            ) : null
           ) : (
             <ul className="subject-list">
               {result.items.map((subject) => (

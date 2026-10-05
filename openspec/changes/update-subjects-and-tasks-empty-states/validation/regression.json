@@ -1,0 +1,124 @@
+[
+  {
+    "module": "subjects",
+    "theme": "light",
+    "width": 320,
+    "geometryAndStylesIdentical": true,
+    "pngBytesIdentical": true,
+    "maxPixelChannelDifference": 0,
+    "changedPixels": 0
+  },
+  {
+    "module": "subjects",
+    "theme": "light",
+    "width": 768,
+    "geometryAndStylesIdentical": true,
+    "pngBytesIdentical": true,
+    "maxPixelChannelDifference": 0,
+    "changedPixels": 0
+  },
+  {
+    "module": "subjects",
+    "theme": "light",
+    "width": 1280,
+    "geometryAndStylesIdentical": true,
+    "pngBytesIdentical": true,
+    "maxPixelChannelDifference": 0,
+    "changedPixels": 0
+  },
+  {
+    "module": "subjects",
+    "theme": "dark",
+    "width": 320,
+    "geometryAndStylesIdentical": true,
+    "pngBytesIdentical": true,
+    "maxPixelChannelDifference": 0,
+    "changedPixels": 0
+  },
+  {
+    "module": "subjects",
+    "theme": "dark",
+    "width": 768,
+    "geometryAndStylesIdentical": true,
+    "pngBytesIdentical": true,
+    "maxPixelChannelDifference": 0,
+    "changedPixels": 0
+  },
+  {
+    "module": "subjects",
+    "theme": "dark",
+    "width": 1280,
+    "geometryAndStylesIdentical": true,
+    "pngBytesIdentical": true,
+    "maxPixelChannelDifference": 0,
+    "changedPixels": 0
+  },
+  {
+    "module": "tasks",
+    "theme": "light",
+    "width": 320,
+    "geometryAndStylesIdentical": true,
+    "pngBytesIdentical": true,
+    "maxPixelChannelDifference": 0,
+    "changedPixels": 0
+  },
+  {
+    "module": "tasks",
+    "theme": "light",
+    "width": 768,
+    "geometryAndStylesIdentical": true,
+    "pngBytesIdentical": true,
+    "maxPixelChannelDifference": 0,
+    "changedPixels": 0
+  },
+  {
+    "module": "tasks",
+    "theme": "light",
+    "width": 1280,
+    "geometryAndStylesIdentical": true,
+    "pngBytesIdentical": true,
+    "maxPixelChannelDifference": 0,
+    "changedPixels": 0
+  },
+  {
+    "module": "tasks",
+    "theme": "dark",
+    "width": 320,
+    "geometryAndStylesIdentical": true,
+    "pngBytesIdentical": false,
+    "maxPixelChannelDifference": 4,
+    "changedPixels": 16
+  },
+  {
+    "module": "tasks",
+    "theme": "dark",
+    "width": 768,
+    "geometryAndStylesIdentical": true,
+    "pngBytesIdentical": false,
+    "maxPixelChannelDifference": 1,
+    "changedPixels": 8
+  },
+  {
+    "module": "tasks",
+    "theme": "dark",
+    "width": 1280,
+    "geometryAndStylesIdentical": true,
+    "pngBytesIdentical": false,
+    "maxPixelChannelDifference": 6,
+    "changedPixels": 11
+  },
+  {
+    "module": "subjects",
+    "loadingSeparated": true,
+    "errorSeparated": true,
+    "retryPreserved": true,
+    "filterEmptyPreserved": false
+  },
+  {
+    "module": "tasks",
+    "loadingSeparated": true,
+    "errorSeparated": true,
+    "retryPreserved": true,
+    "filterEmptyPreserved": true
+  }
+]

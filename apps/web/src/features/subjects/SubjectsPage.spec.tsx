@@ -1,4 +1,5 @@
 import {
+  act,
   cleanup,
   render,
   screen,
@@ -28,6 +29,8 @@ const base: StudySubject = {
 let items: StudySubject[];
 let failed: string;
 let enabled: boolean;
+let listTotal: number | null;
+let pendingList: Promise<Response> | null;
 const calls: Array<{
   path: string;
   method: string;
@@ -50,6 +53,8 @@ beforeEach(() => {
   items = [];
   failed = '';
   enabled = true;
+  listTotal = null;
+  pendingList = null;
   calls.length = 0;
   vi.stubEnv('VITE_API_BASE_URL', 'http://localhost:3001');
   vi.stubGlobal(
@@ -82,14 +87,16 @@ beforeEach(() => {
           flashcards: false,
           ai: false,
         });
-      if (path === '/subjects' && method === 'GET')
+      if (path === '/subjects' && method === 'GET') {
+        if (pendingList) return pendingList;
         return Response.json({
           items,
-          total: items.length,
+          total: listTotal ?? items.length,
           page: 1,
           pageSize: Number(url.searchParams.get('pageSize') ?? 20),
-          totalPages: items.length ? 1 : 0,
+          totalPages: Math.ceil((listTotal ?? items.length) / 20),
         });
+      }
       if (path === '/subjects' && method === 'POST') {
         const row = { ...base, ...body };
         items.push(row);
@@ -161,14 +168,77 @@ async function openDetail() {
   );
   return screen.findByRole('region', { name: 'Plano manual' });
 }
+it('waits for the actual subject response before offering the first creation', async () => {
+  let resolve!: (response: Response) => void;
+  pendingList = new Promise((done) => {
+    resolve = done;
+  });
+  render(<SubjectsPage />);
+  expect(screen.getByText('Carregando matérias…')).toBeTruthy();
+  expect(
+    screen.queryByRole('heading', { name: 'Nenhuma matéria ainda' }),
+  ).toBeNull();
+  await act(async () => {
+    resolve(
+      Response.json({
+        items: [],
+        total: 0,
+        page: 1,
+        pageSize: 20,
+        totalPages: 0,
+      }),
+    );
+  });
+  expect(
+    await screen.findByRole('heading', { name: 'Nenhuma matéria ainda' }),
+  ).toBeTruthy();
+  expect(
+    screen.getByText(
+      'Adicione sua primeira matéria para começar a organizar seus estudos.',
+    ),
+  ).toBeTruthy();
+  expect(calls.filter((call) => call.path === '/subjects')).toHaveLength(1);
+});
+it('does not claim a subject collection is empty when only its page is empty', async () => {
+  listTotal = 21;
+  render(<SubjectsPage />);
+  await screen.findByText('Página 1 de 2');
+  expect(
+    screen.queryByRole('heading', { name: 'Nenhuma matéria ainda' }),
+  ).toBeNull();
+  expect(
+    screen.queryByRole('button', { name: 'Adicionar matéria' }),
+  ).toBeNull();
+  expect(
+    screen.getByRole('button', { name: 'Próxima' }).matches(':disabled'),
+  ).toBe(false);
+});
+it('opens the existing subject form from the empty CTA and restores focus on cancel', async () => {
+  render(<SubjectsPage />);
+  const interaction = userEvent.setup();
+  (await screen.findByRole('button', { name: 'Adicionar matéria' })).focus();
+  await interaction.keyboard('{Enter}');
+  expect(document.activeElement).toBe(screen.getByLabelText('Nome'));
+  expect(screen.getByRole('form', { name: 'Criar matéria' })).toBeTruthy();
+  await interaction.click(
+    screen.getByRole('button', { name: 'Cancelar edição' }),
+  );
+  expect(screen.queryByRole('form', { name: 'Criar matéria' })).toBeNull();
+  expect(document.activeElement).toBe(
+    screen.getByRole('button', { name: 'Criar matéria' }),
+  );
+  expect(calls.some((call) => call.method === 'POST')).toBe(false);
+});
 it('creates from keyboard, retains form on failure and distinguishes loading, empty and success', async () => {
   const interaction = userEvent.setup();
   render(<SubjectsPage />);
   expect(screen.getByText('Carregando matérias…')).toBeTruthy();
-  await screen.findByText(/Você ainda não tem matérias/);
-  await interaction.click(
-    screen.getByRole('button', { name: 'Criar matéria' }),
-  );
+  expect(
+    screen.queryByRole('button', { name: 'Adicionar matéria' }),
+  ).toBeNull();
+  await screen.findByText(/Nenhuma matéria ainda/);
+  screen.getByRole('button', { name: 'Adicionar matéria' }).focus();
+  await interaction.keyboard('{Enter}');
   const form = screen.getByRole('form', { name: 'Criar matéria' });
   await interaction.type(within(form).getByLabelText('Nome'), 'Álgebra');
   await interaction.type(within(form).getByLabelText('Objetivo'), 'Aprender');
@@ -190,6 +260,10 @@ it('creates from keyboard, retains form on failure and distinguishes loading, em
   within(form).getByRole('button', { name: 'Salvar matéria' }).focus();
   await interaction.keyboard('{Enter}');
   await screen.findByText('Matéria salva.');
+  await screen.findByRole('button', { name: 'Ver Álgebra' });
+  expect(
+    screen.queryByRole('button', { name: 'Adicionar matéria' }),
+  ).toBeNull();
   expect(items[0]).toMatchObject({
     name: 'Álgebra',
     weeklyHours: 1.5,
@@ -293,11 +367,14 @@ it('reports list/selector failure with retry and selects an optional own subject
   failed = 'GET';
   render(<SubjectsPage />);
   await screen.findByText(/Não foi possível concluir/);
+  expect(
+    screen.queryByRole('button', { name: 'Adicionar matéria' }),
+  ).toBeNull();
   failed = '';
   await userEvent.click(
     screen.getByRole('button', { name: 'Tentar novamente' }),
   );
-  await screen.findByText(/Você ainda não tem matérias/);
+  await screen.findByText(/Nenhuma matéria ainda/);
   cleanup();
   items = [structuredClone(base)];
   const changed = vi.fn();
