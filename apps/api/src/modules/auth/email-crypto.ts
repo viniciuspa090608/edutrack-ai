@@ -11,6 +11,12 @@ import {
 export type EmailPurpose =
   'verify_email' | 'reset_password' | 'change_email' | 'email_changed';
 
+export interface EmailPresentation {
+  displayName?: string;
+  resend?: boolean;
+  newEmail?: string;
+}
+
 export class EmailCrypto {
   private readonly hmacKey: Buffer;
   private readonly encryptionKey: Buffer;

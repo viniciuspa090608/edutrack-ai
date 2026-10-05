@@ -67,7 +67,9 @@ export class AuthService {
         'ALREADY_VERIFIED',
         'Este e-mail já foi confirmado.',
       );
-    await this.email.issue(user.id, user.email, 'verify_email', ip);
+    await this.email.issue(user.id, user.email, 'verify_email', ip, undefined, {
+      resend: true,
+    });
   }
 
   async limitEmailValidation(

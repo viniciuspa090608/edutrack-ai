@@ -1,6 +1,10 @@
 import type { DataSource, EntityManager } from 'typeorm';
 import { HttpError } from '../../shared/http-error.js';
-import { EmailCrypto, type EmailPurpose } from './email-crypto.js';
+import {
+  EmailCrypto,
+  type EmailPurpose,
+  type EmailPresentation,
+} from './email-crypto.js';
 import { secretHash } from './session.repository.js';
 
 const invalidCode = () =>
@@ -89,6 +93,7 @@ export class EmailRepository {
     purpose: EmailPurpose,
     ip: string,
     transaction?: EntityManager,
+    presentation: EmailPresentation = {},
   ): Promise<boolean> {
     const persist = async (manager: EntityManager): Promise<boolean> => {
       await this.rate(manager, `${purpose}:email`, email, 3, true);
@@ -97,10 +102,11 @@ export class EmailRepository {
       if (purpose === 'change_email')
         await this.rate(manager, 'change_email:user', userId, 3, true);
       const users = await manager.query<
-        Array<{ email_verified_at: Date | null }>
-      >('SELECT email_verified_at FROM users WHERE id = ? FOR UPDATE', [
-        userId,
-      ]);
+        Array<{ email_verified_at: Date | null; display_name: string }>
+      >(
+        'SELECT email_verified_at, display_name FROM users WHERE id = ? FOR UPDATE',
+        [userId],
+      );
       if (purpose === 'verify_email' && users[0]?.email_verified_at)
         throw new HttpError(
           409,
@@ -135,7 +141,12 @@ export class EmailRepository {
         )
       )
         code = this.crypto.code();
-      const payload = this.crypto.encrypt({ email, code, purpose });
+      const payload = this.crypto.encrypt({
+        email,
+        code,
+        purpose,
+        presentation: { ...presentation, displayName: users[0]?.display_name },
+      });
       await manager.query(
         `INSERT INTO email_challenges (id, user_id, purpose, code_hmac, state, active_marker)
         VALUES (?, ?, ?, ?, 'queued', 1)`,
@@ -167,12 +178,18 @@ export class EmailRepository {
     manager: EntityManager,
     userId: string,
     email: string,
+    newEmail?: string,
   ): Promise<void> {
     const id = this.crypto.id();
+    const users = await manager.query<Array<{ display_name: string }>>(
+      'SELECT display_name FROM users WHERE id = ?',
+      [userId],
+    );
     const payload = this.crypto.encrypt({
       email,
       code: '',
       purpose: 'email_changed',
+      presentation: { displayName: users[0]?.display_name, newEmail },
     });
     await manager.query(
       `INSERT INTO email_challenges (id, user_id, purpose, code_hmac, state)
@@ -409,7 +426,12 @@ export class EmailRepository {
   }
 
   async deliverOne(
-    send: (email: string, code: string, purpose: EmailPurpose) => Promise<void>,
+    send: (
+      email: string,
+      code: string,
+      purpose: EmailPurpose,
+      presentation?: EmailPresentation,
+    ) => Promise<void>,
     report?: (
       event: 'email.sent' | 'email.discarded' | 'email.delivery_failed',
     ) => void,
@@ -426,8 +448,24 @@ export class EmailRepository {
         email: string;
         code: string;
         purpose: EmailPurpose;
+        presentation?: EmailPresentation;
       }>(row.ciphertext, row.nonce, row.auth_tag);
-      await send(payload.email, payload.code, payload.purpose);
+      const presentation = payload.presentation ?? {};
+      if (
+        !presentation.displayName ||
+        (payload.purpose === 'email_changed' && !presentation.newEmail)
+      ) {
+        const users = await this.source.query<
+          Array<{ display_name: string; email: string }>
+        >(
+          'SELECT u.display_name, u.email FROM users u JOIN email_challenges c ON c.user_id = u.id WHERE c.id = ?',
+          [row.challenge_id],
+        );
+        presentation.displayName ||= users[0]?.display_name ?? 'Estudante';
+        if (payload.purpose === 'email_changed')
+          presentation.newEmail ||= users[0]?.email;
+      }
+      await send(payload.email, payload.code, payload.purpose, presentation);
       await this.finishDelivery(row, true);
       report?.('email.sent');
     } catch {

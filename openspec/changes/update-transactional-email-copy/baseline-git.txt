@@ -1,0 +1,4 @@
+Branch: master
+HEAD: cb85dcdcf6de8ade7328cdf307c40e34fbfe57b8
+Status antes do apply: ?? openspec/changes/update-transactional-email-copy/
+Somente os artefatos desta proposta estavam presentes como arquivos não rastreados.

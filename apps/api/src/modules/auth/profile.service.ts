@@ -133,7 +133,12 @@ export class ProfileService {
         const old = await this.repository.currentEmail(manager, session.userId);
         await this.repository.setEmail(manager, session.userId, email);
         await this.repository.invalidate(manager, session.userId);
-        await this.auth.email.notifyChanged(manager, session.userId, old);
+        await this.auth.email.notifyChanged(
+          manager,
+          session.userId,
+          old,
+          email,
+        );
       },
     );
   }
