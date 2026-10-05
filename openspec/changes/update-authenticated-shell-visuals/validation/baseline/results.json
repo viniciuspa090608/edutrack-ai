@@ -1,0 +1,974 @@
+[
+  {
+    "href": "/app",
+    "theme": "light",
+    "width": 320,
+    "text": "SEU ESPAÇO DE ESTUDOOlá, AnaEscolha seu próximo passo de estudo.Fuso de estudo: UTC. Resumos consultados em 05/10/2026, 09:00:00.Tarefas concluídas0Sequência atual0 diasFoco nesta semanaIndisponívelRevisões pendentes0Pomodoro0 sessões concluídas.Comece um bloco de foco de 25 minutos.Iniciar PomodoroAbrir pomodoro Tarefas0 pendentes · 0 em andamento · 0 concluídas.Crie sua primeira tarefa para organizar os estudos.0 tarefas ativas sem prazo permanecem no módulo de tarefas.Abrir tarefas MatériasCrie uma matéria e organize seu plano de estudo, com ou sem IA.Abrir matérias Flashcards0 cartões pendentes de revisão.Abra flashcards para criar um baralho ou consultar seus cartões.Abrir flashcards ProgressoSequência atual: 0 dias. Recorde: 0 dias.Histórico rastreado desde 2026-09-27. Atividades anteriores não contam.0 dias ativos no histórico rastreado.Conclua uma atividade de estudo para registrar seu primeiro dia ativo.Abrir progresso EstatísticasSemana: 2026-10-05 a 2026-10-12 (fim exclusivo) · UTC · Período parcial.0 dias ativos nesta semana.Sem observações diárias disponíveis para o gráfico.Nenhuma atividade registrada nesta semana. Comece pelos módulos disponíveis.Abrir estatísticas",
+    "overflow": false,
+    "header": {
+      "x": 16,
+      "y": 0,
+      "width": 288,
+      "height": 236,
+      "top": 0,
+      "right": 304,
+      "bottom": 236,
+      "left": 16
+    },
+    "content": {
+      "x": 16,
+      "y": 260,
+      "width": 288,
+      "height": 2741.953125,
+      "top": 260,
+      "right": 304,
+      "bottom": 3001.953125,
+      "left": 16
+    }
+  },
+  {
+    "href": "/app/tarefas",
+    "theme": "light",
+    "width": 320,
+    "text": "TarefasSEU PLANEJAMENTOOrganize seus estudos com prazos, subtarefas e progresso. Criar tarefaFiltrosFiltrar por statusTodos os statusPendenteEm andamentoConcluídaFiltrar por importânciaTodas as importânciasBaixaMédiaAltaPrazo dePrazo atéAplicar filtrosLimpar filtrosSuas tarefas0 tarefa(s)Nenhuma tarefa aindaCrie sua primeira tarefa para começar a organizar o que precisa estudar.Adicionar tarefaPágina anteriorPágina 1 de 1 · 0 tarefa(s)Próxima página",
+    "overflow": false,
+    "header": {
+      "x": 16,
+      "y": 0,
+      "width": 288,
+      "height": 236,
+      "top": 0,
+      "right": 304,
+      "bottom": 236,
+      "left": 16
+    },
+    "content": {
+      "x": 16,
+      "y": 260,
+      "width": 288,
+      "height": 1402.265625,
+      "top": 260,
+      "right": 304,
+      "bottom": 1662.265625,
+      "left": 16
+    }
+  },
+  {
+    "href": "/app/materias",
+    "theme": "light",
+    "width": 320,
+    "text": "MatériasOrganize objetivos e assuntos no seu ritmo.Criar matériaNenhuma matéria aindaAdicione sua primeira matéria para começar a organizar seus estudos.Adicionar matéria",
+    "overflow": false,
+    "header": {
+      "x": 16,
+      "y": 0,
+      "width": 288,
+      "height": 236,
+      "top": 0,
+      "right": 304,
+      "bottom": 236,
+      "left": 16
+    },
+    "content": {
+      "x": 16,
+      "y": 260,
+      "width": 288,
+      "height": 571.328125,
+      "top": 260,
+      "right": 304,
+      "bottom": 831.328125,
+      "left": 16
+    }
+  },
+  {
+    "href": "/app/flashcards",
+    "theme": "light",
+    "width": 320,
+    "text": "FlashcardsCrie perguntas e respostas e consulte seus cartões manualmente.Revisões pendentesCriar baralhoNenhum baralho. Crie seu primeiro baralho.AnteriorPágina 1 de 1Próxima",
+    "overflow": false,
+    "header": {
+      "x": 16,
+      "y": 0,
+      "width": 288,
+      "height": 236,
+      "top": 0,
+      "right": 304,
+      "bottom": 236,
+      "left": 16
+    },
+    "content": {
+      "x": 16,
+      "y": 260,
+      "width": 288,
+      "height": 495.0625,
+      "top": 260,
+      "right": 304,
+      "bottom": 755.0625,
+      "left": 16
+    }
+  },
+  {
+    "href": "/app/pomodoro",
+    "theme": "light",
+    "width": 320,
+    "text": "SEU TEMPO DE ESTUDOPomodoroBlocos de 25 minutos de foco. As pausas não contam como estudo.SincronizarNão foi possível carregar o Pomodoro. Tente novamente.Prepare seu próximo focoSincronize para recuperar sua sessão antes de iniciar.Tempo estudadoTotais indisponíveis. Sincronize para tentar novamente.Tempo ativo das sessões encerradas, sem contar as pausas.Blocos de focoBlocos completos registrados nas sessões encerradas.HistóricoCada bloco faz parte do seu caminho.Filtrar histórico por matériaSem matériaHistórico indisponível. Sincronize para tentar novamente.",
+    "overflow": false,
+    "header": {
+      "x": 16,
+      "y": 0,
+      "width": 288,
+      "height": 236,
+      "top": 0,
+      "right": 304,
+      "bottom": 236,
+      "left": 16
+    },
+    "content": {
+      "x": 16,
+      "y": 260,
+      "width": 288,
+      "height": 1471.546875,
+      "top": 260,
+      "right": 304,
+      "bottom": 1731.546875,
+      "left": 16
+    }
+  },
+  {
+    "href": "/app/rotinas",
+    "theme": "light",
+    "width": 320,
+    "text": "Rotinas de estudoPlaneje sua semana com horários locais recorrentes. Rotinas não criam tarefas nem iniciam Pomodoro.Criar rotinaAtualizar programaçãoMinhas rotinasNenhuma rotina cadastrada. Crie sua primeira rotina.Programação semanalSegunda-feiraSem horários.Terça-feiraSem horários.Quarta-feiraSem horários.Quinta-feiraSem horários.Sexta-feiraSem horários.SábadoSem horários.DomingoSem horários.",
+    "overflow": false,
+    "header": {
+      "x": 16,
+      "y": 0,
+      "width": 288,
+      "height": 236,
+      "top": 0,
+      "right": 304,
+      "bottom": 236,
+      "left": 16
+    },
+    "content": {
+      "x": 16,
+      "y": 260,
+      "width": 288,
+      "height": 1263.8125,
+      "top": 260,
+      "right": 304,
+      "bottom": 1523.8125,
+      "left": 16
+    }
+  },
+  {
+    "href": "/app/estatisticas",
+    "theme": "light",
+    "width": 320,
+    "text": "Sua jornada de estudosEstatísticas de estudoEntenda seu ritmo de estudos e acompanhe a evolução das suas atividades ao longo do tempo. Estatísticas Progresso e conquistasPeríodoSemanaDiaSemanaTrimestreSemestreAnoData de referênciaFuso IANAConsultarFuso selecionado: America/Sao_Paulo. UTC é usado quando o navegador não informa um fuso. Exemplo: America/Sao_Paulo.Período: 2026-10-05 até 2026-10-12 (fim exclusivo), em UTC.Comparação: 2026-09-28 até 2026-10-05 (fim exclusivo).Período atual parcial, comparado ao período anterior completo.Frequência de estudoFrequência: 0 dias ativos em 7 dias transcorridos.Seu ritmo de estudoNenhuma atividade neste período.Métricas de módulos desativados são omitidas. Ver preferênciasEvolução ao longo do tempoSérie diáriaRole cada gráfico para explorar as datas. Valores ausentes são indicados por — e ?. Consulte todos os valores em texto abaixo.Valores ausentes indicam histórico indisponível. Valores registrados antes da cobertura completa são amostras e podem estar incompletos.Valores diários em texto",
+    "overflow": false,
+    "header": {
+      "x": 16,
+      "y": 0,
+      "width": 288,
+      "height": 236,
+      "top": 0,
+      "right": 304,
+      "bottom": 236,
+      "left": 16
+    },
+    "content": {
+      "x": 16,
+      "y": 260,
+      "width": 288,
+      "height": 2005.46875,
+      "top": 260,
+      "right": 304,
+      "bottom": 2265.46875,
+      "left": 16
+    }
+  },
+  {
+    "href": "/app/progresso",
+    "theme": "light",
+    "width": 320,
+    "text": "Sua jornada de estudosSeu progressoCada dia de estudo faz parte da sua evolução. Acompanhe sua constância e os marcos que já alcançou. Estatísticas Progresso e conquistasSequência atual0 diasSua constância mais recenteMaior sequência0 diasSeu recorde no histórico rastreadoDias ativos0Dias com atividades confirmadasFuso de estudo: UTC. Editar fuso na contaHistórico rastreado desde 27 de set. de 2026. Atividades anteriores não contam para sequências ou conquistas.A sequência atual continua se você estudou hoje ou ontem. Várias atividades na mesma data contam como um dia ativo.Sua jornada começa agoraSeu primeiro dia ativo ainda está por vir. Conclua uma tarefa, um bloco Pomodoro de 25 minutos, uma avaliação de flashcard ou um marco de matéria.Marcos da sua jornadaConquistasNenhuma conquista obtida aindaConheça os critérios abaixo e acompanhe seu progresso até cada marco.BloqueadaPrimeiro diaAlcançar 1 dia ativo.Progresso: 0 de 1BloqueadaTrês dias seguidosEstudar em 3 datas consecutivas.Progresso: 0 de 3BloqueadaSete dias seguidosEstudar em 7 datas consecutivas.Progresso: 0 de 7BloqueadaTarefas em diaConcluir tarefas em 10 transições confirmadas.Progresso: 0 de 10BloqueadaFoco consistenteCompletar 5 blocos Pomodoro de 25 minutos.Progresso: 0 de 5BloqueadaRevisão constanteRegistrar 20 avaliações de flashcards.Progresso: 0 de 20BloqueadaPlano em andamentoConcluir 5 itens manuais ou blocos de roadmap, somados.Progresso: 0 de 5Conquistas obtidas permanecem no histórico, mesmo ao excluir a origem ou desativar módulos. Criar conteúdo, revelar cartões e estudar partes de um bloco não geram um dia ativo. A IA é opcional.",
+    "overflow": false,
+    "header": {
+      "x": 16,
+      "y": 0,
+      "width": 288,
+      "height": 236,
+      "top": 0,
+      "right": 304,
+      "bottom": 236,
+      "left": 16
+    },
+    "content": {
+      "x": 16,
+      "y": 260,
+      "width": 288,
+      "height": 4136.953125,
+      "top": 260,
+      "right": 304,
+      "bottom": 4396.953125,
+      "left": 16
+    }
+  },
+  {
+    "href": "/conta",
+    "theme": "light",
+    "width": 320,
+    "text": "PERFIL & AJUSTESContaSeu perfil, suas preferências e seu acesso. Tudo em um só lugar.Voltar ao início AAnaana@example.comE-mail confirmadoMeios de entradaE-mail e senhaEditar perfil e fotoPerfilPreferênciasAparênciaSegurançaContaAs alterações são salvas em cada seção. Suas preferências não removem seus dados de estudo.Seu perfilComo você aparece no EduTrack.AFoto de perfilJPEG, PNG ou WebP estático, até 2 MiB. De 64 a 4096 pixels por lado, até 16 milhões de pixels.Foto de perfilSalvar fotoRemover fotoNome exibidoSeu nome pode se repetir. O identificador da conta permanece o mesmo.Salvar nomeSeu e-mail é usado para acessar e recuperar a conta.Alterar e-mail com segurança Preferências de estudoEscolha os recursos que fazem parte da sua rotina.Mantenha pelo menos um módulo de estudo ativo entre tarefas, matérias e flashcards. A IA não conta como módulo de estudo.Desativar um módulo preserva seus dados. A IA é opcional e não interfere no uso manual.TarefasMatériasFlashcardsRecursos de IAFuncionalidade ainda não disponível. A preferência será aplicada quando for entregue.Fuso de estudoO padrão é UTC. Cada atividade mantém a data local do fuso vigente quando aconteceu. Alterações valem para novas atividades.Fuso salvo: UTCFuso IANAExemplos: UTC, America/Sao_Paulo. Sugestão do navegador: America/Sao_Paulo. A sugestão só será aplicada se você salvar.Usar sugestão no campoSalvar fuso de estudoAparênciaEscolha o tema mais confortável para estudar.ClaroEscuroA escolha do tema fica salva neste navegador.SegurançaProteja seu acesso e mantenha seus dados atualizados.Alterar e-mailO endereço atual continua funcionando até você confirmar o novo. Depois, entre novamente.Senha atual para confirmar identidadeConfirmar identidadeAlterar senhaSenha atualNova senhaUse de 12 a 128 caracteres. Todas as sessões serão encerradas.Esqueci minha senhaSalvar nova senhaAcesso à contaGerencie seu vínculo com o Google e sua sessão atual.GoogleVincule sua conta Google para usar esse meio de entrada.Vincular GoogleSessão atualEncerre seu acesso ao EduTrack neste navegador.Encerrar sessão",
+    "overflow": false,
+    "header": {
+      "x": 16,
+      "y": 0,
+      "width": 288,
+      "height": 212.0625,
+      "top": 0,
+      "right": 304,
+      "bottom": 212.0625,
+      "left": 16
+    },
+    "content": {
+      "x": 16,
+      "y": 236.0625,
+      "width": 288,
+      "height": 4686.421875,
+      "top": 236.0625,
+      "right": 304,
+      "bottom": 4922.484375,
+      "left": 16
+    }
+  },
+  {
+    "href": "/app",
+    "theme": "light",
+    "width": 1440,
+    "text": "SEU ESPAÇO DE ESTUDOOlá, AnaEscolha seu próximo passo de estudo.Fuso de estudo: UTC. Resumos consultados em 05/10/2026, 09:00:00.Tarefas concluídas0Sequência atual0 diasFoco nesta semanaIndisponívelRevisões pendentes0Pomodoro0 sessões concluídas.Comece um bloco de foco de 25 minutos.Iniciar PomodoroAbrir pomodoro Tarefas0 pendentes · 0 em andamento · 0 concluídas.Crie sua primeira tarefa para organizar os estudos.0 tarefas ativas sem prazo permanecem no módulo de tarefas.Abrir tarefas MatériasCrie uma matéria e organize seu plano de estudo, com ou sem IA.Abrir matérias Flashcards0 cartões pendentes de revisão.Abra flashcards para criar um baralho ou consultar seus cartões.Abrir flashcards ProgressoSequência atual: 0 dias. Recorde: 0 dias.Histórico rastreado desde 2026-09-27. Atividades anteriores não contam.0 dias ativos no histórico rastreado.Conclua uma atividade de estudo para registrar seu primeiro dia ativo.Abrir progresso EstatísticasSemana: 2026-10-05 a 2026-10-12 (fim exclusivo) · UTC · Período parcial.0 dias ativos nesta semana.Sem observações diárias disponíveis para o gráfico.Nenhuma atividade registrada nesta semana. Comece pelos módulos disponíveis.Abrir estatísticas",
+    "overflow": false,
+    "header": {
+      "x": 230,
+      "y": 0,
+      "width": 980,
+      "height": 76,
+      "top": 0,
+      "right": 1210,
+      "bottom": 76,
+      "left": 230
+    },
+    "content": {
+      "x": 230,
+      "y": 100,
+      "width": 980,
+      "height": 1602.734375,
+      "top": 100,
+      "right": 1210,
+      "bottom": 1702.734375,
+      "left": 230
+    }
+  },
+  {
+    "href": "/app/tarefas",
+    "theme": "light",
+    "width": 1440,
+    "text": "TarefasSEU PLANEJAMENTOOrganize seus estudos com prazos, subtarefas e progresso. Criar tarefaFiltrosFiltrar por statusTodos os statusPendenteEm andamentoConcluídaFiltrar por importânciaTodas as importânciasBaixaMédiaAltaPrazo dePrazo atéAplicar filtrosLimpar filtrosSuas tarefas0 tarefa(s)Nenhuma tarefa aindaCrie sua primeira tarefa para começar a organizar o que precisa estudar.Adicionar tarefaPágina anteriorPágina 1 de 1 · 0 tarefa(s)Próxima página",
+    "overflow": false,
+    "header": {
+      "x": 230,
+      "y": 0,
+      "width": 980,
+      "height": 76,
+      "top": 0,
+      "right": 1210,
+      "bottom": 76,
+      "left": 230
+    },
+    "content": {
+      "x": 230,
+      "y": 100,
+      "width": 980,
+      "height": 974.40625,
+      "top": 100,
+      "right": 1210,
+      "bottom": 1074.40625,
+      "left": 230
+    }
+  },
+  {
+    "href": "/app/materias",
+    "theme": "light",
+    "width": 1440,
+    "text": "MatériasOrganize objetivos e assuntos no seu ritmo.Criar matériaNenhuma matéria aindaAdicione sua primeira matéria para começar a organizar seus estudos.Adicionar matéria",
+    "overflow": false,
+    "header": {
+      "x": 230,
+      "y": 0,
+      "width": 980,
+      "height": 76,
+      "top": 0,
+      "right": 1210,
+      "bottom": 76,
+      "left": 230
+    },
+    "content": {
+      "x": 230,
+      "y": 100,
+      "width": 980,
+      "height": 522.40625,
+      "top": 100,
+      "right": 1210,
+      "bottom": 622.40625,
+      "left": 230
+    }
+  },
+  {
+    "href": "/app/flashcards",
+    "theme": "light",
+    "width": 1440,
+    "text": "FlashcardsCrie perguntas e respostas e consulte seus cartões manualmente.Revisões pendentesCriar baralhoNenhum baralho. Crie seu primeiro baralho.AnteriorPágina 1 de 1Próxima",
+    "overflow": false,
+    "header": {
+      "x": 230,
+      "y": 0,
+      "width": 980,
+      "height": 76,
+      "top": 0,
+      "right": 1210,
+      "bottom": 76,
+      "left": 230
+    },
+    "content": {
+      "x": 230,
+      "y": 100,
+      "width": 980,
+      "height": 399.015625,
+      "top": 100,
+      "right": 1210,
+      "bottom": 499.015625,
+      "left": 230
+    }
+  },
+  {
+    "href": "/app/pomodoro",
+    "theme": "light",
+    "width": 1440,
+    "text": "SEU TEMPO DE ESTUDOPomodoroBlocos de 25 minutos de foco. As pausas não contam como estudo.SincronizarNão foi possível carregar o Pomodoro. Tente novamente.Prepare seu próximo focoSincronize para recuperar sua sessão antes de iniciar.Tempo estudadoTotais indisponíveis. Sincronize para tentar novamente.Tempo ativo das sessões encerradas, sem contar as pausas.Blocos de focoBlocos completos registrados nas sessões encerradas.HistóricoCada bloco faz parte do seu caminho.Filtrar histórico por matériaSem matériaHistórico indisponível. Sincronize para tentar novamente.",
+    "overflow": false,
+    "header": {
+      "x": 230,
+      "y": 0,
+      "width": 980,
+      "height": 76,
+      "top": 0,
+      "right": 1210,
+      "bottom": 76,
+      "left": 230
+    },
+    "content": {
+      "x": 230,
+      "y": 100,
+      "width": 980,
+      "height": 954.875,
+      "top": 100,
+      "right": 1210,
+      "bottom": 1054.875,
+      "left": 230
+    }
+  },
+  {
+    "href": "/app/rotinas",
+    "theme": "light",
+    "width": 1440,
+    "text": "Rotinas de estudoPlaneje sua semana com horários locais recorrentes. Rotinas não criam tarefas nem iniciam Pomodoro.Criar rotinaAtualizar programaçãoMinhas rotinasNenhuma rotina cadastrada. Crie sua primeira rotina.Programação semanalSegunda-feiraSem horários.Terça-feiraSem horários.Quarta-feiraSem horários.Quinta-feiraSem horários.Sexta-feiraSem horários.SábadoSem horários.DomingoSem horários.",
+    "overflow": false,
+    "header": {
+      "x": 230,
+      "y": 0,
+      "width": 980,
+      "height": 76,
+      "top": 0,
+      "right": 1210,
+      "bottom": 76,
+      "left": 230
+    },
+    "content": {
+      "x": 230,
+      "y": 100,
+      "width": 980,
+      "height": 635.796875,
+      "top": 100,
+      "right": 1210,
+      "bottom": 735.796875,
+      "left": 230
+    }
+  },
+  {
+    "href": "/app/estatisticas",
+    "theme": "light",
+    "width": 1440,
+    "text": "Sua jornada de estudosEstatísticas de estudoEntenda seu ritmo de estudos e acompanhe a evolução das suas atividades ao longo do tempo. Estatísticas Progresso e conquistasPeríodoSemanaDiaSemanaTrimestreSemestreAnoData de referênciaFuso IANAConsultarFuso selecionado: America/Sao_Paulo. UTC é usado quando o navegador não informa um fuso. Exemplo: America/Sao_Paulo.Período: 2026-10-05 até 2026-10-12 (fim exclusivo), em UTC.Comparação: 2026-09-28 até 2026-10-05 (fim exclusivo).Período atual parcial, comparado ao período anterior completo.Frequência de estudoFrequência: 0 dias ativos em 7 dias transcorridos.Seu ritmo de estudoNenhuma atividade neste período.Métricas de módulos desativados são omitidas. Ver preferênciasEvolução ao longo do tempoSérie diáriaRole cada gráfico para explorar as datas. Valores ausentes são indicados por — e ?. Consulte todos os valores em texto abaixo.Valores ausentes indicam histórico indisponível. Valores registrados antes da cobertura completa são amostras e podem estar incompletos.Valores diários em texto",
+    "overflow": false,
+    "header": {
+      "x": 230,
+      "y": 0,
+      "width": 980,
+      "height": 76,
+      "top": 0,
+      "right": 1210,
+      "bottom": 76,
+      "left": 230
+    },
+    "content": {
+      "x": 230,
+      "y": 100,
+      "width": 980,
+      "height": 1130.28125,
+      "top": 100,
+      "right": 1210,
+      "bottom": 1230.28125,
+      "left": 230
+    }
+  },
+  {
+    "href": "/app/progresso",
+    "theme": "light",
+    "width": 1440,
+    "text": "Sua jornada de estudosSeu progressoCada dia de estudo faz parte da sua evolução. Acompanhe sua constância e os marcos que já alcançou. Estatísticas Progresso e conquistasSequência atual0 diasSua constância mais recenteMaior sequência0 diasSeu recorde no histórico rastreadoDias ativos0Dias com atividades confirmadasFuso de estudo: UTC. Editar fuso na contaHistórico rastreado desde 27 de set. de 2026. Atividades anteriores não contam para sequências ou conquistas.A sequência atual continua se você estudou hoje ou ontem. Várias atividades na mesma data contam como um dia ativo.Sua jornada começa agoraSeu primeiro dia ativo ainda está por vir. Conclua uma tarefa, um bloco Pomodoro de 25 minutos, uma avaliação de flashcard ou um marco de matéria.Marcos da sua jornadaConquistasNenhuma conquista obtida aindaConheça os critérios abaixo e acompanhe seu progresso até cada marco.BloqueadaPrimeiro diaAlcançar 1 dia ativo.Progresso: 0 de 1BloqueadaTrês dias seguidosEstudar em 3 datas consecutivas.Progresso: 0 de 3BloqueadaSete dias seguidosEstudar em 7 datas consecutivas.Progresso: 0 de 7BloqueadaTarefas em diaConcluir tarefas em 10 transições confirmadas.Progresso: 0 de 10BloqueadaFoco consistenteCompletar 5 blocos Pomodoro de 25 minutos.Progresso: 0 de 5BloqueadaRevisão constanteRegistrar 20 avaliações de flashcards.Progresso: 0 de 20BloqueadaPlano em andamentoConcluir 5 itens manuais ou blocos de roadmap, somados.Progresso: 0 de 5Conquistas obtidas permanecem no histórico, mesmo ao excluir a origem ou desativar módulos. Criar conteúdo, revelar cartões e estudar partes de um bloco não geram um dia ativo. A IA é opcional.",
+    "overflow": false,
+    "header": {
+      "x": 230,
+      "y": 0,
+      "width": 980,
+      "height": 76,
+      "top": 0,
+      "right": 1210,
+      "bottom": 76,
+      "left": 230
+    },
+    "content": {
+      "x": 230,
+      "y": 100,
+      "width": 980,
+      "height": 1837.28125,
+      "top": 100,
+      "right": 1210,
+      "bottom": 1937.28125,
+      "left": 230
+    }
+  },
+  {
+    "href": "/conta",
+    "theme": "light",
+    "width": 1440,
+    "text": "PERFIL & AJUSTESContaSeu perfil, suas preferências e seu acesso. Tudo em um só lugar.Voltar ao início AAnaana@example.comE-mail confirmadoMeios de entradaE-mail e senhaEditar perfil e fotoPerfilPreferênciasAparênciaSegurançaContaAs alterações são salvas em cada seção. Suas preferências não removem seus dados de estudo.Seu perfilComo você aparece no EduTrack.AFoto de perfilJPEG, PNG ou WebP estático, até 2 MiB. De 64 a 4096 pixels por lado, até 16 milhões de pixels.Foto de perfilSalvar fotoRemover fotoNome exibidoSeu nome pode se repetir. O identificador da conta permanece o mesmo.Salvar nomeSeu e-mail é usado para acessar e recuperar a conta.Alterar e-mail com segurança Preferências de estudoEscolha os recursos que fazem parte da sua rotina.Mantenha pelo menos um módulo de estudo ativo entre tarefas, matérias e flashcards. A IA não conta como módulo de estudo.Desativar um módulo preserva seus dados. A IA é opcional e não interfere no uso manual.TarefasMatériasFlashcardsRecursos de IAFuncionalidade ainda não disponível. A preferência será aplicada quando for entregue.Fuso de estudoO padrão é UTC. Cada atividade mantém a data local do fuso vigente quando aconteceu. Alterações valem para novas atividades.Fuso salvo: UTCFuso IANAExemplos: UTC, America/Sao_Paulo. Sugestão do navegador: America/Sao_Paulo. A sugestão só será aplicada se você salvar.Usar sugestão no campoSalvar fuso de estudoAparênciaEscolha o tema mais confortável para estudar.ClaroEscuroA escolha do tema fica salva neste navegador.SegurançaProteja seu acesso e mantenha seus dados atualizados.Alterar e-mailO endereço atual continua funcionando até você confirmar o novo. Depois, entre novamente.Senha atual para confirmar identidadeConfirmar identidadeAlterar senhaSenha atualNova senhaUse de 12 a 128 caracteres. Todas as sessões serão encerradas.Esqueci minha senhaSalvar nova senhaAcesso à contaGerencie seu vínculo com o Google e sua sessão atual.GoogleVincule sua conta Google para usar esse meio de entrada.Vincular GoogleSessão atualEncerre seu acesso ao EduTrack neste navegador.Encerrar sessão",
+    "overflow": false,
+    "header": {
+      "x": 130,
+      "y": 0,
+      "width": 1180,
+      "height": 77,
+      "top": 0,
+      "right": 1310,
+      "bottom": 77,
+      "left": 130
+    },
+    "content": {
+      "x": 130,
+      "y": 101,
+      "width": 1180,
+      "height": 3173.53125,
+      "top": 101,
+      "right": 1310,
+      "bottom": 3274.53125,
+      "left": 130
+    }
+  },
+  {
+    "href": "/app",
+    "theme": "dark",
+    "width": 320,
+    "text": "SEU ESPAÇO DE ESTUDOOlá, AnaEscolha seu próximo passo de estudo.Fuso de estudo: UTC. Resumos consultados em 05/10/2026, 09:00:00.Tarefas concluídas0Sequência atual0 diasFoco nesta semanaIndisponívelRevisões pendentes0Pomodoro0 sessões concluídas.Comece um bloco de foco de 25 minutos.Iniciar PomodoroAbrir pomodoro Tarefas0 pendentes · 0 em andamento · 0 concluídas.Crie sua primeira tarefa para organizar os estudos.0 tarefas ativas sem prazo permanecem no módulo de tarefas.Abrir tarefas MatériasCrie uma matéria e organize seu plano de estudo, com ou sem IA.Abrir matérias Flashcards0 cartões pendentes de revisão.Abra flashcards para criar um baralho ou consultar seus cartões.Abrir flashcards ProgressoSequência atual: 0 dias. Recorde: 0 dias.Histórico rastreado desde 2026-09-27. Atividades anteriores não contam.0 dias ativos no histórico rastreado.Conclua uma atividade de estudo para registrar seu primeiro dia ativo.Abrir progresso EstatísticasSemana: 2026-10-05 a 2026-10-12 (fim exclusivo) · UTC · Período parcial.0 dias ativos nesta semana.Sem observações diárias disponíveis para o gráfico.Nenhuma atividade registrada nesta semana. Comece pelos módulos disponíveis.Abrir estatísticas",
+    "overflow": false,
+    "header": {
+      "x": 16,
+      "y": 0,
+      "width": 288,
+      "height": 236,
+      "top": 0,
+      "right": 304,
+      "bottom": 236,
+      "left": 16
+    },
+    "content": {
+      "x": 16,
+      "y": 260,
+      "width": 288,
+      "height": 2741.953125,
+      "top": 260,
+      "right": 304,
+      "bottom": 3001.953125,
+      "left": 16
+    }
+  },
+  {
+    "href": "/app/tarefas",
+    "theme": "dark",
+    "width": 320,
+    "text": "TarefasSEU PLANEJAMENTOOrganize seus estudos com prazos, subtarefas e progresso. Criar tarefaFiltrosFiltrar por statusTodos os statusPendenteEm andamentoConcluídaFiltrar por importânciaTodas as importânciasBaixaMédiaAltaPrazo dePrazo atéAplicar filtrosLimpar filtrosSuas tarefas0 tarefa(s)Nenhuma tarefa aindaCrie sua primeira tarefa para começar a organizar o que precisa estudar.Adicionar tarefaPágina anteriorPágina 1 de 1 · 0 tarefa(s)Próxima página",
+    "overflow": false,
+    "header": {
+      "x": 16,
+      "y": 0,
+      "width": 288,
+      "height": 236,
+      "top": 0,
+      "right": 304,
+      "bottom": 236,
+      "left": 16
+    },
+    "content": {
+      "x": 16,
+      "y": 260,
+      "width": 288,
+      "height": 1402.265625,
+      "top": 260,
+      "right": 304,
+      "bottom": 1662.265625,
+      "left": 16
+    }
+  },
+  {
+    "href": "/app/materias",
+    "theme": "dark",
+    "width": 320,
+    "text": "MatériasOrganize objetivos e assuntos no seu ritmo.Criar matériaNenhuma matéria aindaAdicione sua primeira matéria para começar a organizar seus estudos.Adicionar matéria",
+    "overflow": false,
+    "header": {
+      "x": 16,
+      "y": 0,
+      "width": 288,
+      "height": 236,
+      "top": 0,
+      "right": 304,
+      "bottom": 236,
+      "left": 16
+    },
+    "content": {
+      "x": 16,
+      "y": 260,
+      "width": 288,
+      "height": 571.328125,
+      "top": 260,
+      "right": 304,
+      "bottom": 831.328125,
+      "left": 16
+    }
+  },
+  {
+    "href": "/app/flashcards",
+    "theme": "dark",
+    "width": 320,
+    "text": "FlashcardsCrie perguntas e respostas e consulte seus cartões manualmente.Revisões pendentesCriar baralhoNenhum baralho. Crie seu primeiro baralho.AnteriorPágina 1 de 1Próxima",
+    "overflow": false,
+    "header": {
+      "x": 16,
+      "y": 0,
+      "width": 288,
+      "height": 236,
+      "top": 0,
+      "right": 304,
+      "bottom": 236,
+      "left": 16
+    },
+    "content": {
+      "x": 16,
+      "y": 260,
+      "width": 288,
+      "height": 495.0625,
+      "top": 260,
+      "right": 304,
+      "bottom": 755.0625,
+      "left": 16
+    }
+  },
+  {
+    "href": "/app/pomodoro",
+    "theme": "dark",
+    "width": 320,
+    "text": "SEU TEMPO DE ESTUDOPomodoroBlocos de 25 minutos de foco. As pausas não contam como estudo.SincronizarNão foi possível carregar o Pomodoro. Tente novamente.Prepare seu próximo focoSincronize para recuperar sua sessão antes de iniciar.Tempo estudadoTotais indisponíveis. Sincronize para tentar novamente.Tempo ativo das sessões encerradas, sem contar as pausas.Blocos de focoBlocos completos registrados nas sessões encerradas.HistóricoCada bloco faz parte do seu caminho.Filtrar histórico por matériaSem matériaHistórico indisponível. Sincronize para tentar novamente.",
+    "overflow": false,
+    "header": {
+      "x": 16,
+      "y": 0,
+      "width": 288,
+      "height": 236,
+      "top": 0,
+      "right": 304,
+      "bottom": 236,
+      "left": 16
+    },
+    "content": {
+      "x": 16,
+      "y": 260,
+      "width": 288,
+      "height": 1471.546875,
+      "top": 260,
+      "right": 304,
+      "bottom": 1731.546875,
+      "left": 16
+    }
+  },
+  {
+    "href": "/app/rotinas",
+    "theme": "dark",
+    "width": 320,
+    "text": "Rotinas de estudoPlaneje sua semana com horários locais recorrentes. Rotinas não criam tarefas nem iniciam Pomodoro.Criar rotinaAtualizar programaçãoMinhas rotinasNenhuma rotina cadastrada. Crie sua primeira rotina.Programação semanalSegunda-feiraSem horários.Terça-feiraSem horários.Quarta-feiraSem horários.Quinta-feiraSem horários.Sexta-feiraSem horários.SábadoSem horários.DomingoSem horários.",
+    "overflow": false,
+    "header": {
+      "x": 16,
+      "y": 0,
+      "width": 288,
+      "height": 236,
+      "top": 0,
+      "right": 304,
+      "bottom": 236,
+      "left": 16
+    },
+    "content": {
+      "x": 16,
+      "y": 260,
+      "width": 288,
+      "height": 1263.8125,
+      "top": 260,
+      "right": 304,
+      "bottom": 1523.8125,
+      "left": 16
+    }
+  },
+  {
+    "href": "/app/estatisticas",
+    "theme": "dark",
+    "width": 320,
+    "text": "Sua jornada de estudosEstatísticas de estudoEntenda seu ritmo de estudos e acompanhe a evolução das suas atividades ao longo do tempo. Estatísticas Progresso e conquistasPeríodoSemanaDiaSemanaTrimestreSemestreAnoData de referênciaFuso IANAConsultarFuso selecionado: America/Sao_Paulo. UTC é usado quando o navegador não informa um fuso. Exemplo: America/Sao_Paulo.Período: 2026-10-05 até 2026-10-12 (fim exclusivo), em UTC.Comparação: 2026-09-28 até 2026-10-05 (fim exclusivo).Período atual parcial, comparado ao período anterior completo.Frequência de estudoFrequência: 0 dias ativos em 7 dias transcorridos.Seu ritmo de estudoNenhuma atividade neste período.Métricas de módulos desativados são omitidas. Ver preferênciasEvolução ao longo do tempoSérie diáriaRole cada gráfico para explorar as datas. Valores ausentes são indicados por — e ?. Consulte todos os valores em texto abaixo.Valores ausentes indicam histórico indisponível. Valores registrados antes da cobertura completa são amostras e podem estar incompletos.Valores diários em texto",
+    "overflow": false,
+    "header": {
+      "x": 16,
+      "y": 0,
+      "width": 288,
+      "height": 236,
+      "top": 0,
+      "right": 304,
+      "bottom": 236,
+      "left": 16
+    },
+    "content": {
+      "x": 16,
+      "y": 260,
+      "width": 288,
+      "height": 2005.46875,
+      "top": 260,
+      "right": 304,
+      "bottom": 2265.46875,
+      "left": 16
+    }
+  },
+  {
+    "href": "/app/progresso",
+    "theme": "dark",
+    "width": 320,
+    "text": "Sua jornada de estudosSeu progressoCada dia de estudo faz parte da sua evolução. Acompanhe sua constância e os marcos que já alcançou. Estatísticas Progresso e conquistasSequência atual0 diasSua constância mais recenteMaior sequência0 diasSeu recorde no histórico rastreadoDias ativos0Dias com atividades confirmadasFuso de estudo: UTC. Editar fuso na contaHistórico rastreado desde 27 de set. de 2026. Atividades anteriores não contam para sequências ou conquistas.A sequência atual continua se você estudou hoje ou ontem. Várias atividades na mesma data contam como um dia ativo.Sua jornada começa agoraSeu primeiro dia ativo ainda está por vir. Conclua uma tarefa, um bloco Pomodoro de 25 minutos, uma avaliação de flashcard ou um marco de matéria.Marcos da sua jornadaConquistasNenhuma conquista obtida aindaConheça os critérios abaixo e acompanhe seu progresso até cada marco.BloqueadaPrimeiro diaAlcançar 1 dia ativo.Progresso: 0 de 1BloqueadaTrês dias seguidosEstudar em 3 datas consecutivas.Progresso: 0 de 3BloqueadaSete dias seguidosEstudar em 7 datas consecutivas.Progresso: 0 de 7BloqueadaTarefas em diaConcluir tarefas em 10 transições confirmadas.Progresso: 0 de 10BloqueadaFoco consistenteCompletar 5 blocos Pomodoro de 25 minutos.Progresso: 0 de 5BloqueadaRevisão constanteRegistrar 20 avaliações de flashcards.Progresso: 0 de 20BloqueadaPlano em andamentoConcluir 5 itens manuais ou blocos de roadmap, somados.Progresso: 0 de 5Conquistas obtidas permanecem no histórico, mesmo ao excluir a origem ou desativar módulos. Criar conteúdo, revelar cartões e estudar partes de um bloco não geram um dia ativo. A IA é opcional.",
+    "overflow": false,
+    "header": {
+      "x": 16,
+      "y": 0,
+      "width": 288,
+      "height": 236,
+      "top": 0,
+      "right": 304,
+      "bottom": 236,
+      "left": 16
+    },
+    "content": {
+      "x": 16,
+      "y": 260,
+      "width": 288,
+      "height": 4136.953125,
+      "top": 260,
+      "right": 304,
+      "bottom": 4396.953125,
+      "left": 16
+    }
+  },
+  {
+    "href": "/conta",
+    "theme": "dark",
+    "width": 320,
+    "text": "PERFIL & AJUSTESContaSeu perfil, suas preferências e seu acesso. Tudo em um só lugar.Voltar ao início AAnaana@example.comE-mail confirmadoMeios de entradaE-mail e senhaEditar perfil e fotoPerfilPreferênciasAparênciaSegurançaContaAs alterações são salvas em cada seção. Suas preferências não removem seus dados de estudo.Seu perfilComo você aparece no EduTrack.AFoto de perfilJPEG, PNG ou WebP estático, até 2 MiB. De 64 a 4096 pixels por lado, até 16 milhões de pixels.Foto de perfilSalvar fotoRemover fotoNome exibidoSeu nome pode se repetir. O identificador da conta permanece o mesmo.Salvar nomeSeu e-mail é usado para acessar e recuperar a conta.Alterar e-mail com segurança Preferências de estudoEscolha os recursos que fazem parte da sua rotina.Mantenha pelo menos um módulo de estudo ativo entre tarefas, matérias e flashcards. A IA não conta como módulo de estudo.Desativar um módulo preserva seus dados. A IA é opcional e não interfere no uso manual.TarefasMatériasFlashcardsRecursos de IAFuncionalidade ainda não disponível. A preferência será aplicada quando for entregue.Fuso de estudoO padrão é UTC. Cada atividade mantém a data local do fuso vigente quando aconteceu. Alterações valem para novas atividades.Fuso salvo: UTCFuso IANAExemplos: UTC, America/Sao_Paulo. Sugestão do navegador: America/Sao_Paulo. A sugestão só será aplicada se você salvar.Usar sugestão no campoSalvar fuso de estudoAparênciaEscolha o tema mais confortável para estudar.ClaroEscuroA escolha do tema fica salva neste navegador.SegurançaProteja seu acesso e mantenha seus dados atualizados.Alterar e-mailO endereço atual continua funcionando até você confirmar o novo. Depois, entre novamente.Senha atual para confirmar identidadeConfirmar identidadeAlterar senhaSenha atualNova senhaUse de 12 a 128 caracteres. Todas as sessões serão encerradas.Esqueci minha senhaSalvar nova senhaAcesso à contaGerencie seu vínculo com o Google e sua sessão atual.GoogleVincule sua conta Google para usar esse meio de entrada.Vincular GoogleSessão atualEncerre seu acesso ao EduTrack neste navegador.Encerrar sessão",
+    "overflow": false,
+    "header": {
+      "x": 16,
+      "y": 0,
+      "width": 288,
+      "height": 212.0625,
+      "top": 0,
+      "right": 304,
+      "bottom": 212.0625,
+      "left": 16
+    },
+    "content": {
+      "x": 16,
+      "y": 236.0625,
+      "width": 288,
+      "height": 4686.421875,
+      "top": 236.0625,
+      "right": 304,
+      "bottom": 4922.484375,
+      "left": 16
+    }
+  },
+  {
+    "href": "/app",
+    "theme": "dark",
+    "width": 1440,
+    "text": "SEU ESPAÇO DE ESTUDOOlá, AnaEscolha seu próximo passo de estudo.Fuso de estudo: UTC. Resumos consultados em 05/10/2026, 09:00:00.Tarefas concluídas0Sequência atual0 diasFoco nesta semanaIndisponívelRevisões pendentes0Pomodoro0 sessões concluídas.Comece um bloco de foco de 25 minutos.Iniciar PomodoroAbrir pomodoro Tarefas0 pendentes · 0 em andamento · 0 concluídas.Crie sua primeira tarefa para organizar os estudos.0 tarefas ativas sem prazo permanecem no módulo de tarefas.Abrir tarefas MatériasCrie uma matéria e organize seu plano de estudo, com ou sem IA.Abrir matérias Flashcards0 cartões pendentes de revisão.Abra flashcards para criar um baralho ou consultar seus cartões.Abrir flashcards ProgressoSequência atual: 0 dias. Recorde: 0 dias.Histórico rastreado desde 2026-09-27. Atividades anteriores não contam.0 dias ativos no histórico rastreado.Conclua uma atividade de estudo para registrar seu primeiro dia ativo.Abrir progresso EstatísticasSemana: 2026-10-05 a 2026-10-12 (fim exclusivo) · UTC · Período parcial.0 dias ativos nesta semana.Sem observações diárias disponíveis para o gráfico.Nenhuma atividade registrada nesta semana. Comece pelos módulos disponíveis.Abrir estatísticas",
+    "overflow": false,
+    "header": {
+      "x": 230,
+      "y": 0,
+      "width": 980,
+      "height": 76,
+      "top": 0,
+      "right": 1210,
+      "bottom": 76,
+      "left": 230
+    },
+    "content": {
+      "x": 230,
+      "y": 100,
+      "width": 980,
+      "height": 1602.734375,
+      "top": 100,
+      "right": 1210,
+      "bottom": 1702.734375,
+      "left": 230
+    }
+  },
+  {
+    "href": "/app/tarefas",
+    "theme": "dark",
+    "width": 1440,
+    "text": "TarefasSEU PLANEJAMENTOOrganize seus estudos com prazos, subtarefas e progresso. Criar tarefaFiltrosFiltrar por statusTodos os statusPendenteEm andamentoConcluídaFiltrar por importânciaTodas as importânciasBaixaMédiaAltaPrazo dePrazo atéAplicar filtrosLimpar filtrosSuas tarefas0 tarefa(s)Nenhuma tarefa aindaCrie sua primeira tarefa para começar a organizar o que precisa estudar.Adicionar tarefaPágina anteriorPágina 1 de 1 · 0 tarefa(s)Próxima página",
+    "overflow": false,
+    "header": {
+      "x": 230,
+      "y": 0,
+      "width": 980,
+      "height": 76,
+      "top": 0,
+      "right": 1210,
+      "bottom": 76,
+      "left": 230
+    },
+    "content": {
+      "x": 230,
+      "y": 100,
+      "width": 980,
+      "height": 974.40625,
+      "top": 100,
+      "right": 1210,
+      "bottom": 1074.40625,
+      "left": 230
+    }
+  },
+  {
+    "href": "/app/materias",
+    "theme": "dark",
+    "width": 1440,
+    "text": "MatériasOrganize objetivos e assuntos no seu ritmo.Criar matériaNenhuma matéria aindaAdicione sua primeira matéria para começar a organizar seus estudos.Adicionar matéria",
+    "overflow": false,
+    "header": {
+      "x": 230,
+      "y": 0,
+      "width": 980,
+      "height": 76,
+      "top": 0,
+      "right": 1210,
+      "bottom": 76,
+      "left": 230
+    },
+    "content": {
+      "x": 230,
+      "y": 100,
+      "width": 980,
+      "height": 522.40625,
+      "top": 100,
+      "right": 1210,
+      "bottom": 622.40625,
+      "left": 230
+    }
+  },
+  {
+    "href": "/app/flashcards",
+    "theme": "dark",
+    "width": 1440,
+    "text": "FlashcardsCrie perguntas e respostas e consulte seus cartões manualmente.Revisões pendentesCriar baralhoNenhum baralho. Crie seu primeiro baralho.AnteriorPágina 1 de 1Próxima",
+    "overflow": false,
+    "header": {
+      "x": 230,
+      "y": 0,
+      "width": 980,
+      "height": 76,
+      "top": 0,
+      "right": 1210,
+      "bottom": 76,
+      "left": 230
+    },
+    "content": {
+      "x": 230,
+      "y": 100,
+      "width": 980,
+      "height": 399.015625,
+      "top": 100,
+      "right": 1210,
+      "bottom": 499.015625,
+      "left": 230
+    }
+  },
+  {
+    "href": "/app/pomodoro",
+    "theme": "dark",
+    "width": 1440,
+    "text": "SEU TEMPO DE ESTUDOPomodoroBlocos de 25 minutos de foco. As pausas não contam como estudo.SincronizarNão foi possível carregar o Pomodoro. Tente novamente.Prepare seu próximo focoSincronize para recuperar sua sessão antes de iniciar.Tempo estudadoTotais indisponíveis. Sincronize para tentar novamente.Tempo ativo das sessões encerradas, sem contar as pausas.Blocos de focoBlocos completos registrados nas sessões encerradas.HistóricoCada bloco faz parte do seu caminho.Filtrar histórico por matériaSem matériaHistórico indisponível. Sincronize para tentar novamente.",
+    "overflow": false,
+    "header": {
+      "x": 230,
+      "y": 0,
+      "width": 980,
+      "height": 76,
+      "top": 0,
+      "right": 1210,
+      "bottom": 76,
+      "left": 230
+    },
+    "content": {
+      "x": 230,
+      "y": 100,
+      "width": 980,
+      "height": 954.875,
+      "top": 100,
+      "right": 1210,
+      "bottom": 1054.875,
+      "left": 230
+    }
+  },
+  {
+    "href": "/app/rotinas",
+    "theme": "dark",
+    "width": 1440,
+    "text": "Rotinas de estudoPlaneje sua semana com horários locais recorrentes. Rotinas não criam tarefas nem iniciam Pomodoro.Criar rotinaAtualizar programaçãoMinhas rotinasNenhuma rotina cadastrada. Crie sua primeira rotina.Programação semanalSegunda-feiraSem horários.Terça-feiraSem horários.Quarta-feiraSem horários.Quinta-feiraSem horários.Sexta-feiraSem horários.SábadoSem horários.DomingoSem horários.",
+    "overflow": false,
+    "header": {
+      "x": 230,
+      "y": 0,
+      "width": 980,
+      "height": 76,
+      "top": 0,
+      "right": 1210,
+      "bottom": 76,
+      "left": 230
+    },
+    "content": {
+      "x": 230,
+      "y": 100,
+      "width": 980,
+      "height": 635.796875,
+      "top": 100,
+      "right": 1210,
+      "bottom": 735.796875,
+      "left": 230
+    }
+  },
+  {
+    "href": "/app/estatisticas",
+    "theme": "dark",
+    "width": 1440,
+    "text": "Sua jornada de estudosEstatísticas de estudoEntenda seu ritmo de estudos e acompanhe a evolução das suas atividades ao longo do tempo. Estatísticas Progresso e conquistasPeríodoSemanaDiaSemanaTrimestreSemestreAnoData de referênciaFuso IANAConsultarFuso selecionado: America/Sao_Paulo. UTC é usado quando o navegador não informa um fuso. Exemplo: America/Sao_Paulo.Período: 2026-10-05 até 2026-10-12 (fim exclusivo), em UTC.Comparação: 2026-09-28 até 2026-10-05 (fim exclusivo).Período atual parcial, comparado ao período anterior completo.Frequência de estudoFrequência: 0 dias ativos em 7 dias transcorridos.Seu ritmo de estudoNenhuma atividade neste período.Métricas de módulos desativados são omitidas. Ver preferênciasEvolução ao longo do tempoSérie diáriaRole cada gráfico para explorar as datas. Valores ausentes são indicados por — e ?. Consulte todos os valores em texto abaixo.Valores ausentes indicam histórico indisponível. Valores registrados antes da cobertura completa são amostras e podem estar incompletos.Valores diários em texto",
+    "overflow": false,
+    "header": {
+      "x": 230,
+      "y": 0,
+      "width": 980,
+      "height": 76,
+      "top": 0,
+      "right": 1210,
+      "bottom": 76,
+      "left": 230
+    },
+    "content": {
+      "x": 230,
+      "y": 100,
+      "width": 980,
+      "height": 1130.28125,
+      "top": 100,
+      "right": 1210,
+      "bottom": 1230.28125,
+      "left": 230
+    }
+  },
+  {
+    "href": "/app/progresso",
+    "theme": "dark",
+    "width": 1440,
+    "text": "Sua jornada de estudosSeu progressoCada dia de estudo faz parte da sua evolução. Acompanhe sua constância e os marcos que já alcançou. Estatísticas Progresso e conquistasSequência atual0 diasSua constância mais recenteMaior sequência0 diasSeu recorde no histórico rastreadoDias ativos0Dias com atividades confirmadasFuso de estudo: UTC. Editar fuso na contaHistórico rastreado desde 27 de set. de 2026. Atividades anteriores não contam para sequências ou conquistas.A sequência atual continua se você estudou hoje ou ontem. Várias atividades na mesma data contam como um dia ativo.Sua jornada começa agoraSeu primeiro dia ativo ainda está por vir. Conclua uma tarefa, um bloco Pomodoro de 25 minutos, uma avaliação de flashcard ou um marco de matéria.Marcos da sua jornadaConquistasNenhuma conquista obtida aindaConheça os critérios abaixo e acompanhe seu progresso até cada marco.BloqueadaPrimeiro diaAlcançar 1 dia ativo.Progresso: 0 de 1BloqueadaTrês dias seguidosEstudar em 3 datas consecutivas.Progresso: 0 de 3BloqueadaSete dias seguidosEstudar em 7 datas consecutivas.Progresso: 0 de 7BloqueadaTarefas em diaConcluir tarefas em 10 transições confirmadas.Progresso: 0 de 10BloqueadaFoco consistenteCompletar 5 blocos Pomodoro de 25 minutos.Progresso: 0 de 5BloqueadaRevisão constanteRegistrar 20 avaliações de flashcards.Progresso: 0 de 20BloqueadaPlano em andamentoConcluir 5 itens manuais ou blocos de roadmap, somados.Progresso: 0 de 5Conquistas obtidas permanecem no histórico, mesmo ao excluir a origem ou desativar módulos. Criar conteúdo, revelar cartões e estudar partes de um bloco não geram um dia ativo. A IA é opcional.",
+    "overflow": false,
+    "header": {
+      "x": 230,
+      "y": 0,
+      "width": 980,
+      "height": 76,
+      "top": 0,
+      "right": 1210,
+      "bottom": 76,
+      "left": 230
+    },
+    "content": {
+      "x": 230,
+      "y": 100,
+      "width": 980,
+      "height": 1837.28125,
+      "top": 100,
+      "right": 1210,
+      "bottom": 1937.28125,
+      "left": 230
+    }
+  },
+  {
+    "href": "/conta",
+    "theme": "dark",
+    "width": 1440,
+    "text": "PERFIL & AJUSTESContaSeu perfil, suas preferências e seu acesso. Tudo em um só lugar.Voltar ao início AAnaana@example.comE-mail confirmadoMeios de entradaE-mail e senhaEditar perfil e fotoPerfilPreferênciasAparênciaSegurançaContaAs alterações são salvas em cada seção. Suas preferências não removem seus dados de estudo.Seu perfilComo você aparece no EduTrack.AFoto de perfilJPEG, PNG ou WebP estático, até 2 MiB. De 64 a 4096 pixels por lado, até 16 milhões de pixels.Foto de perfilSalvar fotoRemover fotoNome exibidoSeu nome pode se repetir. O identificador da conta permanece o mesmo.Salvar nomeSeu e-mail é usado para acessar e recuperar a conta.Alterar e-mail com segurança Preferências de estudoEscolha os recursos que fazem parte da sua rotina.Mantenha pelo menos um módulo de estudo ativo entre tarefas, matérias e flashcards. A IA não conta como módulo de estudo.Desativar um módulo preserva seus dados. A IA é opcional e não interfere no uso manual.TarefasMatériasFlashcardsRecursos de IAFuncionalidade ainda não disponível. A preferência será aplicada quando for entregue.Fuso de estudoO padrão é UTC. Cada atividade mantém a data local do fuso vigente quando aconteceu. Alterações valem para novas atividades.Fuso salvo: UTCFuso IANAExemplos: UTC, America/Sao_Paulo. Sugestão do navegador: America/Sao_Paulo. A sugestão só será aplicada se você salvar.Usar sugestão no campoSalvar fuso de estudoAparênciaEscolha o tema mais confortável para estudar.ClaroEscuroA escolha do tema fica salva neste navegador.SegurançaProteja seu acesso e mantenha seus dados atualizados.Alterar e-mailO endereço atual continua funcionando até você confirmar o novo. Depois, entre novamente.Senha atual para confirmar identidadeConfirmar identidadeAlterar senhaSenha atualNova senhaUse de 12 a 128 caracteres. Todas as sessões serão encerradas.Esqueci minha senhaSalvar nova senhaAcesso à contaGerencie seu vínculo com o Google e sua sessão atual.GoogleVincule sua conta Google para usar esse meio de entrada.Vincular GoogleSessão atualEncerre seu acesso ao EduTrack neste navegador.Encerrar sessão",
+    "overflow": false,
+    "header": {
+      "x": 130,
+      "y": 0,
+      "width": 1180,
+      "height": 77,
+      "top": 0,
+      "right": 1310,
+      "bottom": 77,
+      "left": 130
+    },
+    "content": {
+      "x": 130,
+      "y": 101,
+      "width": 1180,
+      "height": 3173.53125,
+      "top": 101,
+      "right": 1310,
+      "bottom": 3274.53125,
+      "left": 130
+    }
+  }
+]

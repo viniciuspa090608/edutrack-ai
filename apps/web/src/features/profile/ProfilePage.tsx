@@ -53,10 +53,12 @@ import { moduleCatalog } from './module-catalog.js';
 export function ProfilePage({
   onName,
   onPreferences,
+  onAvatar,
   accountActions,
 }: {
   onName: (name: string) => void;
   onPreferences: (prefs: ModulePreferences) => void;
+  onAvatar?: (version: string | null) => void;
   accountActions?: ReactNode;
 }) {
   const theme = useTheme();
@@ -391,6 +393,7 @@ export function ProfilePage({
                           void run(async () => {
                             if (selected) {
                               const saved = await api.uploadAvatar(selected);
+                              onAvatar?.(saved.avatarVersion);
                               setUser(saved);
                               setSelected(null);
                               setImage(await api.avatar());
@@ -405,7 +408,9 @@ export function ProfilePage({
                         disabled={busy || !user.avatarVersion}
                         onClick={() => {
                           void run(async () => {
-                            setUser(await api.removeAvatar());
+                            const saved = await api.removeAvatar();
+                            setUser(saved);
+                            onAvatar?.(saved.avatarVersion);
                             setImage(null);
                             setSelected(null);
                           }, 'Foto removida.');

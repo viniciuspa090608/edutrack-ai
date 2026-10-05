@@ -11,7 +11,9 @@ import type { ModulePreferences } from '@study-platform/contracts';
 import { ProfilePage } from '../profile/ProfilePage.js';
 import { FlashcardsPage } from '../flashcards/FlashcardsPage.js';
 import { preferences } from '../profile/profile-api.js';
-import { availableModules, moduleAtPath } from '../profile/module-catalog.js';
+import { moduleAtPath } from '../profile/module-catalog.js';
+import { AuthenticatedShell } from './AuthenticatedShell.js';
+import type { ConfirmedAvatar } from './ShellAvatar.js';
 import { TasksPage } from '../tasks/TasksPage.js';
 import { PomodoroPage } from '../pomodoro/PomodoroPage.js';
 import { SubjectsPage } from '../subjects/SubjectsPage.js';
@@ -44,6 +46,12 @@ export function PrivatePage({
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [prefs, setPrefs] = useState<ModulePreferences | null>(null);
+  const [confirmedAvatar, setConfirmedAvatar] =
+    useState<ConfirmedAvatar | null>(null);
+  const updateAvatar = useCallback(
+    (version: string | null) => setConfirmedAvatar({ version }),
+    [],
+  );
   const updatePreferences = useCallback(
     (value: ModulePreferences) => setPrefs(value),
     [],
@@ -170,35 +178,17 @@ export function PrivatePage({
     );
 
   return (
-    <div className={`private-page${page === 'conta' ? ' account-shell' : ''}`}>
-      <header className="private-header">
-        <a className="private-brand" href="/app">
-          EduTrack
-        </a>
-        <nav aria-label="Área pessoal">
-          <a href="/app">Início</a>
-          <a href="/conta">Conta</a>
-          <a href="/app/pomodoro">Pomodoro</a>
-          <a href="/app/rotinas">Rotinas</a>
-          <a href="/app/estatisticas">Estatísticas</a>
-          <a href="/app/progresso">Progresso</a>
-          {prefs &&
-            availableModules(prefs).map((item) => (
-              <a key={item.capability} href={item.path}>
-                {item.label}
-              </a>
-            ))}
-        </nav>
-        <Button
-          type="button"
-          disabled={busy}
-          onClick={() => {
-            void leave();
-          }}
-        >
-          Sair
-        </Button>
-      </header>
+    <AuthenticatedShell
+      user={user}
+      prefs={prefs}
+      busy={busy}
+      onLogout={() => {
+        void leave();
+      }}
+      confirmedAvatar={confirmedAvatar}
+      account={page === 'conta'}
+      error={error}
+    >
       <main className="private-content">
         {page === 'progresso' ? (
           <StudyProgressPage />
@@ -254,6 +244,7 @@ export function PrivatePage({
           <>
             <ProfilePage
               onName={updateName}
+              onAvatar={updateAvatar}
               onPreferences={updatePreferences}
               accountActions={
                 <div className="account-access-actions">
@@ -326,6 +317,6 @@ export function PrivatePage({
           </Alert>
         )}
       </main>
-    </div>
+    </AuthenticatedShell>
   );
 }

@@ -320,7 +320,9 @@ it('persists manual order and status by keyboard with AI disabled, edits and con
   await interaction.click(
     screen.getByRole('button', { name: 'Salvar matéria' }),
   );
-  await screen.findByText('Novo objetivo');
+  await waitFor(() =>
+    expect(screen.getAllByText('Novo objetivo')).toHaveLength(2),
+  );
   await interaction.click(
     screen.getByRole('button', { name: 'Excluir matéria' }),
   );

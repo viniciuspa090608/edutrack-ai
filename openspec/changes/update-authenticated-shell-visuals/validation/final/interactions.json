@@ -1,0 +1,1270 @@
+{
+  "interactions": [
+    {
+      "theme": "light",
+      "menuGeometry": {
+        "rect": {
+          "x": 0,
+          "y": 52,
+          "width": 320,
+          "height": 428,
+          "top": 52,
+          "right": 320,
+          "bottom": 480,
+          "left": 0
+        },
+        "controls": [
+          {
+            "x": 260,
+            "y": 65,
+            "width": 44,
+            "height": 44,
+            "top": 65,
+            "right": 304,
+            "bottom": 109,
+            "left": 260
+          },
+          {
+            "x": 20,
+            "y": 151,
+            "width": 280,
+            "height": 44,
+            "top": 151,
+            "right": 300,
+            "bottom": 195,
+            "left": 20
+          },
+          {
+            "x": 20,
+            "y": 199,
+            "width": 280,
+            "height": 44,
+            "top": 199,
+            "right": 300,
+            "bottom": 243,
+            "left": 20
+          },
+          {
+            "x": 20,
+            "y": 247,
+            "width": 280,
+            "height": 44,
+            "top": 247,
+            "right": 300,
+            "bottom": 291,
+            "left": 20
+          },
+          {
+            "x": 20,
+            "y": 295,
+            "width": 280,
+            "height": 44,
+            "top": 295,
+            "right": 300,
+            "bottom": 339,
+            "left": 20
+          },
+          {
+            "x": 20,
+            "y": 343,
+            "width": 280,
+            "height": 44,
+            "top": 343,
+            "right": 300,
+            "bottom": 387,
+            "left": 20
+          },
+          {
+            "x": 20,
+            "y": 420,
+            "width": 280,
+            "height": 44,
+            "top": 420,
+            "right": 300,
+            "bottom": 464,
+            "left": 20
+          }
+        ],
+        "focused": true,
+        "animation": "1e-05s"
+      },
+      "resized": {
+        "focusedVisible": true,
+        "locked": false,
+        "mobileNav": false
+      },
+      "last": {
+        "x": 366.0625,
+        "y": 139.515625,
+        "width": 130.765625,
+        "height": 40
+      },
+      "bar": {
+        "x": 0,
+        "y": 256,
+        "width": 568,
+        "height": 64
+      },
+      "safeLast": {
+        "x": 366.0625,
+        "y": 129.515625,
+        "width": 130.765625,
+        "height": 40
+      },
+      "safeBar": {
+        "x": 0,
+        "y": 236,
+        "width": 568,
+        "height": 84
+      }
+    },
+    {
+      "theme": "dark",
+      "menuGeometry": {
+        "rect": {
+          "x": 0,
+          "y": 52,
+          "width": 320,
+          "height": 428,
+          "top": 52,
+          "right": 320,
+          "bottom": 480,
+          "left": 0
+        },
+        "controls": [
+          {
+            "x": 260,
+            "y": 65,
+            "width": 44,
+            "height": 44,
+            "top": 65,
+            "right": 304,
+            "bottom": 109,
+            "left": 260
+          },
+          {
+            "x": 20,
+            "y": 151,
+            "width": 280,
+            "height": 44,
+            "top": 151,
+            "right": 300,
+            "bottom": 195,
+            "left": 20
+          },
+          {
+            "x": 20,
+            "y": 199,
+            "width": 280,
+            "height": 44,
+            "top": 199,
+            "right": 300,
+            "bottom": 243,
+            "left": 20
+          },
+          {
+            "x": 20,
+            "y": 247,
+            "width": 280,
+            "height": 44,
+            "top": 247,
+            "right": 300,
+            "bottom": 291,
+            "left": 20
+          },
+          {
+            "x": 20,
+            "y": 295,
+            "width": 280,
+            "height": 44,
+            "top": 295,
+            "right": 300,
+            "bottom": 339,
+            "left": 20
+          },
+          {
+            "x": 20,
+            "y": 343,
+            "width": 280,
+            "height": 44,
+            "top": 343,
+            "right": 300,
+            "bottom": 387,
+            "left": 20
+          },
+          {
+            "x": 20,
+            "y": 420,
+            "width": 280,
+            "height": 44,
+            "top": 420,
+            "right": 300,
+            "bottom": 464,
+            "left": 20
+          }
+        ],
+        "focused": true,
+        "animation": "1e-05s"
+      },
+      "resized": {
+        "focusedVisible": true,
+        "locked": false,
+        "mobileNav": false
+      },
+      "last": {
+        "x": 366.0625,
+        "y": 139.515625,
+        "width": 130.765625,
+        "height": 40
+      },
+      "bar": {
+        "x": 0,
+        "y": 256,
+        "width": 568,
+        "height": 64
+      },
+      "safeLast": {
+        "x": 366.0625,
+        "y": 129.515625,
+        "width": 130.765625,
+        "height": 40
+      },
+      "safeBar": {
+        "x": 0,
+        "y": 236,
+        "width": 568,
+        "height": 84
+      }
+    }
+  ],
+  "unchanged": [
+    {
+      "href": "/app",
+      "theme": "light",
+      "width": 320,
+      "equal": true
+    },
+    {
+      "href": "/app/tarefas",
+      "theme": "light",
+      "width": 320,
+      "equal": true
+    },
+    {
+      "href": "/app/materias",
+      "theme": "light",
+      "width": 320,
+      "equal": true
+    },
+    {
+      "href": "/app/flashcards",
+      "theme": "light",
+      "width": 320,
+      "equal": true
+    },
+    {
+      "href": "/app/pomodoro",
+      "theme": "light",
+      "width": 320,
+      "equal": true
+    },
+    {
+      "href": "/app/rotinas",
+      "theme": "light",
+      "width": 320,
+      "equal": true
+    },
+    {
+      "href": "/app/estatisticas",
+      "theme": "light",
+      "width": 320,
+      "equal": true
+    },
+    {
+      "href": "/app/progresso",
+      "theme": "light",
+      "width": 320,
+      "equal": true
+    },
+    {
+      "href": "/conta",
+      "theme": "light",
+      "width": 320,
+      "equal": true
+    },
+    {
+      "href": "/app",
+      "theme": "light",
+      "width": 1440,
+      "equal": true
+    },
+    {
+      "href": "/app/tarefas",
+      "theme": "light",
+      "width": 1440,
+      "equal": true
+    },
+    {
+      "href": "/app/materias",
+      "theme": "light",
+      "width": 1440,
+      "equal": true
+    },
+    {
+      "href": "/app/flashcards",
+      "theme": "light",
+      "width": 1440,
+      "equal": true
+    },
+    {
+      "href": "/app/pomodoro",
+      "theme": "light",
+      "width": 1440,
+      "equal": true
+    },
+    {
+      "href": "/app/rotinas",
+      "theme": "light",
+      "width": 1440,
+      "equal": true
+    },
+    {
+      "href": "/app/estatisticas",
+      "theme": "light",
+      "width": 1440,
+      "equal": true
+    },
+    {
+      "href": "/app/progresso",
+      "theme": "light",
+      "width": 1440,
+      "equal": true
+    },
+    {
+      "href": "/conta",
+      "theme": "light",
+      "width": 1440,
+      "equal": true
+    },
+    {
+      "href": "/app",
+      "theme": "dark",
+      "width": 320,
+      "equal": true
+    },
+    {
+      "href": "/app/tarefas",
+      "theme": "dark",
+      "width": 320,
+      "equal": true
+    },
+    {
+      "href": "/app/materias",
+      "theme": "dark",
+      "width": 320,
+      "equal": true
+    },
+    {
+      "href": "/app/flashcards",
+      "theme": "dark",
+      "width": 320,
+      "equal": true
+    },
+    {
+      "href": "/app/pomodoro",
+      "theme": "dark",
+      "width": 320,
+      "equal": true
+    },
+    {
+      "href": "/app/rotinas",
+      "theme": "dark",
+      "width": 320,
+      "equal": true
+    },
+    {
+      "href": "/app/estatisticas",
+      "theme": "dark",
+      "width": 320,
+      "equal": true
+    },
+    {
+      "href": "/app/progresso",
+      "theme": "dark",
+      "width": 320,
+      "equal": true
+    },
+    {
+      "href": "/conta",
+      "theme": "dark",
+      "width": 320,
+      "equal": true
+    },
+    {
+      "href": "/app",
+      "theme": "dark",
+      "width": 1440,
+      "equal": true
+    },
+    {
+      "href": "/app/tarefas",
+      "theme": "dark",
+      "width": 1440,
+      "equal": true
+    },
+    {
+      "href": "/app/materias",
+      "theme": "dark",
+      "width": 1440,
+      "equal": true
+    },
+    {
+      "href": "/app/flashcards",
+      "theme": "dark",
+      "width": 1440,
+      "equal": true
+    },
+    {
+      "href": "/app/pomodoro",
+      "theme": "dark",
+      "width": 1440,
+      "equal": true
+    },
+    {
+      "href": "/app/rotinas",
+      "theme": "dark",
+      "width": 1440,
+      "equal": true
+    },
+    {
+      "href": "/app/estatisticas",
+      "theme": "dark",
+      "width": 1440,
+      "equal": true
+    },
+    {
+      "href": "/app/progresso",
+      "theme": "dark",
+      "width": 1440,
+      "equal": true
+    },
+    {
+      "href": "/conta",
+      "theme": "dark",
+      "width": 1440,
+      "equal": true
+    }
+  ],
+  "contrastChecks": [
+    {
+      "theme": "light",
+      "selector": ".shell-brand",
+      "foreground": [
+        33,
+        37,
+        41
+      ],
+      "background": [
+        248,
+        249,
+        250
+      ],
+      "ratio": 14.634395071362922
+    },
+    {
+      "theme": "light",
+      "selector": ".shell-theme",
+      "foreground": [
+        33,
+        37,
+        41
+      ],
+      "background": [
+        248,
+        249,
+        250
+      ],
+      "ratio": 14.634395071362922
+    },
+    {
+      "theme": "light",
+      "selector": ".shell-profile-link [data-slot=\"avatar-fallback\"]",
+      "foreground": [
+        2,
+        62,
+        138
+      ],
+      "background": [
+        202,
+        240,
+        248
+      ],
+      "ratio": 8.418626694470163
+    },
+    {
+      "theme": "light",
+      "selector": ".shell-bottom-nav a",
+      "foreground": [
+        73,
+        80,
+        87
+      ],
+      "background": [
+        248,
+        249,
+        250
+      ],
+      "ratio": 7.756631072165828
+    },
+    {
+      "theme": "light",
+      "selector": ".shell-bottom-nav a",
+      "foreground": [
+        3,
+        4,
+        94
+      ],
+      "background": [
+        202,
+        240,
+        248
+      ],
+      "ratio": 14.651505343364033
+    },
+    {
+      "theme": "light",
+      "selector": ".shell-bottom-nav a",
+      "foreground": [
+        73,
+        80,
+        87
+      ],
+      "background": [
+        248,
+        249,
+        250
+      ],
+      "ratio": 7.756631072165828
+    },
+    {
+      "theme": "light",
+      "selector": ".shell-bottom-nav a",
+      "foreground": [
+        73,
+        80,
+        87
+      ],
+      "background": [
+        248,
+        249,
+        250
+      ],
+      "ratio": 7.756631072165828
+    },
+    {
+      "theme": "light",
+      "selector": ".shell-more-trigger",
+      "foreground": [
+        73,
+        80,
+        87
+      ],
+      "background": [
+        248,
+        249,
+        250
+      ],
+      "ratio": 7.756631072165828
+    },
+    {
+      "theme": "light",
+      "selector": ".shell-more-sheet a",
+      "foreground": [
+        73,
+        80,
+        87
+      ],
+      "background": [
+        248,
+        249,
+        250
+      ],
+      "ratio": 7.756631072165828
+    },
+    {
+      "theme": "light",
+      "selector": ".shell-more-sheet a",
+      "foreground": [
+        73,
+        80,
+        87
+      ],
+      "background": [
+        248,
+        249,
+        250
+      ],
+      "ratio": 7.756631072165828
+    },
+    {
+      "theme": "light",
+      "selector": ".shell-more-sheet a",
+      "foreground": [
+        73,
+        80,
+        87
+      ],
+      "background": [
+        248,
+        249,
+        250
+      ],
+      "ratio": 7.756631072165828
+    },
+    {
+      "theme": "light",
+      "selector": ".shell-more-sheet a",
+      "foreground": [
+        73,
+        80,
+        87
+      ],
+      "background": [
+        248,
+        249,
+        250
+      ],
+      "ratio": 7.756631072165828
+    },
+    {
+      "theme": "light",
+      "selector": ".shell-more-sheet a",
+      "foreground": [
+        73,
+        80,
+        87
+      ],
+      "background": [
+        248,
+        249,
+        250
+      ],
+      "ratio": 7.756631072165828
+    },
+    {
+      "theme": "light",
+      "selector": ".shell-more-close",
+      "foreground": [
+        33,
+        37,
+        41
+      ],
+      "background": [
+        248,
+        249,
+        250
+      ],
+      "ratio": 14.634395071362922
+    },
+    {
+      "theme": "light",
+      "selector": ".shell-signout",
+      "foreground": [
+        155,
+        37,
+        37
+      ],
+      "background": [
+        248,
+        249,
+        250
+      ],
+      "ratio": 7.419586492367372
+    },
+    {
+      "theme": "light",
+      "selector": "[data-slot=\"sheet-title\"]",
+      "foreground": [
+        33,
+        37,
+        41
+      ],
+      "background": [
+        248,
+        249,
+        250
+      ],
+      "ratio": 14.634395071362922
+    },
+    {
+      "theme": "light",
+      "selector": "[data-slot=\"sheet-description\"]",
+      "foreground": [
+        73,
+        80,
+        87
+      ],
+      "background": [
+        248,
+        249,
+        250
+      ],
+      "ratio": 7.756631072165828
+    },
+    {
+      "theme": "light",
+      "selector": ".shell-sidebar a",
+      "foreground": [
+        73,
+        80,
+        87
+      ],
+      "background": [
+        248,
+        249,
+        250
+      ],
+      "ratio": 7.756631072165828
+    },
+    {
+      "theme": "light",
+      "selector": ".shell-sidebar a",
+      "foreground": [
+        248,
+        249,
+        250
+      ],
+      "background": [
+        2,
+        62,
+        138
+      ],
+      "ratio": 9.677320804038315
+    },
+    {
+      "theme": "light",
+      "selector": ".shell-sidebar a",
+      "foreground": [
+        73,
+        80,
+        87
+      ],
+      "background": [
+        248,
+        249,
+        250
+      ],
+      "ratio": 7.756631072165828
+    },
+    {
+      "theme": "light",
+      "selector": ".shell-sidebar a",
+      "foreground": [
+        73,
+        80,
+        87
+      ],
+      "background": [
+        248,
+        249,
+        250
+      ],
+      "ratio": 7.756631072165828
+    },
+    {
+      "theme": "light",
+      "selector": ".shell-sidebar a",
+      "foreground": [
+        73,
+        80,
+        87
+      ],
+      "background": [
+        248,
+        249,
+        250
+      ],
+      "ratio": 7.756631072165828
+    },
+    {
+      "theme": "light",
+      "selector": ".shell-sidebar a",
+      "foreground": [
+        73,
+        80,
+        87
+      ],
+      "background": [
+        248,
+        249,
+        250
+      ],
+      "ratio": 7.756631072165828
+    },
+    {
+      "theme": "light",
+      "selector": ".shell-sidebar a",
+      "foreground": [
+        73,
+        80,
+        87
+      ],
+      "background": [
+        248,
+        249,
+        250
+      ],
+      "ratio": 7.756631072165828
+    },
+    {
+      "theme": "light",
+      "selector": ".shell-sidebar a",
+      "foreground": [
+        73,
+        80,
+        87
+      ],
+      "background": [
+        248,
+        249,
+        250
+      ],
+      "ratio": 7.756631072165828
+    },
+    {
+      "theme": "light",
+      "selector": ".shell-sidebar a",
+      "foreground": [
+        73,
+        80,
+        87
+      ],
+      "background": [
+        248,
+        249,
+        250
+      ],
+      "ratio": 7.756631072165828
+    },
+    {
+      "theme": "light",
+      "selector": ".shell-signout",
+      "foreground": [
+        155,
+        37,
+        37
+      ],
+      "background": [
+        248,
+        249,
+        250
+      ],
+      "ratio": 7.419586492367372
+    },
+    {
+      "theme": "dark",
+      "selector": ".shell-brand",
+      "foreground": [
+        248,
+        249,
+        250
+      ],
+      "background": [
+        33,
+        37,
+        41
+      ],
+      "ratio": 14.634395071362922
+    },
+    {
+      "theme": "dark",
+      "selector": ".shell-theme",
+      "foreground": [
+        248,
+        249,
+        250
+      ],
+      "background": [
+        33,
+        37,
+        41
+      ],
+      "ratio": 14.634395071362922
+    },
+    {
+      "theme": "dark",
+      "selector": ".shell-profile-link [data-slot=\"avatar-fallback\"]",
+      "foreground": [
+        72,
+        202,
+        228
+      ],
+      "background": [
+        2,
+        62,
+        138
+      ],
+      "ratio": 5.267610317926438
+    },
+    {
+      "theme": "dark",
+      "selector": ".shell-bottom-nav a",
+      "foreground": [
+        173,
+        181,
+        189
+      ],
+      "background": [
+        33,
+        37,
+        41
+      ],
+      "ratio": 7.434897432610306
+    },
+    {
+      "theme": "dark",
+      "selector": ".shell-bottom-nav a",
+      "foreground": [
+        202,
+        240,
+        248
+      ],
+      "background": [
+        2,
+        62,
+        138
+      ],
+      "ratio": 8.418626694470163
+    },
+    {
+      "theme": "dark",
+      "selector": ".shell-bottom-nav a",
+      "foreground": [
+        173,
+        181,
+        189
+      ],
+      "background": [
+        33,
+        37,
+        41
+      ],
+      "ratio": 7.434897432610306
+    },
+    {
+      "theme": "dark",
+      "selector": ".shell-bottom-nav a",
+      "foreground": [
+        173,
+        181,
+        189
+      ],
+      "background": [
+        33,
+        37,
+        41
+      ],
+      "ratio": 7.434897432610306
+    },
+    {
+      "theme": "dark",
+      "selector": ".shell-more-trigger",
+      "foreground": [
+        173,
+        181,
+        189
+      ],
+      "background": [
+        33,
+        37,
+        41
+      ],
+      "ratio": 7.434897432610306
+    },
+    {
+      "theme": "dark",
+      "selector": ".shell-more-sheet a",
+      "foreground": [
+        173,
+        181,
+        189
+      ],
+      "background": [
+        52,
+        58,
+        64
+      ],
+      "ratio": 5.545059288812448
+    },
+    {
+      "theme": "dark",
+      "selector": ".shell-more-sheet a",
+      "foreground": [
+        173,
+        181,
+        189
+      ],
+      "background": [
+        52,
+        58,
+        64
+      ],
+      "ratio": 5.545059288812448
+    },
+    {
+      "theme": "dark",
+      "selector": ".shell-more-sheet a",
+      "foreground": [
+        173,
+        181,
+        189
+      ],
+      "background": [
+        52,
+        58,
+        64
+      ],
+      "ratio": 5.545059288812448
+    },
+    {
+      "theme": "dark",
+      "selector": ".shell-more-sheet a",
+      "foreground": [
+        173,
+        181,
+        189
+      ],
+      "background": [
+        52,
+        58,
+        64
+      ],
+      "ratio": 5.545059288812448
+    },
+    {
+      "theme": "dark",
+      "selector": ".shell-more-sheet a",
+      "foreground": [
+        173,
+        181,
+        189
+      ],
+      "background": [
+        52,
+        58,
+        64
+      ],
+      "ratio": 5.545059288812448
+    },
+    {
+      "theme": "dark",
+      "selector": ".shell-more-close",
+      "foreground": [
+        248,
+        249,
+        250
+      ],
+      "background": [
+        52,
+        58,
+        64
+      ],
+      "ratio": 10.91455384047198
+    },
+    {
+      "theme": "dark",
+      "selector": ".shell-signout",
+      "foreground": [
+        241,
+        156,
+        156
+      ],
+      "background": [
+        52,
+        58,
+        64
+      ],
+      "ratio": 5.465279171133311
+    },
+    {
+      "theme": "dark",
+      "selector": "[data-slot=\"sheet-title\"]",
+      "foreground": [
+        248,
+        249,
+        250
+      ],
+      "background": [
+        52,
+        58,
+        64
+      ],
+      "ratio": 10.91455384047198
+    },
+    {
+      "theme": "dark",
+      "selector": "[data-slot=\"sheet-description\"]",
+      "foreground": [
+        173,
+        181,
+        189
+      ],
+      "background": [
+        52,
+        58,
+        64
+      ],
+      "ratio": 5.545059288812448
+    },
+    {
+      "theme": "dark",
+      "selector": ".shell-sidebar a",
+      "foreground": [
+        173,
+        181,
+        189
+      ],
+      "background": [
+        33,
+        37,
+        41
+      ],
+      "ratio": 7.434897432610306
+    },
+    {
+      "theme": "dark",
+      "selector": ".shell-sidebar a",
+      "foreground": [
+        33,
+        37,
+        41
+      ],
+      "background": [
+        72,
+        202,
+        228
+      ],
+      "ratio": 7.965871136808284
+    },
+    {
+      "theme": "dark",
+      "selector": ".shell-sidebar a",
+      "foreground": [
+        173,
+        181,
+        189
+      ],
+      "background": [
+        33,
+        37,
+        41
+      ],
+      "ratio": 7.434897432610306
+    },
+    {
+      "theme": "dark",
+      "selector": ".shell-sidebar a",
+      "foreground": [
+        173,
+        181,
+        189
+      ],
+      "background": [
+        33,
+        37,
+        41
+      ],
+      "ratio": 7.434897432610306
+    },
+    {
+      "theme": "dark",
+      "selector": ".shell-sidebar a",
+      "foreground": [
+        173,
+        181,
+        189
+      ],
+      "background": [
+        33,
+        37,
+        41
+      ],
+      "ratio": 7.434897432610306
+    },
+    {
+      "theme": "dark",
+      "selector": ".shell-sidebar a",
+      "foreground": [
+        173,
+        181,
+        189
+      ],
+      "background": [
+        33,
+        37,
+        41
+      ],
+      "ratio": 7.434897432610306
+    },
+    {
+      "theme": "dark",
+      "selector": ".shell-sidebar a",
+      "foreground": [
+        173,
+        181,
+        189
+      ],
+      "background": [
+        33,
+        37,
+        41
+      ],
+      "ratio": 7.434897432610306
+    },
+    {
+      "theme": "dark",
+      "selector": ".shell-sidebar a",
+      "foreground": [
+        173,
+        181,
+        189
+      ],
+      "background": [
+        33,
+        37,
+        41
+      ],
+      "ratio": 7.434897432610306
+    },
+    {
+      "theme": "dark",
+      "selector": ".shell-sidebar a",
+      "foreground": [
+        173,
+        181,
+        189
+      ],
+      "background": [
+        33,
+        37,
+        41
+      ],
+      "ratio": 7.434897432610306
+    },
+    {
+      "theme": "dark",
+      "selector": ".shell-signout",
+      "foreground": [
+        241,
+        156,
+        156
+      ],
+      "background": [
+        33,
+        37,
+        41
+      ],
+      "ratio": 7.327927071932161
+    }
+  ]
+}

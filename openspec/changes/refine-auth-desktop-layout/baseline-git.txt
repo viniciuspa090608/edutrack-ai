@@ -1,0 +1,4 @@
+Branch: master
+HEAD: 69eb7aedbbfb2268eaf28622fd2353e0f13f0684
+Initial status: ?? openspec/changes/refine-auth-desktop-layout/
+Only preexisting changes: planning artifacts for this change. No tracked changes.

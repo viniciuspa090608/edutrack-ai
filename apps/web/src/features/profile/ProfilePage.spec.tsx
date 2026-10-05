@@ -337,12 +337,18 @@ describe('profile page', () => {
       'Rede indisponível',
     );
     expect(profile.displayName).toBe('Ana');
+    expect(
+      screen.getByRole('link', { name: 'Abrir conta de Ana' }).textContent,
+    ).toBe('A');
     failed = '';
     await interaction.click(
       screen.getByRole('button', { name: 'Salvar nome' }),
     );
     await screen.findByText('Nome salvo.');
     expect(profile.displayName).toBe('Joana');
+    expect(
+      screen.getByRole('link', { name: 'Abrir conta de Joana' }).textContent,
+    ).toBe('J');
     failed = '/profile/preferences';
     await interaction.click(screen.getByRole('checkbox', { name: 'Matérias' }));
     await screen.findByRole('alert');
@@ -361,10 +367,22 @@ describe('profile page', () => {
     expect(
       await screen.findByRole('img', { name: 'Prévia da nova foto' }),
     ).toBeTruthy();
+    const headerAvatar = screen.getByRole('link', {
+      name: 'Abrir conta de Ana',
+    });
+    expect(headerAvatar.querySelector('img')).toBeNull();
+    failed = '/profile/avatar';
+    await interaction.click(
+      screen.getByRole('button', { name: 'Salvar foto' }),
+    );
+    await screen.findByRole('alert');
+    expect(headerAvatar.querySelector('img')).toBeNull();
+    failed = '';
     await interaction.click(
       screen.getByRole('button', { name: 'Salvar foto' }),
     );
     await screen.findByText('Foto salva.');
+    await waitFor(() => expect(headerAvatar.querySelector('img')).toBeTruthy());
     expect(
       requests.find((r) => r.path === '/profile/avatar' && r.method === 'PUT')
         ?.body,
@@ -373,6 +391,7 @@ describe('profile page', () => {
       screen.getByRole('button', { name: 'Remover foto' }),
     );
     await screen.findByText('Foto removida.');
+    expect(headerAvatar.querySelector('img')).toBeNull();
     expect(screen.getByRole('img', { name: 'Avatar padrão' })).toBeTruthy();
     await interaction.upload(
       input,

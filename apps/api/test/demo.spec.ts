@@ -1,7 +1,15 @@
 import { randomBytes } from 'node:crypto';
 import pino from 'pino';
 import request from 'supertest';
-import { beforeAll, afterAll, beforeEach, describe, expect, it } from 'vitest';
+import {
+  beforeAll,
+  afterAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest';
 import {
   studyAnalyticsSchema,
   studyProgressSchema,
@@ -238,13 +246,20 @@ describe.sequential('local demo using isolated real MySQL', () => {
             )
           ).status,
         ).toBe(200);
-        expect(
-          (
-            await agent.get(
-              `/decks/${demoId('ativo:deck:0')}/imports/${demoId('ativo:import:0')}`,
-            )
-          ).status,
-        ).toBe(200);
+        const importClock = vi
+          .spyOn(Date, 'now')
+          .mockReturnValue(clock().getTime());
+        try {
+          expect(
+            (
+              await agent.get(
+                `/decks/${demoId('ativo:deck:0')}/imports/${demoId('ativo:import:0')}`,
+              )
+            ).status,
+          ).toBe(200);
+        } finally {
+          importClock.mockRestore();
+        }
       } else if (profile === 'iniciante') {
         expect(progress.activeDays).toBe(0);
         expect((await agent.get('/flashcard-decks')).body.items).toHaveLength(

@@ -1,0 +1,67 @@
+{
+  "change": "refine-auth-desktop-layout",
+  "matrixStates": 1116,
+  "matrixFailures": 0,
+  "exactErrorAndTabsCases": 56,
+  "finalGoogleCases": 160,
+  "googleFocusColors": [
+    "rgb(66, 133, 244)"
+  ],
+  "matrixByViewport": [
+    {
+      "Name": "320, 568, 1",
+      "Count": 110
+    },
+    {
+      "Name": "375, 667, 1",
+      "Count": 110
+    },
+    {
+      "Name": "683, 384, 2",
+      "Count": 118
+    },
+    {
+      "Name": "720, 450, 2",
+      "Count": 110
+    },
+    {
+      "Name": "768, 600, 1",
+      "Count": 110
+    },
+    {
+      "Name": "960, 540, 2",
+      "Count": 110
+    },
+    {
+      "Name": "1366, 600, 1",
+      "Count": 110
+    },
+    {
+      "Name": "1366, 768, 1",
+      "Count": 118
+    },
+    {
+      "Name": "1440, 900, 1",
+      "Count": 110
+    },
+    {
+      "Name": "1920, 1080, 1",
+      "Count": 110
+    }
+  ],
+  "quality": {
+    "rootTest": "failed: demo.spec.ts:247 expected 200, received 410",
+    "authTests": 25,
+    "webTests": 198,
+    "build": "passed",
+    "typecheck": "passed",
+    "lint": "passed"
+  },
+  "completion": {
+    "remaining": 3,
+    "commit": null,
+    "complete": 20,
+    "tasks": 23
+  },
+  "assetSha256": "D1CE9C2AF0B10A7333ABC99BC706F9A6A199E5B65BF3E3009624F076B8638E6A"
+}

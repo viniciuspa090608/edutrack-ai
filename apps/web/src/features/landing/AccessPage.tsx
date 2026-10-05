@@ -9,6 +9,7 @@ import {
 } from '@study-platform/ui/components/ui/tabs';
 import { Field } from '@study-platform/ui/components/ui/field';
 import { AuthLayout } from '../auth/AuthLayout.js';
+import googleLogo from '../auth/assets/google-g.png';
 
 import { Button } from '@study-platform/ui/components/ui/button';
 import { Label } from '@study-platform/ui/components/ui/label';
@@ -168,6 +169,7 @@ export function AccessPage() {
       </div>
       <Button asChild variant="outline">
         <a className="auth-google" href={googleLoginUrl(returnTo)}>
+          <img src={googleLogo} width={20} height={20} alt="" />
           Continuar com Google
         </a>
       </Button>
