@@ -59,6 +59,7 @@ describe('email access pages', () => {
     vi.stubGlobal('fetch', fetchMock);
     render(<App />);
     const interaction = userEvent.setup();
+    expect(screen.queryByRole('button', { name: 'Mostrar senha' })).toBeNull();
     expect(document.activeElement).toBe(
       screen.getByRole('heading', { name: 'Confirme seu e-mail' }),
     );
@@ -106,6 +107,7 @@ describe('email access pages', () => {
     expect(
       await screen.findByRole('heading', { name: 'Digite o código' }),
     ).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Mostrar senha' })).toBeNull();
     await interaction.type(
       screen.getByRole('textbox', { name: 'Código de recuperação' }),
       '654321',
@@ -119,6 +121,18 @@ describe('email access pages', () => {
     await interaction.type(
       screen.getByLabelText('Nova senha'),
       'new-correct-horse-battery',
+    );
+    await interaction.click(
+      screen.getByRole('button', { name: 'Mostrar senha' }),
+    );
+    expect((screen.getByLabelText('Nova senha') as HTMLInputElement).type).toBe(
+      'text',
+    );
+    expect(
+      (screen.getByLabelText('Nova senha') as HTMLInputElement).value,
+    ).toBe('new-correct-horse-battery');
+    await interaction.click(
+      screen.getByRole('button', { name: 'Ocultar senha' }),
     );
     await interaction.click(
       screen.getByRole('button', { name: 'Redefinir senha' }),

@@ -254,7 +254,9 @@
   padding: 8px;
   font-size: 0.75rem;
 }
-.account-area .account-card button {
+.account-area
+  .account-card
+  button:not([data-slot='checkbox']):not([data-slot='password-toggle']) {
   min-height: 40px;
   height: auto;
   padding-block: 9px;

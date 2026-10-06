@@ -1,3 +1,4 @@
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Skeleton } from '@study-platform/ui/components/ui/skeleton';
 import {
   AlertDescription,
@@ -533,11 +534,12 @@ export function RoutinesPage() {
           <PaginationContent className="flex-wrap">
             <PaginationItem>
               <Button
+                aria-label="Anterior"
                 variant="outline"
                 disabled={busy || page === 1}
                 onClick={() => setPage(page - 1)}
               >
-                Anterior
+                <ChevronLeft aria-hidden="true" />
               </Button>
             </PaginationItem>
             <PaginationItem>
@@ -547,11 +549,12 @@ export function RoutinesPage() {
             </PaginationItem>
             <PaginationItem>
               <Button
+                aria-label="Próxima"
                 variant="outline"
                 disabled={busy || page >= list.totalPages}
                 onClick={() => setPage(page + 1)}
               >
-                Próxima
+                <ChevronRight aria-hidden="true" />
               </Button>
             </PaginationItem>
           </PaginationContent>

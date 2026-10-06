@@ -1,3 +1,4 @@
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   CardHeader,
   Card,
@@ -899,13 +900,14 @@ export function TasksPage({
             <PaginationContent className="flex-wrap">
               <PaginationItem>
                 <Button
+                  aria-label="Página anterior"
                   type="button"
                   disabled={filters.page <= 1}
                   onClick={() =>
                     setFilters({ ...filters, page: filters.page - 1 })
                   }
                 >
-                  Página anterior
+                  <ChevronLeft aria-hidden="true" />
                 </Button>
               </PaginationItem>
               <PaginationItem>
@@ -916,13 +918,14 @@ export function TasksPage({
               </PaginationItem>
               <PaginationItem>
                 <Button
+                  aria-label="Próxima página"
                   type="button"
                   disabled={filters.page >= result.totalPages}
                   onClick={() =>
                     setFilters({ ...filters, page: filters.page + 1 })
                   }
                 >
-                  Próxima página
+                  <ChevronRight aria-hidden="true" />
                 </Button>
               </PaginationItem>
             </PaginationContent>

@@ -144,3 +144,8 @@
     }
   }
 }
+
+/* Use the accessible password toggle consistently, including in Edge. */
+[data-slot='password-input'] input::-ms-reveal {
+  display: none;
+}

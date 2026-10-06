@@ -1,3 +1,4 @@
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { FieldSet, FieldLegend } from '@study-platform/ui/components/ui/field';
 import { Skeleton } from '@study-platform/ui/components/ui/skeleton';
 import {
@@ -661,10 +662,11 @@ export function RoadmapRevisionTools({
               <PaginationContent className="flex-wrap">
                 <PaginationItem>
                   <Button
+                    aria-label="Revisões anteriores"
                     disabled={historyPage === 1 || busy || !!mode}
                     onClick={() => setHistoryPage(historyPage - 1)}
                   >
-                    Revisões anteriores
+                    <ChevronLeft aria-hidden="true" />
                   </Button>
                 </PaginationItem>
                 <PaginationItem>
@@ -674,12 +676,13 @@ export function RoadmapRevisionTools({
                 </PaginationItem>
                 <PaginationItem>
                   <Button
+                    aria-label="Próximas revisões"
                     disabled={
                       historyPage >= history.totalPages || busy || !!mode
                     }
                     onClick={() => setHistoryPage(historyPage + 1)}
                   >
-                    Próximas revisões
+                    <ChevronRight aria-hidden="true" />
                   </Button>
                 </PaginationItem>
               </PaginationContent>

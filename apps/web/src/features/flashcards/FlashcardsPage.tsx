@@ -1,3 +1,4 @@
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   Pagination as PaginationRoot,
   PaginationContent,
@@ -54,8 +55,12 @@ function Pagination({
     <PaginationRoot aria-label={label}>
       <PaginationContent className="flex-wrap">
         <PaginationItem>
-          <Button disabled={page <= 1} onClick={() => onPage(page - 1)}>
-            Anterior
+          <Button
+            aria-label="Anterior"
+            disabled={page <= 1}
+            onClick={() => onPage(page - 1)}
+          >
+            <ChevronLeft aria-hidden="true" />
           </Button>
         </PaginationItem>
         <PaginationItem>
@@ -65,10 +70,11 @@ function Pagination({
         </PaginationItem>
         <PaginationItem>
           <Button
+            aria-label="Próxima"
             disabled={page >= totalPages}
             onClick={() => onPage(page + 1)}
           >
-            Próxima
+            <ChevronRight aria-hidden="true" />
           </Button>
         </PaginationItem>
       </PaginationContent>
@@ -225,15 +231,34 @@ export function FlashcardsPage({
   return (
     <div className="flashcards-page">
       <p>Crie perguntas e respostas e consulte seus cartões manualmente.</p>
-      {aiEnabled && (
+      <div className="flashcard-actions">
+        {aiEnabled && (
+          <Button
+            id="start-flashcard-ai"
+            disabled={generating}
+            onClick={() => setGenerating(true)}
+          >
+            Aprimorar com IA
+          </Button>
+        )}
         <Button
-          id="start-flashcard-ai"
-          disabled={generating}
-          onClick={() => setGenerating(true)}
+          id="start-review"
+          disabled={reviewing}
+          onClick={() => setReviewing(true)}
         >
-          Aprimorar com IA
+          Revisões pendentes
         </Button>
-      )}
+        <Button
+          id="new-deck"
+          disabled={busy}
+          onClick={() => {
+            setEditingDeck(null);
+            setDeckForm(true);
+          }}
+        >
+          Criar baralho
+        </Button>
+      </div>
       {aiEnabled && generating && (
         <FlashcardAIFlow
           initialDeck={deck}
@@ -246,13 +271,6 @@ export function FlashcardsPage({
           onSaved={() => refresh('Cartões gerados salvos.')}
         />
       )}
-      <Button
-        id="start-review"
-        disabled={reviewing}
-        onClick={() => setReviewing(true)}
-      >
-        Revisões pendentes
-      </Button>
       {reviewing && (
         <ReviewQueue deckId={deck?.id} onClose={() => setReviewing(false)} />
       )}
@@ -282,16 +300,6 @@ export function FlashcardsPage({
           <p role="status">Carregando detalhe…</p>
         </div>
       )}
-      <Button
-        id="new-deck"
-        disabled={busy}
-        onClick={() => {
-          setEditingDeck(null);
-          setDeckForm(true);
-        }}
-      >
-        Criar baralho
-      </Button>
       {deckForm && (
         <DeckForm
           key={editingDeck?.id ?? 'new'}
@@ -394,13 +402,26 @@ export function FlashcardsPage({
           <h2 tabIndex={-1} ref={heading}>
             {deck.name}: cartões
           </h2>
-          <Button
-            id="start-import"
-            disabled={busy || importing}
-            onClick={() => setImporting(true)}
-          >
-            Importar CSV ou TSV
-          </Button>
+          <div className="flashcard-actions">
+            <Button
+              id="start-import"
+              disabled={busy || importing}
+              onClick={() => setImporting(true)}
+            >
+              Importar CSV ou TSV
+            </Button>
+            <Button
+              id="new-card"
+              disabled={busy}
+              onClick={() => {
+                setViewing(null);
+                setEditingCard(null);
+                setCardForm(true);
+              }}
+            >
+              Adicionar cartão
+            </Button>
+          </div>
           {importing && (
             <ImportFlow
               key={deck.id}
@@ -412,17 +433,6 @@ export function FlashcardsPage({
               onImported={() => refresh('Cartões importados.')}
             />
           )}
-          <Button
-            id="new-card"
-            disabled={busy}
-            onClick={() => {
-              setViewing(null);
-              setEditingCard(null);
-              setCardForm(true);
-            }}
-          >
-            Adicionar cartão
-          </Button>
           {cardForm && (
             <CardForm
               key={editingCard?.id ?? 'new'}

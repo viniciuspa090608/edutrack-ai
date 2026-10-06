@@ -104,3 +104,9 @@
     scroll-behavior: auto;
   }
 }
+
+.flashcard-actions > button {
+  flex-shrink: 0;
+  height: auto;
+  min-height: 2.25rem;
+}

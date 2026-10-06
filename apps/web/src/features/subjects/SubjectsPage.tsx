@@ -1,3 +1,4 @@
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   CardHeader,
   Card,
@@ -836,11 +837,12 @@ export function SubjectsPage({
               <PaginationContent className="flex-wrap">
                 <PaginationItem>
                   <Button
+                    aria-label="Anterior"
                     variant="outline"
                     disabled={page === 1 || busy}
                     onClick={() => setPage(page - 1)}
                   >
-                    Anterior
+                    <ChevronLeft aria-hidden="true" />
                   </Button>
                 </PaginationItem>
                 <PaginationItem>
@@ -850,11 +852,12 @@ export function SubjectsPage({
                 </PaginationItem>
                 <PaginationItem>
                   <Button
+                    aria-label="Próxima"
                     variant="outline"
                     disabled={page >= result.totalPages || busy}
                     onClick={() => setPage(page + 1)}
                   >
-                    Próxima
+                    <ChevronRight aria-hidden="true" />
                   </Button>
                 </PaginationItem>
               </PaginationContent>

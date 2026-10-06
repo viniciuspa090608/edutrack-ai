@@ -412,6 +412,17 @@ describe('profile page', () => {
       screen.getByLabelText('Senha atual para confirmar identidade'),
       'current-password',
     );
+    const identityPassword = screen.getByLabelText(
+      'Senha atual para confirmar identidade',
+    ) as HTMLInputElement;
+    await interaction.click(
+      identityPassword.parentElement!.querySelector('button')!,
+    );
+    expect(identityPassword.type).toBe('text');
+    await interaction.click(
+      identityPassword.parentElement!.querySelector('button')!,
+    );
+    expect(identityPassword.type).toBe('password');
     await interaction.click(
       screen.getByRole('button', { name: 'Confirmar identidade' }),
     );
@@ -427,6 +438,11 @@ describe('profile page', () => {
       (screen.getByRole('button', { name: /Reenviar em/ }) as HTMLButtonElement)
         .disabled,
     ).toBe(true);
+    expect(
+      screen
+        .getByLabelText('Código do novo e-mail')
+        .parentElement?.querySelector('[data-slot="password-toggle"]'),
+    ).toBeNull();
     await interaction.type(
       screen.getByLabelText('Código do novo e-mail'),
       '123456',
@@ -455,6 +471,20 @@ describe('profile page', () => {
       screen.getByLabelText('Nova senha'),
       'new-password-long-enough',
     );
+    for (const label of ['Senha atual', 'Nova senha']) {
+      const input = screen.getByLabelText(label, {
+        exact: true,
+      }) as HTMLInputElement;
+      const toggle = input.parentElement!.querySelector('button')!;
+      const value = input.value;
+      expect(input.type).toBe('password');
+      await interaction.click(toggle);
+      expect(input.type).toBe('text');
+      expect(input.value).toBe(value);
+      expect(toggle.getAttribute('aria-label')).toBe('Ocultar senha');
+      await interaction.click(toggle);
+      expect(input.type).toBe('password');
+    }
     await interaction.click(
       screen.getByRole('button', { name: 'Salvar nova senha' }),
     );

@@ -1,3 +1,4 @@
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   AlertDescription,
   Alert,
@@ -717,10 +718,11 @@ export function RoadmapsSection({
           <PaginationContent className="flex-wrap">
             <PaginationItem>
               <Button
+                aria-label="Roadmaps anteriores"
                 disabled={page === 1 || !!mode || !!busy}
                 onClick={() => setPage(page - 1)}
               >
-                Roadmaps anteriores
+                <ChevronLeft aria-hidden="true" />
               </Button>
             </PaginationItem>
             <PaginationItem>
@@ -730,10 +732,11 @@ export function RoadmapsSection({
             </PaginationItem>
             <PaginationItem>
               <Button
+                aria-label="Próximos roadmaps"
                 disabled={page >= result.totalPages || !!mode || !!busy}
                 onClick={() => setPage(page + 1)}
               >
-                Próximos roadmaps
+                <ChevronRight aria-hidden="true" />
               </Button>
             </PaginationItem>
           </PaginationContent>

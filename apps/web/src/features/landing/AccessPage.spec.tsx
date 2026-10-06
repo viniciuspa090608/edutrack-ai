@@ -148,3 +148,28 @@ it('keeps a manual theme and scrolls to the top when navigating from the landing
   stop();
   document.documentElement.classList.remove('dark');
 });
+
+it.each(['login', 'register'])(
+  'offers password visibility only for the account password in %s',
+  async (mode) => {
+    window.history.replaceState({}, '', '/acesso?mode=' + mode);
+    render(<App />);
+    const user = userEvent.setup();
+    const password = screen.getByLabelText('Senha') as HTMLInputElement;
+    expect(password.type).toBe('password');
+    expect(
+      screen.getAllByRole('button', { name: 'Mostrar senha' }),
+    ).toHaveLength(1);
+    await user.type(password, 'senha-digitada');
+    await user.click(screen.getByRole('button', { name: 'Mostrar senha' }));
+    expect(password.type).toBe('text');
+    expect(password.value).toBe('senha-digitada');
+    await user.click(screen.getByRole('button', { name: 'Ocultar senha' }));
+    expect(password.type).toBe('password');
+    expect(
+      screen
+        .getByLabelText('E-mail')
+        .parentElement?.querySelector('[data-slot="password-toggle"]'),
+    ).toBeNull();
+  },
+);

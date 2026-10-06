@@ -1,3 +1,4 @@
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Badge } from '@study-platform/ui/components/ui/badge';
 import { Card, CardContent } from '@study-platform/ui/components/ui/card';
 import {
@@ -689,11 +690,12 @@ export function PomodoroPage({
               <PaginationContent className="flex-wrap">
                 <PaginationItem>
                   <Button
+                    aria-label="Anterior"
                     variant="outline"
                     disabled={busy || page === 1}
                     onClick={() => setPage(page - 1)}
                   >
-                    Anterior
+                    <ChevronLeft aria-hidden="true" />
                   </Button>
                 </PaginationItem>
                 <PaginationItem>
@@ -703,11 +705,12 @@ export function PomodoroPage({
                 </PaginationItem>
                 <PaginationItem>
                   <Button
+                    aria-label="Próxima"
                     variant="outline"
                     disabled={busy || page >= history.totalPages}
                     onClick={() => setPage(page + 1)}
                   >
-                    Próxima
+                    <ChevronRight aria-hidden="true" />
                   </Button>
                 </PaginationItem>
               </PaginationContent>
