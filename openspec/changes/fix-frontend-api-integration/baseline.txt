@@ -1,0 +1,4 @@
+Branch: master
+HEAD: 86c34142e02c24bcef3ea4cc70730a5174da37e6
+Alterações anteriores: .gitignore, openspec/config.yaml e arquivos não rastreados listados em baseline-status.txt.
+A pasta desta mudança contém planejamento autorizado e será incluída no commit. Nenhum segredo foi lido ou registrado.

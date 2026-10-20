@@ -22,6 +22,7 @@ export function allowedReturnTo(value: unknown): string {
   if (value === '/app/pomodoro') return value;
   if (value === '/app/materias') return value;
   if (value === '/app/tarefas') return value;
+  if (value === '/app/flashcards') return value;
   return value === '/conta' ? '/conta' : '/app';
 }
 

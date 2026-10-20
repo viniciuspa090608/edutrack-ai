@@ -300,8 +300,10 @@ it('preserves editable fields after a known validation error, offers regeneratio
   saveError = 'disabled';
   await user.click(screen.getByRole('button', { name: 'Salvar cartões' }));
   expect(
-    await screen.findByRole('link', { name: 'Abrir preferências' }),
-  ).toBeTruthy();
+    (
+      await screen.findByRole('link', { name: 'Abrir preferências' })
+    ).getAttribute('href'),
+  ).toBe('/conta#account-preferences');
 });
 it('distinguishes deck load error/retry and empty state, and cancelling the source form sends no writes', async () => {
   deckError = true;

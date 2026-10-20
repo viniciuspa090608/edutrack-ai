@@ -194,6 +194,9 @@ it('authenticates, isolates two accounts, validates strict IANA input and reads 
   ).toBe(200);
   expect((await progress(b.cookie)).timeZone).toBe('UTC');
   expect((await progress(a.cookie)).timeZone).toBe('America/Sao_Paulo');
+  const savedSettings = await read('/account/study-timezone', a.cookie);
+  expect(savedSettings.status).toBe(200);
+  expect(savedSettings.body.timeZone).toBe('America/Sao_Paulo');
   await record(a.id, 'TASK_COMPLETED', '2026-10-01T12:01:00Z');
   now = new Date('2026-10-01T13:00:00Z');
   const before = await events(a.id);
@@ -239,6 +242,9 @@ it('freezes historical timezone at midnight and handles spring/fall DST by calen
   await write('patch', '/account/study-timezone', a.cookie, {
     timeZone: 'Asia/Tokyo',
   });
+  expect((await read('/account/study-timezone', a.cookie)).body.timeZone).toBe(
+    'Asia/Tokyo',
+  );
   const key = randomUUID();
   await record(a.id, 'POMODORO_BLOCK_COMPLETED', '2026-03-08T04:58:00Z', key);
   await record(a.id, 'POMODORO_BLOCK_COMPLETED', '2026-03-08T04:58:00Z', key);

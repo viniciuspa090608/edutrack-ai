@@ -160,6 +160,7 @@ export function allowedReturnTo(
   | '/app'
   | '/conta'
   | '/app/tarefas'
+  | '/app/flashcards'
   | '/app/pomodoro'
   | '/app/rotinas'
   | '/app/estatisticas'
@@ -171,6 +172,7 @@ export function allowedReturnTo(
   if (value === '/app/pomodoro') return value;
   if (value === '/app/materias') return value;
   if (value === '/app/tarefas') return value;
+  if (value === '/app/flashcards') return value;
   return value === '/conta' ? '/conta' : '/app';
 }
 

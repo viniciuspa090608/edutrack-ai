@@ -13,6 +13,7 @@ import { AnalyticsService } from '../src/modules/analytics/analytics.service.js'
 import { TasksService } from '../src/modules/tasks/tasks.service.js';
 import { SubjectsService } from '../src/modules/subjects/subjects.service.js';
 import { ReviewsService } from '../src/modules/flashcards/reviews.service.js';
+import { setInitialCardTime } from './card-time.fixture.js';
 const env = loadEnv();
 const database = `${env.TEST_DB_NAME}_dashboard_${randomBytes(4).toString('hex')}`;
 const admin = createDataSource({ ...env, DB_NAME: env.TEST_DB_NAME });
@@ -53,6 +54,15 @@ async function account() {
     `${id}@example.com`,
     id,
     `${id}@example.com`,
+  );
+  // Keep tracking before the injected scenario clock, independent of wall time.
+  await source.query(
+    "UPDATE study_progress_tracking SET tracking_started_at_utc='2026-01-01' WHERE user_id=?",
+    [user.id],
+  );
+  await source.query(
+    "UPDATE study_timezone_history SET effective_at_utc='2026-01-01' WHERE user_id=?",
+    [user.id],
   );
   return {
     ...user,
@@ -284,10 +294,17 @@ it('uses official reviews, streak and local ISO week values and completed Pomodo
   const deck = (
     await write('post', '/flashcard-decks', a.cookie, { name: 'Baralho' })
   ).body;
-  await write('post', `/flashcard-decks/${deck.id}/cards`, a.cookie, {
-    front: 'P',
-    back: 'R',
-  });
+  const card = await write(
+    'post',
+    `/flashcard-decks/${deck.id}/cards`,
+    a.cookie,
+    {
+      front: 'P',
+      back: 'R',
+    },
+  );
+  expect(card.status).toBe(201);
+  await setInitialCardTime(source, card.body.id, now);
   let session = (await write('post', '/pomodoro/sessions', a.cookie)).body;
   now = new Date('2026-10-05T01:25:00Z');
   await write('post', `/pomodoro/sessions/${session.id}/complete`, a.cookie, {

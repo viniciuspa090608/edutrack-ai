@@ -1,0 +1,63 @@
+diff --git a/.gitignore b/.gitignore
+index b6d1ebe..36ef21b 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -1,10 +1 @@
+-node_modules/
+-.local-mysql/
+-.pnpm-store/
+-.env
+-.env.local
+-dist/
+-coverage/
+-.vite/
+-*.tsbuildinfo
+-*.log
++/especificacoes
+\ No newline at end of file
+diff --git a/openspec/config.yaml b/openspec/config.yaml
+index be0b4b2..a7be090 100644
+--- a/openspec/config.yaml
++++ b/openspec/config.yaml
+@@ -1,5 +1,30 @@
+ schema: spec-driven
+
++context: |
++  Language: pt-BR
++  All artifacts must be written in pt-BR.
++  Keep OpenSpec structural headings and SHALL/MUST keywords in English.
++  Backend: Node.js, TypeScript and Express.
++  Frontend: React.
++  Tests: Vitest.
++  Reuse existing architecture and naming conventions.
++  Never expose whether an email address is registered.
++
++rules:
++  proposal:
++    - Keep proposals under 500 words
++    - Always include explicit non-goals
++  tasks:
++    - Every task must state how completion will be verified
++
++operations:
++  apply:
++    guidance:
++      - Run affected tests after every completed task group
++  archive:
++    guidance:
++      - Summarize the final validation results
++
+ # Project context (optional)
+ # This is shown to AI when creating artifacts.
+ # Add your tech stack, conventions, style guides, domain knowledge, etc.
+@@ -30,10 +55,3 @@ schema: spec-driven
+ #     archive:
+ #       guidance:
+ #         - Summarize the archive outcome before finishing
+-
+-operations:
+-  apply:
+-    guidance:
+-      - Ao concluir todas as tarefas de um apply e aprovar as verificações exigidas, crie exatamente um commit Git para a mudança; não crie commit de conclusão para apply pausado, com falha ou sem diff novo.
+-      - Antes de editar, registre o estado do Git. Preserve alterações preexistentes; adicione ao commit somente arquivos ou hunks da mudança aplicada, incluindo o tasks.md final. Revise o diff staged e execute git diff --cached --check antes do commit. Não use git add . para capturar o working tree inteiro.
+-      - 'Use em cada commit o formato "[tipo] descrição objetiva da alteração", com um dos tipos feat, make, fix, update ou delete conforme AGENTS.md. Após o commit, verifique e informe o hash e os arquivos incluídos. Não crie tag, versão SemVer ou push, nem arquive a mudança OpenSpec automaticamente.'

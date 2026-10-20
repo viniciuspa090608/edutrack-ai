@@ -73,6 +73,13 @@ export function ProfilePage({
   }, []);
   const [user, setUser] = useState<UserProfile | null>(null);
   const [prefs, setPrefs] = useState<ModulePreferences | null>(null);
+  const preferencesReady = !!user && !!prefs;
+  useEffect(() => {
+    if (!preferencesReady || activeSection !== '#account-preferences') return;
+    const section = document.getElementById('account-preferences');
+    section?.scrollIntoView?.();
+    section?.focus({ preventScroll: true });
+  }, [preferencesReady, activeSection]);
   const [name, setName] = useState('');
   const [image, setImage] = useState<Blob | null>(null);
   const [imageUrl, setImageUrl] = useState('');
@@ -465,6 +472,7 @@ export function ProfilePage({
           <Card asChild>
             <section
               id="account-preferences"
+              tabIndex={-1}
               aria-labelledby="preferences-title"
               className="account-card account-preferences"
             >
@@ -520,14 +528,19 @@ export function ProfilePage({
                       />
                       {labels[key]}
                     </Label>
-                    {(key === 'ai' ||
-                      !moduleCatalog.find((m) => m.capability === key)
-                        ?.delivered) && (
+                    {key === 'ai' ? (
+                      <small>
+                        Complemento opcional para Flashcards e Matérias. O uso
+                        depende das preferências e da disponibilidade do serviço
+                        de IA. Os recursos manuais continuam disponíveis.
+                      </small>
+                    ) : !moduleCatalog.find((m) => m.capability === key)
+                        ?.delivered ? (
                       <small>
                         Funcionalidade ainda não disponível. A preferência será
                         aplicada quando for entregue.
                       </small>
-                    )}
+                    ) : null}
                   </div>
                 ))}
               </CardContent>

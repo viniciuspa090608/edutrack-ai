@@ -1,0 +1,18 @@
+ M .gitignore
+ M openspec/config.yaml
+?? .env
+?? .local-mysql/
+?? .pnpm-store/
+?? apps/api/dist/
+?? apps/api/node_modules/
+?? apps/web/dist/
+?? apps/web/node_modules/
+?? artifacts/
+?? node_modules/
+?? openspec/changes/fix-frontend-api-integration/
+?? output/
+?? packages/contracts/dist/
+?? packages/contracts/node_modules/
+?? packages/ui/dist/
+?? packages/ui/node_modules/
+?? tmp/

@@ -126,6 +126,34 @@ async function open() {
   await screen.findByRole('heading', { name: 'Conta' });
 }
 describe('profile page', () => {
+  it('focuses asynchronously loaded preferences and describes optional AI accurately', async () => {
+    window.history.replaceState({}, '', '/conta#account-preferences');
+    await open();
+    const section = await screen.findByRole('region', {
+      name: 'Preferências de estudo',
+    });
+    await waitFor(() => expect(document.activeElement).toBe(section));
+    expect(
+      screen.queryByText(/Funcionalidade ainda não disponível/),
+    ).toBeNull();
+    expect(
+      screen.getByText(/Complemento opcional para Flashcards e Matérias/),
+    ).toBeTruthy();
+    const interaction = userEvent.setup();
+    await interaction.click(
+      screen.getByRole('checkbox', { name: 'Recursos de IA' }),
+    );
+    await waitFor(() => expect(prefs.ai).toBe(true));
+    await interaction.click(
+      screen.getByRole('checkbox', { name: 'Recursos de IA' }),
+    );
+    await waitFor(() => expect(prefs.ai).toBe(false));
+    expect(availableModules(prefs).map((item) => item.capability)).toEqual([
+      'tasks',
+      'subjects',
+      'flashcards',
+    ]);
+  });
   it('keeps drafts and confirmed data across section navigation and both themes without reloading APIs', async () => {
     await open();
     const interaction = userEvent.setup();
@@ -293,15 +321,15 @@ describe('profile page', () => {
         .getAttribute('aria-checked'),
     ).toBe('true');
   });
-  it('shows own profile, labelled keyboard controls and unavailable independent preferences', async () => {
+  it('shows own profile, labelled keyboard controls and independent preferences', async () => {
     await open();
     expect(screen.getByText('ana@example.com')).toBeTruthy();
     expect(screen.getByRole('img', { name: 'Avatar padrão' })).toBeTruthy();
     for (const name of ['Tarefas', 'Matérias', 'Flashcards', 'Recursos de IA'])
       expect(screen.getByRole('checkbox', { name })).toBeTruthy();
     expect(
-      screen.getAllByText(/Funcionalidade ainda não disponível/),
-    ).toHaveLength(1);
+      screen.queryByText(/Funcionalidade ainda não disponível/),
+    ).toBeNull();
     expect(
       screen.queryByRole('button', { name: 'Aprimorar com IA' }),
     ).toBeNull();

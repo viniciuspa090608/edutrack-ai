@@ -19,6 +19,7 @@ export async function saveStudyTimeZone(timeZone: string) {
     await (
       await send('/account/study-timezone', {
         method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(studyTimeZoneUpdateSchema.parse({ timeZone })),
       })
     ).json(),

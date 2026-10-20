@@ -2,6 +2,7 @@ import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from '../../app/App.js';
+import { allowedReturnTo } from './auth-api.js';
 
 const user = {
   id: '00000000-0000-4000-8000-000000000000',
@@ -58,6 +59,70 @@ afterEach(() => {
 });
 
 describe('account access', () => {
+  it.each([
+    '/app',
+    '/conta',
+    '/app/tarefas',
+    '/app/flashcards',
+    '/app/materias',
+    '/app/pomodoro',
+    '/app/rotinas',
+    '/app/estatisticas',
+    '/app/progresso',
+  ])('preserves permitted return destination %s', (path) => {
+    expect(allowedReturnTo(path)).toBe(path);
+  });
+  it.each([
+    'https://outside.example',
+    '//outside.example',
+    '/app/unknown',
+    '/app/flashcards/123',
+    '/app/flashcards?next=https://outside.example',
+    null,
+  ])('rejects unapproved return destination %s', (path) => {
+    expect(allowedReturnTo(path)).toBe('/app');
+  });
+  it('returns to Flashcards after login and still enforces disabled module preferences', async () => {
+    window.history.replaceState({}, '', '/app/flashcards');
+    let signedIn = false;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string) => {
+        if (url.endsWith('/auth/login')) {
+          signedIn = true;
+          return success;
+        }
+        if (url.endsWith('/auth/me') && !signedIn) return denied;
+        if (url.endsWith('/profile/preferences'))
+          return Response.json({ ...preferences, flashcards: false });
+        return privateFetch(url);
+      }),
+    );
+    render(<App />);
+    await screen.findByRole('heading', { name: 'Entre na sua conta' });
+    expect(new URLSearchParams(window.location.search).get('returnTo')).toBe(
+      '/app/flashcards',
+    );
+    expect(
+      new URL(
+        screen.getByRole('link', { name: /Google/ }).getAttribute('href')!,
+      ).searchParams.get('returnTo'),
+    ).toBe('/app/flashcards');
+    const interaction = userEvent.setup();
+    await interaction.type(
+      screen.getByRole('textbox', { name: 'E-mail' }),
+      user.email,
+    );
+    await interaction.type(
+      screen.getByLabelText('Senha'),
+      'correct-horse-battery',
+    );
+    await interaction.click(
+      screen.getAllByRole('button', { name: 'Entrar' }).at(-1)!,
+    );
+    await screen.findByText(/Este módulo está desativado/);
+    expect(window.location.pathname).toBe('/app/flashcards');
+  });
   it('keeps form controls labelled and reachable with the keyboard', async () => {
     vi.stubGlobal('fetch', vi.fn());
     render(<App />);

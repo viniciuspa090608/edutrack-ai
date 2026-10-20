@@ -65,6 +65,7 @@ export function PrivatePage({
   const check = useCallback(async () => {
     const returnTo = [
       '/app/tarefas',
+      '/app/flashcards',
       '/app/pomodoro',
       '/app/rotinas',
       '/app/materias',

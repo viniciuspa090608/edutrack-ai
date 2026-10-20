@@ -131,6 +131,8 @@ it('shows timezone load retry, explicit suggestion, busy, save error and success
   ).toBe(true);
   rejectSave(new Error('invalid'));
   expect(await screen.findByRole('alert')).toBeTruthy();
+  expect(screen.queryByText(/Fuso de estudo salvo/)).toBeNull();
+  expect(screen.getByText('UTC', { selector: 'strong' })).toBeTruthy();
   await user.click(
     screen.getByRole('button', { name: 'Salvar fuso de estudo' }),
   );

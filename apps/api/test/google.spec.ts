@@ -16,7 +16,10 @@ import { createDataSource } from '../src/database/data-source.js';
 import { CreateAuthentication20260924221500 } from '../src/database/migrations/20260924221500-CreateAuthentication.js';
 import { CreateEmailVerification20260924230000 } from '../src/database/migrations/20260924230000-CreateEmailVerification.js';
 import { AuthRepository } from '../src/modules/auth/auth.repository.js';
-import { GoogleService } from '../src/modules/auth/google.service.js';
+import {
+  GoogleService,
+  allowedReturnTo,
+} from '../src/modules/auth/google.service.js';
 import { OAuthRepository } from '../src/modules/auth/oauth.repository.js';
 import { SessionRepository } from '../src/modules/auth/session.repository.js';
 import { EmailRepository } from '../src/modules/auth/email.repository.js';
@@ -133,6 +136,29 @@ afterAll(async () => {
 });
 
 describe('Google OIDC identity', () => {
+  it.each([
+    '/app',
+    '/conta',
+    '/app/tarefas',
+    '/app/flashcards',
+    '/app/materias',
+    '/app/pomodoro',
+    '/app/rotinas',
+    '/app/estatisticas',
+    '/app/progresso',
+  ])('allows internal return destination %s', (path) => {
+    expect(allowedReturnTo(path)).toBe(path);
+  });
+  it.each([
+    'https://outside.example',
+    '//outside.example',
+    '/app/unknown',
+    '/app/flashcards/123',
+    '/app/flashcards?next=https://outside.example',
+    null,
+  ])('rejects unapproved destination %s', (path) => {
+    expect(allowedReturnTo(path)).toBe('/app');
+  });
   it('reauthenticates only the same sub and session with a fresh provider authentication', async () => {
     const sub = randomUUID();
     const address = `${randomUUID()}@example.com`;
@@ -209,45 +235,48 @@ describe('Google OIDC identity', () => {
     if (result.kind === 'login')
       expect((await sessions.resolve(result.token))?.userId).toBe(owner.id);
   });
-  it('sets a browser attempt cookie, then clears it on the callback', async () => {
-    const app = createApp({
-      logger: pino({ level: 'silent' }),
-      webOrigin: env.WEB_ORIGIN,
-      env,
-      source,
-      oidcFetch: providerFetch,
-    });
-    claims = {
-      sub: randomUUID(),
-      email: `${randomUUID()}@example.com`,
-      email_verified: true,
-      nonce: '',
-    };
-    const started = await request(app).get(
-      '/auth/google/start?returnTo=%2Fapp',
-    );
-    expect(started.status).toBe(302);
-    if (!started.headers.location) throw new Error('Google redirect missing');
-    const authorization = new URL(started.headers.location);
-    claims.nonce = authorization.searchParams.get('nonce') ?? '';
-    const state = authorization.searchParams.get('state');
-    const attemptCookie = (
-      started.headers['set-cookie'] as unknown as string[]
-    )[0]?.split(';')[0];
-    if (!attemptCookie) throw new Error('OAuth cookie missing');
-    const callback = await request(app)
-      .get(`/auth/google/callback?code=good&state=${state}`)
-      .set('Cookie', attemptCookie);
-    expect(callback.status).toBe(302);
-    expect(callback.headers.location).toBe(`${env.WEB_ORIGIN}/app`);
-    const cookies = callback.headers['set-cookie'] as unknown as string[];
-    expect(cookies.some((value) => value.startsWith('edutrack_oauth=;'))).toBe(
-      true,
-    );
-    expect(cookies.some((value) => value.startsWith('edutrack_session='))).toBe(
-      true,
-    );
-  });
+  it.each(['/app', '/app/flashcards'])(
+    'preserves %s through HTTP OAuth and clears the browser attempt cookie',
+    async (destination) => {
+      const app = createApp({
+        logger: pino({ level: 'silent' }),
+        webOrigin: env.WEB_ORIGIN,
+        env,
+        source,
+        oidcFetch: providerFetch,
+      });
+      claims = {
+        sub: randomUUID(),
+        email: `${randomUUID()}@example.com`,
+        email_verified: true,
+        nonce: '',
+      };
+      const started = await request(app).get(
+        `/auth/google/start?returnTo=${encodeURIComponent(destination)}`,
+      );
+      expect(started.status).toBe(302);
+      if (!started.headers.location) throw new Error('Google redirect missing');
+      const authorization = new URL(started.headers.location);
+      claims.nonce = authorization.searchParams.get('nonce') ?? '';
+      const state = authorization.searchParams.get('state');
+      const attemptCookie = (
+        started.headers['set-cookie'] as unknown as string[]
+      )[0]?.split(';')[0];
+      if (!attemptCookie) throw new Error('OAuth cookie missing');
+      const callback = await request(app)
+        .get(`/auth/google/callback?code=good&state=${state}`)
+        .set('Cookie', attemptCookie);
+      expect(callback.status).toBe(302);
+      expect(callback.headers.location).toBe(`${env.WEB_ORIGIN}${destination}`);
+      const cookies = callback.headers['set-cookie'] as unknown as string[];
+      expect(
+        cookies.some((value) => value.startsWith('edutrack_oauth=;')),
+      ).toBe(true);
+      expect(
+        cookies.some((value) => value.startsWith('edutrack_session=')),
+      ).toBe(true);
+    },
+  );
 
   it('requires PKCE, state, nonce and a single browser-bound attempt', async () => {
     claims = {

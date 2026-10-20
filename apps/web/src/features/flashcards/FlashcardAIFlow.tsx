@@ -195,7 +195,7 @@ export function FlashcardAIFlow({
             </Alert>
           )}
           {error.includes('preferências') && (
-            <a href="/app/profile">Abrir preferências</a>
+            <a href="/conta#account-preferences">Abrir preferências</a>
           )}
           {busy && (
             <div>
