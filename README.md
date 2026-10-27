@@ -1,6 +1,47 @@
 # EduTrack
 
-Plataforma de estudos em construção. A página inicial apresenta os recursos planejados; a página técnica React continua em `/status`. A API Express oferece `GET /health` e autenticação local ou Google, com contratos compartilhados e conexão MySQL.
+Plataforma de estudos com autenticação local ou Google, tarefas e subtarefas, matérias e roadmaps, rotinas, Pomodoro, flashcards, revisão espaçada, estatísticas e conquistas. A IA complementa os fluxos manuais de roadmaps e flashcards. A landing pública apresenta esses recursos; `/status` oferece diagnóstico técnico. O monorepo integra React, API Express, contratos compartilhados e MySQL.
+
+## Git e conclusão de mudanças OpenSpec
+
+O repositório é [viniciuspa090608/edutrack-ai](https://github.com/viniciuspa090608/edutrack-ai), com branch principal `master`. Novos applies usam `codex/<nome-da-mudança>` quando não existe uma branch de trabalho adequada. A `master` acompanha `origin/master`; consulte o servidor com `git fetch origin` e compare com `git branch -vv` antes de afirmar que algo está publicado. Uma branch de trabalho ganha upstream somente quando for publicada explicitamente.
+
+Conclua implementação e tarefas com os checks aprovados. O agente executa automaticamente o fluxo abaixo ao terminar um apply, sem exigir um pedido separado de archive. O comando também está disponível para execução manual na raiz, com Node, pnpm, Git e a CLI OpenSpec instalada:
+
+```powershell
+pnpm openspec:finish --change nome-da-mudanca --manifest .openspec-local/nome-da-mudanca-manifest.json --inspect
+pnpm openspec:finish --change nome-da-mudanca --manifest .openspec-local/nome-da-mudanca-manifest.json --message "[update] descrever a mudança"
+```
+
+O manifesto JSON declara arquivos próprios individualmente, sem diretórios, e um plano de sync. Inclua todos os artefatos ativos da mudança em `paths`, além da implementação e dos testes. Alterações preexistentes no mesmo arquivo exigem separação prévia pelo agente; não inclua um arquivo inteiro se contiver hunks alheios. Staged de arquivos fora do manifesto é recusado. Exemplo ilustrativo (preencha todos os paths reais):
+
+```json
+{
+  "paths": [
+    "apps/web/src/feature.tsx",
+    "openspec/changes/nome-da-mudanca/.openspec.yaml",
+    "openspec/changes/nome-da-mudanca/proposal.md",
+    "openspec/changes/nome-da-mudanca/design.md",
+    "openspec/changes/nome-da-mudanca/tasks.md",
+    "openspec/changes/nome-da-mudanca/specs/capacidade/spec.md"
+  ],
+  "sync": [
+    {
+      "path": "openspec/specs/capacidade/spec.md",
+      "source": ".openspec-local/reviewed/capacidade.md",
+      "reviewed": true
+    }
+  ]
+}
+```
+
+Para mudanças `skip_specs`, use `"sync": []`. Para deltas, o agente lê `openspec instructions specs --change <nome> --json`, compara cada delta com sua spec principal e prepara o conteúdo final revisado em `.openspec-local/reviewed/`. Preserve cenários não substituídos e requisitos posteriores; conflitos impedem conclusão. Cada capacidade delta deve aparecer exatamente uma vez em `sync`. `source: null` representa a remoção previamente revisada de uma capacidade aposentada; ela exige as condições e o marcador `retire_capabilities: true` do workflow de sync. O comando valida o conteúdo final, mas a revisão semântica continua sendo responsabilidade do agente.
+
+O fluxo valida artefatos e tarefas, executa `pnpm lint`, `pnpm typecheck`, `pnpm test` e `pnpm build`, adiciona somente os arquivos do manifesto e cria o commit de implementação. Depois aplica os snapshots revisados, valida as specs, arquiva em `openspec/changes/archive/AAAA-MM-DD-<nome>` usando a data de São Paulo e incorpora o archive ao próprio commit com `amend`. O resultado é **um único commit final**, cujo hash é informado após o archive. Não há hook para commits comuns. O fluxo não altera commits históricos ou publicados e não faz push, tag ou incremento de versão.
+
+O journal e os snapshots ficam em `.openspec-local/`, ignorado pelo Git. Se houver interrupção, execute novamente o mesmo comando; a retomada verifica HEAD, paths e publicação antes de continuar. Falhas antes do commit não geram commit de conclusão; falhas posteriores deixam conclusão pendente. HEAD trocado, arquivos alterados ou commit publicado bloqueiam amend. Um lock obsoleto exige confirmar que não há processo de conclusão em execução antes de remover somente `.openspec-local/finish.lock`. Não use reset/clean para contornar bloqueios. Guarde o journal até concluir a operação; uma execução sobre archive concluído verifica o resultado sem criar novo commit.
+
+Commit salva o histórico local; archive organiza a documentação e as specs; push publica no servidor. Integre a branch concluída em `master` por fast-forward quando possível, preservando seu commit, e publique somente mediante solicitação explícita. Nunca use force-push para resolver divergência. Consulte o inventário da mudança `organize-git-and-openspec-lifecycle` (ativo ou em archive) para o diagnóstico das mudanças históricas e pendências mantidas.
 
 ## Pré-requisitos
 

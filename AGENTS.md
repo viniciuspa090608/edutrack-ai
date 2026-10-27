@@ -8,7 +8,11 @@
 - Adicione somente arquivos ou hunks da mudança aplicada. Preserve alterações preexistentes e não use `git add .` para capturar todo o working tree.
 - Revise o diff staged e execute `git diff --cached --check` antes do commit.
 - Após o commit, confirme e informe o hash e os arquivos incluídos.
-- Não crie tag, versão SemVer ou push como parte desta convenção. Arquivar uma mudança OpenSpec requer uma ação separada.
+- Ao concluir um apply aprovado, execute automaticamente o fluxo local `pnpm openspec:finish --change <nome> --manifest .openspec-local/<nome>-manifest.json --message "[tipo] descrição"`, sem uma nova solicitação para sync/archive. O comando cria o commit de implementação, aplica snapshots de specs previamente revisados, arquiva a mudança e incorpora o archive ao próprio commit com amend antes de qualquer publicação. Informe somente o hash final.
+- Prepare o manifesto com arquivos próprios explícitos e o plano `sync` revisado conforme README. Para deltas, leia as instruções specs e faça merge semântico em snapshots locais antes do comando; confira cenários e preserve requisitos posteriores. Orientação YAML sozinha não executa o archive.
+- O fluxo é da conclusão de um apply, não de qualquer commit Git. Não instale hook post-commit global. Preserve `master`; para novos trabalhos use `codex/<nome-da-mudança>` quando não houver uma branch de trabalho adequada. Integre por fast-forward quando possível, sem squash de commits já finalizados.
+- Não arquive mudanças incompletas ou com conflitos de specs. Na falha posterior ao commit, registre conclusão pendente e retome o journal local sem criar segundo commit; nunca altere commit histórico, publicado ou criado fora da execução controlada. Um archive concluído deve ser idempotente.
+- Não crie tag, versão SemVer ou push como parte desta convenção. Publicação no remoto depende de solicitação explícita e ocorre somente após a conclusão local. Verifique refs reais do servidor antes de amend; preserve alterações preexistentes fora do manifesto.
 
 ## Mensagens de commit
 

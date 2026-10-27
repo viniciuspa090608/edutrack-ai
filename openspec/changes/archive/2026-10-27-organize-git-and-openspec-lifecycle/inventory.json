@@ -1,0 +1,2691 @@
+[
+  {
+    "name": "add-user-authentication",
+    "commits": [
+      "94b11e4 [feat] adicionar autenticação de usuários"
+    ],
+    "pending": [],
+    "evidence": [],
+    "specs": [
+      {
+        "path": "openspec/changes/add-user-authentication/specs/user-authentication/spec.md",
+        "headings": [
+          "## Purpose",
+          "## ADDED Requirements",
+          "### Requirement: Cadastro com e-mail e senha",
+          "### Requirement: Login local e resistência a tentativas abusivas",
+          "### Requirement: Entrada com Google por identidade do provedor",
+          "### Requirement: Vínculo explícito da conta Google",
+          "### Requirement: Sessão persistida e revogável",
+          "### Requirement: Proteção de áreas e operações privadas",
+          "### Requirement: Proteção das operações de autenticação",
+          "### Requirement: Interface acessível e estados de autenticação"
+        ]
+      }
+    ],
+    "order": 5,
+    "state": "archived",
+    "evidenceKind": "commit + checklist; no independent historical execution log",
+    "commitFiles": [
+      "apps/api/package.json",
+      "apps/api/src/app.ts",
+      "apps/api/src/config/env.ts",
+      "apps/api/src/database/migrations/20260924221500-CreateAuthentication.ts",
+      "apps/api/src/modules/auth/auth.repository.ts",
+      "apps/api/src/modules/auth/auth.routes.ts",
+      "apps/api/src/modules/auth/auth.service.ts",
+      "apps/api/src/modules/auth/google.service.ts",
+      "apps/api/src/modules/auth/oauth.repository.ts",
+      "apps/api/src/modules/auth/password.ts",
+      "apps/api/src/modules/auth/rate-limit.repository.ts",
+      "apps/api/src/modules/auth/session.repository.ts",
+      "apps/api/src/server.ts",
+      "apps/api/test/auth-migration.spec.ts",
+      "apps/api/test/auth.http.spec.ts",
+      "apps/api/test/auth.repository.spec.ts",
+      "apps/api/test/env.spec.ts",
+      "apps/api/test/google.spec.ts",
+      "apps/api/test/password.spec.ts",
+      "apps/web/src/app/App.spec.tsx",
+      "apps/web/src/app/App.tsx",
+      "apps/web/src/features/auth/Auth.spec.tsx",
+      "apps/web/src/features/auth/PrivatePage.tsx",
+      "apps/web/src/features/auth/auth-api.ts",
+      "apps/web/src/features/landing/AccessPage.tsx",
+      "apps/web/src/main.tsx",
+      "apps/web/src/styles/auth.css",
+      "packages/contracts/src/index.spec.ts",
+      "packages/contracts/src/index.ts"
+    ],
+    "dependencies": [],
+    "sync": [
+      {
+        "target": "openspec/specs/user-authentication/spec.md",
+        "changes": [
+          "UPDATE Cadastro com e-mail e senha",
+          "UPDATE Login local e resistência a tentativas abusivas",
+          "UPDATE Entrada com Google por identidade do provedor",
+          "UPDATE Vínculo explícito da conta Google",
+          "UPDATE Sessão persistida e revogável",
+          "UPDATE Proteção de áreas e operações privadas",
+          "UPDATE Proteção das operações de autenticação",
+          "UPDATE Interface acessível e estados de autenticação"
+        ]
+      }
+    ],
+    "decision": "Arquivada após revisão semântica, validação strict e revalidação atual; conteúdo preservado por SHA-256. Deltas substituídos são históricos; specs finais preservam revisões posteriores.",
+    "archive": "openspec/changes/archive/2026-10-27-add-user-authentication",
+    "archiveVerifiedFiles": 5
+  },
+  {
+    "name": "add-email-verification-and-recovery",
+    "commits": [
+      "1c70b5e [feat] adicionar verificação de e-mail e recuperação de senha"
+    ],
+    "pending": [],
+    "evidence": [],
+    "specs": [
+      {
+        "path": "openspec/changes/add-email-verification-and-recovery/specs/account-recovery/spec.md",
+        "headings": [
+          "## Purpose",
+          "## ADDED Requirements",
+          "### Requirement: Solicitação de recuperação sem enumeração de contas",
+          "### Requirement: Redefinição por código temporário",
+          "### Requirement: Reenvio e proteção contra abuso na recuperação",
+          "### Requirement: Recuperação de conta exclusiva do Google",
+          "### Requirement: Interface de recuperação acessível e segura"
+        ]
+      },
+      {
+        "path": "openspec/changes/add-email-verification-and-recovery/specs/email-verification/spec.md",
+        "headings": [
+          "## Purpose",
+          "## ADDED Requirements",
+          "### Requirement: Confirmação obrigatória de conta local",
+          "### Requirement: Validade, reenvio e limite de tentativas da confirmação",
+          "### Requirement: Identidade Google e estado do endereço",
+          "### Requirement: Interface de confirmação acessível e resiliente"
+        ]
+      },
+      {
+        "path": "openspec/changes/add-email-verification-and-recovery/specs/user-authentication/spec.md",
+        "headings": [
+          "## MODIFIED Requirements",
+          "### Requirement: Cadastro com e-mail e senha",
+          "### Requirement: Login local e resistência a tentativas abusivas",
+          "### Requirement: Sessão persistida e revogável",
+          "### Requirement: Proteção de áreas e operações privadas"
+        ]
+      }
+    ],
+    "order": 6,
+    "state": "archived",
+    "evidenceKind": "commit + checklist; no independent historical execution log",
+    "commitFiles": [
+      "apps/api/package.json",
+      "apps/api/src/app.ts",
+      "apps/api/src/config/env.ts",
+      "apps/api/src/database/migrations/20260924230000-CreateEmailVerification.ts",
+      "apps/api/src/email-worker.ts",
+      "apps/api/src/middlewares/error-handler.ts",
+      "apps/api/src/modules/auth/auth.repository.ts",
+      "apps/api/src/modules/auth/auth.routes.ts",
+      "apps/api/src/modules/auth/auth.service.ts",
+      "apps/api/src/modules/auth/email-crypto.ts",
+      "apps/api/src/modules/auth/email-delivery.ts",
+      "apps/api/src/modules/auth/email.repository.ts",
+      "apps/api/src/modules/auth/session.repository.ts",
+      "apps/api/src/shared/http-error.ts",
+      "apps/api/test/auth.http.spec.ts",
+      "apps/api/test/auth.repository.spec.ts",
+      "apps/api/test/email-flow.spec.ts",
+      "apps/api/test/email-migration.spec.ts",
+      "apps/api/test/email.repository.spec.ts",
+      "apps/api/test/env.spec.ts",
+      "apps/api/test/google.spec.ts",
+      "apps/web/src/app/App.tsx",
+      "apps/web/src/features/auth/Auth.spec.tsx",
+      "apps/web/src/features/auth/EmailPages.spec.tsx",
+      "apps/web/src/features/auth/EmailVerificationPage.tsx",
+      "apps/web/src/features/auth/PasswordRecoveryPage.tsx",
+      "apps/web/src/features/auth/PrivatePage.tsx",
+      "apps/web/src/features/auth/auth-api.ts",
+      "apps/web/src/features/landing/AccessPage.tsx",
+      "apps/web/src/styles/auth.css",
+      "packages/contracts/src/index.ts"
+    ],
+    "dependencies": [
+      "add-user-authentication"
+    ],
+    "sync": [
+      {
+        "target": "openspec/specs/account-recovery/spec.md",
+        "changes": [
+          "ADD Solicitação de recuperação sem enumeração de contas",
+          "ADD Redefinição por código temporário",
+          "ADD Reenvio e proteção contra abuso na recuperação",
+          "ADD Recuperação de conta exclusiva do Google",
+          "ADD Interface de recuperação acessível e segura"
+        ]
+      },
+      {
+        "target": "openspec/specs/email-verification/spec.md",
+        "changes": [
+          "ADD Confirmação obrigatória de conta local",
+          "ADD Validade, reenvio e limite de tentativas da confirmação",
+          "ADD Identidade Google e estado do endereço",
+          "ADD Interface de confirmação acessível e resiliente"
+        ]
+      },
+      {
+        "target": "openspec/specs/user-authentication/spec.md",
+        "changes": [
+          "UPDATE Cadastro com e-mail e senha",
+          "UPDATE Login local e resistência a tentativas abusivas",
+          "UPDATE Sessão persistida e revogável",
+          "UPDATE Proteção de áreas e operações privadas"
+        ]
+      }
+    ],
+    "decision": "Arquivada após revisão semântica, validação strict e revalidação atual; conteúdo preservado por SHA-256. Deltas substituídos são históricos; specs finais preservam revisões posteriores.",
+    "archive": "openspec/changes/archive/2026-10-27-add-email-verification-and-recovery",
+    "archiveVerifiedFiles": 8
+  },
+  {
+    "name": "add-profile-and-module-preferences",
+    "commits": [
+      "fc373d7 [feat] adicionar perfil e preferências de módulos"
+    ],
+    "pending": [],
+    "evidence": [],
+    "specs": [
+      {
+        "path": "openspec/changes/add-profile-and-module-preferences/specs/module-preferences/spec.md",
+        "headings": [
+          "## Purpose",
+          "## ADDED Requirements",
+          "### Requirement: Preferências individuais e independentes",
+          "### Requirement: Pelo menos um módulo de estudo ativo",
+          "### Requirement: Módulo desativado não é navegável nem acionável",
+          "### Requirement: Dados preservados e restaurados na reativação",
+          "### Requirement: IA opcional sem afetar uso manual",
+          "### Requirement: Controles de preferências acessíveis"
+        ]
+      },
+      {
+        "path": "openspec/changes/add-profile-and-module-preferences/specs/user-profile/spec.md",
+        "headings": [
+          "## Purpose",
+          "## ADDED Requirements",
+          "### Requirement: Página e dados do próprio perfil",
+          "### Requirement: Foto armazenada na conta",
+          "### Requirement: Alteração verificada de e-mail",
+          "### Requirement: Alteração de senha local",
+          "### Requirement: Interface de perfil acessível e segura"
+        ]
+      }
+    ],
+    "order": 7,
+    "state": "archived",
+    "evidenceKind": "commit + checklist; no independent historical execution log",
+    "commitFiles": [
+      "apps/api/package.json",
+      "apps/api/src/app.ts",
+      "apps/api/src/database/migrations/20260926160000-CreateProfilePreferences.ts",
+      "apps/api/src/middlewares/error-handler.ts",
+      "apps/api/src/modules/auth/auth.repository.ts",
+      "apps/api/src/modules/auth/auth.routes.ts",
+      "apps/api/src/modules/auth/auth.service.ts",
+      "apps/api/src/modules/auth/avatar.ts",
+      "apps/api/src/modules/auth/email-crypto.ts",
+      "apps/api/src/modules/auth/email-delivery.ts",
+      "apps/api/src/modules/auth/email.repository.ts",
+      "apps/api/src/modules/auth/google.service.ts",
+      "apps/api/src/modules/auth/oauth.repository.ts",
+      "apps/api/src/modules/auth/profile.repository.ts",
+      "apps/api/src/modules/auth/profile.routes.ts",
+      "apps/api/src/modules/auth/profile.service.ts",
+      "apps/api/src/modules/preferences/preferences.repository.ts",
+      "apps/api/src/modules/preferences/preferences.service.ts",
+      "apps/api/test/auth.http.spec.ts",
+      "apps/api/test/auth.repository.spec.ts",
+      "apps/api/test/email-flow.spec.ts",
+      "apps/api/test/email-migration.spec.ts",
+      "apps/api/test/email.repository.spec.ts",
+      "apps/api/test/google.spec.ts",
+      "apps/api/test/profile-migration.spec.ts",
+      "apps/api/test/profile.http.spec.ts",
+      "apps/web/src/app/App.tsx",
+      "apps/web/src/features/auth/Auth.spec.tsx",
+      "apps/web/src/features/auth/PrivatePage.tsx",
+      "apps/web/src/features/auth/auth-api.ts",
+      "apps/web/src/features/landing/AccessPage.tsx",
+      "apps/web/src/features/profile/ProfilePage.spec.tsx",
+      "apps/web/src/features/profile/ProfilePage.tsx",
+      "apps/web/src/features/profile/module-catalog.ts",
+      "apps/web/src/features/profile/profile-api.ts",
+      "apps/web/src/styles/auth.css",
+      "packages/contracts/src/index.ts",
+      "packages/contracts/src/profile.spec.ts"
+    ],
+    "dependencies": [],
+    "sync": [
+      {
+        "target": "openspec/specs/module-preferences/spec.md",
+        "changes": [
+          "ADD Preferências individuais e independentes",
+          "ADD Pelo menos um módulo de estudo ativo",
+          "ADD Módulo desativado não é navegável nem acionável",
+          "ADD Dados preservados e restaurados na reativação",
+          "ADD IA opcional sem afetar uso manual",
+          "ADD Controles de preferências acessíveis"
+        ]
+      },
+      {
+        "target": "openspec/specs/user-profile/spec.md",
+        "changes": [
+          "ADD Página e dados do próprio perfil",
+          "ADD Foto armazenada na conta",
+          "ADD Alteração verificada de e-mail",
+          "ADD Alteração de senha local",
+          "ADD Interface de perfil acessível e segura"
+        ]
+      }
+    ],
+    "decision": "Arquivada após revisão semântica, validação strict e revalidação atual; conteúdo preservado por SHA-256. Deltas substituídos são históricos; specs finais preservam revisões posteriores.",
+    "archive": "openspec/changes/archive/2026-10-27-add-profile-and-module-preferences",
+    "archiveVerifiedFiles": 6
+  },
+  {
+    "name": "add-study-tasks",
+    "commits": [
+      "e7c0849 [feat] adicionar tarefas de estudo com filtros e interface",
+      "cc5bc1a [update] versionar configurações e artefatos OpenSpec preexistentes"
+    ],
+    "pending": [],
+    "evidence": [],
+    "specs": [
+      {
+        "path": "openspec/changes/add-study-tasks/specs/shared-contracts/spec.md",
+        "headings": [
+          "## MODIFIED Requirements",
+          "### Requirement: Contratos compartilhados mínimos"
+        ]
+      },
+      {
+        "path": "openspec/changes/add-study-tasks/specs/study-tasks/spec.md",
+        "headings": [
+          "## Purpose",
+          "## ADDED Requirements",
+          "### Requirement: Criar tarefa de estudo",
+          "### Requirement: Visualizar tarefas próprias",
+          "### Requirement: Editar campos e alterar status manualmente",
+          "### Requirement: Excluir tarefa própria",
+          "### Requirement: Filtrar lista de tarefas",
+          "### Requirement: Isolamento e autenticação em todas as operações",
+          "### Requirement: Fluxo manual independente",
+          "### Requirement: Interface de tarefas acessível"
+        ]
+      }
+    ],
+    "order": 8,
+    "state": "active-sync-blocked",
+    "evidenceKind": "commit + checklist; no independent historical execution log",
+    "commitFiles": [
+      "apps/api/src/app.ts",
+      "apps/api/src/database/data-source.ts",
+      "apps/api/src/database/migrations/20260926180000-CreateStudyTasks.ts",
+      "apps/api/src/modules/auth/google.service.ts",
+      "apps/api/src/modules/tasks/task.entity.ts",
+      "apps/api/src/modules/tasks/tasks.repository.ts",
+      "apps/api/src/modules/tasks/tasks.routes.ts",
+      "apps/api/src/modules/tasks/tasks.service.ts",
+      "apps/api/test/profile-migration.spec.ts",
+      "apps/api/test/profile.http.spec.ts",
+      "apps/api/test/tasks-migration.spec.ts",
+      "apps/api/test/tasks.http.spec.ts",
+      "apps/web/src/features/auth/PrivatePage.tsx",
+      "apps/web/src/features/auth/auth-api.ts",
+      "apps/web/src/features/profile/ProfilePage.spec.tsx",
+      "apps/web/src/features/profile/module-catalog.ts",
+      "apps/web/src/features/tasks/TasksPage.spec.tsx",
+      "apps/web/src/features/tasks/TasksPage.tsx",
+      "apps/web/src/features/tasks/tasks-api.ts",
+      "apps/web/src/styles/tasks.css",
+      "packages/contracts/src/index.ts",
+      "packages/contracts/src/tasks.spec.ts",
+      "packages/contracts/src/tasks.ts"
+    ],
+    "dependencies": [],
+    "sync": [
+      {
+        "target": "openspec/specs/shared-contracts/spec.md",
+        "changes": [
+          "UPDATE Contratos compartilhados mínimos"
+        ]
+      },
+      {
+        "target": "openspec/specs/study-tasks/spec.md",
+        "changes": [
+          "ADD Criar tarefa de estudo",
+          "ADD Visualizar tarefas próprias",
+          "ADD Editar campos e alterar status manualmente",
+          "ADD Excluir tarefa própria",
+          "ADD Filtrar lista de tarefas",
+          "ADD Isolamento e autenticação em todas as operações",
+          "ADD Fluxo manual independente",
+          "ADD Interface de tarefas acessível"
+        ]
+      }
+    ],
+    "decision": "Preservar ativa: OpenSpec strict recusa MODIFIED de contratos mínimos por omitir cenário Contratos de sessão Pomodoro adicionado depois. A spec consolidada preserva o cenário; não forçar archive nem alterar retroativamente o delta histórico.",
+    "validationBlocker": "shared-contracts/spec.md: MODIFIED omits scenario Contratos de sessão Pomodoro"
+  },
+  {
+    "name": "add-task-subtasks-and-progress",
+    "commits": [
+      "b9f960c [feat] adicionar subtarefas com progresso e status derivado",
+      "cc5bc1a [update] versionar configurações e artefatos OpenSpec preexistentes"
+    ],
+    "pending": [],
+    "evidence": [],
+    "specs": [
+      {
+        "path": "openspec/changes/add-task-subtasks-and-progress/specs/task-subtasks-and-progress/spec.md",
+        "headings": [
+          "## Purpose",
+          "## ADDED Requirements",
+          "### Requirement: Gerenciar subtarefas próprias",
+          "### Requirement: Reordenar subtarefas",
+          "### Requirement: Progresso calculado e status derivado",
+          "### Requirement: Status manual somente sem subtarefas",
+          "### Requirement: Confirmação para concluir subtarefas pendentes",
+          "### Requirement: Isolamento e interface acessível"
+        ]
+      }
+    ],
+    "order": 9,
+    "state": "archived",
+    "evidenceKind": "commit + checklist; no independent historical execution log",
+    "commitFiles": [
+      "apps/api/src/database/data-source.ts",
+      "apps/api/src/database/migrations/20260926190000-CreateTaskSubtasks.ts",
+      "apps/api/src/modules/tasks/subtask.entity.ts",
+      "apps/api/src/modules/tasks/task.entity.ts",
+      "apps/api/src/modules/tasks/tasks.repository.ts",
+      "apps/api/src/modules/tasks/tasks.routes.ts",
+      "apps/api/src/modules/tasks/tasks.service.ts",
+      "apps/api/test/subtasks-migration.spec.ts",
+      "apps/api/test/subtasks.http.spec.ts",
+      "apps/api/test/tasks-migration.spec.ts",
+      "apps/web/src/features/tasks/SubtasksSection.spec.tsx",
+      "apps/web/src/features/tasks/SubtasksSection.tsx",
+      "apps/web/src/features/tasks/TaskConfirmation.tsx",
+      "apps/web/src/features/tasks/TaskProgress.tsx",
+      "apps/web/src/features/tasks/TasksPage.spec.tsx",
+      "apps/web/src/features/tasks/TasksPage.tsx",
+      "apps/web/src/features/tasks/tasks-api.ts",
+      "apps/web/src/styles/tasks.css",
+      "packages/contracts/src/subtasks.spec.ts",
+      "packages/contracts/src/tasks.ts"
+    ],
+    "dependencies": [],
+    "sync": [
+      {
+        "target": "openspec/specs/task-subtasks-and-progress/spec.md",
+        "changes": [
+          "ADD Gerenciar subtarefas próprias",
+          "ADD Reordenar subtarefas",
+          "ADD Progresso calculado e status derivado",
+          "ADD Status manual somente sem subtarefas",
+          "ADD Confirmação para concluir subtarefas pendentes",
+          "ADD Isolamento e interface acessível"
+        ]
+      }
+    ],
+    "decision": "Arquivada após revisão semântica, validação strict e revalidação atual; conteúdo preservado por SHA-256. Deltas substituídos são históricos; specs finais preservam revisões posteriores.",
+    "archive": "openspec/changes/archive/2026-10-27-add-task-subtasks-and-progress",
+    "archiveVerifiedFiles": 6
+  },
+  {
+    "name": "add-pomodoro-sessions",
+    "commits": [
+      "ce303f7 [feat] adicionar sessões Pomodoro com tempo ativo e histórico"
+    ],
+    "pending": [],
+    "evidence": [],
+    "specs": [
+      {
+        "path": "openspec/changes/add-pomodoro-sessions/specs/pomodoro-sessions/spec.md",
+        "headings": [
+          "## Purpose",
+          "## ADDED Requirements",
+          "### Requirement: Iniciar sessão própria de foco",
+          "### Requirement: Pausar e continuar preservando tempo ativo",
+          "### Requirement: Contar vários blocos sem incluir pausas",
+          "### Requirement: Concluir sessão com blocos completos",
+          "### Requirement: Cancelar sem perder tempo parcial",
+          "### Requirement: Associação opcional e segura com tarefa",
+          "### Requirement: Histórico e totais para estatísticas",
+          "### Requirement: Interface de sessão acessível e resiliente"
+        ]
+      },
+      {
+        "path": "openspec/changes/add-pomodoro-sessions/specs/shared-contracts/spec.md",
+        "headings": [
+          "## MODIFIED Requirements",
+          "### Requirement: Contratos compartilhados mínimos"
+        ]
+      }
+    ],
+    "order": 10,
+    "state": "archived",
+    "evidenceKind": "commit + checklist; no independent historical execution log",
+    "commitFiles": [
+      "apps/api/src/app.ts",
+      "apps/api/src/database/migrations/20260926200000-CreatePomodoroSessions.ts",
+      "apps/api/src/modules/auth/google.service.ts",
+      "apps/api/src/modules/pomodoro/pomodoro.repository.ts",
+      "apps/api/src/modules/pomodoro/pomodoro.routes.ts",
+      "apps/api/src/modules/pomodoro/pomodoro.service.ts",
+      "apps/api/test/pomodoro.http.spec.ts",
+      "apps/web/src/app/App.tsx",
+      "apps/web/src/features/auth/PrivatePage.tsx",
+      "apps/web/src/features/auth/auth-api.ts",
+      "apps/web/src/features/pomodoro/PomodoroPage.spec.tsx",
+      "apps/web/src/features/pomodoro/PomodoroPage.tsx",
+      "apps/web/src/features/pomodoro/pomodoro-api.ts",
+      "apps/web/src/styles/pomodoro.css",
+      "packages/contracts/src/index.ts",
+      "packages/contracts/src/pomodoro.spec.ts",
+      "packages/contracts/src/pomodoro.ts"
+    ],
+    "dependencies": [
+      "add-study-tasks"
+    ],
+    "sync": [
+      {
+        "target": "openspec/specs/pomodoro-sessions/spec.md",
+        "changes": [
+          "ADD Iniciar sessão própria de foco",
+          "ADD Pausar e continuar preservando tempo ativo",
+          "ADD Contar vários blocos sem incluir pausas",
+          "ADD Concluir sessão com blocos completos",
+          "ADD Cancelar sem perder tempo parcial",
+          "ADD Associação opcional e segura com tarefa",
+          "ADD Histórico e totais para estatísticas",
+          "ADD Interface de sessão acessível e resiliente"
+        ]
+      },
+      {
+        "target": "openspec/specs/shared-contracts/spec.md",
+        "changes": [
+          "UPDATE Contratos compartilhados mínimos"
+        ]
+      }
+    ],
+    "decision": "Arquivada após revisão semântica, validação strict e revalidação atual; conteúdo preservado por SHA-256. Deltas substituídos são históricos; specs finais preservam revisões posteriores.",
+    "archive": "openspec/changes/archive/2026-10-27-add-pomodoro-sessions",
+    "archiveVerifiedFiles": 7
+  },
+  {
+    "name": "add-study-routines",
+    "commits": [
+      "d8a016f [feat] adicionar rotinas de estudo e programação semanal"
+    ],
+    "pending": [],
+    "evidence": [],
+    "specs": [
+      {
+        "path": "openspec/changes/add-study-routines/specs/shared-contracts/spec.md",
+        "headings": [
+          "## ADDED Requirements",
+          "### Requirement: Contratos públicos de rotinas"
+        ]
+      },
+      {
+        "path": "openspec/changes/add-study-routines/specs/study-routines/spec.md",
+        "headings": [
+          "## Purpose",
+          "## ADDED Requirements",
+          "### Requirement: Criar rotina semanal",
+          "### Requirement: Consultar rotinas e programação recorrente",
+          "### Requirement: Editar rotina e seus horários",
+          "### Requirement: Validar sobreposição na mesma rotina",
+          "### Requirement: Excluir rotina",
+          "### Requirement: Isolamento das rotinas por usuário",
+          "### Requirement: Funcionamento independente e interface acessível"
+        ]
+      }
+    ],
+    "order": 11,
+    "state": "archived",
+    "evidenceKind": "commit + checklist; no independent historical execution log",
+    "commitFiles": [
+      "apps/api/src/app.ts",
+      "apps/api/src/database/data-source.ts",
+      "apps/api/src/database/migrations/20260926210000-CreateStudyRoutines.ts",
+      "apps/api/src/modules/auth/google.service.ts",
+      "apps/api/src/modules/routines/routine.entity.ts",
+      "apps/api/src/modules/routines/routines.repository.ts",
+      "apps/api/src/modules/routines/routines.routes.ts",
+      "apps/api/src/modules/routines/routines.service.ts",
+      "apps/api/test/email-flow.spec.ts",
+      "apps/api/test/routines.http.spec.ts",
+      "apps/web/src/app/App.tsx",
+      "apps/web/src/features/auth/PrivatePage.tsx",
+      "apps/web/src/features/auth/auth-api.ts",
+      "apps/web/src/features/routines/RoutinesPage.spec.tsx",
+      "apps/web/src/features/routines/RoutinesPage.tsx",
+      "apps/web/src/features/routines/routines-api.ts",
+      "apps/web/src/styles/routines.css",
+      "packages/contracts/src/index.ts",
+      "packages/contracts/src/routines.spec.ts",
+      "packages/contracts/src/routines.ts"
+    ],
+    "dependencies": [
+      "add-pomodoro-sessions"
+    ],
+    "sync": [
+      {
+        "target": "openspec/specs/shared-contracts/spec.md",
+        "changes": [
+          "ADD Contratos públicos de rotinas"
+        ]
+      },
+      {
+        "target": "openspec/specs/study-routines/spec.md",
+        "changes": [
+          "ADD Criar rotina semanal",
+          "ADD Consultar rotinas e programação recorrente",
+          "ADD Editar rotina e seus horários",
+          "ADD Validar sobreposição na mesma rotina",
+          "ADD Excluir rotina",
+          "ADD Isolamento das rotinas por usuário",
+          "ADD Funcionamento independente e interface acessível"
+        ]
+      }
+    ],
+    "decision": "Arquivada após revisão semântica, validação strict e revalidação atual; conteúdo preservado por SHA-256. Deltas substituídos são históricos; specs finais preservam revisões posteriores.",
+    "archive": "openspec/changes/archive/2026-10-27-add-study-routines",
+    "archiveVerifiedFiles": 7
+  },
+  {
+    "name": "add-subjects",
+    "commits": [
+      "4bea4c8 [feat] adicionar matérias e plano manual de estudos",
+      "cc5bc1a [update] versionar configurações e artefatos OpenSpec preexistentes"
+    ],
+    "pending": [],
+    "evidence": [],
+    "specs": [
+      {
+        "path": "openspec/changes/add-subjects/specs/shared-contracts/spec.md",
+        "headings": [
+          "## ADDED Requirements",
+          "### Requirement: Contratos públicos de matérias e vínculos opcionais"
+        ]
+      },
+      {
+        "path": "openspec/changes/add-subjects/specs/study-subjects/spec.md",
+        "headings": [
+          "## Purpose",
+          "## ADDED Requirements",
+          "### Requirement: Cadastrar e consultar matérias próprias",
+          "### Requirement: Editar e excluir matéria",
+          "### Requirement: Organizar assuntos de estudo manualmente",
+          "### Requirement: Isolamento das matérias e de seus itens",
+          "### Requirement: Associar tarefas a matérias de forma opcional",
+          "### Requirement: Associar sessões Pomodoro a matérias de forma opcional",
+          "### Requirement: Respeitar preferências de módulos e IA",
+          "### Requirement: Interface acessível"
+        ]
+      }
+    ],
+    "order": 12,
+    "state": "archived",
+    "evidenceKind": "commit + checklist; no independent historical execution log",
+    "commitFiles": [
+      "apps/api/src/app.ts",
+      "apps/api/src/database/migrations/20260926220000-CreateStudySubjects.ts",
+      "apps/api/src/database/migrations/20260926221000-AddSubjectAssociations.ts",
+      "apps/api/src/modules/auth/google.service.ts",
+      "apps/api/src/modules/pomodoro/pomodoro.repository.ts",
+      "apps/api/src/modules/pomodoro/pomodoro.service.ts",
+      "apps/api/src/modules/subjects/subjects.repository.ts",
+      "apps/api/src/modules/subjects/subjects.routes.ts",
+      "apps/api/src/modules/subjects/subjects.service.ts",
+      "apps/api/src/modules/tasks/task.entity.ts",
+      "apps/api/src/modules/tasks/tasks.repository.ts",
+      "apps/api/src/modules/tasks/tasks.service.ts",
+      "apps/api/test/pomodoro.http.spec.ts",
+      "apps/api/test/routines.http.spec.ts",
+      "apps/api/test/subjects.http.spec.ts",
+      "apps/web/src/features/auth/PrivatePage.tsx",
+      "apps/web/src/features/auth/auth-api.ts",
+      "apps/web/src/features/pomodoro/PomodoroPage.spec.tsx",
+      "apps/web/src/features/pomodoro/PomodoroPage.tsx",
+      "apps/web/src/features/pomodoro/pomodoro-api.ts",
+      "apps/web/src/features/profile/ProfilePage.spec.tsx",
+      "apps/web/src/features/profile/module-catalog.ts",
+      "apps/web/src/features/subjects/SubjectName.tsx",
+      "apps/web/src/features/subjects/SubjectSelect.tsx",
+      "apps/web/src/features/subjects/SubjectsPage.spec.tsx",
+      "apps/web/src/features/subjects/SubjectsPage.tsx",
+      "apps/web/src/features/subjects/subjects-api.ts",
+      "apps/web/src/features/tasks/SubtasksSection.spec.tsx",
+      "apps/web/src/features/tasks/TasksPage.spec.tsx",
+      "apps/web/src/features/tasks/TasksPage.tsx",
+      "apps/web/src/styles/subjects.css",
+      "packages/contracts/src/index.ts",
+      "packages/contracts/src/pomodoro.spec.ts",
+      "packages/contracts/src/pomodoro.ts",
+      "packages/contracts/src/subjects.spec.ts",
+      "packages/contracts/src/subjects.ts",
+      "packages/contracts/src/subtasks.spec.ts",
+      "packages/contracts/src/tasks.spec.ts",
+      "packages/contracts/src/tasks.ts"
+    ],
+    "dependencies": [
+      "add-study-routines"
+    ],
+    "sync": [
+      {
+        "target": "openspec/specs/shared-contracts/spec.md",
+        "changes": [
+          "ADD Contratos públicos de matérias e vínculos opcionais"
+        ]
+      },
+      {
+        "target": "openspec/specs/study-subjects/spec.md",
+        "changes": [
+          "ADD Cadastrar e consultar matérias próprias",
+          "ADD Editar e excluir matéria",
+          "ADD Organizar assuntos de estudo manualmente",
+          "ADD Isolamento das matérias e de seus itens",
+          "ADD Associar tarefas a matérias de forma opcional",
+          "ADD Associar sessões Pomodoro a matérias de forma opcional",
+          "ADD Respeitar preferências de módulos e IA",
+          "ADD Interface acessível"
+        ]
+      }
+    ],
+    "decision": "Arquivada após revisão semântica, validação strict e revalidação atual; conteúdo preservado por SHA-256. Deltas substituídos são históricos; specs finais preservam revisões posteriores.",
+    "archive": "openspec/changes/archive/2026-10-27-add-subjects",
+    "archiveVerifiedFiles": 6
+  },
+  {
+    "name": "generate-subject-roadmaps-with-ai",
+    "commits": [
+      "00b9782 [feat] adicionar roadmaps manuais e geração por IA",
+      "cc5bc1a [update] versionar configurações e artefatos OpenSpec preexistentes"
+    ],
+    "pending": [],
+    "evidence": [],
+    "specs": [
+      {
+        "path": "openspec/changes/generate-subject-roadmaps-with-ai/specs/subject-ai-roadmaps/spec.md",
+        "headings": [
+          "## Purpose",
+          "## ADDED Requirements",
+          "### Requirement: CRUD manual de roadmaps pertencentes à matéria",
+          "### Requirement: Geração disponível somente para matéria própria com IA habilitada",
+          "### Requirement: Parâmetros suficientes e validados para geração",
+          "### Requirement: Resposta da IA validada antes da prévia",
+          "### Requirement: Prévia editável e confirmação explícita",
+          "### Requirement: Continuidade do fluxo manual e limites de experiência"
+        ]
+      }
+    ],
+    "order": 13,
+    "state": "archived",
+    "evidenceKind": "commit + checklist; no independent historical execution log",
+    "commitFiles": [
+      "apps/api/src/app.ts",
+      "apps/api/src/config/env.ts",
+      "apps/api/src/database/migrations/20260926230000-CreateSubjectRoadmaps.ts",
+      "apps/api/src/database/migrations/20260926231000-AddRoadmapGeneration.ts",
+      "apps/api/src/modules/ai/roadmap-ai.routes.ts",
+      "apps/api/src/modules/ai/roadmap-ai.service.ts",
+      "apps/api/src/modules/ai/roadmap-provider.ts",
+      "apps/api/src/modules/ai/roadmap-receipt.ts",
+      "apps/api/src/modules/subjects/roadmaps.repository.ts",
+      "apps/api/src/modules/subjects/subjects.repository.ts",
+      "apps/api/src/modules/subjects/subjects.routes.ts",
+      "apps/api/src/modules/subjects/subjects.service.ts",
+      "apps/api/test/env.spec.ts",
+      "apps/api/test/roadmap-ai.spec.ts",
+      "apps/api/test/roadmaps.http.spec.ts",
+      "apps/api/test/routines.http.spec.ts",
+      "apps/api/test/subjects.http.spec.ts",
+      "apps/web/src/features/auth/PrivatePage.tsx",
+      "apps/web/src/features/subjects/RoadmapEditor.tsx",
+      "apps/web/src/features/subjects/RoadmapsSection.spec.tsx",
+      "apps/web/src/features/subjects/RoadmapsSection.tsx",
+      "apps/web/src/features/subjects/SubjectsPage.spec.tsx",
+      "apps/web/src/features/subjects/SubjectsPage.tsx",
+      "apps/web/src/features/subjects/roadmaps-api.ts",
+      "apps/web/src/styles/subjects.css",
+      "packages/contracts/src/index.ts",
+      "packages/contracts/src/roadmaps.spec.ts",
+      "packages/contracts/src/roadmaps.ts"
+    ],
+    "dependencies": [],
+    "sync": [
+      {
+        "target": "openspec/specs/subject-ai-roadmaps/spec.md",
+        "changes": [
+          "ADD CRUD manual de roadmaps pertencentes à matéria",
+          "ADD Geração disponível somente para matéria própria com IA habilitada",
+          "ADD Parâmetros suficientes e validados para geração",
+          "ADD Resposta da IA validada antes da prévia",
+          "ADD Prévia editável e confirmação explícita",
+          "ADD Continuidade do fluxo manual e limites de experiência"
+        ]
+      }
+    ],
+    "decision": "Arquivada após revisão semântica, validação strict e revalidação atual; conteúdo preservado por SHA-256. Deltas substituídos são históricos; specs finais preservam revisões posteriores.",
+    "archive": "openspec/changes/archive/2026-10-27-generate-subject-roadmaps-with-ai",
+    "archiveVerifiedFiles": 5
+  },
+  {
+    "name": "regenerate-roadmap-steps",
+    "commits": [
+      "a701a93 [feat] regenerar passos e versionar progresso de roadmaps",
+      "cc5bc1a [update] versionar configurações e artefatos OpenSpec preexistentes"
+    ],
+    "pending": [],
+    "evidence": [],
+    "specs": [
+      {
+        "path": "openspec/changes/regenerate-roadmap-steps/specs/roadmap-step-regeneration/spec.md",
+        "headings": [
+          "## Purpose",
+          "## ADDED Requirements",
+          "### Requirement: Identidade estável e progresso explícito",
+          "### Requirement: Reordenação com limite de progresso",
+          "### Requirement: Prévia revisável antes da substituição",
+          "### Requirement: Confirmação íntegra e sem duplicatas",
+          "### Requirement: Histórico de versões confirmadas e restauração",
+          "### Requirement: Acesso próprio e IA opcional",
+          "### Requirement: Operação acessível"
+        ]
+      }
+    ],
+    "order": 14,
+    "state": "archived",
+    "evidenceKind": "commit + checklist; no independent historical execution log",
+    "commitFiles": [
+      "apps/api/src/app.ts",
+      "apps/api/src/database/migrations/20260926232000-VersionRoadmapSteps.ts",
+      "apps/api/src/modules/ai/roadmap-ai.service.ts",
+      "apps/api/src/modules/ai/roadmap-provider.ts",
+      "apps/api/src/modules/subjects/revision-receipt.ts",
+      "apps/api/src/modules/subjects/roadmap-revisions.routes.ts",
+      "apps/api/src/modules/subjects/roadmap-revisions.service.ts",
+      "apps/api/src/modules/subjects/roadmap-sequence.ts",
+      "apps/api/src/modules/subjects/roadmaps.repository.ts",
+      "apps/api/src/modules/subjects/subjects.routes.ts",
+      "apps/api/src/modules/subjects/subjects.service.ts",
+      "apps/api/test/roadmap-revisions.http.spec.ts",
+      "apps/api/test/roadmaps.http.spec.ts",
+      "apps/web/src/features/subjects/RoadmapEditor.tsx",
+      "apps/web/src/features/subjects/RoadmapRevisionTools.spec.tsx",
+      "apps/web/src/features/subjects/RoadmapRevisionTools.tsx",
+      "apps/web/src/features/subjects/RoadmapsSection.spec.tsx",
+      "apps/web/src/features/subjects/RoadmapsSection.tsx",
+      "apps/web/src/features/subjects/roadmaps-api.ts",
+      "apps/web/src/styles/subjects.css",
+      "packages/contracts/src/index.ts",
+      "packages/contracts/src/roadmap-revisions.spec.ts",
+      "packages/contracts/src/roadmap-revisions.ts",
+      "packages/contracts/src/roadmaps.ts"
+    ],
+    "dependencies": [],
+    "sync": [
+      {
+        "target": "openspec/specs/roadmap-step-regeneration/spec.md",
+        "changes": [
+          "ADD Identidade estável e progresso explícito",
+          "ADD Reordenação com limite de progresso",
+          "ADD Prévia revisável antes da substituição",
+          "ADD Confirmação íntegra e sem duplicatas",
+          "ADD Histórico de versões confirmadas e restauração",
+          "ADD Acesso próprio e IA opcional",
+          "ADD Operação acessível"
+        ]
+      }
+    ],
+    "decision": "Arquivada após revisão semântica, validação strict e revalidação atual; conteúdo preservado por SHA-256. Deltas substituídos são históricos; specs finais preservam revisões posteriores.",
+    "archive": "openspec/changes/archive/2026-10-27-regenerate-roadmap-steps",
+    "archiveVerifiedFiles": 5
+  },
+  {
+    "name": "add-manual-flashcards",
+    "commits": [
+      "7f3e9dd [feat] adicionar baralhos e flashcards manuais",
+      "cc5bc1a [update] versionar configurações e artefatos OpenSpec preexistentes"
+    ],
+    "pending": [],
+    "evidence": [],
+    "specs": [
+      {
+        "path": "openspec/changes/add-manual-flashcards/specs/manual-flashcards/spec.md",
+        "headings": [
+          "## Purpose",
+          "## ADDED Requirements",
+          "### Requirement: Criar e consultar baralhos próprios",
+          "### Requirement: Editar e excluir baralhos",
+          "### Requirement: Criar e consultar cartões manuais",
+          "### Requirement: Editar e excluir cartões",
+          "### Requirement: Revelar resposta por ação explícita",
+          "### Requirement: Vínculo opcional e seguro com matéria",
+          "### Requirement: Isolamento por usuário e preferência do módulo",
+          "### Requirement: Interface manual acessível"
+        ]
+      },
+      {
+        "path": "openspec/changes/add-manual-flashcards/specs/shared-contracts/spec.md",
+        "headings": [
+          "## ADDED Requirements",
+          "### Requirement: Contratos públicos de baralhos e cartões manuais"
+        ]
+      }
+    ],
+    "order": 15,
+    "state": "archived",
+    "evidenceKind": "commit + checklist; no independent historical execution log",
+    "commitFiles": [
+      "apps/api/src/app.ts",
+      "apps/api/src/database/migrations/20260926233000-CreateManualFlashcards.ts",
+      "apps/api/src/modules/flashcards/flashcards.repository.ts",
+      "apps/api/src/modules/flashcards/flashcards.routes.ts",
+      "apps/api/src/modules/flashcards/flashcards.service.ts",
+      "apps/api/test/flashcards.http.spec.ts",
+      "apps/api/test/roadmap-revisions.http.spec.ts",
+      "apps/api/test/roadmaps.http.spec.ts",
+      "apps/web/src/features/auth/PrivatePage.tsx",
+      "apps/web/src/features/flashcards/CardViewer.tsx",
+      "apps/web/src/features/flashcards/FlashcardForms.tsx",
+      "apps/web/src/features/flashcards/FlashcardsPage.spec.tsx",
+      "apps/web/src/features/flashcards/FlashcardsPage.tsx",
+      "apps/web/src/features/flashcards/flashcards-api.ts",
+      "apps/web/src/features/profile/ProfilePage.spec.tsx",
+      "apps/web/src/features/profile/module-catalog.ts",
+      "apps/web/src/styles/flashcards.css",
+      "packages/contracts/src/flashcards.spec.ts",
+      "packages/contracts/src/flashcards.ts",
+      "packages/contracts/src/index.ts"
+    ],
+    "dependencies": [
+      "add-subjects"
+    ],
+    "sync": [
+      {
+        "target": "openspec/specs/manual-flashcards/spec.md",
+        "changes": [
+          "ADD Criar e consultar baralhos próprios",
+          "ADD Editar e excluir baralhos",
+          "ADD Criar e consultar cartões manuais",
+          "ADD Editar e excluir cartões",
+          "ADD Revelar resposta por ação explícita",
+          "ADD Vínculo opcional e seguro com matéria",
+          "ADD Isolamento por usuário e preferência do módulo",
+          "ADD Interface manual acessível"
+        ]
+      },
+      {
+        "target": "openspec/specs/shared-contracts/spec.md",
+        "changes": [
+          "ADD Contratos públicos de baralhos e cartões manuais"
+        ]
+      }
+    ],
+    "decision": "Arquivada após revisão semântica, validação strict e revalidação atual; conteúdo preservado por SHA-256. Deltas substituídos são históricos; specs finais preservam revisões posteriores.",
+    "archive": "openspec/changes/archive/2026-10-27-add-manual-flashcards",
+    "archiveVerifiedFiles": 6
+  },
+  {
+    "name": "import-flashcards",
+    "commits": [
+      "b05abb8 [feat] importar flashcards de arquivos CSV e TSV",
+      "cc5bc1a [update] versionar configurações e artefatos OpenSpec preexistentes"
+    ],
+    "pending": [],
+    "evidence": [],
+    "specs": [
+      {
+        "path": "openspec/changes/import-flashcards/specs/flashcard-import/spec.md",
+        "headings": [
+          "## Purpose",
+          "## ADDED Requirements",
+          "### Requirement: Validar arquivo e destino",
+          "### Requirement: Mapear e pré-visualizar antes da gravação",
+          "### Requirement: Ignorar duplicatas e rejeitar linhas inválidas",
+          "### Requirement: Confirmar e relatar resultado efetivo",
+          "### Requirement: Importar sem IA e com controle de preferência",
+          "### Requirement: Interface acessível da importação"
+        ]
+      },
+      {
+        "path": "openspec/changes/import-flashcards/specs/shared-contracts/spec.md",
+        "headings": [
+          "## ADDED Requirements",
+          "### Requirement: Contratos públicos de importação de flashcards"
+        ]
+      }
+    ],
+    "order": 16,
+    "state": "archived",
+    "evidenceKind": "commit + checklist; no independent historical execution log",
+    "commitFiles": [
+      "apps/api/src/app.ts",
+      "apps/api/src/database/migrations/20260926234000-CreateFlashcardImports.ts",
+      "apps/api/src/modules/flashcards/import-parser.ts",
+      "apps/api/src/modules/flashcards/import.repository.ts",
+      "apps/api/src/modules/flashcards/import.routes.ts",
+      "apps/api/src/modules/flashcards/import.service.ts",
+      "apps/api/src/server.ts",
+      "apps/api/test/flashcards.http.spec.ts",
+      "apps/api/test/import-parser.spec.ts",
+      "apps/api/test/imports.http.spec.ts",
+      "apps/web/src/features/flashcards/FlashcardsPage.tsx",
+      "apps/web/src/features/flashcards/ImportFlow.spec.tsx",
+      "apps/web/src/features/flashcards/ImportFlow.tsx",
+      "apps/web/src/features/flashcards/import-api.ts",
+      "apps/web/src/styles/flashcards.css",
+      "packages/contracts/src/flashcard-import.spec.ts",
+      "packages/contracts/src/flashcard-import.ts",
+      "packages/contracts/src/index.ts"
+    ],
+    "dependencies": [
+      "add-manual-flashcards"
+    ],
+    "sync": [
+      {
+        "target": "openspec/specs/flashcard-import/spec.md",
+        "changes": [
+          "ADD Validar arquivo e destino",
+          "ADD Mapear e pré-visualizar antes da gravação",
+          "ADD Ignorar duplicatas e rejeitar linhas inválidas",
+          "ADD Confirmar e relatar resultado efetivo",
+          "ADD Importar sem IA e com controle de preferência",
+          "ADD Interface acessível da importação"
+        ]
+      },
+      {
+        "target": "openspec/specs/shared-contracts/spec.md",
+        "changes": [
+          "ADD Contratos públicos de importação de flashcards"
+        ]
+      }
+    ],
+    "decision": "Arquivada após revisão semântica, validação strict e revalidação atual; conteúdo preservado por SHA-256. Deltas substituídos são históricos; specs finais preservam revisões posteriores.",
+    "archive": "openspec/changes/archive/2026-10-27-import-flashcards",
+    "archiveVerifiedFiles": 6
+  },
+  {
+    "name": "add-spaced-repetition",
+    "commits": [
+      "41635c1 [feat] adicionar revisão espaçada de flashcards",
+      "cc5bc1a [update] versionar configurações e artefatos OpenSpec preexistentes"
+    ],
+    "pending": [],
+    "evidence": [],
+    "specs": [
+      {
+        "path": "openspec/changes/add-spaced-repetition/specs/shared-contracts/spec.md",
+        "headings": [
+          "## ADDED Requirements",
+          "### Requirement: Contratos públicos de revisão espaçada"
+        ]
+      },
+      {
+        "path": "openspec/changes/add-spaced-repetition/specs/spaced-repetition/spec.md",
+        "headings": [
+          "## Purpose",
+          "## ADDED Requirements",
+          "### Requirement: Cartões pendentes de revisão",
+          "### Requirement: Revelar antes de avaliar",
+          "### Requirement: Intervalos iniciais e ajuste posterior",
+          "### Requirement: Registro íntegro das revisões",
+          "### Requirement: Edição e exclusão de cartões",
+          "### Requirement: Isolamento e independência de IA",
+          "### Requirement: Interface acessível da revisão"
+        ]
+      }
+    ],
+    "order": 17,
+    "state": "archived",
+    "evidenceKind": "commit + checklist; no independent historical execution log",
+    "commitFiles": [
+      "apps/api/src/app.ts",
+      "apps/api/src/database/migrations/20260926235000-CreateSpacedRepetition.ts",
+      "apps/api/src/modules/flashcards/flashcards.repository.ts",
+      "apps/api/src/modules/flashcards/import.repository.ts",
+      "apps/api/src/modules/flashcards/review-lifecycle.ts",
+      "apps/api/src/modules/flashcards/review-policy.ts",
+      "apps/api/src/modules/flashcards/reviews.repository.ts",
+      "apps/api/src/modules/flashcards/reviews.routes.ts",
+      "apps/api/src/modules/flashcards/reviews.service.ts",
+      "apps/api/test/imports.http.spec.ts",
+      "apps/api/test/review-policy.spec.ts",
+      "apps/api/test/reviews.http.spec.ts",
+      "apps/web/src/features/flashcards/FlashcardsPage.tsx",
+      "apps/web/src/features/flashcards/ReviewHistory.tsx",
+      "apps/web/src/features/flashcards/ReviewQueue.spec.tsx",
+      "apps/web/src/features/flashcards/ReviewQueue.tsx",
+      "apps/web/src/features/flashcards/reviews-api.ts",
+      "apps/web/src/styles/flashcards.css",
+      "packages/contracts/src/index.ts",
+      "packages/contracts/src/reviews.spec.ts",
+      "packages/contracts/src/reviews.ts"
+    ],
+    "dependencies": [
+      "import-flashcards"
+    ],
+    "sync": [
+      {
+        "target": "openspec/specs/shared-contracts/spec.md",
+        "changes": [
+          "ADD Contratos públicos de revisão espaçada"
+        ]
+      },
+      {
+        "target": "openspec/specs/spaced-repetition/spec.md",
+        "changes": [
+          "ADD Cartões pendentes de revisão",
+          "ADD Revelar antes de avaliar",
+          "ADD Intervalos iniciais e ajuste posterior",
+          "ADD Registro íntegro das revisões",
+          "ADD Edição e exclusão de cartões",
+          "ADD Isolamento e independência de IA",
+          "ADD Interface acessível da revisão"
+        ]
+      }
+    ],
+    "decision": "Arquivada após revisão semântica, validação strict e revalidação atual; conteúdo preservado por SHA-256. Deltas substituídos são históricos; specs finais preservam revisões posteriores.",
+    "archive": "openspec/changes/archive/2026-10-27-add-spaced-repetition",
+    "archiveVerifiedFiles": 6
+  },
+  {
+    "name": "generate-flashcards-with-ai",
+    "commits": [
+      "0f3efa9 [feat] gerar flashcards com IA e confirmação revisada",
+      "cc5bc1a [update] versionar configurações e artefatos OpenSpec preexistentes"
+    ],
+    "pending": [],
+    "evidence": [],
+    "specs": [
+      {
+        "path": "openspec/changes/generate-flashcards-with-ai/specs/flashcard-ai-generation/spec.md",
+        "headings": [
+          "## Purpose",
+          "## ADDED Requirements",
+          "### Requirement: Geração disponível apenas com IA e flashcards habilitados",
+          "### Requirement: Informar origem e destino da geração",
+          "### Requirement: Validar a saída da IA antes de exibi-la",
+          "### Requirement: Revisar e selecionar antes de salvar",
+          "### Requirement: Confirmação segura e recuperável",
+          "### Requirement: Fluxos independentes e interface acessível"
+        ]
+      },
+      {
+        "path": "openspec/changes/generate-flashcards-with-ai/specs/shared-contracts/spec.md",
+        "headings": [
+          "## ADDED Requirements",
+          "### Requirement: Contratos públicos da geração de flashcards com IA"
+        ]
+      }
+    ],
+    "order": 18,
+    "state": "archived",
+    "evidenceKind": "commit + checklist; no independent historical execution log",
+    "commitFiles": [
+      "apps/api/src/app.ts",
+      "apps/api/src/database/migrations/20260927233000-CreateFlashcardAIConfirmations.ts",
+      "apps/api/src/modules/ai/flashcard-ai.routes.ts",
+      "apps/api/src/modules/ai/flashcard-ai.service.ts",
+      "apps/api/src/modules/ai/flashcard-receipt.ts",
+      "apps/api/src/modules/ai/roadmap-provider.ts",
+      "apps/api/src/modules/flashcards/flashcards.repository.ts",
+      "apps/api/src/modules/flashcards/flashcards.service.ts",
+      "apps/api/src/shared/openai-structured-provider.ts",
+      "apps/api/test/flashcard-ai.http.spec.ts",
+      "apps/api/test/reviews.http.spec.ts",
+      "apps/web/src/features/auth/PrivatePage.tsx",
+      "apps/web/src/features/flashcards/FlashcardAIFlow.spec.tsx",
+      "apps/web/src/features/flashcards/FlashcardAIFlow.tsx",
+      "apps/web/src/features/flashcards/FlashcardsPage.spec.tsx",
+      "apps/web/src/features/flashcards/FlashcardsPage.tsx",
+      "apps/web/src/features/flashcards/flashcard-ai-api.ts",
+      "apps/web/src/styles/flashcards.css",
+      "packages/contracts/src/flashcard-ai.spec.ts",
+      "packages/contracts/src/flashcard-ai.ts",
+      "packages/contracts/src/index.ts"
+    ],
+    "dependencies": [
+      "add-spaced-repetition"
+    ],
+    "sync": [
+      {
+        "target": "openspec/specs/flashcard-ai-generation/spec.md",
+        "changes": [
+          "ADD Geração disponível apenas com IA e flashcards habilitados",
+          "ADD Informar origem e destino da geração",
+          "ADD Validar a saída da IA antes de exibi-la",
+          "ADD Revisar e selecionar antes de salvar",
+          "ADD Confirmação segura e recuperável",
+          "ADD Fluxos independentes e interface acessível"
+        ]
+      },
+      {
+        "target": "openspec/specs/shared-contracts/spec.md",
+        "changes": [
+          "ADD Contratos públicos da geração de flashcards com IA"
+        ]
+      }
+    ],
+    "decision": "Arquivada após revisão semântica, validação strict e revalidação atual; conteúdo preservado por SHA-256. Deltas substituídos são históricos; specs finais preservam revisões posteriores.",
+    "archive": "openspec/changes/archive/2026-10-27-generate-flashcards-with-ai",
+    "archiveVerifiedFiles": 6
+  },
+  {
+    "name": "add-study-analytics",
+    "commits": [
+      "97907e7 [feat] adicionar estatísticas de estudo por período e fuso",
+      "cc5bc1a [update] versionar configurações e artefatos OpenSpec preexistentes"
+    ],
+    "pending": [],
+    "evidence": [],
+    "specs": [
+      {
+        "path": "openspec/changes/add-study-analytics/specs/shared-contracts/spec.md",
+        "headings": [
+          "## ADDED Requirements",
+          "### Requirement: Contratos públicos de estatísticas de estudo"
+        ]
+      },
+      {
+        "path": "openspec/changes/add-study-analytics/specs/study-analytics/spec.md",
+        "headings": [
+          "## Purpose",
+          "## ADDED Requirements",
+          "### Requirement: Consultar períodos de calendário no fuso informado",
+          "### Requirement: Mostrar métricas derivadas de atividades",
+          "### Requirement: Calcular frequência sem criar sequência de dias",
+          "### Requirement: Mostrar evolução e distinguir ausência de histórico",
+          "### Requirement: Isolar estatísticas e respeitar módulos disponíveis",
+          "### Requirement: Interface acessível e estados claros"
+        ]
+      }
+    ],
+    "order": 19,
+    "state": "archived",
+    "evidenceKind": "commit + checklist; no independent historical execution log",
+    "commitFiles": [
+      "apps/api/package.json",
+      "apps/api/src/app.ts",
+      "apps/api/src/database/migrations/20260928000000-CreateStudyAnalytics.ts",
+      "apps/api/src/modules/analytics/activity-publisher.ts",
+      "apps/api/src/modules/analytics/analytics.routes.ts",
+      "apps/api/src/modules/analytics/analytics.service.ts",
+      "apps/api/src/modules/analytics/calendar.ts",
+      "apps/api/src/modules/auth/google.service.ts",
+      "apps/api/src/modules/flashcards/reviews.repository.ts",
+      "apps/api/src/modules/pomodoro/pomodoro-activity.ts",
+      "apps/api/src/modules/pomodoro/pomodoro.service.ts",
+      "apps/api/src/modules/subjects/roadmaps.repository.ts",
+      "apps/api/src/modules/subjects/subjects.repository.ts",
+      "apps/api/src/modules/subjects/subjects.service.ts",
+      "apps/api/src/modules/tasks/tasks.repository.ts",
+      "apps/api/test/analytics-calendar.spec.ts",
+      "apps/api/test/analytics.http.spec.ts",
+      "apps/api/test/flashcard-ai.http.spec.ts",
+      "apps/web/src/app/App.tsx",
+      "apps/web/src/features/analytics/AnalyticsPage.spec.tsx",
+      "apps/web/src/features/analytics/AnalyticsPage.tsx",
+      "apps/web/src/features/analytics/analytics-api.ts",
+      "apps/web/src/features/auth/PrivatePage.tsx",
+      "apps/web/src/features/auth/auth-api.ts",
+      "apps/web/src/styles/analytics.css",
+      "packages/contracts/src/analytics.spec.ts",
+      "packages/contracts/src/analytics.ts",
+      "packages/contracts/src/index.ts"
+    ],
+    "dependencies": [
+      "generate-flashcards-with-ai"
+    ],
+    "sync": [
+      {
+        "target": "openspec/specs/shared-contracts/spec.md",
+        "changes": [
+          "ADD Contratos públicos de estatísticas de estudo"
+        ]
+      },
+      {
+        "target": "openspec/specs/study-analytics/spec.md",
+        "changes": [
+          "ADD Consultar períodos de calendário no fuso informado",
+          "ADD Mostrar métricas derivadas de atividades",
+          "ADD Calcular frequência sem criar sequência de dias",
+          "ADD Mostrar evolução e distinguir ausência de histórico",
+          "ADD Isolar estatísticas e respeitar módulos disponíveis",
+          "ADD Interface acessível e estados claros"
+        ]
+      }
+    ],
+    "decision": "Arquivada após revisão semântica, validação strict e revalidação atual; conteúdo preservado por SHA-256. Deltas substituídos são históricos; specs finais preservam revisões posteriores.",
+    "archive": "openspec/changes/archive/2026-10-27-add-study-analytics",
+    "archiveVerifiedFiles": 6
+  },
+  {
+    "name": "add-study-streaks-and-achievements",
+    "commits": [
+      "1e6b39b [feat] adicionar sequências e conquistas de estudo",
+      "cc5bc1a [update] versionar configurações e artefatos OpenSpec preexistentes"
+    ],
+    "pending": [],
+    "evidence": [],
+    "specs": [
+      {
+        "path": "openspec/changes/add-study-streaks-and-achievements/specs/shared-contracts/spec.md",
+        "headings": [
+          "## ADDED Requirements",
+          "### Requirement: Contratos públicos de sequências e conquistas"
+        ]
+      },
+      {
+        "path": "openspec/changes/add-study-streaks-and-achievements/specs/study-achievements/spec.md",
+        "headings": [
+          "## Purpose",
+          "## ADDED Requirements",
+          "### Requirement: Catálogo e critérios explícitos",
+          "### Requirement: Concessão única e persistente",
+          "### Requirement: Consultar conquistas da própria conta"
+        ]
+      },
+      {
+        "path": "openspec/changes/add-study-streaks-and-achievements/specs/study-streaks/spec.md",
+        "headings": [
+          "## Purpose",
+          "## ADDED Requirements",
+          "### Requirement: Fuso de estudo próprio e persistente",
+          "### Requirement: Reconhecer apenas atividades de estudo confirmadas",
+          "### Requirement: Dias e eventos idempotentes",
+          "### Requirement: Exibir sequência atual e recorde",
+          "### Requirement: Consulta própria e limites do histórico"
+        ]
+      }
+    ],
+    "order": 20,
+    "state": "archived",
+    "evidenceKind": "commit + checklist; no independent historical execution log",
+    "commitFiles": [
+      "apps/api/src/app.ts",
+      "apps/api/src/database/migrations/20260928010000-CreateStudyProgress.ts",
+      "apps/api/src/modules/analytics/activity-publisher.ts",
+      "apps/api/src/modules/auth/google.service.ts",
+      "apps/api/src/modules/flashcards/reviews.repository.ts",
+      "apps/api/src/modules/pomodoro/pomodoro.repository.ts",
+      "apps/api/src/modules/pomodoro/pomodoro.service.ts",
+      "apps/api/src/modules/study-progress/activity-recorder.ts",
+      "apps/api/src/modules/study-progress/progress-projection.spec.ts",
+      "apps/api/src/modules/study-progress/progress-projection.ts",
+      "apps/api/src/modules/study-progress/study-progress.repository.ts",
+      "apps/api/src/modules/study-progress/study-progress.routes.ts",
+      "apps/api/src/modules/study-progress/study-progress.service.ts",
+      "apps/api/src/modules/subjects/roadmaps.repository.ts",
+      "apps/api/src/modules/subjects/subjects.repository.ts",
+      "apps/api/src/modules/tasks/tasks.repository.ts",
+      "apps/api/test/analytics.http.spec.ts",
+      "apps/api/test/study-progress.http.spec.ts",
+      "apps/web/src/app/App.tsx",
+      "apps/web/src/features/auth/Auth.spec.tsx",
+      "apps/web/src/features/auth/PrivatePage.tsx",
+      "apps/web/src/features/auth/auth-api.ts",
+      "apps/web/src/features/profile/ProfilePage.spec.tsx",
+      "apps/web/src/features/profile/ProfilePage.tsx",
+      "apps/web/src/features/study-progress/StudyProgressPage.spec.tsx",
+      "apps/web/src/features/study-progress/StudyProgressPage.tsx",
+      "apps/web/src/features/study-progress/StudyTimeZoneSection.tsx",
+      "apps/web/src/features/study-progress/progress-api.ts",
+      "apps/web/src/styles/study-progress.css",
+      "packages/contracts/src/index.ts",
+      "packages/contracts/src/study-progress.spec.ts",
+      "packages/contracts/src/study-progress.ts"
+    ],
+    "dependencies": [
+      "add-study-analytics"
+    ],
+    "sync": [
+      {
+        "target": "openspec/specs/shared-contracts/spec.md",
+        "changes": [
+          "ADD Contratos públicos de sequências e conquistas"
+        ]
+      },
+      {
+        "target": "openspec/specs/study-achievements/spec.md",
+        "changes": [
+          "ADD Catálogo e critérios explícitos",
+          "ADD Concessão única e persistente",
+          "ADD Consultar conquistas da própria conta"
+        ]
+      },
+      {
+        "target": "openspec/specs/study-streaks/spec.md",
+        "changes": [
+          "ADD Fuso de estudo próprio e persistente",
+          "ADD Reconhecer apenas atividades de estudo confirmadas",
+          "ADD Dias e eventos idempotentes",
+          "ADD Exibir sequência atual e recorde",
+          "ADD Consulta própria e limites do histórico"
+        ]
+      }
+    ],
+    "decision": "Arquivada após revisão semântica, validação strict e revalidação atual; conteúdo preservado por SHA-256. Deltas substituídos são históricos; specs finais preservam revisões posteriores.",
+    "archive": "openspec/changes/archive/2026-10-27-add-study-streaks-and-achievements",
+    "archiveVerifiedFiles": 7
+  },
+  {
+    "name": "compose-user-dashboard",
+    "commits": [
+      "0abddc2 [feat] compor dashboard pessoal de estudos",
+      "cc5bc1a [update] versionar configurações e artefatos OpenSpec preexistentes"
+    ],
+    "pending": [],
+    "evidence": [],
+    "specs": [
+      {
+        "path": "openspec/changes/compose-user-dashboard/specs/shared-contracts/spec.md",
+        "headings": [
+          "## ADDED Requirements",
+          "### Requirement: Contrato público de composição do dashboard"
+        ]
+      },
+      {
+        "path": "openspec/changes/compose-user-dashboard/specs/user-dashboard/spec.md",
+        "headings": [
+          "## Purpose",
+          "## ADDED Requirements",
+          "### Requirement: Dashboard como entrada autenticada",
+          "### Requirement: Resumir tarefas próximas e progresso",
+          "### Requirement: Destacar automaticamente matéria e roadmap",
+          "### Requirement: Resumir Pomodoro e oferecer ação segura",
+          "### Requirement: Mostrar sequência, pendências de flashcards e semana",
+          "### Requirement: Respeitar disponibilidade e preferências",
+          "### Requirement: Navegação e estados compreensíveis"
+        ]
+      }
+    ],
+    "order": 21,
+    "state": "archived",
+    "evidenceKind": "commit + checklist; no independent historical execution log",
+    "commitFiles": [
+      "apps/api/src/app.ts",
+      "apps/api/src/modules/dashboard/dashboard.routes.ts",
+      "apps/api/src/modules/dashboard/dashboard.service.spec.ts",
+      "apps/api/src/modules/dashboard/dashboard.service.ts",
+      "apps/api/src/modules/pomodoro/pomodoro.repository.ts",
+      "apps/api/src/modules/pomodoro/pomodoro.service.ts",
+      "apps/api/src/modules/subjects/subjects.repository.ts",
+      "apps/api/src/modules/subjects/subjects.service.ts",
+      "apps/api/src/modules/tasks/tasks.repository.ts",
+      "apps/api/src/modules/tasks/tasks.service.ts",
+      "apps/api/test/dashboard.http.spec.ts",
+      "apps/web/src/features/auth/PrivatePage.tsx",
+      "apps/web/src/features/dashboard/DashboardPage.spec.tsx",
+      "apps/web/src/features/dashboard/DashboardPage.tsx",
+      "apps/web/src/features/dashboard/dashboard-api.ts",
+      "apps/web/src/features/subjects/RoadmapsSection.tsx",
+      "apps/web/src/features/subjects/SubjectsPage.spec.tsx",
+      "apps/web/src/features/subjects/SubjectsPage.tsx",
+      "apps/web/src/styles/dashboard.css",
+      "packages/contracts/src/dashboard.spec.ts",
+      "packages/contracts/src/dashboard.ts",
+      "packages/contracts/src/index.ts"
+    ],
+    "dependencies": [
+      "add-study-streaks-and-achievements"
+    ],
+    "sync": [
+      {
+        "target": "openspec/specs/shared-contracts/spec.md",
+        "changes": [
+          "ADD Contrato público de composição do dashboard"
+        ]
+      },
+      {
+        "target": "openspec/specs/user-dashboard/spec.md",
+        "changes": [
+          "ADD Dashboard como entrada autenticada",
+          "ADD Resumir tarefas próximas e progresso",
+          "ADD Destacar automaticamente matéria e roadmap",
+          "ADD Resumir Pomodoro e oferecer ação segura",
+          "ADD Mostrar sequência, pendências de flashcards e semana",
+          "ADD Respeitar disponibilidade e preferências",
+          "ADD Navegação e estados compreensíveis"
+        ]
+      }
+    ],
+    "decision": "Arquivada após revisão semântica, validação strict e revalidação atual; conteúdo preservado por SHA-256. Deltas substituídos são históricos; specs finais preservam revisões posteriores.",
+    "archive": "openspec/changes/archive/2026-10-27-compose-user-dashboard",
+    "archiveVerifiedFiles": 6
+  },
+  {
+    "name": "replace-docker-with-local-database",
+    "commits": [
+      "cff03c8 [update] substituir Docker por serviços locais"
+    ],
+    "pending": [],
+    "evidence": [],
+    "specs": [
+      {
+        "path": "openspec/changes/replace-docker-with-local-database/specs/continuous-integration/spec.md",
+        "headings": [
+          "## MODIFIED Requirements",
+          "### Requirement: Dependência de banco em testes de integração"
+        ]
+      },
+      {
+        "path": "openspec/changes/replace-docker-with-local-database/specs/database-connection/spec.md",
+        "headings": [
+          "## ADDED Requirements",
+          "### Requirement: Desenvolvimento com MySQL local sem Docker",
+          "### Requirement: Serviços auxiliares sem Docker"
+        ]
+      }
+    ],
+    "order": 22,
+    "state": "archived",
+    "evidenceKind": "commit + checklist; no independent historical execution log",
+    "commitFiles": [
+      "apps/api/test/analytics.http.spec.ts",
+      "apps/api/test/card-time.fixture.ts",
+      "apps/api/test/reviews.http.spec.ts",
+      "apps/api/test/study-progress.http.spec.ts",
+      "apps/web/vitest.config.ts"
+    ],
+    "dependencies": [],
+    "sync": [
+      {
+        "target": "openspec/specs/continuous-integration/spec.md",
+        "changes": [
+          "UPDATE Dependência de banco em testes de integração"
+        ]
+      },
+      {
+        "target": "openspec/specs/database-connection/spec.md",
+        "changes": [
+          "ADD Desenvolvimento com MySQL local sem Docker",
+          "ADD Serviços auxiliares sem Docker"
+        ]
+      }
+    ],
+    "decision": "Arquivada após revisão semântica, validação strict e revalidação atual; conteúdo preservado por SHA-256. Deltas substituídos são históricos; specs finais preservam revisões posteriores.",
+    "archive": "openspec/changes/archive/2026-10-27-replace-docker-with-local-database",
+    "archiveVerifiedFiles": 6
+  },
+  {
+    "name": "refactor-ui-to-shadcn",
+    "commits": [
+      "cb74ca3 [update] migrar interface para componentes Shadcn UI"
+    ],
+    "pending": [],
+    "evidence": [],
+    "specs": [],
+    "order": 23,
+    "state": "archived",
+    "evidenceKind": "commit + checklist; no independent historical execution log",
+    "commitFiles": [
+      "apps/web/components.json",
+      "apps/web/package.json",
+      "apps/web/src/features/analytics/AnalyticsPage.spec.tsx",
+      "apps/web/src/features/analytics/AnalyticsPage.tsx",
+      "apps/web/src/features/auth/Auth.spec.tsx",
+      "apps/web/src/features/auth/EmailVerificationPage.tsx",
+      "apps/web/src/features/auth/PasswordRecoveryPage.tsx",
+      "apps/web/src/features/auth/PrivatePage.tsx",
+      "apps/web/src/features/dashboard/DashboardPage.tsx",
+      "apps/web/src/features/flashcards/CardViewer.tsx",
+      "apps/web/src/features/flashcards/FlashcardAIFlow.tsx",
+      "apps/web/src/features/flashcards/FlashcardForms.tsx",
+      "apps/web/src/features/flashcards/FlashcardsPage.tsx",
+      "apps/web/src/features/flashcards/ImportFlow.tsx",
+      "apps/web/src/features/flashcards/ReviewHistory.tsx",
+      "apps/web/src/features/flashcards/ReviewQueue.tsx",
+      "apps/web/src/features/landing/AccessPage.tsx",
+      "apps/web/src/features/landing/FeatureCarousel.tsx",
+      "apps/web/src/features/landing/PublicLanding.tsx",
+      "apps/web/src/features/pomodoro/PomodoroPage.tsx",
+      "apps/web/src/features/profile/ProfilePage.spec.tsx",
+      "apps/web/src/features/profile/ProfilePage.tsx",
+      "apps/web/src/features/routines/RoutinesPage.tsx",
+      "apps/web/src/features/study-progress/StudyProgressPage.tsx",
+      "apps/web/src/features/study-progress/StudyTimeZoneSection.tsx",
+      "apps/web/src/features/subjects/RoadmapEditor.tsx",
+      "apps/web/src/features/subjects/RoadmapRevisionTools.tsx",
+      "apps/web/src/features/subjects/RoadmapsSection.tsx",
+      "apps/web/src/features/subjects/SubjectName.tsx",
+      "apps/web/src/features/subjects/SubjectSelect.tsx",
+      "apps/web/src/features/subjects/SubjectsPage.tsx",
+      "apps/web/src/features/system/SystemPage.tsx",
+      "apps/web/src/features/tasks/SubtasksSection.tsx",
+      "apps/web/src/features/tasks/TaskConfirmation.spec.tsx",
+      "apps/web/src/features/tasks/TaskConfirmation.tsx",
+      "apps/web/src/features/tasks/TaskProgress.tsx",
+      "apps/web/src/features/tasks/TasksPage.spec.tsx",
+      "apps/web/src/features/tasks/TasksPage.tsx",
+      "apps/web/src/main.tsx",
+      "apps/web/src/styles/analytics.css",
+      "apps/web/src/styles/auth.css",
+      "apps/web/src/styles/dashboard.css",
+      "apps/web/src/styles/flashcards.css",
+      "apps/web/src/styles/landing.css",
+      "apps/web/src/styles/main.css",
+      "apps/web/src/styles/pomodoro.css",
+      "apps/web/src/styles/routines.css",
+      "apps/web/src/styles/study-progress.css",
+      "apps/web/src/styles/subjects.css",
+      "apps/web/src/styles/tasks.css",
+      "apps/web/src/test/setup.ts",
+      "apps/web/tsconfig.json",
+      "apps/web/vite.config.ts",
+      "apps/web/vitest.config.ts",
+      "packages/ui/README.md",
+      "packages/ui/components.json",
+      "packages/ui/package.json",
+      "packages/ui/scripts/normalize-shadcn.mjs",
+      "packages/ui/src/components/ui/alert-dialog.tsx",
+      "packages/ui/src/components/ui/alert.tsx",
+      "packages/ui/src/components/ui/avatar.tsx",
+      "packages/ui/src/components/ui/badge.tsx",
+      "packages/ui/src/components/ui/button.tsx",
+      "packages/ui/src/components/ui/card.tsx",
+      "packages/ui/src/components/ui/checkbox.tsx",
+      "packages/ui/src/components/ui/dialog.tsx",
+      "packages/ui/src/components/ui/field.tsx",
+      "packages/ui/src/components/ui/input.tsx",
+      "packages/ui/src/components/ui/label.tsx",
+      "packages/ui/src/components/ui/native-select.tsx",
+      "packages/ui/src/components/ui/pagination.tsx",
+      "packages/ui/src/components/ui/progress.tsx",
+      "packages/ui/src/components/ui/select.tsx",
+      "packages/ui/src/components/ui/separator.tsx",
+      "packages/ui/src/components/ui/sheet.tsx",
+      "packages/ui/src/components/ui/skeleton.tsx",
+      "packages/ui/src/components/ui/table.tsx",
+      "packages/ui/src/components/ui/tabs.tsx",
+      "packages/ui/src/components/ui/textarea.tsx",
+      "packages/ui/src/lib/utils.ts",
+      "packages/ui/src/status-panel.tsx",
+      "packages/ui/src/styles/globals.css",
+      "packages/ui/tsconfig.json"
+    ],
+    "dependencies": [],
+    "sync": [],
+    "decision": "Arquivada após revisão semântica, validação strict e revalidação atual; conteúdo preservado por SHA-256. Deltas substituídos são históricos; specs finais preservam revisões posteriores.",
+    "archive": "openspec/changes/archive/2026-10-27-refactor-ui-to-shadcn",
+    "archiveVerifiedFiles": 9
+  },
+  {
+    "name": "update-application-theme",
+    "commits": [
+      "5872582 [update] atualizar identidade visual com temas claro e escuro"
+    ],
+    "pending": [],
+    "evidence": [
+      "openspec/changes/update-application-theme/verification.md"
+    ],
+    "specs": [
+      {
+        "path": "openspec/changes/update-application-theme/specs/application-theme/spec.md",
+        "headings": [
+          "## Purpose",
+          "## ADDED Requirements",
+          "### Requirement: Identidade visual consistente",
+          "### Requirement: Tema acompanha o sistema",
+          "### Requirement: Contraste e estados legíveis",
+          "### Requirement: Significado das cores de estado",
+          "### Requirement: Preservação das páginas existentes"
+        ]
+      }
+    ],
+    "order": 24,
+    "state": "archived",
+    "evidenceKind": "commit + checklist + report",
+    "commitFiles": [
+      "apps/web/public/illustrations/flashcards.svg",
+      "apps/web/public/illustrations/focus.svg",
+      "apps/web/public/illustrations/roadmap.svg",
+      "apps/web/public/illustrations/tasks.svg",
+      "apps/web/src/app/theme-colors.spec.ts",
+      "apps/web/src/app/theme.spec.tsx",
+      "apps/web/src/app/theme.ts",
+      "apps/web/src/features/landing/FeatureCarousel.tsx",
+      "apps/web/src/main.tsx",
+      "apps/web/src/styles/auth.css",
+      "apps/web/src/styles/flashcards.css",
+      "apps/web/src/styles/landing.css",
+      "apps/web/src/styles/main.css",
+      "apps/web/src/styles/subjects.css",
+      "packages/ui/README.md",
+      "packages/ui/src/components/ui/alert.tsx",
+      "packages/ui/src/components/ui/badge.tsx",
+      "packages/ui/src/components/ui/button.tsx",
+      "packages/ui/src/components/ui/checkbox.tsx",
+      "packages/ui/src/components/ui/input.tsx",
+      "packages/ui/src/components/ui/native-select.tsx",
+      "packages/ui/src/components/ui/progress.tsx",
+      "packages/ui/src/components/ui/select.tsx",
+      "packages/ui/src/components/ui/tabs.tsx",
+      "packages/ui/src/components/ui/textarea.tsx",
+      "packages/ui/src/status-panel.tsx",
+      "packages/ui/src/styles/globals.css"
+    ],
+    "dependencies": [],
+    "sync": [
+      {
+        "target": "openspec/specs/application-theme/spec.md",
+        "changes": [
+          "ADD Identidade visual consistente",
+          "ADD Tema acompanha o sistema",
+          "ADD Contraste e estados legíveis",
+          "ADD Significado das cores de estado",
+          "ADD Preservação das páginas existentes"
+        ]
+      }
+    ],
+    "decision": "Arquivada após revisão semântica, validação strict e revalidação atual; conteúdo preservado por SHA-256. Deltas substituídos são históricos; specs finais preservam revisões posteriores.",
+    "archive": "openspec/changes/archive/2026-10-27-update-application-theme",
+    "archiveVerifiedFiles": 6
+  },
+  {
+    "name": "prepare-demo-environment",
+    "commits": [
+      "907e9dc [feat] preparar ambiente local de demonstração"
+    ],
+    "pending": [],
+    "evidence": [
+      "openspec/changes/prepare-demo-environment/verification.md"
+    ],
+    "specs": [
+      {
+        "path": "openspec/changes/prepare-demo-environment/specs/demo-database-management/spec.md",
+        "headings": [
+          "## Purpose",
+          "## ADDED Requirements",
+          "### Requirement: Alvo explícito e ambiente restrito",
+          "### Requirement: Limpeza preserva estrutura e migrations",
+          "### Requirement: Operações independentes da inicialização"
+        ]
+      },
+      {
+        "path": "openspec/changes/prepare-demo-environment/specs/demo-profiles/spec.md",
+        "headings": [
+          "## Purpose",
+          "## ADDED Requirements",
+          "### Requirement: Três contas demonstráveis",
+          "### Requirement: Consistência temporal e isolamento",
+          "### Requirement: População reproduzível"
+        ]
+      },
+      {
+        "path": "openspec/changes/prepare-demo-environment/specs/web-runtime/spec.md",
+        "headings": [
+          "## ADDED Requirements",
+          "### Requirement: Acesso local e LAN em porta fixa"
+        ]
+      },
+      {
+        "path": "openspec/changes/prepare-demo-environment/specs/workspace-bootstrap/spec.md",
+        "headings": [
+          "## MODIFIED Requirements",
+          "### Requirement: Execução local documentada"
+        ]
+      }
+    ],
+    "order": 25,
+    "state": "archived",
+    "evidenceKind": "commit + checklist + report",
+    "commitFiles": [
+      "apps/api/package.json",
+      "apps/api/src/app.ts",
+      "apps/api/src/config/env.ts",
+      "apps/api/src/config/origins.ts",
+      "apps/api/src/demo/cli.ts",
+      "apps/api/src/demo/database.ts",
+      "apps/api/src/demo/seed.ts",
+      "apps/api/src/email-worker.ts",
+      "apps/api/src/modules/ai/flashcard-ai.routes.ts",
+      "apps/api/src/modules/ai/roadmap-ai.routes.ts",
+      "apps/api/src/modules/auth/auth.routes.ts",
+      "apps/api/src/modules/auth/profile.routes.ts",
+      "apps/api/src/modules/flashcards/flashcards.routes.ts",
+      "apps/api/src/modules/flashcards/import.routes.ts",
+      "apps/api/src/modules/flashcards/reviews.routes.ts",
+      "apps/api/src/modules/pomodoro/pomodoro.routes.ts",
+      "apps/api/src/modules/routines/routines.routes.ts",
+      "apps/api/src/modules/study-progress/study-progress.routes.ts",
+      "apps/api/src/modules/subjects/roadmap-revisions.routes.ts",
+      "apps/api/src/modules/subjects/subjects.routes.ts",
+      "apps/api/src/modules/tasks/tasks.routes.ts",
+      "apps/api/test/demo.spec.ts",
+      "apps/web/package.json",
+      "apps/web/src/features/auth/api-url.ts",
+      "apps/web/src/features/auth/auth-api.ts",
+      "apps/web/src/features/system/ApiStatus.tsx",
+      "apps/web/src/features/tasks/TasksPage.tsx",
+      "apps/web/vite.config.ts"
+    ],
+    "dependencies": [],
+    "sync": [
+      {
+        "target": "openspec/specs/demo-database-management/spec.md",
+        "changes": [
+          "ADD Alvo explícito e ambiente restrito",
+          "ADD Limpeza preserva estrutura e migrations",
+          "ADD Operações independentes da inicialização"
+        ]
+      },
+      {
+        "target": "openspec/specs/demo-profiles/spec.md",
+        "changes": [
+          "ADD Três contas demonstráveis",
+          "ADD Consistência temporal e isolamento",
+          "ADD População reproduzível"
+        ]
+      },
+      {
+        "target": "openspec/specs/web-runtime/spec.md",
+        "changes": [
+          "ADD Acesso local e LAN em porta fixa"
+        ]
+      },
+      {
+        "target": "openspec/specs/workspace-bootstrap/spec.md",
+        "changes": [
+          "UPDATE Execução local documentada"
+        ]
+      }
+    ],
+    "decision": "Arquivada após revisão semântica, validação strict e revalidação atual; conteúdo preservado por SHA-256. Deltas substituídos são históricos; specs finais preservam revisões posteriores.",
+    "archive": "openspec/changes/archive/2026-10-27-prepare-demo-environment",
+    "archiveVerifiedFiles": 9
+  },
+  {
+    "name": "update-public-landing-from-stitch",
+    "commits": [
+      "cd8d636 [update] atualizar landing pública a partir do Stitch"
+    ],
+    "pending": [],
+    "evidence": [
+      "openspec/changes/update-public-landing-from-stitch/validation.md"
+    ],
+    "specs": [
+      {
+        "path": "openspec/changes/update-public-landing-from-stitch/specs/application-theme/spec.md",
+        "headings": [
+          "## Purpose",
+          "## ADDED Requirements",
+          "### Requirement: Identidade visual consistente",
+          "### Requirement: Tema acompanha o sistema",
+          "### Requirement: Contraste e estados legíveis",
+          "### Requirement: Significado das cores de estado",
+          "### Requirement: Preservação das páginas existentes",
+          "### Requirement: Escolha manual local e acessível",
+          "### Requirement: Inicialização e armazenamento resilientes"
+        ]
+      },
+      {
+        "path": "openspec/changes/update-public-landing-from-stitch/specs/public-landing/spec.md",
+        "headings": [
+          "## MODIFIED Requirements",
+          "### Requirement: Página pública de apresentação",
+          "### Requirement: Header fixo e navegação responsiva",
+          "### Requirement: Respeito a movimento reduzido",
+          "### Requirement: Acessibilidade e largura mínima",
+          "## ADDED Requirements",
+          "### Requirement: Blocos e demonstrações do produto",
+          "### Requirement: Destinos reais e acesso público",
+          "## REMOVED Requirements",
+          "### Requirement: Carrossel de funcionalidades",
+          "### Requirement: Destino provisório de acesso"
+        ]
+      },
+      {
+        "path": "openspec/changes/update-public-landing-from-stitch/specs/user-authentication/spec.md",
+        "headings": [
+          "## ADDED Requirements",
+          "### Requirement: Seleção do modo de acesso por URL"
+        ]
+      }
+    ],
+    "order": 27,
+    "state": "archived",
+    "evidenceKind": "commit + checklist + report",
+    "commitFiles": [
+      "apps/web/index.html",
+      "apps/web/public/illustrations/flashcards.svg",
+      "apps/web/public/illustrations/focus.svg",
+      "apps/web/public/illustrations/roadmap.svg",
+      "apps/web/public/illustrations/tasks.svg",
+      "apps/web/src/app/App.spec.tsx",
+      "apps/web/src/app/theme-bootstrap.spec.ts",
+      "apps/web/src/app/theme.spec.tsx",
+      "apps/web/src/app/theme.ts",
+      "apps/web/src/features/landing/AccessPage.spec.tsx",
+      "apps/web/src/features/landing/AccessPage.tsx",
+      "apps/web/src/features/landing/FeatureCarousel.spec.tsx",
+      "apps/web/src/features/landing/FeatureCarousel.tsx",
+      "apps/web/src/features/landing/ProductPreview.tsx",
+      "apps/web/src/features/landing/PublicLanding.tsx",
+      "apps/web/src/features/landing/ThemeToggle.tsx",
+      "apps/web/src/features/landing/public-navigation.ts",
+      "apps/web/src/features/landing/useLandingMotion.ts",
+      "apps/web/src/styles/landing.css"
+    ],
+    "dependencies": [
+      "update-application-theme",
+      "add-email-verification-and-recovery"
+    ],
+    "sync": [
+      {
+        "target": "openspec/specs/application-theme/spec.md",
+        "changes": [
+          "UPDATE Identidade visual consistente",
+          "UPDATE Tema acompanha o sistema",
+          "UPDATE Contraste e estados legíveis",
+          "UPDATE Significado das cores de estado",
+          "UPDATE Preservação das páginas existentes",
+          "ADD Escolha manual local e acessível",
+          "ADD Inicialização e armazenamento resilientes"
+        ]
+      },
+      {
+        "target": "openspec/specs/public-landing/spec.md",
+        "changes": [
+          "UPDATE Página pública de apresentação",
+          "UPDATE Header fixo e navegação responsiva",
+          "UPDATE Respeito a movimento reduzido",
+          "UPDATE Acessibilidade e largura mínima",
+          "ADD Blocos e demonstrações do produto",
+          "ADD Destinos reais e acesso público",
+          "REMOVE Carrossel de funcionalidades",
+          "REMOVE Destino provisório de acesso"
+        ]
+      },
+      {
+        "target": "openspec/specs/user-authentication/spec.md",
+        "changes": [
+          "ADD Seleção do modo de acesso por URL"
+        ]
+      }
+    ],
+    "decision": "Arquivada após revisão semântica, validação strict e revalidação atual; conteúdo preservado por SHA-256. Deltas substituídos são históricos; specs finais preservam revisões posteriores.",
+    "archive": "openspec/changes/archive/2026-10-27-update-public-landing-from-stitch",
+    "archiveVerifiedFiles": 8
+  },
+  {
+    "name": "update-dashboard-from-stitch",
+    "commits": [
+      "f224027 [update] atualizar apresentação do dashboard"
+    ],
+    "pending": [],
+    "evidence": [],
+    "specs": [
+      {
+        "path": "openspec/changes/update-dashboard-from-stitch/specs/dashboard-presentation/spec.md",
+        "headings": [
+          "## Purpose",
+          "## ADDED Requirements",
+          "### Requirement: Organização visual com equivalência funcional",
+          "### Requirement: Progresso e prazos oficiais",
+          "### Requirement: Gráfico semanal de dados reais",
+          "### Requirement: Estados preservados na nova composição",
+          "### Requirement: Responsividade e temas acessíveis"
+        ]
+      }
+    ],
+    "order": 28,
+    "state": "archived",
+    "evidenceKind": "commit + checklist; no independent historical execution log",
+    "commitFiles": [
+      "apps/web/src/features/dashboard/DashboardPage.spec.tsx",
+      "apps/web/src/features/dashboard/DashboardPage.tsx",
+      "apps/web/src/features/dashboard/DashboardWeeklyChart.spec.tsx",
+      "apps/web/src/features/dashboard/DashboardWeeklyChart.tsx",
+      "apps/web/src/styles/dashboard.css"
+    ],
+    "dependencies": [],
+    "sync": [
+      {
+        "target": "openspec/specs/dashboard-presentation/spec.md",
+        "changes": [
+          "ADD Organização visual com equivalência funcional",
+          "ADD Progresso e prazos oficiais",
+          "ADD Gráfico semanal de dados reais",
+          "ADD Estados preservados na nova composição",
+          "ADD Responsividade e temas acessíveis"
+        ]
+      }
+    ],
+    "decision": "Arquivada após revisão semântica, validação strict e revalidação atual; conteúdo preservado por SHA-256. Deltas substituídos são históricos; specs finais preservam revisões posteriores.",
+    "archive": "openspec/changes/archive/2026-10-27-update-dashboard-from-stitch",
+    "archiveVerifiedFiles": 5
+  },
+  {
+    "name": "update-auth-screens-from-stitch",
+    "commits": [
+      "6140e0d [update] atualizar visual das telas de autenticação"
+    ],
+    "pending": [],
+    "evidence": [
+      "openspec/changes/update-auth-screens-from-stitch/validation.md"
+    ],
+    "specs": [
+      {
+        "path": "openspec/changes/update-auth-screens-from-stitch/specs/user-authentication/spec.md",
+        "headings": [
+          "## ADDED Requirements",
+          "### Requirement: Apresentação visual consistente dos fluxos existentes",
+          "### Requirement: Referência visual subordinada ao fluxo real",
+          "### Requirement: Feedback visual fiel aos resultados de autenticação"
+        ]
+      }
+    ],
+    "order": 29,
+    "state": "archived",
+    "evidenceKind": "commit + checklist + report",
+    "commitFiles": [
+      "apps/web/src/features/auth/AuthFeedback.spec.tsx",
+      "apps/web/src/features/auth/AuthLayout.tsx",
+      "apps/web/src/features/auth/EmailVerificationPage.tsx",
+      "apps/web/src/features/auth/PasswordRecoveryPage.tsx",
+      "apps/web/src/features/landing/AccessPage.tsx",
+      "apps/web/src/styles/auth.css"
+    ],
+    "dependencies": [
+      "update-public-landing-from-stitch"
+    ],
+    "sync": [
+      {
+        "target": "openspec/specs/user-authentication/spec.md",
+        "changes": [
+          "ADD Apresentação visual consistente dos fluxos existentes",
+          "ADD Referência visual subordinada ao fluxo real",
+          "ADD Feedback visual fiel aos resultados de autenticação"
+        ]
+      }
+    ],
+    "decision": "Arquivada após revisão semântica, validação strict e revalidação atual; conteúdo preservado por SHA-256. Deltas substituídos são históricos; specs finais preservam revisões posteriores.",
+    "archive": "openspec/changes/archive/2026-10-27-update-auth-screens-from-stitch",
+    "archiveVerifiedFiles": 6
+  },
+  {
+    "name": "update-subjects-from-stitch",
+    "commits": [
+      "36c980a [update] atualizar visual do módulo de matérias"
+    ],
+    "pending": [],
+    "evidence": [
+      "openspec/changes/update-subjects-from-stitch/verification.md"
+    ],
+    "specs": [
+      {
+        "path": "openspec/changes/update-subjects-from-stitch/specs/subjects-visual-experience/spec.md",
+        "headings": [
+          "## Purpose",
+          "## ADDED Requirements",
+          "### Requirement: Identidade visual em todo o módulo",
+          "### Requirement: Apresentação subordinada aos dados reais",
+          "### Requirement: Roadmaps integralmente alinhados",
+          "### Requirement: Estados visuais completos e honestos",
+          "### Requirement: Acessibilidade, responsividade e temas",
+          "### Requirement: Compatibilidade de navegação e preferências"
+        ]
+      }
+    ],
+    "order": 30,
+    "state": "archived",
+    "evidenceKind": "commit + checklist + report",
+    "commitFiles": [
+      "apps/web/src/features/auth/AuthFeedback.spec.tsx",
+      "apps/web/src/features/auth/PrivatePage.tsx",
+      "apps/web/src/features/subjects/RoadmapEditor.tsx",
+      "apps/web/src/features/subjects/RoadmapRevisionTools.tsx",
+      "apps/web/src/features/subjects/RoadmapsSection.tsx",
+      "apps/web/src/features/subjects/SubjectName.tsx",
+      "apps/web/src/features/subjects/SubjectSelect.tsx",
+      "apps/web/src/features/subjects/SubjectsPage.tsx",
+      "apps/web/src/styles/subject-associations.css",
+      "apps/web/src/styles/subjects.css"
+    ],
+    "dependencies": [],
+    "sync": [
+      {
+        "target": "openspec/specs/subjects-visual-experience/spec.md",
+        "changes": [
+          "ADD Identidade visual em todo o módulo",
+          "ADD Apresentação subordinada aos dados reais",
+          "ADD Roadmaps integralmente alinhados",
+          "ADD Estados visuais completos e honestos",
+          "ADD Acessibilidade, responsividade e temas",
+          "ADD Compatibilidade de navegação e preferências"
+        ]
+      }
+    ],
+    "decision": "Arquivada após revisão semântica, validação strict e revalidação atual; conteúdo preservado por SHA-256. Deltas substituídos são históricos; specs finais preservam revisões posteriores.",
+    "archive": "openspec/changes/archive/2026-10-27-update-subjects-from-stitch",
+    "archiveVerifiedFiles": 6
+  },
+  {
+    "name": "update-tasks-from-stitch",
+    "commits": [
+      "eecfae7 [update] atualizar visual do módulo de tarefas"
+    ],
+    "pending": [],
+    "evidence": [
+      "openspec/changes/update-tasks-from-stitch/validation.md"
+    ],
+    "specs": [
+      {
+        "path": "openspec/changes/update-tasks-from-stitch/specs/tasks-visual-experience/spec.md",
+        "headings": [
+          "## Purpose",
+          "## ADDED Requirements",
+          "### Requirement: Identidade visual integral do módulo",
+          "### Requirement: Listagem fiel aos dados reais",
+          "### Requirement: Formulários preservam campos e submissão",
+          "### Requirement: Subtarefas e progresso visualmente coerentes",
+          "### Requirement: Temas claro e escuro completos",
+          "### Requirement: Feedback completo para estados assíncronos",
+          "### Requirement: Responsividade e acessibilidade de todos os fluxos"
+        ]
+      }
+    ],
+    "order": 31,
+    "state": "archived",
+    "evidenceKind": "commit + checklist + report",
+    "commitFiles": [
+      "apps/web/src/features/auth/PrivatePage.tsx",
+      "apps/web/src/features/tasks/SubtasksSection.tsx",
+      "apps/web/src/features/tasks/TaskConfirmation.tsx",
+      "apps/web/src/features/tasks/TaskProgress.tsx",
+      "apps/web/src/features/tasks/TasksPage.spec.tsx",
+      "apps/web/src/features/tasks/TasksPage.tsx",
+      "apps/web/src/styles/tasks.css"
+    ],
+    "dependencies": [],
+    "sync": [
+      {
+        "target": "openspec/specs/tasks-visual-experience/spec.md",
+        "changes": [
+          "ADD Identidade visual integral do módulo",
+          "ADD Listagem fiel aos dados reais",
+          "ADD Formulários preservam campos e submissão",
+          "ADD Subtarefas e progresso visualmente coerentes",
+          "ADD Temas claro e escuro completos",
+          "ADD Feedback completo para estados assíncronos",
+          "ADD Responsividade e acessibilidade de todos os fluxos"
+        ]
+      }
+    ],
+    "decision": "Arquivada após revisão semântica, validação strict e revalidação atual; conteúdo preservado por SHA-256. Deltas substituídos são históricos; specs finais preservam revisões posteriores.",
+    "archive": "openspec/changes/archive/2026-10-27-update-tasks-from-stitch",
+    "archiveVerifiedFiles": 12
+  },
+  {
+    "name": "update-study-sessions-and-pomodoro-from-stitch",
+    "commits": [
+      "d51ee97 [update] atualizar visual das sessões de Pomodoro"
+    ],
+    "pending": [],
+    "evidence": [
+      "openspec/changes/update-study-sessions-and-pomodoro-from-stitch/validation.md"
+    ],
+    "specs": [
+      {
+        "path": "openspec/changes/update-study-sessions-and-pomodoro-from-stitch/specs/pomodoro-visual-experience/spec.md",
+        "headings": [
+          "## Purpose",
+          "## ADDED Requirements",
+          "### Requirement: Identidade visual completa do fluxo",
+          "### Requirement: Timer e controles representam o estado real",
+          "### Requirement: Apresentação fiel a dados e integrações",
+          "### Requirement: Temas com estados semânticos",
+          "### Requirement: Responsividade e acessibilidade",
+          "### Requirement: Resiliência visual preservada"
+        ]
+      }
+    ],
+    "order": 32,
+    "state": "archived",
+    "evidenceKind": "commit + checklist + report",
+    "commitFiles": [
+      "apps/web/src/features/pomodoro/PomodoroPage.spec.tsx",
+      "apps/web/src/features/pomodoro/PomodoroPage.tsx",
+      "apps/web/src/styles/pomodoro.css"
+    ],
+    "dependencies": [],
+    "sync": [
+      {
+        "target": "openspec/specs/pomodoro-visual-experience/spec.md",
+        "changes": [
+          "ADD Identidade visual completa do fluxo",
+          "ADD Timer e controles representam o estado real",
+          "ADD Apresentação fiel a dados e integrações",
+          "ADD Temas com estados semânticos",
+          "ADD Responsividade e acessibilidade",
+          "ADD Resiliência visual preservada"
+        ]
+      }
+    ],
+    "decision": "Arquivada após revisão semântica, validação strict e revalidação atual; conteúdo preservado por SHA-256. Deltas substituídos são históricos; specs finais preservam revisões posteriores.",
+    "archive": "openspec/changes/archive/2026-10-27-update-study-sessions-and-pomodoro-from-stitch",
+    "archiveVerifiedFiles": 6
+  },
+  {
+    "name": "update-progress-and-achievements-from-stitch",
+    "commits": [
+      "c4b23a8 [update] atualizar visual de progresso e conquistas"
+    ],
+    "pending": [],
+    "evidence": [
+      "openspec/changes/update-progress-and-achievements-from-stitch/validation.md"
+    ],
+    "specs": [
+      {
+        "path": "openspec/changes/update-progress-and-achievements-from-stitch/specs/progress-and-achievements-visual-experience/spec.md",
+        "headings": [
+          "## Purpose",
+          "## ADDED Requirements",
+          "### Requirement: Identidade visual coerente e escopo local",
+          "### Requirement: Indicadores e contexto de progresso fiéis",
+          "### Requirement: Catálogo completo e estados legíveis de conquistas",
+          "### Requirement: Evolução por período sem mudanças de consulta",
+          "### Requirement: Gráficos de séries reais com equivalente textual",
+          "### Requirement: Estados completos e configuração de fuso preservada",
+          "### Requirement: Temas, responsividade e acessibilidade"
+        ]
+      }
+    ],
+    "order": 33,
+    "state": "archived",
+    "evidenceKind": "commit + checklist + report",
+    "commitFiles": [
+      "apps/web/src/features/analytics/AnalyticsPage.spec.tsx",
+      "apps/web/src/features/analytics/AnalyticsPage.tsx",
+      "apps/web/src/features/study-progress/ProgressPresentation.tsx",
+      "apps/web/src/features/study-progress/StudyProgressPage.spec.tsx",
+      "apps/web/src/features/study-progress/StudyProgressPage.tsx",
+      "apps/web/src/features/study-progress/StudyTimeZoneSection.tsx",
+      "apps/web/src/styles/analytics.css",
+      "apps/web/src/styles/progress-presentation.css",
+      "apps/web/src/styles/study-progress.css"
+    ],
+    "dependencies": [],
+    "sync": [
+      {
+        "target": "openspec/specs/progress-and-achievements-visual-experience/spec.md",
+        "changes": [
+          "ADD Identidade visual coerente e escopo local",
+          "ADD Indicadores e contexto de progresso fiéis",
+          "ADD Catálogo completo e estados legíveis de conquistas",
+          "ADD Evolução por período sem mudanças de consulta",
+          "ADD Gráficos de séries reais com equivalente textual",
+          "ADD Estados completos e configuração de fuso preservada",
+          "ADD Temas, responsividade e acessibilidade"
+        ]
+      }
+    ],
+    "decision": "Arquivada após revisão semântica, validação strict e revalidação atual; conteúdo preservado por SHA-256. Deltas substituídos são históricos; specs finais preservam revisões posteriores.",
+    "archive": "openspec/changes/archive/2026-10-27-update-progress-and-achievements-from-stitch",
+    "archiveVerifiedFiles": 7
+  },
+  {
+    "name": "update-account-and-profile-from-stitch",
+    "commits": [
+      "ee13f27 [update] atualizar visual de perfil e conta"
+    ],
+    "pending": [],
+    "evidence": [
+      "openspec/changes/update-account-and-profile-from-stitch/validation.md"
+    ],
+    "specs": [
+      {
+        "path": "openspec/changes/update-account-and-profile-from-stitch/specs/account-profile-visual-experience/spec.md",
+        "headings": [
+          "## Purpose",
+          "## ADDED Requirements",
+          "### Requirement: Organização visual completa da conta",
+          "### Requirement: Referência visual subordinada aos recursos reais",
+          "### Requirement: Perfil e foto com apresentação coerente",
+          "### Requirement: Preferências e aparência sem novos contratos",
+          "### Requirement: Segurança e ações de conta visualmente integradas",
+          "### Requirement: Feedback acessível em ambos os temas e tamanhos"
+        ]
+      }
+    ],
+    "order": 34,
+    "state": "archived",
+    "evidenceKind": "commit + checklist + report",
+    "commitFiles": [
+      "apps/web/src/features/auth/PrivatePage.tsx",
+      "apps/web/src/features/profile/ProfilePage.spec.tsx",
+      "apps/web/src/features/profile/ProfilePage.tsx",
+      "apps/web/src/features/study-progress/StudyTimeZoneSection.tsx",
+      "apps/web/src/styles/account.css"
+    ],
+    "dependencies": [],
+    "sync": [
+      {
+        "target": "openspec/specs/account-profile-visual-experience/spec.md",
+        "changes": [
+          "ADD Organização visual completa da conta",
+          "ADD Referência visual subordinada aos recursos reais",
+          "ADD Perfil e foto com apresentação coerente",
+          "ADD Preferências e aparência sem novos contratos",
+          "ADD Segurança e ações de conta visualmente integradas",
+          "ADD Feedback acessível em ambos os temas e tamanhos"
+        ]
+      }
+    ],
+    "decision": "Arquivada após revisão semântica, validação strict e revalidação atual; conteúdo preservado por SHA-256. Deltas substituídos são históricos; specs finais preservam revisões posteriores.",
+    "archive": "openspec/changes/archive/2026-10-27-update-account-and-profile-from-stitch",
+    "archiveVerifiedFiles": 7
+  },
+  {
+    "name": "update-subjects-and-tasks-empty-states",
+    "commits": [
+      "69eb7ae [update] atualizar estados vazios de matérias e tarefas"
+    ],
+    "pending": [],
+    "evidence": [
+      "openspec/changes/update-subjects-and-tasks-empty-states/validation.md"
+    ],
+    "specs": [
+      {
+        "path": "openspec/changes/update-subjects-and-tasks-empty-states/specs/subjects-and-tasks-empty-states/spec.md",
+        "headings": [
+          "## Purpose",
+          "## ADDED Requirements",
+          "### Requirement: Ausência real de registros",
+          "### Requirement: Conteúdo e CTA de Matérias",
+          "### Requirement: Conteúdo e CTA de Tasks",
+          "### Requirement: Preservação de resultados e funcionalidades",
+          "### Requirement: Identidade visual acessível e responsiva",
+          "### Requirement: Referência visual subordinada ao projeto"
+        ]
+      }
+    ],
+    "order": 35,
+    "state": "archived",
+    "evidenceKind": "commit + checklist + report",
+    "commitFiles": [
+      "apps/web/src/components/CollectionEmptyState.tsx",
+      "apps/web/src/features/subjects/SubjectsPage.spec.tsx",
+      "apps/web/src/features/subjects/SubjectsPage.tsx",
+      "apps/web/src/features/tasks/TasksPage.spec.tsx",
+      "apps/web/src/features/tasks/TasksPage.tsx",
+      "apps/web/src/styles/collection-empty-state.css"
+    ],
+    "dependencies": [],
+    "sync": [
+      {
+        "target": "openspec/specs/subjects-and-tasks-empty-states/spec.md",
+        "changes": [
+          "ADD Ausência real de registros",
+          "ADD Conteúdo e CTA de Matérias",
+          "ADD Conteúdo e CTA de Tasks",
+          "ADD Preservação de resultados e funcionalidades",
+          "ADD Identidade visual acessível e responsiva",
+          "ADD Referência visual subordinada ao projeto"
+        ]
+      }
+    ],
+    "decision": "Arquivada após revisão semântica, validação strict e revalidação atual; conteúdo preservado por SHA-256. Deltas substituídos são históricos; specs finais preservam revisões posteriores.",
+    "archive": "openspec/changes/archive/2026-10-27-update-subjects-and-tasks-empty-states",
+    "archiveVerifiedFiles": 24
+  },
+  {
+    "name": "refine-auth-desktop-layout",
+    "commits": [
+      "cb85dcd [update] atualizar navegação responsiva e visual de autenticação"
+    ],
+    "pending": [
+      "- [ ] 5.2 Executar `pnpm lint`, `pnpm typecheck`, `pnpm test` e `pnpm build` na raiz e registrar resultados; verificar aprovação das quatro verificações, incluindo testes reais de banco. A exceção de suítes restritas da mudança anterior não se aplica; falhas impedem conclusão.",
+      "- [ ] 5.4 Após todas as tarefas/verificações aprovadas, finalizar tasks.md, adicionar somente arquivos/hunks da mudança, revisar diff staged e executar `git diff --cached --check`; verificar exclusão de alterações preexistentes e inclusão da implementação e tasks final, sem `git add .`.",
+      "- [ ] 5.5 Criar exatamente um commit de conclusão `[update] refinar layout desktop de autenticação`, confirmar e informar hash e arquivos incluídos; verificar ausência de commit vazio, tag, SemVer, push ou archive. Apply pausado/com falhas não recebe commit de conclusão."
+    ],
+    "evidence": [
+      "openspec/changes/refine-auth-desktop-layout/validation.md"
+    ],
+    "specs": [
+      {
+        "path": "openspec/changes/refine-auth-desktop-layout/specs/user-authentication/spec.md",
+        "headings": [
+          "## ADDED Requirements",
+          "### Requirement: Acomodação integral da autenticação em desktop",
+          "### Requirement: Refluxo acessível da autenticação fora da garantia desktop",
+          "### Requirement: Apresentação identificável da ação Google"
+        ]
+      }
+    ],
+    "order": 36,
+    "state": "active-pending",
+    "evidenceKind": "commit + checklist + report",
+    "commitFiles": [
+      "apps/api/test/demo.spec.ts",
+      "apps/web/src/features/auth/AuthenticatedShell.spec.tsx",
+      "apps/web/src/features/auth/AuthenticatedShell.tsx",
+      "apps/web/src/features/auth/PrivatePage.tsx",
+      "apps/web/src/features/auth/ShellAvatar.tsx",
+      "apps/web/src/features/auth/assets/google-g.png",
+      "apps/web/src/features/landing/AccessPage.tsx",
+      "apps/web/src/features/profile/ProfilePage.spec.tsx",
+      "apps/web/src/features/profile/ProfilePage.tsx",
+      "apps/web/src/features/subjects/SubjectsPage.spec.tsx",
+      "apps/web/src/styles/auth.css",
+      "apps/web/src/styles/authenticated-shell.css"
+    ],
+    "decision": "Preservar ativa: 3 pendências e relatório histórico de falha; implementação visual incorporada parcialmente em cb85dcd não equivale a commit de conclusão."
+  },
+  {
+    "name": "update-authenticated-shell-visuals",
+    "commits": [
+      "cb85dcd [update] atualizar navegação responsiva e visual de autenticação"
+    ],
+    "pending": [],
+    "evidence": [
+      "openspec/changes/update-authenticated-shell-visuals/validation.md"
+    ],
+    "specs": [
+      {
+        "path": "openspec/changes/update-authenticated-shell-visuals/specs/authenticated-shell-visual-experience/spec.md",
+        "headings": [
+          "## Purpose",
+          "## ADDED Requirements",
+          "### Requirement: Header autenticado simplificado",
+          "### Requirement: Sidebar desktop com destinos reais",
+          "### Requirement: Barra inferior mobile e menu Mais",
+          "### Requirement: Destino ativo e compatibilidade de navegação",
+          "### Requirement: Tema compartilhado sem perda de estado",
+          "### Requirement: Avatar baseado em identidade confirmada",
+          "### Requirement: Logout único com estados preservados",
+          "### Requirement: Estados e páginas preservados",
+          "### Requirement: Espaço responsivo e acessibilidade nos dois temas",
+          "### Requirement: Referência visual subordinada ao produto existente"
+        ]
+      }
+    ],
+    "order": 36,
+    "state": "archived",
+    "evidenceKind": "commit + checklist + report",
+    "commitFiles": [
+      "apps/api/test/demo.spec.ts",
+      "apps/web/src/features/auth/AuthenticatedShell.spec.tsx",
+      "apps/web/src/features/auth/AuthenticatedShell.tsx",
+      "apps/web/src/features/auth/PrivatePage.tsx",
+      "apps/web/src/features/auth/ShellAvatar.tsx",
+      "apps/web/src/features/auth/assets/google-g.png",
+      "apps/web/src/features/landing/AccessPage.tsx",
+      "apps/web/src/features/profile/ProfilePage.spec.tsx",
+      "apps/web/src/features/profile/ProfilePage.tsx",
+      "apps/web/src/features/subjects/SubjectsPage.spec.tsx",
+      "apps/web/src/styles/auth.css",
+      "apps/web/src/styles/authenticated-shell.css"
+    ],
+    "dependencies": [],
+    "sync": [
+      {
+        "target": "openspec/specs/authenticated-shell-visual-experience/spec.md",
+        "changes": [
+          "ADD Header autenticado simplificado",
+          "ADD Sidebar desktop com destinos reais",
+          "ADD Barra inferior mobile e menu Mais",
+          "ADD Destino ativo e compatibilidade de navegação",
+          "ADD Tema compartilhado sem perda de estado",
+          "ADD Avatar baseado em identidade confirmada",
+          "ADD Logout único com estados preservados",
+          "ADD Estados e páginas preservados",
+          "ADD Espaço responsivo e acessibilidade nos dois temas",
+          "ADD Referência visual subordinada ao produto existente"
+        ]
+      }
+    ],
+    "decision": "Arquivada após revisão semântica, validação strict e revalidação atual; conteúdo preservado por SHA-256. Deltas substituídos são históricos; specs finais preservam revisões posteriores.",
+    "archive": "openspec/changes/archive/2026-10-27-update-authenticated-shell-visuals",
+    "archiveVerifiedFiles": 97
+  },
+  {
+    "name": "update-transactional-email-copy",
+    "commits": [
+      "c115ef3 [update] atualizar textos dos e-mails transacionais"
+    ],
+    "pending": [],
+    "evidence": [
+      "openspec/changes/update-transactional-email-copy/validation.md"
+    ],
+    "specs": [
+      {
+        "path": "openspec/changes/update-transactional-email-copy/specs/user-authentication/spec.md",
+        "headings": [
+          "## ADDED Requirements",
+          "### Requirement: Conteúdo textual dos e-mails transacionais",
+          "### Requirement: Preservação dos fluxos e interpolação"
+        ]
+      }
+    ],
+    "order": 37,
+    "state": "archived",
+    "evidenceKind": "commit + checklist + report",
+    "commitFiles": [
+      "apps/api/src/modules/auth/auth.service.ts",
+      "apps/api/src/modules/auth/email-crypto.ts",
+      "apps/api/src/modules/auth/email-delivery.ts",
+      "apps/api/src/modules/auth/email.repository.ts",
+      "apps/api/src/modules/auth/profile.service.ts",
+      "apps/api/test/email-delivery.spec.ts"
+    ],
+    "dependencies": [
+      "update-auth-screens-from-stitch"
+    ],
+    "sync": [
+      {
+        "target": "openspec/specs/user-authentication/spec.md",
+        "changes": [
+          "ADD Conteúdo textual dos e-mails transacionais",
+          "ADD Preservação dos fluxos e interpolação"
+        ]
+      }
+    ],
+    "decision": "Arquivada após revisão semântica, validação strict e revalidação atual; conteúdo preservado por SHA-256. Deltas substituídos são históricos; specs finais preservam revisões posteriores.",
+    "archive": "openspec/changes/archive/2026-10-27-update-transactional-email-copy",
+    "archiveVerifiedFiles": 7
+  },
+  {
+    "name": "update-study-routines-visuals",
+    "commits": [
+      "fcca980 [update] alinhar visual das rotinas e corrigir tipagem de email"
+    ],
+    "pending": [],
+    "evidence": [
+      "openspec/changes/update-study-routines-visuals/validation.md"
+    ],
+    "specs": [],
+    "order": 38,
+    "state": "archived",
+    "evidenceKind": "commit + checklist + report",
+    "commitFiles": [
+      "apps/api/src/modules/auth/email.repository.ts",
+      "apps/web/src/features/routines/RoutinesPage.tsx",
+      "apps/web/src/styles/routines.css"
+    ],
+    "dependencies": [],
+    "sync": [],
+    "decision": "Arquivada após revisão semântica, validação strict e revalidação atual; conteúdo preservado por SHA-256. Deltas substituídos são históricos; specs finais preservam revisões posteriores.",
+    "archive": "openspec/changes/archive/2026-10-27-update-study-routines-visuals",
+    "archiveVerifiedFiles": 7
+  },
+  {
+    "name": "fix-frontend-ui-controls",
+    "commits": [
+      "86c3414 [fix] ajustar controles e responsividade da interface"
+    ],
+    "pending": [],
+    "evidence": [],
+    "specs": [
+      {
+        "path": "openspec/changes/fix-frontend-ui-controls/specs/frontend-ui-controls/spec.md",
+        "headings": [
+          "## Purpose",
+          "## ADDED Requirements",
+          "### Requirement: Ações responsivas de Flashcards",
+          "### Requirement: Checkboxes quadrados de Módulos",
+          "### Requirement: Paginação direcional acessível",
+          "### Requirement: Consistência visual das áreas alteradas"
+        ]
+      },
+      {
+        "path": "openspec/changes/fix-frontend-ui-controls/specs/user-authentication/spec.md",
+        "headings": [
+          "## ADDED Requirements",
+          "### Requirement: Visibilidade opcional de senhas digitadas"
+        ]
+      }
+    ],
+    "order": 39,
+    "state": "archived",
+    "evidenceKind": "commit + checklist; no independent historical execution log",
+    "commitFiles": [
+      "apps/web/src/features/auth/EmailPages.spec.tsx",
+      "apps/web/src/features/flashcards/FlashcardAIFlow.tsx",
+      "apps/web/src/features/flashcards/FlashcardsPage.tsx",
+      "apps/web/src/features/flashcards/ReviewHistory.tsx",
+      "apps/web/src/features/flashcards/ReviewQueue.tsx",
+      "apps/web/src/features/landing/AccessPage.spec.tsx",
+      "apps/web/src/features/pomodoro/PomodoroPage.tsx",
+      "apps/web/src/features/profile/ProfilePage.spec.tsx",
+      "apps/web/src/features/routines/RoutinesPage.tsx",
+      "apps/web/src/features/subjects/RoadmapRevisionTools.tsx",
+      "apps/web/src/features/subjects/RoadmapsSection.tsx",
+      "apps/web/src/features/subjects/SubjectsPage.tsx",
+      "apps/web/src/features/tasks/TasksPage.tsx",
+      "apps/web/src/styles/account.css",
+      "apps/web/src/styles/flashcards.css",
+      "apps/web/src/test/Input.spec.tsx",
+      "packages/ui/src/components/ui/input.tsx",
+      "packages/ui/src/styles/globals.css"
+    ],
+    "dependencies": [
+      "update-transactional-email-copy"
+    ],
+    "sync": [
+      {
+        "target": "openspec/specs/frontend-ui-controls/spec.md",
+        "changes": [
+          "ADD Ações responsivas de Flashcards",
+          "ADD Checkboxes quadrados de Módulos",
+          "ADD Paginação direcional acessível",
+          "ADD Consistência visual das áreas alteradas"
+        ]
+      },
+      {
+        "target": "openspec/specs/user-authentication/spec.md",
+        "changes": [
+          "ADD Visibilidade opcional de senhas digitadas"
+        ]
+      }
+    ],
+    "decision": "Arquivada após revisão semântica, validação strict e revalidação atual; conteúdo preservado por SHA-256. Deltas substituídos são históricos; specs finais preservam revisões posteriores.",
+    "archive": "openspec/changes/archive/2026-10-27-fix-frontend-ui-controls",
+    "archiveVerifiedFiles": 6
+  },
+  {
+    "name": "fix-frontend-api-integration",
+    "commits": [
+      "5acb1ba [fix] corrigir integração dos fluxos existentes"
+    ],
+    "pending": [],
+    "evidence": [
+      "openspec/changes/fix-frontend-api-integration/validation.md"
+    ],
+    "specs": [
+      {
+        "path": "openspec/changes/fix-frontend-api-integration/specs/frontend-api-integration/spec.md",
+        "headings": [
+          "## Purpose",
+          "## ADDED Requirements",
+          "### Requirement: Atalho válido para preferências de IA",
+          "### Requirement: Atualização de fuso compatível com a API",
+          "### Requirement: Orientação coerente sobre IA"
+        ]
+      },
+      {
+        "path": "openspec/changes/fix-frontend-api-integration/specs/quality-commands/spec.md",
+        "headings": [
+          "## ADDED Requirements",
+          "### Requirement: Verificações independentes de arquivos gerados e data da máquina"
+        ]
+      },
+      {
+        "path": "openspec/changes/fix-frontend-api-integration/specs/user-authentication/spec.md",
+        "headings": [
+          "## ADDED Requirements",
+          "### Requirement: Retorno seguro para Flashcards"
+        ]
+      }
+    ],
+    "order": 40,
+    "state": "archived",
+    "evidenceKind": "commit + checklist + report",
+    "commitFiles": [
+      "apps/api/src/modules/auth/google.service.ts",
+      "apps/api/test/dashboard.http.spec.ts",
+      "apps/api/test/google.spec.ts",
+      "apps/api/test/study-progress.http.spec.ts",
+      "apps/api/vitest.config.ts",
+      "apps/web/src/features/auth/Auth.spec.tsx",
+      "apps/web/src/features/auth/PrivatePage.tsx",
+      "apps/web/src/features/auth/auth-api.ts",
+      "apps/web/src/features/flashcards/FlashcardAIFlow.spec.tsx",
+      "apps/web/src/features/flashcards/FlashcardAIFlow.tsx",
+      "apps/web/src/features/profile/ProfilePage.spec.tsx",
+      "apps/web/src/features/profile/ProfilePage.tsx",
+      "apps/web/src/features/study-progress/StudyProgressPage.spec.tsx",
+      "apps/web/src/features/study-progress/progress-api.spec.ts",
+      "apps/web/src/features/study-progress/progress-api.ts"
+    ],
+    "dependencies": [
+      "fix-frontend-ui-controls"
+    ],
+    "sync": [
+      {
+        "target": "openspec/specs/frontend-api-integration/spec.md",
+        "changes": [
+          "ADD Atalho válido para preferências de IA",
+          "ADD Atualização de fuso compatível com a API",
+          "ADD Orientação coerente sobre IA"
+        ]
+      },
+      {
+        "target": "openspec/specs/quality-commands/spec.md",
+        "changes": [
+          "ADD Verificações independentes de arquivos gerados e data da máquina"
+        ]
+      },
+      {
+        "target": "openspec/specs/user-authentication/spec.md",
+        "changes": [
+          "ADD Retorno seguro para Flashcards"
+        ]
+      }
+    ],
+    "decision": "Arquivada após revisão semântica, validação strict e revalidação atual; conteúdo preservado por SHA-256. Deltas substituídos são históricos; specs finais preservam revisões posteriores.",
+    "archive": "openspec/changes/archive/2026-10-27-fix-frontend-api-integration",
+    "archiveVerifiedFiles": 12
+  }
+]

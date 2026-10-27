@@ -36,4 +36,9 @@ operations:
     guidance:
       - Ao concluir todas as tarefas de um apply e aprovar as verificações exigidas, crie exatamente um commit Git para a mudança; não crie commit de conclusão para apply pausado, com falha ou sem diff novo.
       - Antes de editar, registre o estado do Git. Preserve alterações preexistentes; adicione ao commit somente arquivos ou hunks da mudança aplicada, incluindo o tasks.md final. Revise o diff staged e execute git diff --cached --check antes do commit. Não use git add . para capturar o working tree inteiro.
-      - 'Use em cada commit o formato "[tipo] descrição objetiva da alteração", com um dos tipos feat, make, fix, update ou delete conforme AGENTS.md. Após o commit, verifique e informe o hash e os arquivos incluídos. Não crie tag, versão SemVer ou push, nem arquive a mudança OpenSpec automaticamente.'
+      - 'Use o formato "[tipo] descrição objetiva da alteração", com feat, make, fix, update ou delete. Ao concluir um apply aprovado, execute automaticamente pnpm openspec:finish com a mudança identificada e manifesto próprio, conforme AGENTS.md e README: commit, sync de snapshots revisados, archive e amend do próprio commit local ainda não publicado. Informe o hash final e arquivos, sem tag, SemVer ou push.'
+      - Prepare os deltas com o workflow de sync e revisão semântica antes de concluir; o comando executa checks, valida snapshots e arquiva somente a mudança selecionada. Não crie hooks genéricos nem conclua tasks pendentes ficticiamente. Em falha, retome o journal e preserve alterações alheias.
+  archive:
+    guidance:
+      - O archive é parte automática da conclusão de um apply aprovado. Sincronize e verifique todas as capacidades delta antes do movimento; preserve mudanças incompletas e conflitos ativos. No backlog histórico, siga a ordem auditada e preserve commits originais.
+      - Incorpore sync e archive ao mesmo commit final somente quando o commit tiver sido criado pela execução controlada e permanecer não publicado. Confirme o caminho arquivado e o hash final; não faça push ou altere commits históricos.
