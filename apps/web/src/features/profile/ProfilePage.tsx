@@ -1,3 +1,4 @@
+import { AISettingsSection } from './AISettingsSection.js';
 import {
   AlertDescription,
   Alert,
@@ -289,6 +290,16 @@ export function ProfilePage({
             >
               <ShieldCheck aria-hidden="true" />
               Segurança
+              <ChevronRight aria-hidden="true" />
+            </a>
+            <a
+              href="#account-ai"
+              aria-current={
+                activeSection === '#account-ai' ? 'location' : undefined
+              }
+            >
+              <SlidersHorizontal aria-hidden="true" />
+              Inteligência artificial
               <ChevronRight aria-hidden="true" />
             </a>
             <a
@@ -802,6 +813,7 @@ export function ProfilePage({
               </CardContent>
             </section>
           </Card>
+          <AISettingsSection />
           <Card asChild>
             <section
               id="account-access"

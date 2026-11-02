@@ -39,7 +39,7 @@ export class RoadmapAIService {
       blockTitle: step.blockTitle,
       blockDescription: step.blockDescription,
     });
-    const raw = await this.provider.regenerate({
+    const raw = await this.provider.regenerate(userId, {
       subjectName: subject.name,
       currentLevel: subject.currentLevel,
       objective: subject.objective,
@@ -70,7 +70,7 @@ export class RoadmapAIService {
       );
     const subject = await this.subjects.detail(userId, subjectId);
     const content = roadmapContentSchema.safeParse(
-      await this.provider.generate(subject.name, parameters.data),
+      await this.provider.generate(userId, subject.name, parameters.data),
     );
     if (!content.success)
       throw new HttpError(

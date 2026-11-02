@@ -47,6 +47,10 @@ function message(cause: unknown) {
       return 'IA ou flashcards foram desativados. Reative-os nas preferências para continuar.';
     if (cause.status === 404)
       return 'O baralho não está mais disponível. Escolha outro destino.';
+    if (cause.code === 'AI_CREDENTIAL_REJECTED')
+      return 'A chave pessoal foi recusada. Revise a configuração de IA na conta.';
+    if (cause.code === 'AI_LIMIT_REACHED')
+      return 'Limite de IA atingido. Aguarde e tente novamente mais tarde.';
     if (cause.code === 'AI_INVALID_RESPONSE')
       return 'A IA retornou cartões inválidos. Tente gerar novamente.';
     if (cause.code === 'AI_TIMEOUT')

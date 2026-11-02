@@ -3,6 +3,8 @@ import type { DataSource, EntityManager, QueryRunner } from 'typeorm';
 
 // Explicit inventory, including SQL-only modules. The migrations table is never reset.
 export const demoTables = [
+  'ai_usage_counters',
+  'ai_usage_leases',
   'auth_rate_limits',
   'email_address_locks',
   'email_challenges',
@@ -41,6 +43,7 @@ export const demoTables = [
   'subject_roadmap_steps',
   'subject_roadmaps',
   'task_subtasks',
+  'user_ai_settings',
   'user_preferences',
   'users',
   'verification_contexts',
@@ -88,7 +91,12 @@ export async function inspectDemo(source: DataSource) {
 
 export async function requireDemoSchema(source: DataSource): Promise<void> {
   const info = await inspectDemo(source);
-  const expected = new Set<string>([...demoTables, 'migrations']);
+  // The singleton AI mutex is schema metadata: never truncate it during demo resets.
+  const expected = new Set<string>([
+    ...demoTables,
+    'migrations',
+    'ai_usage_lock',
+  ]);
   if (info.pendingMigrations)
     throw new Error('Aplique migrations antes de reset/população.');
   if (

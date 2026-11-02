@@ -17,60 +17,51 @@ const validEnv = {
   SMTP_FROM: 'no-reply@example.test',
   EMAIL_HMAC_KEY: 'a'.repeat(64),
   EMAIL_ENCRYPTION_KEY: 'b'.repeat(64),
+  AI_CREDENTIAL_ENCRYPTION_KEY: 'e'.repeat(64),
+  AI_CREDENTIAL_KEY_VERSION: 'v1',
 };
 
 describe('API environment', () => {
-  it('rejects every partial AI group, including an isolated receipt key, without leaking values', () => {
-    const credentials = {
-      AI_API_KEY: 'api-canary',
-      AI_MODEL: 'model-canary',
-      AI_RECEIPT_KEY: 'c'.repeat(64),
-    };
-    const keys = Object.keys(credentials) as (keyof typeof credentials)[];
-    for (let mask = 1; mask < 7; mask++) {
-      const partial = Object.fromEntries(
-        keys
-          .filter((_, index) => mask & (1 << index))
-          .map((key) => [key, credentials[key]]),
-      );
-      try {
-        parseEnv({ ...validEnv, ...partial });
-        expect.fail('Partial AI configuration must be rejected');
-      } catch (error) {
-        expect(error).toBeInstanceOf(EnvValidationError);
-        for (const key of keys.filter((key) => !(key in partial))) {
-          expect((error as Error).message).toContain(key);
-        }
-        for (const value of Object.values(credentials)) {
-          expect((error as Error).message).not.toContain(value);
-        }
-      }
-    }
-  });
-  it('keeps AI optional and validates grouped credentials and bounded limits safely', () => {
-    expect(parseEnv(validEnv).AI_API_KEY).toBeUndefined();
+  it('requires explicit Gemini pairs, independent credential encryption and positive limits without leaking secrets', () => {
+    expect(parseEnv(validEnv).GEMINI_API_KEY).toBeUndefined();
+    expect(
+      parseEnv({ ...validEnv, AI_RECEIPT_KEY: 'c'.repeat(64) }).AI_RECEIPT_KEY,
+    ).toBeDefined();
     const ai = {
       ...validEnv,
-      AI_API_KEY: 'private-ai-key',
-      AI_MODEL: 'configured-model',
+      GEMINI_API_KEY: 'synthetic-canary',
+      GEMINI_MODEL: 'gemini-3.8-flash',
       AI_RECEIPT_KEY: 'c'.repeat(64),
     };
     expect(parseEnv(ai).AI_TIMEOUT_MS).toBe(30000);
     for (const patch of [
-      { AI_MODEL: undefined },
-      { AI_RECEIPT_KEY: 'private-secret' },
+      { GEMINI_API_KEY: undefined },
+      { GEMINI_MODEL: undefined },
+      { GEMINI_MODEL: 'gpt-4.1' },
+      { AI_API_KEY: 'legacy-canary' },
+      { AI_MODEL: 'legacy-model' },
+      { AI_CREDENTIAL_ENCRYPTION_KEY: undefined },
+      { AI_CREDENTIAL_KEY_VERSION: '' },
+      { AI_CREDENTIAL_ENCRYPTION_KEY: 'a'.repeat(64) },
+      { AI_CREDENTIAL_ENCRYPTION_KEY: 'b'.repeat(64) },
+      { AI_CREDENTIAL_ENCRYPTION_KEY: 'c'.repeat(64) },
+      { AI_USER_REQUESTS_PER_MINUTE: '0' },
+      { AI_USER_MAX_CONCURRENCY: '-1' },
+      { AI_DEFAULT_USER_DAILY_LIMIT: '1.5' },
+      { AI_DEFAULT_GLOBAL_DAILY_LIMIT: '0' },
+      { AI_DEFAULT_GLOBAL_MAX_CONCURRENCY: '0' },
+      { AI_RECEIPT_KEY: 'invalid-canary' },
       { AI_TIMEOUT_MS: '0' },
       { AI_TIMEOUT_MS: '120001' },
       { AI_MAX_RESPONSE_BYTES: '1023' },
       { AI_MAX_RESPONSE_BYTES: '1048577' },
     ]) {
+      expect(() => parseEnv({ ...ai, ...patch })).toThrow(EnvValidationError);
       try {
         parseEnv({ ...ai, ...patch });
-        throw new Error('should reject');
       } catch (error) {
-        expect(error).toBeInstanceOf(EnvValidationError);
         expect((error as Error).message).not.toMatch(
-          /private-ai-key|private-secret/,
+          /synthetic-canary|legacy-canary|invalid-canary/,
         );
       }
     }

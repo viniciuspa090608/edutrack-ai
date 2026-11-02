@@ -16,9 +16,12 @@ import { SessionRepository } from '../src/modules/auth/session.repository.js';
 import { PreferencesService } from '../src/modules/preferences/preferences.service.js';
 const env = {
   ...loadEnv(),
-  AI_API_KEY: 'test-key',
-  AI_MODEL: 'test-model',
+  GEMINI_API_KEY: 'test-key',
+  GEMINI_MODEL: 'gemini-3.8-flash',
   AI_RECEIPT_KEY: 'c'.repeat(64),
+  AI_USER_REQUESTS_PER_MINUTE: 1000,
+  AI_DEFAULT_USER_DAILY_LIMIT: 1000,
+  AI_DEFAULT_GLOBAL_DAILY_LIMIT: 10000,
   AI_TIMEOUT_MS: 200,
   AI_MAX_RESPONSE_BYTES: 4096,
 };
@@ -33,11 +36,10 @@ const proposed = [
 let output: unknown = { steps: proposed };
 const boundary = vi.fn<typeof fetch>(async () =>
   Response.json({
-    status: 'completed',
-    output: [
+    candidates: [
       {
-        type: 'message',
-        content: [{ type: 'output_text', text: JSON.stringify(output) }],
+        finishReason: 'STOP',
+        content: { parts: [{ text: JSON.stringify(output) }] },
       },
     ],
   }),
@@ -93,8 +95,8 @@ const manualApp = createApp({
   source,
   env: {
     ...env,
-    AI_API_KEY: undefined,
-    AI_MODEL: undefined,
+    GEMINI_API_KEY: undefined,
+    GEMINI_MODEL: undefined,
     AI_RECEIPT_KEY: undefined,
   },
   aiFetch: boundary,
@@ -305,7 +307,7 @@ it('anchors DDL → DML and sends only the suffix context without persisting a p
   expect(await current(row, a.cookie)).toEqual(before);
   expect((await read(`${path(row)}/revisions`, a.cookie)).body.total).toBe(2);
   const sent = JSON.parse(String(boundary.mock.calls[0]![1]!.body));
-  const input = JSON.parse(sent.input);
+  const input = JSON.parse(sent.contents[0].parts[0].text);
   expect(
     input.preservedPrefix.map((step: { title: string }) => step.title),
   ).toEqual(['DDL', 'DML']);
@@ -319,8 +321,10 @@ it('anchors DDL → DML and sends only the suffix context without persisting a p
   });
   expect(JSON.stringify(input)).not.toContain(a.user.id);
   expect(JSON.stringify(input)).not.toContain(flattenRoadmap(row)[0]!.id);
-  expect(sent.text.format.name).toBe('roadmap_suffix');
-  expect(sent.store).toBe(false);
+  expect(sent.generationConfig.responseMimeType).toBe('application/json');
+  expect(sent.generationConfig.responseJsonSchema.additionalProperties).toBe(
+    false,
+  );
 });
 it('rejects moving any completed or earlier pending step and invalid permutations before contacting AI', async () => {
   const a = await setup(),
@@ -784,13 +788,10 @@ it('rejects expired previews and preserves active content after provider failure
   boundary.mockImplementationOnce(async () => {
     await new PreferencesService(source).update(a.user.id, { ai: false });
     return Response.json({
-      status: 'completed',
-      output: [
+      candidates: [
         {
-          type: 'message',
-          content: [
-            { type: 'output_text', text: JSON.stringify({ steps: proposed }) },
-          ],
+          finishReason: 'STOP',
+          content: { parts: [{ text: JSON.stringify({ steps: proposed }) }] },
         },
       ],
     });

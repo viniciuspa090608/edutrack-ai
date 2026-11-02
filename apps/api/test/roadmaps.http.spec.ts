@@ -10,9 +10,12 @@ import { SessionRepository } from '../src/modules/auth/session.repository.js';
 import { PreferencesService } from '../src/modules/preferences/preferences.service.js';
 const env = {
   ...loadEnv(),
-  AI_API_KEY: 'test-key',
-  AI_MODEL: 'test-model',
+  GEMINI_API_KEY: 'test-key',
+  GEMINI_MODEL: 'gemini-3.8-flash',
   AI_RECEIPT_KEY: 'c'.repeat(64),
+  AI_USER_REQUESTS_PER_MINUTE: 1000,
+  AI_DEFAULT_USER_DAILY_LIMIT: 1000,
+  AI_DEFAULT_GLOBAL_DAILY_LIMIT: 10000,
   AI_TIMEOUT_MS: 100,
   AI_MAX_RESPONSE_BYTES: 4096,
 };
@@ -49,11 +52,10 @@ const parameters = {
 let output: unknown = content;
 const boundary = vi.fn<typeof fetch>(async () =>
   Response.json({
-    status: 'completed',
-    output: [
+    candidates: [
       {
-        type: 'message',
-        content: [{ type: 'output_text', text: JSON.stringify(output) }],
+        finishReason: 'STOP',
+        content: { parts: [{ text: JSON.stringify(output) }] },
       },
     ],
   }),
@@ -103,8 +105,8 @@ const manualApp = createApp({
   source,
   env: {
     ...env,
-    AI_API_KEY: undefined,
-    AI_MODEL: undefined,
+    GEMINI_API_KEY: undefined,
+    GEMINI_MODEL: undefined,
     AI_RECEIPT_KEY: undefined,
   },
   aiFetch: boundary,
@@ -598,11 +600,10 @@ it('keeps provider failures safe and nonpersistent and rechecks preferences afte
   boundary.mockImplementationOnce(async () => {
     await prefs.update(a.id, { ai: false });
     return Response.json({
-      status: 'completed',
-      output: [
+      candidates: [
         {
-          type: 'message',
-          content: [{ type: 'output_text', text: JSON.stringify(content) }],
+          finishReason: 'STOP',
+          content: { parts: [{ text: JSON.stringify(content) }] },
         },
       ],
     });

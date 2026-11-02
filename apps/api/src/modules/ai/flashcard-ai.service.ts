@@ -7,14 +7,14 @@ import {
 } from '@study-platform/contracts';
 import type { FlashcardsService } from '../flashcards/flashcards.service.js';
 import type { PreferencesService } from '../preferences/preferences.service.js';
-import type { OpenAIStructuredProvider } from '../../shared/openai-structured-provider.js';
+import type { AccountStructuredProvider } from '../../shared/structured-provider.js';
 import type { FlashcardReceipt } from './flashcard-receipt.js';
 import { HttpError } from '../../shared/http-error.js';
 export class FlashcardAIService {
   constructor(
     private readonly cards: FlashcardsService,
     private readonly prefs: PreferencesService,
-    private readonly provider: OpenAIStructuredProvider,
+    private readonly provider: AccountStructuredProvider,
     private readonly receipts: FlashcardReceipt,
     private readonly now: () => Date = () => new Date(),
   ) {}
@@ -34,6 +34,7 @@ export class FlashcardAIService {
       );
     const output = flashcardAIOutputSchema.safeParse(
       await this.provider.structured(
+        userId,
         { text: parsed.data.text },
         flashcardAIOutputSchema,
         'flashcard_generation',

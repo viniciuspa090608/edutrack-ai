@@ -76,6 +76,26 @@ beforeEach(() => {
         });
       if (failed && path === failed && method !== 'GET')
         throw new Error('Rede indisponível. Tente novamente.');
+      if (path === '/profile/ai')
+        return Response.json({
+          mode: 'platform',
+          provider: 'gemini',
+          model: null,
+          hasPersonalKey: false,
+          platformAvailable: false,
+          revision: 0,
+        });
+      if (path === '/profile/ai/catalog')
+        return Response.json({
+          providers: ['gemini', 'claude', 'openai', 'deepseek', 'kimi'].map(
+            (id) => ({ id, label: id, models: ['fixture'] }),
+          ),
+          limits: {
+            userPerMinute: 5,
+            userConcurrency: 1,
+            platformUserDaily: 20,
+          },
+        });
       if (path === '/auth/me') return Response.json({ user: profile });
       if (path === '/profile/preferences') {
         if (method === 'PATCH')

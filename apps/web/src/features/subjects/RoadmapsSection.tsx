@@ -60,6 +60,10 @@ function failure(cause: unknown) {
     const errors: Record<string, string> = {
       AI_DISABLED: 'Ative a IA nas preferências para continuar.',
       MODULE_DISABLED: 'Reative matérias nas preferências.',
+      AI_CREDENTIAL_REJECTED:
+        'A chave pessoal foi recusada. Revise a configuração de IA na conta.',
+      AI_LIMIT_REACHED:
+        'Limite de IA atingido. Aguarde e tente novamente mais tarde.',
       AI_UNAVAILABLE:
         'A geração por IA está indisponível. Você pode criar um roadmap manual.',
       AI_TIMEOUT: 'A IA demorou para responder. Tente gerar novamente.',

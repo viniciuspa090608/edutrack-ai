@@ -51,6 +51,10 @@ function failure(cause: unknown) {
         'O roadmap mudou. Atualize a versão e prepare uma nova prévia.',
       AI_DISABLED: 'Ative a IA nas preferências.',
       MODULE_DISABLED: 'Reative matérias nas preferências.',
+      AI_CREDENTIAL_REJECTED:
+        'A chave pessoal foi recusada. Revise a configuração de IA na conta.',
+      AI_LIMIT_REACHED:
+        'Limite de IA atingido. Aguarde e tente novamente mais tarde.',
       AI_UNAVAILABLE: 'A IA está indisponível. Tente novamente ou cancele.',
       AI_TIMEOUT: 'A IA demorou para responder. Tente novamente ou cancele.',
       AI_INVALID_RESPONSE:

@@ -124,7 +124,15 @@ it('initializes new accounts at creation and applies/rolls back without backfill
   expect(task.status).toBe(201);
   expect((await progress(a.cookie)).activeDays).toBe(0);
   expect(source.options.synchronize).toBe(false);
-  await source.undoLastMigration();
+  const applied = await source.query<Array<{ name: string }>>(
+    'SELECT name FROM migrations ORDER BY id DESC',
+  );
+  const progressIndex = applied.findIndex(
+    (row) => row.name === 'CreateStudyProgress20260928010000',
+  );
+  expect(progressIndex).toBeGreaterThanOrEqual(0);
+  for (let index = 0; index <= progressIndex; index++)
+    await source.undoLastMigration();
   expect(
     await source.query("SHOW TABLES LIKE 'study_progress_tracking'"),
   ).toEqual([]);
@@ -143,7 +151,7 @@ it('initializes new accounts at creation and applies/rolls back without backfill
       )
     ).length,
   ).toBe(1);
-  expect(await source.runMigrations()).toHaveLength(1);
+  expect(await source.runMigrations()).toHaveLength(progressIndex + 1);
   expect(await source.runMigrations()).toHaveLength(0);
   expect((await events(a.id))[0]!.local_date).toBeNull();
   expect(

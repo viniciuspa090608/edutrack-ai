@@ -1,3 +1,4 @@
+import { isAIModel } from '@study-platform/contracts';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'node:url';
 import { z } from 'zod';
@@ -65,6 +66,40 @@ const envSchema = z
     AI_API_KEY: optionalCredential,
     AI_MODEL: optionalCredential,
     AI_RECEIPT_KEY: optionalKey,
+    GEMINI_API_KEY: optionalCredential,
+    GEMINI_MODEL: optionalCredential,
+    AI_CREDENTIAL_ENCRYPTION_KEY: z.string().regex(/^[0-9a-fA-F]{64}$/),
+    AI_CREDENTIAL_KEY_VERSION: z.string().regex(/^[a-zA-Z0-9_-]{1,32}$/),
+    AI_USER_REQUESTS_PER_MINUTE: z.coerce
+      .number()
+      .int()
+      .positive()
+      .max(1000000)
+      .default(5),
+    AI_USER_MAX_CONCURRENCY: z.coerce
+      .number()
+      .int()
+      .positive()
+      .max(1000000)
+      .default(1),
+    AI_DEFAULT_USER_DAILY_LIMIT: z.coerce
+      .number()
+      .int()
+      .positive()
+      .max(1000000)
+      .default(20),
+    AI_DEFAULT_GLOBAL_DAILY_LIMIT: z.coerce
+      .number()
+      .int()
+      .positive()
+      .max(1000000)
+      .default(500),
+    AI_DEFAULT_GLOBAL_MAX_CONCURRENCY: z.coerce
+      .number()
+      .int()
+      .positive()
+      .max(1000000)
+      .default(5),
     AI_TIMEOUT_MS: z.coerce.number().int().min(100).max(120000).default(30000),
     AI_MAX_RESPONSE_BYTES: z.coerce
       .number()
@@ -78,16 +113,44 @@ const envSchema = z
     message: 'must differ from DB_NAME',
   })
   .superRefine((value, context) => {
-    const aiKeys = ['AI_API_KEY', 'AI_MODEL', 'AI_RECEIPT_KEY'] as const;
-    if (aiKeys.some((key) => value[key] !== undefined)) {
-      for (const key of aiKeys)
-        if (!value[key])
-          context.addIssue({
-            code: 'custom',
-            path: [key],
-            message: 'AI credentials must be configured together',
-          });
+    for (const key of ['AI_API_KEY', 'AI_MODEL'] as const) {
+      if (value[key] !== undefined)
+        context.addIssue({
+          code: 'custom',
+          path: [key],
+          message: 'Migrate to explicit GEMINI configuration',
+        });
     }
+    if (Boolean(value.GEMINI_API_KEY) !== Boolean(value.GEMINI_MODEL)) {
+      for (const key of ['GEMINI_API_KEY', 'GEMINI_MODEL'])
+        context.addIssue({
+          code: 'custom',
+          path: [key],
+          message: 'Configure Gemini pair together',
+        });
+    }
+    if (value.GEMINI_MODEL && !isAIModel('gemini', value.GEMINI_MODEL))
+      context.addIssue({
+        code: 'custom',
+        path: ['GEMINI_MODEL'],
+        message: 'Unsupported model',
+      });
+    if (
+      [
+        value.EMAIL_HMAC_KEY,
+        value.EMAIL_ENCRYPTION_KEY,
+        value.AI_RECEIPT_KEY,
+      ].some(
+        (key) =>
+          key?.toLowerCase() ===
+          value.AI_CREDENTIAL_ENCRYPTION_KEY.toLowerCase(),
+      )
+    )
+      context.addIssue({
+        code: 'custom',
+        path: ['AI_CREDENTIAL_ENCRYPTION_KEY'],
+        message: 'Use independent credential encryption key',
+      });
     const emailKeys = [
       'SMTP_HOST',
       'SMTP_PORT',

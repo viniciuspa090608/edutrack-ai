@@ -54,8 +54,15 @@ import type { ReviewClock } from './modules/flashcards/reviews.service.js';
 import { reviewsRoutes } from './modules/flashcards/reviews.routes.js';
 import { roadmapAIRoutes } from './modules/ai/roadmap-ai.routes.js';
 import { RoadmapAIService } from './modules/ai/roadmap-ai.service.js';
-import { OpenAIRoadmapProvider } from './modules/ai/roadmap-provider.js';
-import { OpenAIStructuredProvider } from './shared/openai-structured-provider.js';
+import { AccountRoadmapProvider } from './modules/ai/roadmap-provider.js';
+import {
+  RoutedStructuredProvider,
+  StructuredProvider,
+} from './shared/structured-provider.js';
+import { AISettingsRepository } from './modules/ai-settings/ai-settings.repository.js';
+import { AISettingsService } from './modules/ai-settings/ai-settings.service.js';
+import { AIUsageRepository } from './modules/ai-settings/ai-usage.repository.js';
+import { aiSettingsRoutes } from './modules/ai-settings/ai-settings.routes.js';
 import { FlashcardAIService } from './modules/ai/flashcard-ai.service.js';
 import { FlashcardReceipt } from './modules/ai/flashcard-receipt.js';
 import { flashcardAIRoutes } from './modules/ai/flashcard-ai.routes.js';
@@ -133,6 +140,16 @@ export function createApp({
       oidcFetch,
     );
     app.use('/auth', authRoutes(service, google, env));
+    const aiSettings = new AISettingsService(
+      new AISettingsRepository(source),
+      env,
+    );
+    const aiProvider = new RoutedStructuredProvider(
+      aiSettings,
+      new AIUsageRepository(source, env, aiClock),
+      new StructuredProvider(env, aiFetch),
+    );
+    app.use('/profile/ai', aiSettingsRoutes(service, aiSettings, env));
     const prefs = new PreferencesService(source);
     app.use(
       studyProgressRoutes(
@@ -196,7 +213,7 @@ export function createApp({
         new FlashcardAIService(
           flashcards,
           prefs,
-          new OpenAIStructuredProvider(env, aiFetch),
+          aiProvider,
           new FlashcardReceipt(env.AI_RECEIPT_KEY, aiClock),
           aiClock,
         ),
@@ -229,7 +246,7 @@ export function createApp({
     const roadmapAI = new RoadmapAIService(
       subjects,
       prefs,
-      new OpenAIRoadmapProvider(env, aiFetch),
+      new AccountRoadmapProvider(aiProvider),
       new RoadmapReceipt(env.AI_RECEIPT_KEY, aiClock),
       aiClock,
     );
