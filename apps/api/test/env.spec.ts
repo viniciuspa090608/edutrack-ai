@@ -20,6 +20,33 @@ const validEnv = {
 };
 
 describe('API environment', () => {
+  it('rejects every partial AI group, including an isolated receipt key, without leaking values', () => {
+    const credentials = {
+      AI_API_KEY: 'api-canary',
+      AI_MODEL: 'model-canary',
+      AI_RECEIPT_KEY: 'c'.repeat(64),
+    };
+    const keys = Object.keys(credentials) as (keyof typeof credentials)[];
+    for (let mask = 1; mask < 7; mask++) {
+      const partial = Object.fromEntries(
+        keys
+          .filter((_, index) => mask & (1 << index))
+          .map((key) => [key, credentials[key]]),
+      );
+      try {
+        parseEnv({ ...validEnv, ...partial });
+        expect.fail('Partial AI configuration must be rejected');
+      } catch (error) {
+        expect(error).toBeInstanceOf(EnvValidationError);
+        for (const key of keys.filter((key) => !(key in partial))) {
+          expect((error as Error).message).toContain(key);
+        }
+        for (const value of Object.values(credentials)) {
+          expect((error as Error).message).not.toContain(value);
+        }
+      }
+    }
+  });
   it('keeps AI optional and validates grouped credentials and bounded limits safely', () => {
     expect(parseEnv(validEnv).AI_API_KEY).toBeUndefined();
     const ai = {

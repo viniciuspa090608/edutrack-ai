@@ -20,6 +20,7 @@ const env = {
   AI_MODEL: 'test-model',
   AI_RECEIPT_KEY: 'c'.repeat(64),
   AI_TIMEOUT_MS: 200,
+  AI_MAX_RESPONSE_BYTES: 4096,
 };
 const database = `${env.TEST_DB_NAME}_revisions_${randomBytes(4).toString('hex')}`,
   admin = createDataSource({ ...env, DB_NAME: env.TEST_DB_NAME }),
@@ -49,6 +50,43 @@ const app = createApp({
   aiFetch: boundary,
   aiClock: () => now,
 });
+it.each(['timeout', 'oversized', 'refusal', 'malformed'])(
+  'preserves active revision and manual editing after regeneration %s',
+  async (failure) => {
+    const a = await setup();
+    const row = await complete(a.roadmap, a.cookie, 0);
+    const steps = flattenRoadmap(row);
+    boundary.mockClear();
+    boundary.mockImplementationOnce(async () => {
+      if (failure === 'timeout') return new Promise<Response>(() => {});
+      if (failure === 'oversized') return new Response('x'.repeat(4097));
+      if (failure === 'malformed') return new Response('private-invalid-json');
+      return Response.json({
+        status: 'completed',
+        output: [{ type: 'message', content: [{ type: 'refusal' }] }],
+      });
+    });
+    const result = await write(
+      'post',
+      `${path(row)}/step-regenerations`,
+      a.cookie,
+      {
+        baseRevision: row.revision,
+        movedStepId: steps[2]!.id,
+        pendingOrder: [steps[2]!.id, steps[1]!.id, steps[3]!.id],
+      },
+    );
+    expect(result.status).toBe(failure === 'timeout' ? 504 : 502);
+    expect(JSON.stringify(result.body)).not.toMatch(/private-|test-key|stack/);
+    expect(boundary).toHaveBeenCalledTimes(1);
+    expect(await current(row, a.cookie)).toEqual(row);
+    expect((await read(`${path(row)}/revisions`, a.cookie)).body.total).toBe(2);
+    const manual = await complete(row, a.cookie, 1);
+    expect(flattenRoadmap(manual)[0]).toEqual(steps[0]);
+    expect(flattenRoadmap(manual)[1]!.completed).toBe(true);
+    expect(boundary).toHaveBeenCalledTimes(1);
+  },
+);
 const manualApp = createApp({
   logger: pino({ level: 'silent' }),
   webOrigin: env.WEB_ORIGIN,

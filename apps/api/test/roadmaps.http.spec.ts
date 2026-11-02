@@ -14,6 +14,7 @@ const env = {
   AI_MODEL: 'test-model',
   AI_RECEIPT_KEY: 'c'.repeat(64),
   AI_TIMEOUT_MS: 100,
+  AI_MAX_RESPONSE_BYTES: 4096,
 };
 const database = `${env.TEST_DB_NAME}_roadmaps_${randomBytes(4).toString('hex')}`;
 const admin = createDataSource({ ...env, DB_NAME: env.TEST_DB_NAME });
@@ -65,6 +66,37 @@ const app = createApp({
   aiFetch: boundary,
   aiClock: () => now,
 });
+it.each(['oversized', 'refusal'])(
+  'rejects roadmap generation %s without persistence and keeps manual creation available',
+  async (failure) => {
+    const a = await account();
+    const id = await subject(a.cookie);
+    boundary.mockClear();
+    boundary.mockImplementationOnce(async () =>
+      failure === 'oversized'
+        ? new Response('x'.repeat(4097))
+        : Response.json({
+            status: 'completed',
+            output: [{ type: 'message', content: [{ type: 'refusal' }] }],
+          }),
+    );
+    const result = await write(
+      'post',
+      `/subjects/${id}/roadmap-generations`,
+      a.cookie,
+      parameters,
+    );
+    expect(result.status).toBe(502);
+    expect(await rows(id)).toBe(0);
+    expect(boundary).toHaveBeenCalledTimes(1);
+    expect(
+      (await write('post', `/subjects/${id}/roadmaps`, a.cookie, content))
+        .status,
+    ).toBe(201);
+    expect(await rows(id)).toBe(1);
+    expect(boundary).toHaveBeenCalledTimes(1);
+  },
+);
 const manualApp = createApp({
   logger: pino({ level: 'silent' }),
   webOrigin: env.WEB_ORIGIN,

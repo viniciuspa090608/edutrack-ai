@@ -29,6 +29,11 @@ const content = {
 };
 let output: unknown, failure: string, now: Date;
 const boundary = vi.fn<typeof fetch>(async () => {
+  if (failure === 'refusal')
+    return Response.json({
+      status: 'completed',
+      output: [{ type: 'message', content: [{ type: 'refusal' }] }],
+    });
   if (failure === 'timeout') return new Promise<Response>(() => {});
   if (failure === 'network') throw new Error('private-network-details');
   if (failure === 'status')
@@ -211,6 +216,7 @@ it('contains provider failures, timeout, streaming and declared byte limits with
     'network',
     'status',
     'malformed',
+    'refusal',
     'large',
     'length',
     'timeout',

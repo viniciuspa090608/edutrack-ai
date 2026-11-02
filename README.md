@@ -157,6 +157,12 @@ pnpm build
 
 `pnpm test` inclui integração real com o MySQL em `TEST_DB_NAME`; o banco precisa estar ativo. Os testes de autenticação criam e removem bancos temporários com prefixo `TEST_DB_NAME`. O usuário MySQL de teste precisa de permissão para isso. Os demais comandos cobrem todos os workspaces aplicáveis. O CI executa os mesmos comandos com MySQL temporário e instalação por lockfile congelado.
 
+O setup Vitest da API preserva as configurações reais de MySQL do ambiente/`.env`, mas usa valores sintéticos para e-mail e remove credenciais pessoais de Google e IA somente no processo de teste. A geração externa é simulada na fronteira HTTP; serviços e persistência continuam reais. Isso não altera o `.env` nem as regras da API em execução normal. Não use banco de produção e mantenha `DB_NAME` diferente de `TEST_DB_NAME`.
+
+Na execução normal atual, `AI_API_KEY`, `AI_MODEL` e `AI_RECEIPT_KEY` precisam estar todos preenchidos ou todos ausentes/vazios. Somente `AI_RECEIPT_KEY` causa `EnvValidationError` com os nomes faltantes; isso é configuração parcial, não falha do MySQL. Não use uma chave Gemini no adaptador OpenAI atual. Preserve seus segredos locais durante os testes; configure o provedor real apenas ao habilitar a integração correspondente.
+
+A matriz e o relatório da mudança `establish-project-regression-baseline`, em `openspec/changes` (ou no respectivo diretório de archive após conclusão), relacionam os cenários críticos aos testes existentes e registram os resultados. Use os mesmos quatro comandos antes e depois de mudanças de IA. Falha de MySQL ou de permissões é falha real; não ignore a suíte nem substitua o banco por mocks. Testes de componentes usam jsdom e não comprovam layout real de navegador.
+
 ## Organização
 
 - `apps/web`: React, Vite e interface mobile-first.
