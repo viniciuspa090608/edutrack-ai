@@ -1,5 +1,4 @@
 import type { MouseEvent } from 'react';
-import { navigate } from '../auth/auth-api.js';
 
 /** Keep public route state in the SPA, while retaining real, shareable hrefs. */
 export function navigatePublicLink(event: MouseEvent<HTMLElement>): void {
@@ -23,6 +22,13 @@ export function navigatePublicLink(event: MouseEvent<HTMLElement>): void {
   )
     return;
   event.preventDefault();
-  navigate(url.pathname + url.search);
+  const arrival =
+    window.location.pathname === '/' && url.pathname === '/acesso';
+  window.history.pushState(
+    arrival ? { accessArrival: true } : {},
+    '',
+    url.pathname + url.search,
+  );
+  window.dispatchEvent(new PopStateEvent('popstate'));
   window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
 }

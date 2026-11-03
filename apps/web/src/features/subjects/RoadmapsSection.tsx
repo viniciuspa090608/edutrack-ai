@@ -1,3 +1,4 @@
+import { FormModal } from '@study-platform/ui/components/ui/form-modal';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   AlertDescription,
@@ -260,6 +261,7 @@ export function RoadmapsSection({
   const request = useRef<AbortController | null>(null);
   const active = useRef(true);
   const saving = useRef(false);
+  const editorForm = useRef<HTMLFormElement>(null);
   const newButton = useRef<HTMLButtonElement>(null);
   const aiButton = useRef<HTMLButtonElement>(null);
   const previousMode = useRef(mode);
@@ -369,6 +371,25 @@ export function RoadmapsSection({
       mode === 'manual' && editingId ? roadmapDraftSchema : roadmapContentSchema
     ).safeParse(content);
     if (!parsed.success) {
+      const path = parsed.error.issues[0]?.path ?? [];
+      let index = path[0] === 'description' ? 1 : 0;
+      if (path[0] === 'blocks') {
+        const block = Number(path[1] ?? 0);
+        index =
+          2 +
+          content.blocks
+            .slice(0, block)
+            .reduce((n, b) => n + 2 + b.steps.length * 2, 0);
+        index +=
+          path[2] === 'steps'
+            ? 2 + Number(path[3] ?? 0) * 2 + (path[4] === 'description' ? 1 : 0)
+            : path[2] === 'description'
+              ? 1
+              : 0;
+      }
+      const fields =
+        editorForm.current?.querySelectorAll<HTMLElement>('input,textarea');
+      fields?.[index]?.focus();
       setError(
         'Preencha títulos e descrições. Use de 1 a 20 blocos e de 1 a 20 passos por bloco.',
       );
@@ -454,7 +475,7 @@ export function RoadmapsSection({
           </AlertDescription>
         </Alert>
       )}
-      {error && !deleting && (
+      {error && !deleting && !(mode === 'manual' && !editingId) && (
         <Alert variant="destructive" role="alert">
           <AlertDescription>{error}</AlertDescription>
         </Alert>
@@ -480,93 +501,111 @@ export function RoadmapsSection({
         />
       )}
       {(mode === 'manual' || mode === 'preview') && (
-        <form
-          className="subject-panel roadmap-edit-form"
-          data-preview={mode === 'preview' || undefined}
-          aria-label={
-            mode === 'preview' ? 'Revisar prévia' : 'Editor manual de roadmap'
-          }
-          onSubmit={(event) => {
-            event.preventDefault();
-            void save();
-          }}
+        <RoadmapCreationModal
+          enabled={mode === 'manual' && !editingId}
+          content={content}
+          busy={!!busy}
+          onClose={close}
         >
-          <h4>
-            {mode === 'preview'
-              ? 'Prévia do roadmap'
-              : editingId
-                ? 'Editar roadmap'
-                : 'Novo roadmap manual'}
-          </h4>
-          {mode === 'preview' && preview && (
-            <>
-              <p>
-                Revise e edite antes de salvar. A prévia ainda não foi salva.
-              </p>
-              <dl>
-                <dt>Nível da geração</dt>
-                <dd>
-                  {
-                    {
-                      BEGINNER: 'Iniciante',
-                      INTERMEDIATE: 'Intermediário',
-                      ADVANCED: 'Avançado',
-                    }[preview.parameters.currentLevel]
-                  }
-                </dd>
-                <dt>Objetivo da geração</dt>
-                <dd>{preview.parameters.objective}</dd>
-                <dt>Prazo da geração</dt>
-                <dd>{preview.parameters.dueDate}</dd>
-                <dt>Horas semanais da geração</dt>
-                <dd>{preview.parameters.weeklyHours}</dd>
-                <dt>Assuntos conhecidos da geração</dt>
-                <dd>{preview.parameters.knownTopics.join(', ') || 'Nenhum'}</dd>
-              </dl>
-              <p>
-                Prévia válida até{' '}
-                {new Date(preview.expiresAt).toLocaleString('pt-BR')}.
-              </p>
-              {expired && (
-                <Alert variant="destructive" role="alert">
-                  <AlertDescription>
-                    A prévia expirou. Gere novamente para salvar.
-                  </AlertDescription>
-                </Alert>
-              )}
-              <Button
-                type="button"
-                disabled={!!busy}
-                onClick={() => {
-                  setPreview(null);
-                  setMode('parameters');
-                  setError('');
-                  setExpired(false);
-                }}
-              >
-                Gerar novamente
-              </Button>
-            </>
-          )}
-          <RoadmapEditor
-            value={content}
-            onChange={setContent}
-            disabled={!!busy}
-          />
-          <div className="subject-actions">
-            <Button type="submit" disabled={!!busy || expired}>
-              Salvar roadmap
-            </Button>
-            <Button
-              variant="outline"
-              type="button"
-              disabled={!!busy}
-              onClick={close}
+          {(requestClose) => (
+            <form
+              ref={editorForm}
+              className="subject-panel roadmap-edit-form"
+              data-preview={mode === 'preview' || undefined}
+              aria-label={
+                mode === 'preview'
+                  ? 'Revisar prévia'
+                  : 'Editor manual de roadmap'
+              }
+              onSubmit={(event) => {
+                event.preventDefault();
+                void save();
+              }}
             >
-              Cancelar
-            </Button>
-          </div>
-        </form>
+              <h4>
+                {mode === 'preview'
+                  ? 'Prévia do roadmap'
+                  : editingId
+                    ? 'Editar roadmap'
+                    : 'Novo roadmap manual'}
+              </h4>
+              {mode === 'preview' && preview && (
+                <>
+                  <p>
+                    Revise e edite antes de salvar. A prévia ainda não foi
+                    salva.
+                  </p>
+                  <dl>
+                    <dt>Nível da geração</dt>
+                    <dd>
+                      {
+                        {
+                          BEGINNER: 'Iniciante',
+                          INTERMEDIATE: 'Intermediário',
+                          ADVANCED: 'Avançado',
+                        }[preview.parameters.currentLevel]
+                      }
+                    </dd>
+                    <dt>Objetivo da geração</dt>
+                    <dd>{preview.parameters.objective}</dd>
+                    <dt>Prazo da geração</dt>
+                    <dd>{preview.parameters.dueDate}</dd>
+                    <dt>Horas semanais da geração</dt>
+                    <dd>{preview.parameters.weeklyHours}</dd>
+                    <dt>Assuntos conhecidos da geração</dt>
+                    <dd>
+                      {preview.parameters.knownTopics.join(', ') || 'Nenhum'}
+                    </dd>
+                  </dl>
+                  <p>
+                    Prévia válida até{' '}
+                    {new Date(preview.expiresAt).toLocaleString('pt-BR')}.
+                  </p>
+                  {expired && (
+                    <Alert variant="destructive" role="alert">
+                      <AlertDescription>
+                        A prévia expirou. Gere novamente para salvar.
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                  <Button
+                    type="button"
+                    disabled={!!busy}
+                    onClick={() => {
+                      setPreview(null);
+                      setMode('parameters');
+                      setError('');
+                      setExpired(false);
+                    }}
+                  >
+                    Gerar novamente
+                  </Button>
+                </>
+              )}
+              {error && mode === 'manual' && !editingId && (
+                <p role="alert">{error}</p>
+              )}
+              <RoadmapEditor
+                value={content}
+                onChange={setContent}
+                disabled={!!busy}
+              />
+              <div className="subject-actions">
+                <Button type="submit" disabled={!!busy || expired}>
+                  Salvar roadmap
+                </Button>
+                <Button
+                  variant="outline"
+                  type="button"
+                  disabled={!!busy}
+                  onClick={requestClose}
+                >
+                  Cancelar
+                </Button>
+              </div>
+            </form>
+          )}
+        </RoadmapCreationModal>
       )}
       {result && !result.items.length && (
         <p className="subject-empty">
@@ -747,5 +786,32 @@ export function RoadmapsSection({
         </Pagination>
       )}
     </section>
+  );
+}
+
+function RoadmapCreationModal({
+  enabled,
+  content,
+  busy,
+  onClose,
+  children,
+}: {
+  enabled: boolean;
+  content: unknown;
+  busy: boolean;
+  onClose: () => void;
+  children: (close: () => void) => React.ReactNode;
+}) {
+  const initial = useRef(JSON.stringify(content));
+  if (!enabled) return children(onClose);
+  return (
+    <FormModal
+      title="Novo roadmap manual"
+      dirty={JSON.stringify(content) !== initial.current}
+      busy={busy}
+      onClose={onClose}
+    >
+      {children}
+    </FormModal>
   );
 }

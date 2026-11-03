@@ -32,6 +32,13 @@ function modeFromUrl(): 'login' | 'register' {
 }
 
 export function AccessPage() {
+  const [arrival] = useState(
+    () => window.history.state?.accessArrival === true,
+  );
+  useEffect(() => {
+    if (window.history.state?.accessArrival)
+      window.history.replaceState({}, '');
+  }, []);
   const [mode, setMode] = useState<'login' | 'register'>(modeFromUrl);
   const [search, setSearch] = useState(() => window.location.search);
   const [email, setEmail] = useState('');
@@ -71,7 +78,7 @@ export function AccessPage() {
   }
 
   return (
-    <AuthLayout>
+    <AuthLayout arrival={arrival}>
       <span className="auth-heading-icon" aria-hidden="true">
         <BookOpen size={24} />
       </span>

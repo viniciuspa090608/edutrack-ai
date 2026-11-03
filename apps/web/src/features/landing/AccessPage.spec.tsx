@@ -173,3 +173,25 @@ it.each(['login', 'register'])(
     ).toBeNull();
   },
 );
+
+it.each(['Entrar', 'Criar conta'])(
+  'animates one arrival from the landing through %s',
+  async (name) => {
+    window.history.replaceState({}, '', '/');
+    render(<App />);
+    const interaction = userEvent.setup();
+    await interaction.click(screen.getAllByRole('link', { name }).at(-1)!);
+    const content = document.querySelector('.auth-form-content')!;
+    expect(content.classList.contains('animate__backInLeft')).toBe(true);
+    expect(window.history.state?.accessArrival).toBeUndefined();
+    await interaction.type(screen.getByLabelText('E-mail'), 'a');
+    expect(document.querySelector('.auth-form-content')).toBe(content);
+    cleanup();
+    render(<App />);
+    expect(
+      document
+        .querySelector('.auth-form-content')
+        ?.classList.contains('animate__backInLeft'),
+    ).toBe(false);
+  },
+);

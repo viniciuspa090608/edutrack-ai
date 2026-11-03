@@ -1,3 +1,4 @@
+import { navigatePrivateLink } from '../../app/private-navigation.js';
 import {
   useEffect,
   useRef,
@@ -117,6 +118,7 @@ export function AuthenticatedShell({
   const body = useRef<HTMLDivElement>(null);
   const theme = useTheme();
   const pathname = window.location.pathname;
+  const openedPath = useRef(pathname);
   const primary = [
     home,
     ...(prefs
@@ -158,6 +160,7 @@ export function AuthenticatedShell({
   );
   return (
     <div
+      onClick={navigatePrivateLink}
       className={`private-page authenticated-shell${account ? ' account-shell' : ''}`}
     >
       <header className="private-header shell-header">
@@ -210,7 +213,13 @@ export function AuthenticatedShell({
         </div>
       </div>
       {!desktop && (
-        <Sheet open={moreOpen} onOpenChange={setMoreOpen}>
+        <Sheet
+          open={moreOpen}
+          onOpenChange={(open) => {
+            if (open) openedPath.current = window.location.pathname;
+            setMoreOpen(open);
+          }}
+        >
           <nav className="shell-bottom-nav" aria-label="Área pessoal">
             {primary.map((item) => (
               <DestinationLink
@@ -240,6 +249,11 @@ export function AuthenticatedShell({
               if (isDesktop()) {
                 event.preventDefault();
                 brand.current?.focus();
+              } else if (openedPath.current !== window.location.pathname) {
+                event.preventDefault();
+                body.current
+                  ?.querySelector<HTMLElement>('main')
+                  ?.focus({ preventScroll: true });
               }
             }}
           >

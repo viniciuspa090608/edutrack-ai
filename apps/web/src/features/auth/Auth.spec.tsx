@@ -1,8 +1,8 @@
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from '../../app/App.js';
-import { allowedReturnTo } from './auth-api.js';
+import { allowedReturnTo, navigate } from './auth-api.js';
 
 const user = {
   id: '00000000-0000-4000-8000-000000000000',
@@ -300,4 +300,72 @@ describe('account access', () => {
       screen.getByRole('button', { name: 'Vincular Google' }),
     ).toBeTruthy();
   });
+});
+
+it('keeps the shell DOM and session bootstrap when navigating and replaying history', async () => {
+  window.history.replaceState({}, '', '/app/tarefas');
+  vi.stubGlobal('matchMedia', (query: string) => ({
+    matches: query.includes('1024'),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+  }));
+  const fetchMock = vi.fn(async (url: string) =>
+    url.endsWith('/profile/preferences')
+      ? Response.json({ ...preferences, tasks: false })
+      : privateFetch(url),
+  );
+  vi.stubGlobal('fetch', fetchMock);
+  render(<App />);
+  await screen.findByText(/Este módulo está desativado/);
+  const sidebar = document.querySelector('.shell-sidebar')!;
+  const header = document.querySelector('.shell-header')!;
+  sidebar.scrollTop = 37;
+  const main = document.querySelector('.private-route-content');
+  await userEvent.setup().click(screen.getByRole('link', { name: 'Matérias' }));
+  await waitFor(() => expect(window.location.pathname).toBe('/app/materias'));
+  expect(document.querySelector('.shell-sidebar')).toBe(sidebar);
+  expect(document.querySelector('.shell-header')).toBe(header);
+  expect(sidebar.scrollTop).toBe(37);
+  expect(document.querySelector('.private-route-content')).not.toBe(main);
+  expect(
+    screen.getByRole('link', { name: 'Matérias' }).getAttribute('aria-current'),
+  ).toBe('page');
+  act(() => navigate('/app/tarefas?filter=pending'));
+  await screen.findByText(/Este módulo está desativado/);
+  expect(document.querySelector('.shell-sidebar')).toBe(sidebar);
+  expect(
+    fetchMock.mock.calls.filter(([url]) => url.endsWith('/auth/me')),
+  ).toHaveLength(1);
+  act(() => window.history.back());
+  await waitFor(() => expect(window.location.pathname).toBe('/app/materias'));
+  expect(document.querySelector('.shell-sidebar')).toBe(sidebar);
+});
+
+it('restores usable private content after logout fails and retries the real request once', async () => {
+  window.history.replaceState({}, '', '/app/tarefas');
+  let attempts = 0;
+  const fetchMock = vi.fn(async (url: string) => {
+    if (url.endsWith('/auth/logout') && ++attempts === 1)
+      throw new Error('offline');
+    return url.endsWith('/profile/preferences')
+      ? Response.json({ ...preferences, tasks: false })
+      : privateFetch(url);
+  });
+  vi.stubGlobal('fetch', fetchMock);
+  vi.stubGlobal('matchMedia', () => ({
+    matches: true,
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+  }));
+  render(<App />);
+  await screen.findByText(/Este módulo está desativado/);
+  await userEvent.setup().click(screen.getByRole('button', { name: 'Sair' }));
+  await screen.findByText('Não foi possível sair agora. Tente novamente.');
+  expect(
+    document.querySelector('.private-route-content')?.hasAttribute('inert'),
+  ).toBe(false);
+  expect(attempts).toBe(1);
+  await userEvent.setup().click(screen.getByRole('button', { name: 'Sair' }));
+  await screen.findByRole('heading', { name: 'Entre na sua conta' });
+  expect(attempts).toBe(2);
 });

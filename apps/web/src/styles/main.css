@@ -110,3 +110,31 @@ h1 {
     animation: none !important;
   }
 }
+
+.private-route-content.animate__fadeIn,
+.auth-form-content.animate__backInLeft {
+  animation-fill-mode: backwards;
+}
+.private-content:focus {
+  outline: none;
+}
+.dark .shell-sidebar {
+  background: #16191d;
+}
+
+button,
+a[data-slot='button'],
+.shell-nav-link,
+.shell-profile-link {
+  transition-property:
+    color, background-color, border-color, box-shadow, opacity;
+  transition-duration: 500ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  button,
+  a[data-slot='button'],
+  .shell-nav-link,
+  .shell-profile-link {
+    transition-duration: 0.01ms !important;
+  }
+}

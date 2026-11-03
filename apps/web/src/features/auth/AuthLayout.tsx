@@ -13,9 +13,11 @@ import { Card, CardContent } from '@study-platform/ui/components/ui/card';
 export function AuthLayout({
   children,
   recovery = false,
+  arrival = false,
 }: {
   children: ReactNode;
   recovery?: boolean;
+  arrival?: boolean;
 }) {
   return (
     <main className={`auth-layout${recovery ? ' auth-layout-recovery' : ''}`}>
@@ -99,7 +101,11 @@ export function AuthLayout({
           <BookOpen size={22} /> EduTrack
         </div>
         <Card className="auth-surface">
-          <CardContent className="auth-form-content">{children}</CardContent>
+          <CardContent
+            className={`auth-form-content${arrival ? ' animate__animated animate__backInLeft' : ''}`}
+          >
+            {children}
+          </CardContent>
         </Card>
       </section>
     </main>

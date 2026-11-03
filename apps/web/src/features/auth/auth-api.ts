@@ -62,6 +62,13 @@ export async function send(
       retryHeader && /^\d+$/.test(retryHeader)
         ? Number(retryHeader)
         : undefined;
+    if (
+      (code === 'UNAUTHENTICATED' || code === 'EMAIL_VERIFICATION_REQUIRED') &&
+      (window.location.pathname.startsWith('/app') ||
+        window.location.pathname === '/conta')
+    ) {
+      window.dispatchEvent(new Event('edutrack:session-expired'));
+    }
     throw new AuthApiError(response.status, code, retryAfter);
   }
   return response;

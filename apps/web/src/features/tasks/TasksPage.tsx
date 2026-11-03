@@ -1,3 +1,4 @@
+import { FormModal } from '@study-platform/ui/components/ui/form-modal';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { ClassroomProvenance } from '../classroom/ClassroomProvenance.js';
 import {
@@ -11,12 +12,6 @@ import {
   Alert,
 } from '@study-platform/ui/components/ui/alert';
 import { Skeleton } from '@study-platform/ui/components/ui/skeleton';
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogDescription,
-} from '@study-platform/ui/components/ui/dialog';
 import {
   Pagination,
   PaginationContent,
@@ -123,206 +118,235 @@ function TaskForm({
   const [error, setError] = useState('');
   const [invalid, setInvalid] = useState<Record<string, string>>({});
   const titleRef = useRef<HTMLInputElement>(null);
+  const initial = useRef(
+    JSON.stringify([subjectId, title, description, priority, status, dueDate]),
+  );
   const submitting = useRef(false);
   useEffect(() => {
     titleRef.current?.focus();
   }, []);
   return (
-    <Card asChild>
-      <form
-        className="task-card task-form"
-        aria-label={task ? 'Editar tarefa' : 'Criar tarefa'}
-        noValidate
-        onSubmit={async (event) => {
-          event.preventDefault();
-          if (submitting.current) return;
-          const parsed = createTaskSchema.safeParse({
-            ...(subjectsEnabled
-              ? { subjectId: subjectId || null }
-              : task
-                ? { subjectId: task.subjectId }
-                : {}),
-            title,
-            description: description || null,
-            priority,
-            status,
-            dueDate: dueDate || null,
-          });
-          if (!parsed.success) {
-            const errors: Record<string, string> = {};
-            for (const issue of parsed.error.issues)
-              errors[String(issue.path[0])] =
-                issue.path[0] === 'title'
-                  ? 'Informe um título de 1 a 160 caracteres.'
-                  : issue.path[0] === 'description'
-                    ? 'Use até 2.000 caracteres.'
-                    : 'Informe uma data ou opção válida.';
-            setInvalid(errors);
-            setError('Revise os campos indicados.');
-            document.getElementById(`task-${Object.keys(errors)[0]}`)?.focus();
-            return;
-          }
-          submitting.current = true;
-          setBusy(true);
-          setError('');
-          setInvalid({});
-          try {
-            const input = task?.subtaskTotal
-              ? {
-                  ...(subjectsEnabled
-                    ? { subjectId: parsed.data.subjectId }
+    <FormModal
+      title={task ? 'Editar tarefa' : 'Nova tarefa'}
+      dirty={
+        JSON.stringify([
+          subjectId,
+          title,
+          description,
+          priority,
+          status,
+          dueDate,
+        ]) !== initial.current
+      }
+      busy={busy}
+      onClose={onCancel}
+    >
+      {(requestClose) => (
+        <Card asChild>
+          <form
+            className="task-card task-form"
+            aria-label={task ? 'Editar tarefa' : 'Criar tarefa'}
+            noValidate
+            onSubmit={async (event) => {
+              event.preventDefault();
+              if (submitting.current) return;
+              const parsed = createTaskSchema.safeParse({
+                ...(subjectsEnabled
+                  ? { subjectId: subjectId || null }
+                  : task
+                    ? { subjectId: task.subjectId }
                     : {}),
-                  title: parsed.data.title,
-                  description: parsed.data.description,
-                  priority: parsed.data.priority,
-                  dueDate: parsed.data.dueDate,
-                }
-              : subjectsEnabled
-                ? parsed.data
-                : Object.fromEntries(
-                    Object.entries(parsed.data).filter(
-                      ([key]) => key !== 'subjectId',
-                    ),
-                  );
-            onSaved(await saveTask(task?.id ?? null, input));
-          } catch (cause) {
-            setError(failure(cause));
-          } finally {
-            submitting.current = false;
-            setBusy(false);
-          }
-        }}
-      >
-        <CardHeader>
-          <div className="task-section-heading">
-            <span className="task-icon">
-              <ClipboardList aria-hidden="true" />
-            </span>
-            <div>
-              <h2>{task ? 'Editar tarefa' : 'Nova tarefa'}</h2>
-              <p className="task-muted">
-                Organize os próximos passos dos seus estudos.
-              </p>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <FieldSet disabled={busy} className="task-fields">
-            {subjectsEnabled && (
-              <SubjectSelect
-                value={subjectId}
-                onChange={setSubjectId}
-                disabled={busy}
-              />
-            )}
-            <div className="task-field task-field-wide">
-              <Label htmlFor="task-title">Título</Label>
-              <Input
-                ref={titleRef}
-                id="task-title"
-                value={title}
-                maxLength={160}
-                required
-                aria-invalid={!!invalid.title}
-                aria-describedby={
-                  invalid.title ? 'task-title-error' : undefined
-                }
-                onChange={(event) => setTitle(event.target.value)}
-              />
-              {invalid.title && <p id="task-title-error">{invalid.title}</p>}
-            </div>
-            <div className="task-field task-field-wide">
-              <Label htmlFor="task-description">Descrição (opcional)</Label>
-              <Textarea
-                id="task-description"
-                value={description}
-                maxLength={2000}
-                aria-invalid={!!invalid.description}
-                aria-describedby={
-                  invalid.description ? 'task-description-error' : undefined
-                }
-                onChange={(event) => setDescription(event.target.value)}
-              />
-              {invalid.description && (
-                <p id="task-description-error">{invalid.description}</p>
-              )}
-            </div>
-            <div className="task-field">
-              <Label htmlFor="task-priority">Importância</Label>
-              <NativeSelect
-                id="task-priority"
-                value={priority}
-                onChange={(event) =>
-                  setPriority(event.target.value as StudyTask['priority'])
-                }
-              >
-                {Object.entries(priorities).map(([value, label]) => (
-                  <NativeSelectOption key={value} value={value}>
-                    {label}
-                  </NativeSelectOption>
-                ))}
-              </NativeSelect>
-            </div>
-            <div className="task-field">
-              <Label htmlFor="task-dueDate">Prazo (opcional)</Label>
-              <Input
-                id="task-dueDate"
-                type="date"
-                min="1000-01-01"
-                max="9999-12-31"
-                value={dueDate}
-                aria-invalid={!!invalid.dueDate}
-                aria-describedby={
-                  invalid.dueDate ? 'task-dueDate-error' : undefined
-                }
-                onChange={(event) => setDueDate(event.target.value)}
-              />
-              {invalid.dueDate && (
-                <p id="task-dueDate-error">{invalid.dueDate}</p>
-              )}
-            </div>
-            <div className="task-field task-field-wide">
-              {task?.subtaskTotal ? (
-                <p>
-                  Status calculado pelas subtarefas. Conclua ou reabra os passos
-                  no detalhe da tarefa.
-                </p>
-              ) : (
-                <>
-                  <Label htmlFor="task-status">Status</Label>
+                title,
+                description: description || null,
+                priority,
+                status,
+                dueDate: dueDate || null,
+              });
+              if (!parsed.success) {
+                const errors: Record<string, string> = {};
+                for (const issue of parsed.error.issues)
+                  errors[String(issue.path[0])] =
+                    issue.path[0] === 'title'
+                      ? 'Informe um título de 1 a 160 caracteres.'
+                      : issue.path[0] === 'description'
+                        ? 'Use até 2.000 caracteres.'
+                        : 'Informe uma data ou opção válida.';
+                setInvalid(errors);
+                setError('Revise os campos indicados.');
+                document
+                  .getElementById(`task-${Object.keys(errors)[0]}`)
+                  ?.focus();
+                return;
+              }
+              submitting.current = true;
+              setBusy(true);
+              setError('');
+              setInvalid({});
+              try {
+                const input = task?.subtaskTotal
+                  ? {
+                      ...(subjectsEnabled
+                        ? { subjectId: parsed.data.subjectId }
+                        : {}),
+                      title: parsed.data.title,
+                      description: parsed.data.description,
+                      priority: parsed.data.priority,
+                      dueDate: parsed.data.dueDate,
+                    }
+                  : subjectsEnabled
+                    ? parsed.data
+                    : Object.fromEntries(
+                        Object.entries(parsed.data).filter(
+                          ([key]) => key !== 'subjectId',
+                        ),
+                      );
+                onSaved(await saveTask(task?.id ?? null, input));
+              } catch (cause) {
+                setError(failure(cause));
+              } finally {
+                submitting.current = false;
+                setBusy(false);
+              }
+            }}
+          >
+            <CardHeader>
+              <div className="task-section-heading">
+                <span className="task-icon">
+                  <ClipboardList aria-hidden="true" />
+                </span>
+                <div>
+                  <h2>{task ? 'Editar tarefa' : 'Nova tarefa'}</h2>
+                  <p className="task-muted">
+                    Organize os próximos passos dos seus estudos.
+                  </p>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <FieldSet disabled={busy} className="task-fields">
+                {subjectsEnabled && (
+                  <SubjectSelect
+                    value={subjectId}
+                    onChange={setSubjectId}
+                    disabled={busy}
+                  />
+                )}
+                <div className="task-field task-field-wide">
+                  <Label htmlFor="task-title">Título</Label>
+                  <Input
+                    ref={titleRef}
+                    id="task-title"
+                    value={title}
+                    maxLength={160}
+                    required
+                    aria-invalid={!!invalid.title}
+                    aria-describedby={
+                      invalid.title ? 'task-title-error' : undefined
+                    }
+                    onChange={(event) => setTitle(event.target.value)}
+                  />
+                  {invalid.title && (
+                    <p id="task-title-error">{invalid.title}</p>
+                  )}
+                </div>
+                <div className="task-field task-field-wide">
+                  <Label htmlFor="task-description">Descrição (opcional)</Label>
+                  <Textarea
+                    id="task-description"
+                    value={description}
+                    maxLength={2000}
+                    aria-invalid={!!invalid.description}
+                    aria-describedby={
+                      invalid.description ? 'task-description-error' : undefined
+                    }
+                    onChange={(event) => setDescription(event.target.value)}
+                  />
+                  {invalid.description && (
+                    <p id="task-description-error">{invalid.description}</p>
+                  )}
+                </div>
+                <div className="task-field">
+                  <Label htmlFor="task-priority">Importância</Label>
                   <NativeSelect
-                    id="task-status"
-                    value={status}
+                    id="task-priority"
+                    value={priority}
                     onChange={(event) =>
-                      setStatus(event.target.value as StudyTask['status'])
+                      setPriority(event.target.value as StudyTask['priority'])
                     }
                   >
-                    {Object.entries(statuses).map(([value, label]) => (
+                    {Object.entries(priorities).map(([value, label]) => (
                       <NativeSelectOption key={value} value={value}>
                         {label}
                       </NativeSelectOption>
                     ))}
                   </NativeSelect>
-                </>
+                </div>
+                <div className="task-field">
+                  <Label htmlFor="task-dueDate">Prazo (opcional)</Label>
+                  <Input
+                    id="task-dueDate"
+                    type="date"
+                    min="1000-01-01"
+                    max="9999-12-31"
+                    value={dueDate}
+                    aria-invalid={!!invalid.dueDate}
+                    aria-describedby={
+                      invalid.dueDate ? 'task-dueDate-error' : undefined
+                    }
+                    onChange={(event) => setDueDate(event.target.value)}
+                  />
+                  {invalid.dueDate && (
+                    <p id="task-dueDate-error">{invalid.dueDate}</p>
+                  )}
+                </div>
+                <div className="task-field task-field-wide">
+                  {task?.subtaskTotal ? (
+                    <p>
+                      Status calculado pelas subtarefas. Conclua ou reabra os
+                      passos no detalhe da tarefa.
+                    </p>
+                  ) : (
+                    <>
+                      <Label htmlFor="task-status">Status</Label>
+                      <NativeSelect
+                        id="task-status"
+                        value={status}
+                        onChange={(event) =>
+                          setStatus(event.target.value as StudyTask['status'])
+                        }
+                      >
+                        {Object.entries(statuses).map(([value, label]) => (
+                          <NativeSelectOption key={value} value={value}>
+                            {label}
+                          </NativeSelectOption>
+                        ))}
+                      </NativeSelect>
+                    </>
+                  )}
+                </div>
+                <div className="task-actions">
+                  <Button type="submit">
+                    {busy ? 'Salvando…' : 'Salvar tarefa'}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    type="button"
+                    onClick={requestClose}
+                  >
+                    Cancelar edição
+                  </Button>
+                </div>
+              </FieldSet>
+              {error && (
+                <Alert variant="destructive" role="alert">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
               )}
-            </div>
-            <div className="task-actions">
-              <Button type="submit">
-                {busy ? 'Salvando…' : 'Salvar tarefa'}
-              </Button>
-              <Button variant="outline" type="button" onClick={onCancel}>
-                Cancelar edição
-              </Button>
-            </div>
-          </FieldSet>
-          {error && (
-            <Alert variant="destructive" role="alert">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-        </CardContent>
-      </form>
-    </Card>
+            </CardContent>
+          </form>
+        </Card>
+      )}
+    </FormModal>
   );
 }
 
@@ -514,57 +538,21 @@ export function TasksPage({
         </p>
       )}
       {editor && (
-        <Dialog
-          open
-          onOpenChange={(open) => {
-            if (
-              !open &&
-              !document.getElementById('task-title')?.closest('fieldset')
-                ?.disabled
-            )
-              setEditor(null);
+        <TaskForm
+          key={editor.task?.id ?? 'new'}
+          task={editor.task}
+          subjectsEnabled={subjectsEnabled}
+          onCancel={() => {
+            setEditor(null);
+            newButton.current?.focus();
           }}
-        >
-          <DialogContent
-            showCloseButton={false}
-            className="tasks-surface task-editor-dialog"
-            onInteractOutside={(event) => event.preventDefault()}
-            onEscapeKeyDown={(event) => {
-              if (
-                document.getElementById('task-title')?.closest('fieldset')
-                  ?.disabled
-              )
-                event.preventDefault();
-            }}
-            onCloseAutoFocus={(event) => {
-              event.preventDefault();
-              if (!detail) newButton.current?.focus();
-              else detailHeading.current?.focus();
-            }}
-          >
-            <DialogTitle asChild>
-              <span className="sr-only">Editor de tarefa</span>
-            </DialogTitle>
-            <DialogDescription className="sr-only">
-              Preencha os dados da tarefa e salve ou cancele a edição.
-            </DialogDescription>
-            <TaskForm
-              key={editor.task?.id ?? 'new'}
-              task={editor.task}
-              subjectsEnabled={subjectsEnabled}
-              onCancel={() => {
-                setEditor(null);
-                newButton.current?.focus();
-              }}
-              onSaved={(task) => {
-                setEditor(null);
-                setDetail(task);
-                setSuccess('Tarefa salva.');
-                refresh();
-              }}
-            />
-          </DialogContent>
-        </Dialog>
+          onSaved={(task) => {
+            setEditor(null);
+            setDetail(task);
+            setSuccess('Tarefa salva.');
+            refresh();
+          }}
+        />
       )}
       <Card asChild>
         <form

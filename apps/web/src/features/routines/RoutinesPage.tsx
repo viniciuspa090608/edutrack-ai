@@ -1,3 +1,4 @@
+import { FormModal } from '@study-platform/ui/components/ui/form-modal';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Skeleton } from '@study-platform/ui/components/ui/skeleton';
 import {
@@ -88,6 +89,8 @@ export function RoutinesPage() {
   const heading = useRef<HTMLHeadingElement>(null);
   const nameField = useRef<HTMLInputElement>(null);
   const trigger = useRef<HTMLButtonElement | null>(null);
+  const initial = useRef('');
+  const submitting = useRef(false);
   const readVersion = useRef(0);
   useEffect(() => {
     if (!deleting && trigger.current) {
@@ -141,6 +144,11 @@ export function RoutinesPage() {
     }
   }
   function create() {
+    initial.current = JSON.stringify([
+      '',
+      Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+      [initialSlot()],
+    ]);
     setId(null);
     setName('');
     setTimeZone(Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC');
@@ -156,6 +164,11 @@ export function RoutinesPage() {
     setMessage('');
     try {
       const value = await routineDetail(row.id);
+      initial.current = JSON.stringify([
+        value.name,
+        value.timeZone,
+        value.slots,
+      ]);
       setId(value.id);
       setName(value.name);
       setTimeZone(value.timeZone);
@@ -170,24 +183,44 @@ export function RoutinesPage() {
   }
   async function save(event: React.FormEvent) {
     event.preventDefault();
+    if (submitting.current) return;
     setError('');
     setMessage('');
     const parsed = createRoutineSchema.safeParse({ name, timeZone, slots });
     if (!parsed.success) {
+      const path = parsed.error.issues[0]?.path;
+      const fields =
+        event.currentTarget instanceof HTMLFormElement
+          ? event.currentTarget.querySelectorAll<HTMLElement>('input, select')
+          : [];
+      const index =
+        path?.[0] === 'name'
+          ? 0
+          : path?.[0] === 'timeZone'
+            ? 1
+            : 2 +
+              Number(path?.[1] ?? 0) * 3 +
+              ['weekday', 'startTime', 'endTime'].indexOf(
+                String(path?.[2] ?? 'weekday'),
+              );
+      fields[Math.max(0, index)]?.focus();
       setError(parsed.error.issues.map((issue) => issue.message).join(' '));
       return;
     }
     setBusy(true);
     readVersion.current += 1;
+    submitting.current = true;
     try {
       await saveRoutine(id, parsed.data);
     } catch {
+      submitting.current = false;
       setError(
         'Não foi possível confirmar a gravação. Seus dados foram mantidos.',
       );
       setBusy(false);
       return;
     }
+    submitting.current = false;
     setEditing(false);
     setMessage('Rotina salva.');
     heading.current?.focus();
@@ -269,7 +302,7 @@ export function RoutinesPage() {
           <p role="status">Carregando…</p>
         </div>
       )}
-      {error && !deleting && (
+      {error && !deleting && !editing && (
         <Alert variant="destructive" role="alert">
           <AlertDescription>{error}</AlertDescription>
         </Alert>
@@ -280,137 +313,148 @@ export function RoutinesPage() {
         </p>
       )}
       {editing && (
-        <Card asChild className="routine-card routine-form">
-          <form onSubmit={(event) => void save(event)}>
-            <CardHeader className="routine-section-heading">
-              <span className="routine-icon" aria-hidden="true">
-                <CalendarDays />
-              </span>
-              <h2>{id ? 'Editar rotina' : 'Nova rotina'}</h2>
-            </CardHeader>
-            <CardContent>
-              <div className="routine-form-overview">
-                <Label>
-                  Nome
-                  <Input
-                    ref={nameField}
-                    value={name}
-                    required
-                    maxLength={120}
-                    disabled={busy}
-                    onChange={(event) => setName(event.target.value)}
-                  />
-                </Label>
-                <Label>
-                  Fuso horário
-                  <Input
-                    value={timeZone}
-                    required
-                    aria-describedby="routine-zone-help"
-                    disabled={busy}
-                    onChange={(event) => setTimeZone(event.target.value)}
-                  />
-                </Label>
-              </div>
-              <p id="routine-zone-help">
-                Use um fuso IANA, como America/Sao_Paulo ou Europe/Lisbon.
-                Alterar o fuso preserva as horas locais.
-              </p>
-              <p id="routine-slot-help" className="routine-help">
-                Início e fim devem estar no mesmo dia, com início anterior ao
-                fim. Horários adjacentes são permitidos. Para atravessar a
-                meia-noite, divida o planejamento em horários nos dois dias,
-                dentro dos limites de cada dia.
-              </p>
-              {slots.map((slot, index) => (
-                <FieldSet
-                  key={index}
-                  aria-describedby="routine-slot-help"
-                  disabled={busy}
-                  className="routine-slot"
-                >
-                  <FieldLegend>Horário {index + 1}</FieldLegend>
-                  <div className="routine-slot-fields">
+        <FormModal
+          title={id ? 'Editar rotina' : 'Nova rotina'}
+          dirty={JSON.stringify([name, timeZone, slots]) !== initial.current}
+          busy={busy}
+          onClose={() => setEditing(false)}
+        >
+          {(requestClose) => (
+            <Card asChild className="routine-card routine-form">
+              <form onSubmit={(event) => void save(event)}>
+                <CardHeader className="routine-section-heading">
+                  <span className="routine-icon" aria-hidden="true">
+                    <CalendarDays />
+                  </span>
+                  <h2>{id ? 'Editar rotina' : 'Nova rotina'}</h2>
+                </CardHeader>
+                <CardContent>
+                  {error && <p role="alert">{error}</p>}
+                  <div className="routine-form-overview">
                     <Label>
-                      Dia da semana
-                      <NativeSelect
-                        value={slot.weekday}
-                        onChange={(event) =>
-                          change(index, { weekday: Number(event.target.value) })
-                        }
-                      >
-                        {days.map((day, i) => (
-                          <NativeSelectOption key={day} value={i + 1}>
-                            {day}
-                          </NativeSelectOption>
-                        ))}
-                      </NativeSelect>
-                    </Label>
-                    <Label>
-                      Início
+                      Nome
                       <Input
-                        type="time"
+                        ref={nameField}
+                        value={name}
                         required
-                        value={slot.startTime}
-                        onChange={(event) =>
-                          change(index, { startTime: event.target.value })
-                        }
+                        maxLength={120}
+                        disabled={busy}
+                        onChange={(event) => setName(event.target.value)}
                       />
                     </Label>
                     <Label>
-                      Fim
+                      Fuso horário
                       <Input
-                        type="time"
+                        value={timeZone}
                         required
-                        value={slot.endTime}
-                        onChange={(event) =>
-                          change(index, { endTime: event.target.value })
-                        }
+                        aria-describedby="routine-zone-help"
+                        disabled={busy}
+                        onChange={(event) => setTimeZone(event.target.value)}
                       />
                     </Label>
+                  </div>
+                  <p id="routine-zone-help">
+                    Use um fuso IANA, como America/Sao_Paulo ou Europe/Lisbon.
+                    Alterar o fuso preserva as horas locais.
+                  </p>
+                  <p id="routine-slot-help" className="routine-help">
+                    Início e fim devem estar no mesmo dia, com início anterior
+                    ao fim. Horários adjacentes são permitidos. Para atravessar
+                    a meia-noite, divida o planejamento em horários nos dois
+                    dias, dentro dos limites de cada dia.
+                  </p>
+                  {slots.map((slot, index) => (
+                    <FieldSet
+                      key={index}
+                      aria-describedby="routine-slot-help"
+                      disabled={busy}
+                      className="routine-slot"
+                    >
+                      <FieldLegend>Horário {index + 1}</FieldLegend>
+                      <div className="routine-slot-fields">
+                        <Label>
+                          Dia da semana
+                          <NativeSelect
+                            value={slot.weekday}
+                            onChange={(event) =>
+                              change(index, {
+                                weekday: Number(event.target.value),
+                              })
+                            }
+                          >
+                            {days.map((day, i) => (
+                              <NativeSelectOption key={day} value={i + 1}>
+                                {day}
+                              </NativeSelectOption>
+                            ))}
+                          </NativeSelect>
+                        </Label>
+                        <Label>
+                          Início
+                          <Input
+                            type="time"
+                            required
+                            value={slot.startTime}
+                            onChange={(event) =>
+                              change(index, { startTime: event.target.value })
+                            }
+                          />
+                        </Label>
+                        <Label>
+                          Fim
+                          <Input
+                            type="time"
+                            required
+                            value={slot.endTime}
+                            onChange={(event) =>
+                              change(index, { endTime: event.target.value })
+                            }
+                          />
+                        </Label>
+                        <Button
+                          variant="outline"
+                          type="button"
+                          disabled={slots.length === 1}
+                          onClick={() => {
+                            setSlots((items) =>
+                              items.filter((_, i) => i !== index),
+                            );
+                            nameField.current?.focus();
+                          }}
+                        >
+                          Remover horário {index + 1}
+                        </Button>
+                      </div>
+                    </FieldSet>
+                  ))}
+                  <div className="routine-actions routine-form-actions">
                     <Button
                       variant="outline"
                       type="button"
-                      disabled={slots.length === 1}
-                      onClick={() => {
-                        setSlots((items) =>
-                          items.filter((_, i) => i !== index),
-                        );
-                        nameField.current?.focus();
-                      }}
+                      disabled={busy}
+                      onClick={() =>
+                        setSlots((items) => [...items, initialSlot()])
+                      }
                     >
-                      Remover horário {index + 1}
+                      Adicionar horário
+                    </Button>
+                    <Button disabled={busy} type="submit">
+                      Salvar rotina
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      disabled={busy}
+                      type="button"
+                      onClick={requestClose}
+                    >
+                      Cancelar edição
                     </Button>
                   </div>
-                </FieldSet>
-              ))}
-              <div className="routine-actions routine-form-actions">
-                <Button
-                  variant="outline"
-                  type="button"
-                  disabled={busy}
-                  onClick={() => setSlots((items) => [...items, initialSlot()])}
-                >
-                  Adicionar horário
-                </Button>
-                <Button disabled={busy} type="submit">
-                  Salvar rotina
-                </Button>
-                <Button
-                  variant="ghost"
-                  disabled={busy}
-                  type="button"
-                  onClick={() => {
-                    setEditing(false);
-                    heading.current?.focus();
-                  }}
-                >
-                  Cancelar edição
-                </Button>
-              </div>
-            </CardContent>
-          </form>
-        </Card>
+                </CardContent>
+              </form>
+            </Card>
+          )}
+        </FormModal>
       )}
       <h2 className="routine-section-title">
         <CalendarDays aria-hidden="true" />

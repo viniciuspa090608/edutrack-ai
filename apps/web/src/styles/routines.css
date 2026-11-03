@@ -1,4 +1,4 @@
-.routines-page {
+:is(.routines-page, .routine-form) {
   --routine-canvas: color-mix(in srgb, var(--background) 88%, var(--accent));
   --routine-panel: var(--background);
   --routine-inset: color-mix(in srgb, var(--background) 72%, var(--accent));
@@ -12,7 +12,7 @@
   color: var(--foreground);
   overflow-wrap: anywhere;
 }
-.dark .routines-page {
+.dark :is(.routines-page, .routine-form) {
   --routine-canvas: color-mix(in srgb, var(--background) 94%, var(--accent));
   --routine-panel: color-mix(in srgb, var(--background) 35%, var(--card));
   --routine-inset: color-mix(in srgb, var(--card) 90%, var(--accent));
@@ -40,7 +40,7 @@
   line-height: 1.2;
   letter-spacing: -0.04em;
 }
-.routines-page :is(h2, h3) {
+:is(.routines-page, .routine-form) :is(h2, h3) {
   margin: 0;
   color: var(--foreground);
   font-size: 1.1rem;
@@ -48,18 +48,18 @@
   line-height: 1.45;
   letter-spacing: -0.02em;
 }
-.routines-page p {
+:is(.routines-page, .routine-form) p {
   margin: 0;
   color: var(--muted-foreground);
   font-size: 0.875rem;
   line-height: 1.65;
 }
-.routines-page svg {
+:is(.routines-page, .routine-form) svg {
   width: 1.1rem;
   height: 1.1rem;
   flex-shrink: 0;
 }
-.routines-page button,
+:is(.routines-page, .routine-form) button,
 .routine-dialog button {
   max-width: 100%;
   min-height: 2.5rem;
@@ -116,7 +116,7 @@
   gap: 1rem;
   min-width: 0;
 }
-.routines-page label {
+:is(.routines-page, .routine-form) label {
   display: grid;
   align-content: start;
   gap: 0.5rem;
@@ -125,15 +125,15 @@
   font-size: 0.875rem;
   line-height: 1.5;
 }
-.routines-page input,
-.routines-page select,
-.routines-page [data-slot='native-select-wrapper'] {
+:is(.routines-page, .routine-form) input,
+:is(.routines-page, .routine-form) select,
+:is(.routines-page, .routine-form) [data-slot='native-select-wrapper'] {
   box-sizing: border-box;
   width: 100%;
   min-width: 0;
   max-width: 100%;
 }
-.routines-page :is(input, select) {
+:is(.routines-page, .routine-form) :is(input, select) {
   min-height: 2.5rem;
 }
 .routine-help {
@@ -141,7 +141,7 @@
   border-radius: 0.75rem;
   background: var(--routine-inset);
 }
-.routines-page .routine-slot {
+:is(.routines-page, .routine-form) .routine-slot {
   display: block;
   min-width: 0;
   padding: 1rem;
@@ -199,7 +199,7 @@
   gap: 0.375rem;
   min-width: 0;
 }
-.routines-page .routine-delete {
+:is(.routines-page, .routine-form) .routine-delete {
   color: var(--destructive);
 }
 .routine-empty {
@@ -223,17 +223,17 @@
   height: 2rem;
 }
 .routine-loading,
-.routines-page .routine-success {
+:is(.routines-page, .routine-form) .routine-success {
   padding: 1rem;
   border: 1px solid var(--routine-line);
   border-radius: 0.75rem;
   background: var(--routine-panel);
 }
-.routines-page .routine-success {
+:is(.routines-page, .routine-form) .routine-success {
   border-color: var(--success);
   color: var(--success);
 }
-.routines-page nav {
+:is(.routines-page, .routine-form) nav {
   min-width: 0;
   color: var(--muted-foreground);
   font-size: 0.875rem;
@@ -295,7 +295,7 @@
   }
 }
 @media (max-width: 600px) {
-  .routines-page {
+  :is(.routines-page, .routine-form) {
     padding: 1rem;
   }
   .routine-form > :is([data-slot='card-header'], [data-slot='card-content']) {
@@ -317,7 +317,7 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .routines-page *,
+  :is(.routines-page, .routine-form) *,
   .routine-dialog *,
   .routine-dialog {
     animation: none;

@@ -40,17 +40,17 @@
 
 .dark {
   color-scheme: dark;
-  --background: #212529;
+  --background: #101214;
   --foreground: #f8f9fa;
-  --card: #343a40;
+  --card: #1c2025;
   --card-foreground: #f8f9fa;
-  --popover: #343a40;
+  --popover: #1c2025;
   --popover-foreground: #f8f9fa;
   --primary: #48cae4;
   --primary-foreground: #212529;
   --secondary: #495057;
   --secondary-foreground: #f8f9fa;
-  --muted: #343a40;
+  --muted: #1c2025;
   --muted-foreground: #adb5bd;
   --accent: #023e8a;
   --accent-foreground: #caf0f8;
@@ -148,4 +148,49 @@
 /* Use the accessible password toggle consistently, including in Edge. */
 [data-slot='password-input'] input::-ms-reveal {
   display: none;
+}
+
+.form-modal {
+  width: min(48rem, calc(100vw - 2rem));
+  max-width: calc(100vw - 2rem);
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
+  overflow-wrap: anywhere;
+  background: var(--popover);
+}
+.form-modal > * {
+  min-width: 0;
+}
+.form-modal form {
+  min-width: 0;
+  max-width: 100%;
+}
+button,
+[data-slot='button'] {
+  transition-property:
+    color, background-color, border-color, box-shadow, opacity;
+  transition-duration: 500ms;
+}
+
+.form-modal-close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 1;
+}
+
+/* Portals sit outside feature-page containers; keep form layout self-contained. */
+.form-modal label {
+  display: grid;
+  align-items: start;
+  gap: 0.5rem;
+  min-width: 0;
+  line-height: 1.4;
+}
+.form-modal :is(input, textarea, select) {
+  max-width: 100%;
+}
+.form-modal-close {
+  min-width: 44px;
+  min-height: 44px;
 }

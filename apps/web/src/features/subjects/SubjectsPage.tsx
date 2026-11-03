@@ -1,3 +1,4 @@
+import { FormModal } from '@study-platform/ui/components/ui/form-modal';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { ClassroomProvenance } from '../classroom/ClassroomProvenance.js';
 import {
@@ -103,132 +104,175 @@ function SubjectForm({
   const [topics, setTopics] = useState(subject?.knownTopics.join('\n') ?? '');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const initial = useRef(
+    JSON.stringify([name, currentLevel, objective, dueDate, hours, topics]),
+  );
   const first = useRef<HTMLInputElement>(null);
   const submitting = useRef(false);
   useEffect(() => {
     first.current?.focus();
   }, []);
   return (
-    <Card asChild>
-      <form
-        className="subject-card subject-form"
-        aria-label={subject ? 'Editar matéria' : 'Criar matéria'}
-        onSubmit={async (event) => {
-          event.preventDefault();
-          if (submitting.current) return;
-          const parsed = createSubjectSchema.safeParse({
-            name,
-            currentLevel,
-            objective,
-            dueDate,
-            weeklyHours: Number(hours),
-            knownTopics: topics === '' ? [] : topics.split('\n'),
-          });
-          if (!parsed.success) {
-            setError(
-              'Revise os campos: nome até 120 caracteres, objetivo até 1000, data válida, horas em intervalos de meia hora e assuntos não vazios sem repetição.',
-            );
-            return;
-          }
-          submitting.current = true;
-          setBusy(true);
-          setError('');
-          try {
-            onSaved(await saveSubject(subject?.id ?? null, parsed.data));
-          } catch (cause) {
-            setError(failure(cause));
-          } finally {
-            setBusy(false);
-            submitting.current = false;
-          }
-        }}
-      >
-        <CardHeader>
-          <span className="subject-eyebrow">Seu planejamento</span>
-          <h2>{subject ? 'Editar matéria' : 'Nova matéria'}</h2>
-          <p>Defina seu objetivo e o tempo disponível para estudar.</p>
-        </CardHeader>
-        <CardContent>
-          <FieldSet disabled={busy} className="subject-form-fields">
-            <Label>
-              Nome
-              <Input
-                ref={first}
-                required
-                maxLength={120}
-                value={name}
-                onChange={(event) => setName(event.target.value)}
-              />
-            </Label>
-            <Label>
-              Nível atual
-              <NativeSelect
-                value={currentLevel}
-                onChange={(event) =>
-                  setLevel(event.target.value as StudySubject['currentLevel'])
-                }
-              >
-                {Object.entries(levels).map(([value, label]) => (
-                  <NativeSelectOption key={value} value={value}>
-                    {label}
-                  </NativeSelectOption>
-                ))}
-              </NativeSelect>
-            </Label>
-            <Label className="subject-field-wide">
-              Objetivo
-              <Textarea
-                required
-                maxLength={1000}
-                value={objective}
-                onChange={(event) => setObjective(event.target.value)}
-              />
-            </Label>
-            <Label>
-              Prazo
-              <Input
-                required
-                type="date"
-                min="1000-01-01"
-                max="9999-12-31"
-                value={dueDate}
-                onChange={(event) => setDate(event.target.value)}
-              />
-            </Label>
-            <Label>
-              Horas por semana
-              <Input
-                required
-                type="number"
-                min="0.5"
-                max="168"
-                step="0.5"
-                value={hours}
-                onChange={(event) => setHours(event.target.value)}
-              />
-            </Label>
-            <Label className="subject-field-wide">
-              Assuntos conhecidos (um por linha, opcional)
-              <Textarea
-                value={topics}
-                onChange={(event) => setTopics(event.target.value)}
-              />
-            </Label>
-            <div className="subject-actions subject-field-wide">
-              <Button>{busy ? 'Salvando…' : 'Salvar matéria'}</Button>
-              <Button variant="outline" type="button" onClick={onCancel}>
-                Cancelar edição
-              </Button>
-            </div>
-          </FieldSet>
-          {error && (
-            <Alert variant="destructive" role="alert">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-        </CardContent>
-      </form>
-    </Card>
+    <FormModal
+      title={subject ? 'Editar matéria' : 'Nova matéria'}
+      dirty={
+        JSON.stringify([
+          name,
+          currentLevel,
+          objective,
+          dueDate,
+          hours,
+          topics,
+        ]) !== initial.current
+      }
+      busy={busy}
+      onClose={onCancel}
+    >
+      {(requestClose) => (
+        <Card asChild>
+          <form
+            className="subject-card subject-form"
+            aria-label={subject ? 'Editar matéria' : 'Criar matéria'}
+            onSubmit={async (event) => {
+              event.preventDefault();
+              if (submitting.current) return;
+              const parsed = createSubjectSchema.safeParse({
+                name,
+                currentLevel,
+                objective,
+                dueDate,
+                weeklyHours: Number(hours),
+                knownTopics: topics === '' ? [] : topics.split('\n'),
+              });
+              if (!parsed.success) {
+                const names = [
+                  'name',
+                  'currentLevel',
+                  'objective',
+                  'dueDate',
+                  'weeklyHours',
+                  'knownTopics',
+                ];
+                const index = names.indexOf(
+                  String(parsed.error.issues[0]?.path[0]),
+                );
+                const fields =
+                  event.currentTarget.querySelectorAll<HTMLElement>(
+                    'input, select, textarea',
+                  );
+                fields[index]?.focus();
+                setError(
+                  'Revise os campos: nome até 120 caracteres, objetivo até 1000, data válida, horas em intervalos de meia hora e assuntos não vazios sem repetição.',
+                );
+                return;
+              }
+              submitting.current = true;
+              setBusy(true);
+              setError('');
+              try {
+                onSaved(await saveSubject(subject?.id ?? null, parsed.data));
+              } catch (cause) {
+                setError(failure(cause));
+              } finally {
+                setBusy(false);
+                submitting.current = false;
+              }
+            }}
+          >
+            <CardHeader>
+              <span className="subject-eyebrow">Seu planejamento</span>
+              <h2>{subject ? 'Editar matéria' : 'Nova matéria'}</h2>
+              <p>Defina seu objetivo e o tempo disponível para estudar.</p>
+            </CardHeader>
+            <CardContent>
+              <FieldSet disabled={busy} className="subject-form-fields">
+                <Label>
+                  Nome
+                  <Input
+                    ref={first}
+                    required
+                    maxLength={120}
+                    value={name}
+                    onChange={(event) => setName(event.target.value)}
+                  />
+                </Label>
+                <Label>
+                  Nível atual
+                  <NativeSelect
+                    value={currentLevel}
+                    onChange={(event) =>
+                      setLevel(
+                        event.target.value as StudySubject['currentLevel'],
+                      )
+                    }
+                  >
+                    {Object.entries(levels).map(([value, label]) => (
+                      <NativeSelectOption key={value} value={value}>
+                        {label}
+                      </NativeSelectOption>
+                    ))}
+                  </NativeSelect>
+                </Label>
+                <Label className="subject-field-wide">
+                  Objetivo
+                  <Textarea
+                    required
+                    maxLength={1000}
+                    value={objective}
+                    onChange={(event) => setObjective(event.target.value)}
+                  />
+                </Label>
+                <Label>
+                  Prazo
+                  <Input
+                    required
+                    type="date"
+                    min="1000-01-01"
+                    max="9999-12-31"
+                    value={dueDate}
+                    onChange={(event) => setDate(event.target.value)}
+                  />
+                </Label>
+                <Label>
+                  Horas por semana
+                  <Input
+                    required
+                    type="number"
+                    min="0.5"
+                    max="168"
+                    step="0.5"
+                    value={hours}
+                    onChange={(event) => setHours(event.target.value)}
+                  />
+                </Label>
+                <Label className="subject-field-wide">
+                  Assuntos conhecidos (um por linha, opcional)
+                  <Textarea
+                    value={topics}
+                    onChange={(event) => setTopics(event.target.value)}
+                  />
+                </Label>
+                <div className="subject-actions subject-field-wide">
+                  <Button>{busy ? 'Salvando…' : 'Salvar matéria'}</Button>
+                  <Button
+                    variant="outline"
+                    type="button"
+                    onClick={requestClose}
+                  >
+                    Cancelar edição
+                  </Button>
+                </div>
+              </FieldSet>
+              {error && (
+                <Alert variant="destructive" role="alert">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+            </CardContent>
+          </form>
+        </Card>
+      )}
+    </FormModal>
   );
 }
 function PlanEditor({

@@ -43,11 +43,11 @@ A aplicação SHALL preservar a distinção de sucesso, aviso, erro destrutivo e
 - **THEN** seu significado permanece identificável e seu conteúdo legível no tema ativo.
 
 ### Requirement: Preservação das páginas existentes
-A extensão do tema SHALL manter a aparência das páginas internas em cada tema, estrutura, conteúdo funcional, rotas, interações, regras de negócio, loading, erro, vazio e sucesso existentes; a composição da landing SHALL seguir a atualização explicitamente definida em public-landing. SHALL preservar operação por teclado, layout utilizável a partir de 320 px e preferência por movimento reduzido.
+A extensão do tema SHALL preservar conteúdo funcional, rotas, regras de negócio, loading, erro, vazio e sucesso existentes. A aparência das páginas internas SHALL permanecer preservada exceto pelos ajustes explícitos de superfícies escuras, transições e modais de criação definidos nesta mudança; a composição da landing SHALL seguir a atualização explicitamente definida em public-landing. SHALL preservar operação por teclado, layout utilizável a partir de 320 px e preferência por movimento reduzido.
 
 #### Scenario: Uso após migração visual
 - **WHEN** a pessoa utiliza uma página migrada em qualquer tema, inclusive em 320 px e por teclado
-- **THEN** consegue concluir os mesmos fluxos com os mesmos resultados, sem alterações de estrutura nem rolagem horizontal causada pela mudança visual.
+- **THEN** consegue concluir os mesmos fluxos com os mesmos resultados, com a estrutura preservada salvo os modais explicitamente definidos, sem rolagem horizontal causada pela mudança visual.
 
 ### Requirement: Escolha manual local e acessível
 A aplicação SHALL oferecer no header público um controle acessível para alternar claro/escuro, disponível no mobile sem abrir o menu, que comunique o tema atual e a ação de alternância. A escolha manual SHALL persistir somente no navegador e prevalecer sobre mudanças do sistema entre rotas, recargas e novas abas, sem preferência no backend. Sem escolha válida SHALL acompanhar o sistema, com fallback claro se a preferência não estiver disponível. Valores salvos inválidos SHALL ser ignorados. Remoção da escolha salva SHALL restabelecer o padrão do sistema e alterações de preferência entre abas SHALL ser refletidas.
@@ -75,3 +75,14 @@ A aplicação SHALL apresentar o tema efetivo desde a primeira pintura visível,
 - **WHEN** leitura ou gravação local lança erro e a pessoa alterna tema e navega entre rotas
 - **THEN** a interface permanece utilizável e a escolha manual permanece na sessão atual
 - **AND** uma nova carga sem acesso ao valor salvo usa sistema ou fallback claro.
+
+### Requirement: Hierarquia escura próxima do preto
+O tema escuro SHALL usar cinza principal próximo do preto, mais escuro que o fundo anterior, com sidebar, cards, campos e modais distinguíveis por superfícies, bordas e contraste. SHALL preservar identidade azul, semântica de estados, inicialização e preferência de tema existentes e os limiares de contraste da especificação principal. O tema claro SHALL conservar suas cores.
+
+#### Scenario: Superfícies e estados escuros
+- **WHEN** a pessoa percorre páginas e abre um modal no tema escuro
+- **THEN** fundo, navegação, conteúdo, campos e overlay mantêm hierarquia perceptível e textos, foco e controles atendem aos contrastes aplicáveis.
+
+#### Scenario: Tema claro preservado
+- **WHEN** a pessoa alterna para claro durante um formulário preenchido
+- **THEN** as cores claras existentes permanecem e o formulário, foco e rota são preservados.

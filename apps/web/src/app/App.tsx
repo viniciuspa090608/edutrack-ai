@@ -8,13 +8,21 @@ import { SystemPage } from '../features/system/SystemPage.js';
 import { moduleAtPath } from '../features/profile/module-catalog.js';
 
 export function App() {
-  const [path, setPath] = useState(window.location.pathname);
+  const [path, setPath] = useState(
+    window.location.pathname + window.location.search + window.location.hash,
+  );
   useEffect(() => {
-    const update = () => setPath(window.location.pathname);
+    const update = () =>
+      setPath(
+        window.location.pathname +
+          window.location.search +
+          window.location.hash,
+      );
     window.addEventListener('popstate', update);
     return () => window.removeEventListener('popstate', update);
   }, []);
-  switch (path) {
+  const pathname = path.split(/[?#]/)[0]!;
+  switch (pathname) {
     case '/':
       return <PublicLanding />;
     case '/acesso':
@@ -26,19 +34,19 @@ export function App() {
     case '/status':
       return <SystemPage />;
     case '/app':
-      return <PrivatePage key="app" page="app" />;
+      return <PrivatePage page="app" />;
     case '/app/pomodoro':
-      return <PrivatePage key="pomodoro" page="pomodoro" />;
+      return <PrivatePage page="pomodoro" />;
     case '/app/rotinas':
-      return <PrivatePage key="rotinas" page="rotinas" />;
+      return <PrivatePage page="rotinas" />;
     case '/app/estatisticas':
-      return <PrivatePage key="estatisticas" page="estatisticas" />;
+      return <PrivatePage page="estatisticas" />;
     case '/app/progresso':
-      return <PrivatePage key="progresso" page="progresso" />;
+      return <PrivatePage page="progresso" />;
     case '/conta':
-      return <PrivatePage key="conta" page="conta" />;
+      return <PrivatePage page="conta" />;
     default:
-      if (moduleAtPath(path)) return <PrivatePage key={path} page="module" />;
+      if (moduleAtPath(pathname)) return <PrivatePage page="module" />;
       return (
         <main className="route-fallback">
           <h1>Página não encontrada</h1>

@@ -6,7 +6,7 @@
   font-size: clamp(1.7rem, 4vw, 2.2rem);
   letter-spacing: -0.04em;
 }
-.subjects-page {
+:is(.subjects-page, .subject-form, .roadmap-edit-form) {
   --subject-surface: #fff;
   --subject-wash: color-mix(in srgb, var(--accent) 28%, var(--subject-surface));
   display: grid;
@@ -15,7 +15,7 @@
   color: var(--foreground);
   overflow-wrap: anywhere;
 }
-.dark .subjects-page {
+.dark :is(.subjects-page, .subject-form, .roadmap-edit-form) {
   --subject-surface: var(--card);
 }
 .subjects-toolbar {
@@ -25,33 +25,33 @@
   justify-content: space-between;
   gap: 16px;
 }
-.subjects-page p {
+:is(.subjects-page, .subject-form, .roadmap-edit-form) p {
   margin-block: 0;
   color: var(--muted-foreground);
   font-size: 0.875rem;
   line-height: 1.65;
 }
-.subjects-page :is(h2, h3, h4, h5) {
+:is(.subjects-page, .subject-form, .roadmap-edit-form) :is(h2, h3, h4, h5) {
   margin: 0;
   color: var(--foreground);
   letter-spacing: -0.02em;
   line-height: 1.4;
 }
-.subjects-page h2 {
+:is(.subjects-page, .subject-form, .roadmap-edit-form) h2 {
   font-size: 1.25rem;
   font-weight: 700;
 }
-.subjects-page :is(h4, h5) {
+:is(.subjects-page, .subject-form, .roadmap-edit-form) :is(h4, h5) {
   font-weight: 650;
 }
-.subjects-page h3 {
+:is(.subjects-page, .subject-form, .roadmap-edit-form) h3 {
   display: flex;
   align-items: center;
   gap: 10px;
   font-size: 1.1rem;
   font-weight: 700;
 }
-.subjects-page h3 svg {
+:is(.subjects-page, .subject-form, .roadmap-edit-form) h3 svg {
   width: 20px;
   color: var(--primary);
   flex-shrink: 0;
@@ -64,7 +64,8 @@
   overflow-wrap: anywhere;
   box-shadow: 0 2px 6px color-mix(in srgb, var(--foreground) 4%, transparent);
 }
-.subjects-page :is([data-slot='card-header'], [data-slot='card-content']) {
+:is(.subjects-page, .subject-form, .roadmap-edit-form)
+  :is([data-slot='card-header'], [data-slot='card-content']) {
   padding-inline: clamp(16px, 2vw, 24px);
   min-width: 0;
 }
@@ -172,11 +173,11 @@
   background: var(--subject-wash);
   border-radius: 12px;
 }
-.subjects-page dt {
+:is(.subjects-page, .subject-form, .roadmap-edit-form) dt {
   font-size: 0.75rem;
   color: var(--muted-foreground);
 }
-.subjects-page dd {
+:is(.subjects-page, .subject-form, .roadmap-edit-form) dd {
   margin: 4px 0 16px;
   font-weight: 600;
   font-size: 0.9rem;
@@ -219,7 +220,7 @@
   gap: 16px;
   min-width: 0;
 }
-.subjects-page label {
+:is(.subjects-page, .subject-form, .roadmap-edit-form) label {
   display: grid;
   gap: 8px;
   min-width: 0;
@@ -227,7 +228,8 @@
   line-height: 1.5;
   align-items: start;
 }
-.subjects-page :is(input, select, textarea) {
+:is(.subjects-page, .subject-form, .roadmap-edit-form)
+  :is(input, select, textarea) {
   width: 100%;
   max-width: 100%;
   min-width: 0;
@@ -235,23 +237,25 @@
   border-radius: 8px;
   background: var(--subject-surface);
 }
-.subjects-page textarea {
+:is(.subjects-page, .subject-form, .roadmap-edit-form) textarea {
   min-height: 96px;
   resize: vertical;
 }
-.subjects-page [data-slot='native-select-wrapper'] {
+:is(.subjects-page, .subject-form, .roadmap-edit-form)
+  [data-slot='native-select-wrapper'] {
   width: 100%;
   min-width: 0;
 }
 .subject-actions,
-.subjects-page nav {
+:is(.subjects-page, .subject-form, .roadmap-edit-form) nav {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   margin: 0;
   align-items: center;
 }
-.subjects-page button:not([data-slot='checkbox']),
+:is(.subjects-page, .subject-form, .roadmap-edit-form)
+  button:not([data-slot='checkbox']),
 .subject-dialog button {
   white-space: normal;
   overflow-wrap: anywhere;
@@ -260,10 +264,10 @@
   min-height: 36px;
   border-radius: 8px;
 }
-.subjects-page .subject-danger {
+:is(.subjects-page, .subject-form, .roadmap-edit-form) .subject-danger {
   color: var(--destructive);
 }
-.subjects-page .subject-form-fields {
+:is(.subjects-page, .subject-form, .roadmap-edit-form) .subject-form-fields {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 .subject-field-wide {
@@ -278,7 +282,7 @@
 .subject-plan-form > label {
   flex: 1 1 200px;
 }
-.subjects-page ol {
+:is(.subjects-page, .subject-form, .roadmap-edit-form) ol {
   list-style: none;
   padding: 0;
   margin: 0;
@@ -334,17 +338,17 @@
 .subject-empty > svg {
   color: var(--primary);
 }
-.subjects-page p[role='status'] {
+:is(.subjects-page, .subject-form, .roadmap-edit-form) p[role='status'] {
   padding: 10px 14px;
   border-radius: 8px;
   background: var(--subject-wash);
   border-inline-start: 3px solid var(--primary);
 }
-.subjects-page [data-slot='alert'] {
+:is(.subjects-page, .subject-form, .roadmap-edit-form) [data-slot='alert'] {
   min-width: 0;
   border-radius: 10px;
 }
-.subjects-page [data-slot='alert'] p {
+:is(.subjects-page, .subject-form, .roadmap-edit-form) [data-slot='alert'] p {
   color: inherit;
 }
 .roadmaps-section,
@@ -369,17 +373,19 @@
   border-radius: 8px;
   background: var(--subject-surface);
 }
-.subjects-page :is(fieldset.roadmap-block, fieldset.roadmap-step) {
+:is(.subjects-page, .subject-form, .roadmap-edit-form)
+  :is(fieldset.roadmap-block, fieldset.roadmap-step) {
   padding: clamp(12px, 2vw, 20px);
   border: 1px solid var(--border);
   border-radius: 12px;
   background: var(--subject-wash);
 }
-.subjects-page fieldset.roadmap-step {
+:is(.subjects-page, .subject-form, .roadmap-edit-form) fieldset.roadmap-step {
   background: var(--subject-surface);
 }
-.subjects-page :is(input, textarea)[readonly],
-.subjects-page .roadmap-step:disabled {
+:is(.subjects-page, .subject-form, .roadmap-edit-form)
+  :is(input, textarea)[readonly],
+:is(.subjects-page, .subject-form, .roadmap-edit-form) .roadmap-step:disabled {
   background: var(--muted);
 }
 .roadmap-edit-form[data-preview],
@@ -422,7 +428,7 @@
   border-radius: 10px;
   background: var(--subject-wash);
 }
-.subjects-page [tabindex='-1']:focus {
+:is(.subjects-page, .subject-form, .roadmap-edit-form) [tabindex='-1']:focus {
   outline: 3px solid var(--ring);
   outline-offset: 4px;
 }
@@ -441,10 +447,10 @@
   flex-basis: 100%;
 }
 @media (max-width: 600px) {
-  .subjects-page {
+  :is(.subjects-page, .subject-form, .roadmap-edit-form) {
     gap: 20px;
   }
-  .subjects-page .subject-form-fields {
+  :is(.subjects-page, .subject-form, .roadmap-edit-form) .subject-form-fields {
     grid-template-columns: minmax(0, 1fr);
   }
   .subjects-toolbar > button,
@@ -457,12 +463,13 @@
   .subject-dialog button {
     width: 100%;
   }
-  .subjects-page :is(.roadmap-card [data-slot='card-content'], .subject-panel) {
+  :is(.subjects-page, .subject-form, .roadmap-edit-form)
+    :is(.roadmap-card [data-slot='card-content'], .subject-panel) {
     padding-inline: 12px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .subjects-page *,
+  :is(.subjects-page, .subject-form, .roadmap-edit-form) *,
   .subject-dialog * {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;

@@ -225,7 +225,7 @@ it('opens the existing subject form from the empty CTA and restores focus on can
   );
   expect(screen.queryByRole('form', { name: 'Criar matéria' })).toBeNull();
   expect(document.activeElement).toBe(
-    screen.getByRole('button', { name: 'Criar matéria' }),
+    screen.getByRole('button', { name: 'Adicionar matéria' }),
   );
   expect(calls.some((call) => call.method === 'POST')).toBe(false);
 });

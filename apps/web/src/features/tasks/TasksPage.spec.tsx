@@ -204,7 +204,7 @@ it('opens the existing task editor from the empty CTA and restores focus on canc
   expect(screen.queryByRole('form', { name: 'Criar tarefa' })).toBeNull();
   await waitFor(() =>
     expect(document.activeElement).toBe(
-      screen.getByRole('button', { name: 'Criar tarefa' }),
+      screen.getByRole('button', { name: 'Adicionar tarefa' }),
     ),
   );
   expect(requests.some((request) => request.method === 'POST')).toBe(false);

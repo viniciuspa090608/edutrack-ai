@@ -114,8 +114,8 @@
   font-size: 0.875rem;
   font-weight: 500;
   transition:
-    background-color 150ms,
-    color 150ms;
+    background-color 500ms,
+    color 500ms;
 }
 .shell-nav-link svg {
   flex-shrink: 0;
