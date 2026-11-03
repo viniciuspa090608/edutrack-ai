@@ -10,6 +10,20 @@ const columns = {
 } as const;
 export class PreferencesRepository {
   constructor(private readonly source: DataSource) {}
+  async onboarding(userId: string) {
+    const rows = await this.source.query<Array<{ onboarding_step: string }>>(
+      'SELECT onboarding_step FROM user_preferences WHERE user_id=?',
+      [userId],
+    );
+    return { step: rows[0]?.onboarding_step ?? 'completed', version: 1 };
+  }
+  async updateOnboarding(userId: string, step: string) {
+    await this.source.query(
+      'UPDATE user_preferences SET onboarding_step=? WHERE user_id=?',
+      [step, userId],
+    );
+    return this.onboarding(userId);
+  }
   async read(
     userId: string,
     transaction?: EntityManager,

@@ -68,6 +68,12 @@ import { FlashcardReceipt } from './modules/ai/flashcard-receipt.js';
 import { flashcardAIRoutes } from './modules/ai/flashcard-ai.routes.js';
 import { RoadmapReceipt } from './modules/ai/roadmap-receipt.js';
 import { RevisionReceipt } from './modules/subjects/revision-receipt.js';
+import { createClassroomRuntime } from './classroom-runtime.js';
+import {
+  classroomRoutes,
+  onboardingRoutes,
+} from './modules/classroom/classroom.routes.js';
+import { provenanceRoutes } from './modules/classroom/provenance.routes.js';
 import { RoadmapRevisionsService } from './modules/subjects/roadmap-revisions.service.js';
 import { roadmapRevisionRoutes } from './modules/subjects/roadmap-revisions.routes.js';
 
@@ -150,6 +156,15 @@ export function createApp({
       new StructuredProvider(env, aiFetch),
     );
     app.use('/profile/ai', aiSettingsRoutes(service, aiSettings, env));
+    const classroom = createClassroomRuntime(source, env, oidcFetch);
+    app.use(
+      '/integrations/google-classroom',
+      classroomRoutes(service, classroom.service),
+    );
+    app.use(
+      '/profile/onboarding',
+      onboardingRoutes(service, classroom.service),
+    );
     const prefs = new PreferencesService(source);
     app.use(
       studyProgressRoutes(
@@ -167,6 +182,11 @@ export function createApp({
     );
     const subjects = new SubjectsService(new SubjectsRepository(source), prefs);
     const tasks = new TasksService(new TasksRepository(source), subjects);
+    app.use('/tasks', provenanceRoutes(service, tasks, prefs, 'tasks', env));
+    app.use(
+      '/subjects',
+      provenanceRoutes(service, subjects, prefs, 'subjects', env),
+    );
     const pomodoro = new PomodoroService(
       new PomodoroRepository(source, pomodoroClock),
       tasks,

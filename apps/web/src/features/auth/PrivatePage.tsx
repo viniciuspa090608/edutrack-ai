@@ -21,6 +21,7 @@ import { RoutinesPage } from '../routines/RoutinesPage.js';
 import { AnalyticsPage } from '../analytics/AnalyticsPage.js';
 import { StudyProgressPage } from '../study-progress/StudyProgressPage.js';
 import { DashboardPage } from '../dashboard/DashboardPage.js';
+import { OnboardingGate } from '../classroom/OnboardingGate.js';
 import {
   AuthApiError,
   currentUser,
@@ -191,132 +192,141 @@ export function PrivatePage({
       error={error}
     >
       <main className="private-content">
-        {page === 'progresso' ? (
-          <StudyProgressPage />
-        ) : page === 'estatisticas' ? (
-          <AnalyticsPage />
-        ) : page === 'rotinas' ? (
-          <RoutinesPage />
-        ) : page === 'pomodoro' ? (
-          <PomodoroPage
-            tasksEnabled={prefs?.tasks ?? false}
-            subjectsEnabled={prefs?.subjects ?? false}
-          />
-        ) : page === 'app' ? (
-          <DashboardPage displayName={user.displayName ?? user.email} />
-        ) : page === 'module' ? (
-          <section
-            className={
-              window.location.pathname === '/app/materias'
-                ? 'subjects-module'
-                : window.location.pathname === '/app/tarefas'
-                  ? 'tasks-module'
-                  : undefined
-            }
-          >
-            <h1>{moduleAtPath(window.location.pathname)?.label}</h1>
-            {!prefs ? (
-              <p role="status">
-                Não foi possível verificar as preferências.{' '}
-                <a href="/conta">Abrir conta e tentar novamente</a>
-              </p>
-            ) : !prefs[moduleAtPath(window.location.pathname)!.capability] ? (
-              <p>
-                Este módulo está desativado.{' '}
-                <a href="/conta">Reativar nas preferências</a>
-              </p>
-            ) : window.location.pathname === '/app/tarefas' ? (
-              <TasksPage subjectsEnabled={prefs.subjects} />
-            ) : window.location.pathname === '/app/flashcards' ? (
-              <FlashcardsPage
-                subjectsEnabled={prefs.subjects}
-                aiEnabled={prefs.ai}
-              />
-            ) : window.location.pathname === '/app/materias' ? (
-              <SubjectsPage tasksEnabled={prefs.tasks} aiEnabled={prefs.ai} />
-            ) : (
-              <p>
-                Esta funcionalidade ainda não está disponível.{' '}
-                <a href="/conta">Ver preferências</a>
-              </p>
-            )}
-          </section>
-        ) : (
-          <>
-            <ProfilePage
-              onName={updateName}
-              onAvatar={updateAvatar}
-              onPreferences={updatePreferences}
-              accountActions={
-                <div className="account-access-actions">
-                  <div className="account-detail">
-                    <h3>Google</h3>
-                    <p>
-                      {user.googleLinked
-                        ? 'Google vinculado à sua conta.'
-                        : 'Vincule sua conta Google para usar esse meio de entrada.'}
-                    </p>
-                  </div>
-                  {!user.googleLinked && (
-                    <Button
-                      type="button"
-                      disabled={busy}
-                      onClick={() => {
-                        void linkGoogle();
-                      }}
-                    >
-                      Vincular Google
-                    </Button>
-                  )}
-                  {new URLSearchParams(window.location.search).get('google') ===
-                    'linked' && (
-                    <p role="status">Google vinculado com sucesso.</p>
-                  )}
-                  {['failed', 'conflict'].includes(
-                    new URLSearchParams(window.location.search).get('google') ??
-                      '',
-                  ) && (
-                    <Alert variant="destructive" role="alert">
-                      <AlertDescription>
-                        Não foi possível vincular o Google. Sua conta continua
-                        ativa. Tente novamente.
-                      </AlertDescription>
-                    </Alert>
-                  )}
-                  <div className="account-signout">
-                    <div>
-                      <h3>Sessão atual</h3>
-                      <p>Encerre seu acesso ao EduTrack neste navegador.</p>
-                    </div>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      disabled={busy}
-                      onClick={() => {
-                        void leave();
-                      }}
-                    >
-                      Encerrar sessão
-                    </Button>
-                  </div>
-                  <p role="status">
-                    {busy ? 'Processando ação da conta…' : ''}
-                  </p>
-                  {error && (
-                    <Alert variant="destructive" role="alert">
-                      <AlertDescription>{error}</AlertDescription>
-                    </Alert>
-                  )}
-                </div>
-              }
+        <OnboardingGate
+          key={user.id}
+          initialStep={user.onboardingStep}
+          prefs={prefs}
+          onPreferences={updatePreferences}
+        >
+          {page === 'progresso' ? (
+            <StudyProgressPage />
+          ) : page === 'estatisticas' ? (
+            <AnalyticsPage />
+          ) : page === 'rotinas' ? (
+            <RoutinesPage />
+          ) : page === 'pomodoro' ? (
+            <PomodoroPage
+              tasksEnabled={prefs?.tasks ?? false}
+              subjectsEnabled={prefs?.subjects ?? false}
             />
-          </>
-        )}
-        {error && page !== 'conta' && (
-          <Alert variant="destructive" role="alert">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
+          ) : page === 'app' ? (
+            <DashboardPage displayName={user.displayName ?? user.email} />
+          ) : page === 'module' ? (
+            <section
+              className={
+                window.location.pathname === '/app/materias'
+                  ? 'subjects-module'
+                  : window.location.pathname === '/app/tarefas'
+                    ? 'tasks-module'
+                    : undefined
+              }
+            >
+              <h1>{moduleAtPath(window.location.pathname)?.label}</h1>
+              {!prefs ? (
+                <p role="status">
+                  Não foi possível verificar as preferências.{' '}
+                  <a href="/conta">Abrir conta e tentar novamente</a>
+                </p>
+              ) : !prefs[moduleAtPath(window.location.pathname)!.capability] ? (
+                <p>
+                  Este módulo está desativado.{' '}
+                  <a href="/conta">Reativar nas preferências</a>
+                </p>
+              ) : window.location.pathname === '/app/tarefas' ? (
+                <TasksPage subjectsEnabled={prefs.subjects} />
+              ) : window.location.pathname === '/app/flashcards' ? (
+                <FlashcardsPage
+                  subjectsEnabled={prefs.subjects}
+                  aiEnabled={prefs.ai}
+                />
+              ) : window.location.pathname === '/app/materias' ? (
+                <SubjectsPage tasksEnabled={prefs.tasks} aiEnabled={prefs.ai} />
+              ) : (
+                <p>
+                  Esta funcionalidade ainda não está disponível.{' '}
+                  <a href="/conta">Ver preferências</a>
+                </p>
+              )}
+            </section>
+          ) : (
+            <>
+              <ProfilePage
+                onName={updateName}
+                onAvatar={updateAvatar}
+                onPreferences={updatePreferences}
+                accountActions={
+                  <div className="account-access-actions">
+                    <div className="account-detail">
+                      <h3>Google</h3>
+                      <p>
+                        {user.googleLinked
+                          ? 'Google vinculado à sua conta.'
+                          : 'Vincule sua conta Google para usar esse meio de entrada.'}
+                      </p>
+                    </div>
+                    {!user.googleLinked && (
+                      <Button
+                        type="button"
+                        disabled={busy}
+                        onClick={() => {
+                          void linkGoogle();
+                        }}
+                      >
+                        Vincular Google
+                      </Button>
+                    )}
+                    {new URLSearchParams(window.location.search).get(
+                      'google',
+                    ) === 'linked' && (
+                      <p role="status">Google vinculado com sucesso.</p>
+                    )}
+                    {['failed', 'conflict'].includes(
+                      new URLSearchParams(window.location.search).get(
+                        'google',
+                      ) ?? '',
+                    ) && (
+                      <Alert variant="destructive" role="alert">
+                        <AlertDescription>
+                          Não foi possível vincular o Google. Sua conta continua
+                          ativa. Tente novamente.
+                        </AlertDescription>
+                      </Alert>
+                    )}
+                    <div className="account-signout">
+                      <div>
+                        <h3>Sessão atual</h3>
+                        <p>Encerre seu acesso ao EduTrack neste navegador.</p>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        disabled={busy}
+                        onClick={() => {
+                          void leave();
+                        }}
+                      >
+                        Encerrar sessão
+                      </Button>
+                    </div>
+                    <p role="status">
+                      {busy ? 'Processando ação da conta…' : ''}
+                    </p>
+                    {error && (
+                      <Alert variant="destructive" role="alert">
+                        <AlertDescription>{error}</AlertDescription>
+                      </Alert>
+                    )}
+                  </div>
+                }
+              />
+            </>
+          )}
+          {error && page !== 'conta' && (
+            <Alert variant="destructive" role="alert">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+        </OnboardingGate>
       </main>
     </AuthenticatedShell>
   );

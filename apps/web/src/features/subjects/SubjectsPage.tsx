@@ -1,4 +1,5 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ClassroomProvenance } from '../classroom/ClassroomProvenance.js';
 import {
   CardHeader,
   Card,
@@ -611,6 +612,11 @@ export function SubjectsPage({
             </CardHeader>
             <CardContent>
               <p className="subject-objective">{detail.objective}</p>
+              <ClassroomProvenance
+                key={`source-${detail.id}`}
+                id={detail.id}
+                module="subjects"
+              />
               <dl className="subject-metadata">
                 <div>
                   <dt>Nível</dt>

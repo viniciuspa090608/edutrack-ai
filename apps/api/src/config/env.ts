@@ -50,6 +50,7 @@ const envSchema = z
     API_PUBLIC_ORIGIN: origin,
     GOOGLE_CLIENT_ID: optionalCredential,
     GOOGLE_CLIENT_SECRET: optionalCredential,
+    CLASSROOM_ENCRYPTION_KEY: optionalKey,
     SMTP_HOST: optionalCredential,
     SMTP_PORT: z.preprocess(
       (value) => (value === '' ? undefined : value),
@@ -113,6 +114,31 @@ const envSchema = z
     message: 'must differ from DB_NAME',
   })
   .superRefine((value, context) => {
+    if (
+      value.CLASSROOM_ENCRYPTION_KEY &&
+      [
+        value.EMAIL_HMAC_KEY,
+        value.EMAIL_ENCRYPTION_KEY,
+        value.AI_CREDENTIAL_ENCRYPTION_KEY,
+      ].some(
+        (key) =>
+          key?.toLowerCase() === value.CLASSROOM_ENCRYPTION_KEY?.toLowerCase(),
+      )
+    )
+      context.addIssue({
+        code: 'custom',
+        path: ['CLASSROOM_ENCRYPTION_KEY'],
+        message: 'Use an independent Classroom key',
+      });
+    if (
+      value.CLASSROOM_ENCRYPTION_KEY &&
+      (!value.GOOGLE_CLIENT_ID || !value.GOOGLE_CLIENT_SECRET)
+    )
+      context.addIssue({
+        code: 'custom',
+        path: ['CLASSROOM_ENCRYPTION_KEY'],
+        message: 'Classroom requires Google OAuth configuration',
+      });
     for (const key of ['AI_API_KEY', 'AI_MODEL'] as const) {
       if (value[key] !== undefined)
         context.addIssue({

@@ -11,6 +11,20 @@ import { HttpError } from '../../shared/http-error.js';
 import { RoadmapsRepository } from './roadmaps.repository.js';
 import { publishActivity } from '../analytics/activity-publisher.js';
 import { lockStudyProgress } from '../study-progress/activity-recorder.js';
+import { resolveClassroomConflict } from '../../shared/classroom-conflict.js';
+import type {
+  ClassroomSubjectImport,
+  ClassroomImportResult,
+} from '@study-platform/contracts';
+import {
+  decode,
+  importOrigin,
+  importReceipt,
+  importedMerge,
+  importResult,
+  saveImportReceipt,
+  nextImportSnapshot,
+} from '../../shared/classroom-import.js';
 
 interface SubjectRecord {
   id: string;
@@ -34,9 +48,222 @@ interface ItemRecord {
 const missing = () =>
   new HttpError(404, 'SUBJECT_NOT_FOUND', 'Matéria não encontrada.');
 export class SubjectsRepository {
+  async classroomSource(userId: string, id: string) {
+    const rows = await this.source.query<
+      Array<{ id: string; provenance: unknown; conflict: unknown }>
+    >(
+      'SELECT id,provenance,conflict FROM subject_classroom_sources WHERE user_id=? AND local_id=?',
+      [userId, id],
+    );
+    return rows.map((row) => ({
+      id: row.id,
+      source: decode(row.provenance),
+      conflict: row.conflict ? decode(row.conflict) : null,
+    }));
+  }
+  resolveClassroom(
+    userId: string,
+    id: string,
+    revision: number,
+    choice: 'keep_local' | 'accept_remote',
+  ) {
+    return this.source.transaction(async (manager) => {
+      await lockStudyProgress(manager, userId);
+      await resolveClassroomConflict(
+        manager,
+        'subject',
+        userId,
+        id,
+        revision,
+        choice,
+        async (localId) => {
+          const row = await this.owned(manager, userId, localId, true);
+          return { name: row.name };
+        },
+        async (localId, fields) => {
+          if (
+            typeof fields.name !== 'string' ||
+            fields.name.trim().length < 1 ||
+            fields.name.length > 120
+          )
+            throw new HttpError(
+              400,
+              'INVALID_INPUT',
+              'Nome remoto excede o limite permitido.',
+            );
+          await manager.query(
+            'UPDATE study_subjects SET name=? WHERE user_id=? AND id=?',
+            [fields.name, userId, localId],
+          );
+        },
+      );
+    });
+  }
   readonly roadmaps: RoadmapsRepository;
+  requireOwnedForImport(manager: EntityManager, userId: string, id: string) {
+    return this.owned(manager, userId, id, true);
+  }
   constructor(private readonly source: DataSource) {
     this.roadmaps = new RoadmapsRepository(source);
+  }
+  async importClassroom(
+    manager: EntityManager,
+    userId: string,
+    input: ClassroomSubjectImport,
+  ): Promise<ClassroomImportResult> {
+    const receipt = await importReceipt(
+      manager,
+      'subject',
+      userId,
+      input.receiptId,
+    );
+    if (receipt) return receipt;
+    await lockStudyProgress(manager, userId);
+    const origin = await importOrigin(
+      manager,
+      'subject',
+      userId,
+      input.googleSubject,
+      input.course.id,
+      input.course.id,
+    );
+    const finish = (result: ClassroomImportResult) =>
+      saveImportReceipt(manager, 'subject', userId, input.receiptId, result);
+    if (origin && !origin.local_id && !input.restoreDeleted)
+      return finish(
+        importResult(
+          null,
+          'ignored',
+          'Matéria excluída localmente. Restaure explicitamente.',
+        ),
+      );
+    let subjectId = origin?.local_id;
+    const destination = input.destination;
+    if (destination.kind === 'none')
+      return finish(
+        importResult(
+          null,
+          'ignored',
+          'Selecione ou preencha uma matéria para esta turma.',
+        ),
+      );
+    if (
+      destination.kind === 'existing' &&
+      subjectId &&
+      subjectId !== destination.subjectId &&
+      !input.confirmDestinationChange
+    )
+      return finish(
+        importResult(
+          subjectId,
+          'error',
+          'Confirme a mudança de matéria de destino.',
+        ),
+      );
+    const associated =
+      destination.kind === 'existing' &&
+      (!origin?.local_id ||
+        origin.local_id !== destination.subjectId ||
+        decode<{ associated: boolean }>(origin.provenance).associated);
+    if (destination.kind === 'existing') {
+      await this.owned(manager, userId, destination.subjectId, true);
+      subjectId = destination.subjectId;
+    }
+    let added = false;
+    if (!subjectId) {
+      if (destination.kind !== 'new')
+        return finish(
+          importResult(null, 'error', 'Preencha os dados da matéria.'),
+        );
+      subjectId = randomUUID();
+      const data = destination.subject;
+      await manager.query(
+        'INSERT INTO study_subjects(id,user_id,name,current_level,objective,due_date,weekly_hours) VALUES (?,?,?,?,?,?,?)',
+        [
+          subjectId,
+          userId,
+          data.name,
+          data.currentLevel,
+          data.objective,
+          data.dueDate,
+          data.weeklyHours,
+        ],
+      );
+      await this.replaceTopics(manager, userId, subjectId, data.knownTopics);
+      added = true;
+    }
+    const remote = { name: input.course.name };
+    const provenance = { course: input.course, associated };
+    if (!origin) {
+      await manager.query(
+        'INSERT INTO subject_classroom_sources(id,user_id,google_subject,course_id,item_id,local_id,snapshot,provenance) VALUES (?,?,?,?,?,?,?,?)',
+        [
+          randomUUID(),
+          userId,
+          input.googleSubject,
+          input.course.id,
+          input.course.id,
+          subjectId,
+          JSON.stringify(remote),
+          JSON.stringify(provenance),
+        ],
+      );
+      return finish(importResult(subjectId, added ? 'added' : 'unchanged'));
+    }
+    let result = importResult(subjectId, added ? 'added' : 'unchanged');
+    if (!associated && !added) {
+      const row = await this.owned(manager, userId, subjectId, true);
+      const merge = importedMerge(
+        { name: row.name },
+        decode<Record<string, unknown>>(origin.snapshot),
+        remote,
+      );
+      if (
+        typeof merge.updates.name === 'string' &&
+        merge.updates.name.length <= 120
+      ) {
+        await manager.query(
+          'UPDATE study_subjects SET name=? WHERE user_id=? AND id=?',
+          [merge.updates.name, userId, subjectId],
+        );
+        result = importResult(subjectId, 'updated');
+      } else if (merge.updates.name)
+        result = importResult(
+          subjectId,
+          'error',
+          'Nome da turma excede o limite de 120 caracteres.',
+        );
+      if (merge.conflicts.length)
+        result = {
+          ...importResult(subjectId, 'conflict'),
+          conflict: {
+            id: origin.id,
+            localId: subjectId,
+            revision: origin.revision + 1,
+            fields: merge.conflicts as NonNullable<
+              ClassroomImportResult['conflict']
+            >['fields'],
+          },
+        };
+    }
+    await manager.query(
+      'UPDATE subject_classroom_sources SET local_id=?,snapshot=?,provenance=?,revision=revision+1,conflict=?,deleted=false WHERE user_id=? AND id=?',
+      [
+        subjectId,
+        JSON.stringify(
+          nextImportSnapshot(
+            decode<Record<string, unknown>>(origin.snapshot),
+            remote,
+            result.conflict?.fields ?? [],
+          ),
+        ),
+        JSON.stringify(provenance),
+        result.conflict ? JSON.stringify(result.conflict) : null,
+        userId,
+        origin.id,
+      ],
+    );
+    return finish(result);
   }
   dashboardCandidate(userId: string) {
     return this.source.transaction(async (manager) => {

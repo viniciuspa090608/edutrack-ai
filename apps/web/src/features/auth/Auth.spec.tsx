@@ -29,6 +29,36 @@ const preferences = {
   ai: false,
 };
 function privateFetch(url: string) {
+  if (url.endsWith('/integrations/google-classroom/connection'))
+    return Response.json({
+      available: false,
+      state: 'disconnected',
+      account: null,
+      permissions: {
+        courses: false,
+        coursework: false,
+        teacherCoursework: false,
+      },
+      version: 0,
+    });
+  if (url.endsWith('/integrations/google-classroom/operations'))
+    return Response.json(null);
+  if (url.endsWith('/profile/ai'))
+    return Response.json({
+      mode: 'platform',
+      provider: 'gemini',
+      model: null,
+      hasPersonalKey: false,
+      platformAvailable: false,
+      revision: 0,
+    });
+  if (url.endsWith('/profile/ai/catalog'))
+    return Response.json({
+      providers: ['gemini', 'claude', 'openai', 'deepseek', 'kimi'].map(
+        (id) => ({ id, label: id, models: ['fixture'] }),
+      ),
+      limits: { userPerMinute: 5, userConcurrency: 1, platformUserDaily: 20 },
+    });
   if (url.endsWith('/account/study-timezone'))
     return {
       ok: true,

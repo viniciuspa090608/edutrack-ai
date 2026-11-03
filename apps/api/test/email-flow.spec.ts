@@ -1,14 +1,11 @@
-import { CreateProfilePreferences20260926160000 } from '../src/database/migrations/20260926160000-CreateProfilePreferences.js';
 import { randomBytes } from 'node:crypto';
 import pino from 'pino';
 import request from 'supertest';
-import { DataSource } from 'typeorm';
+
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createApp } from '../src/app.js';
 import { loadEnv } from '../src/config/env.js';
 import { createDataSource } from '../src/database/data-source.js';
-import { CreateAuthentication20260924221500 } from '../src/database/migrations/20260924221500-CreateAuthentication.js';
-import { CreateEmailVerification20260924230000 } from '../src/database/migrations/20260924230000-CreateEmailVerification.js';
 import { AuthRepository } from '../src/modules/auth/auth.repository.js';
 import { EmailCrypto } from '../src/modules/auth/email-crypto.js';
 import { EmailRepository } from '../src/modules/auth/email.repository.js';
@@ -17,14 +14,7 @@ import { SessionRepository } from '../src/modules/auth/session.repository.js';
 const env = loadEnv();
 const database = `${env.TEST_DB_NAME}_flow_${randomBytes(4).toString('hex')}`;
 const admin = createDataSource({ ...env, DB_NAME: env.TEST_DB_NAME });
-const source = new DataSource({
-  ...createDataSource({ ...env, DB_NAME: database }).options,
-  migrations: [
-    CreateAuthentication20260924221500,
-    CreateEmailVerification20260924230000,
-    CreateProfilePreferences20260926160000,
-  ],
-});
+const source = createDataSource({ ...env, DB_NAME: database });
 const app = createApp({
   logger: pino({ level: 'silent' }),
   webOrigin: env.WEB_ORIGIN,

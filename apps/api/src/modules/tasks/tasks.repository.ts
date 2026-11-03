@@ -12,6 +12,21 @@ import { taskEntity } from './task.entity.js';
 import { publishActivity } from '../analytics/activity-publisher.js';
 import { lockStudyProgress } from '../study-progress/activity-recorder.js';
 import type { TaskEntity } from './task.entity.js';
+import { resolveClassroomConflict } from '../../shared/classroom-conflict.js';
+import type {
+  ClassroomTaskImport,
+  ClassroomImportResult,
+  ClassroomSource,
+} from '@study-platform/contracts';
+import {
+  decode,
+  importOrigin,
+  importReceipt,
+  importedMerge,
+  importResult,
+  saveImportReceipt,
+  nextImportSnapshot,
+} from '../../shared/classroom-import.js';
 
 export type TaskRecord = TaskEntity & {
   subtaskTotal: number;
@@ -19,6 +34,204 @@ export type TaskRecord = TaskEntity & {
 };
 export class TasksRepository {
   constructor(private readonly source: DataSource) {}
+  async classroomSource(userId: string, id: string) {
+    const rows = await this.source.query<
+      Array<{ provenance: unknown; conflict: unknown; id: string }>
+    >(
+      'SELECT id,provenance,conflict FROM task_classroom_sources WHERE user_id=? AND local_id=?',
+      [userId, id],
+    );
+    return rows[0]
+      ? {
+          id: rows[0].id,
+          source: decode(rows[0].provenance),
+          conflict: rows[0].conflict ? decode(rows[0].conflict) : null,
+        }
+      : null;
+  }
+  resolveClassroom(
+    userId: string,
+    id: string,
+    revision: number,
+    choice: 'keep_local' | 'accept_remote',
+  ) {
+    return this.source.transaction(async (manager) => {
+      await lockStudyProgress(manager, userId);
+      await resolveClassroomConflict(
+        manager,
+        'task',
+        userId,
+        id,
+        revision,
+        choice,
+        async (localId) => {
+          const task = await manager.getRepository(taskEntity).findOne({
+            where: { id: localId, userId },
+            lock: { mode: 'pessimistic_write' },
+          });
+          if (!task)
+            throw new HttpError(
+              404,
+              'TASK_NOT_FOUND',
+              'Tarefa não encontrada.',
+            );
+          return {
+            title: task.title,
+            description: task.description,
+            dueDate: task.dueDate,
+          };
+        },
+        async (localId, fields) => {
+          await manager
+            .getRepository(taskEntity)
+            .update({ id: localId, userId }, fields);
+        },
+      );
+    });
+  }
+  async importClassroom(
+    manager: EntityManager,
+    userId: string,
+    input: ClassroomTaskImport,
+  ): Promise<ClassroomImportResult> {
+    const receipt = await importReceipt(
+      manager,
+      'task',
+      userId,
+      input.receiptId,
+    );
+    if (receipt) return receipt;
+    await lockStudyProgress(manager, userId);
+    const source = input.source;
+    const origin = await importOrigin(
+      manager,
+      'task',
+      userId,
+      source.googleSubject,
+      source.courseId,
+      source.itemId,
+    );
+    const finish = (result: ClassroomImportResult) =>
+      saveImportReceipt(manager, 'task', userId, input.receiptId, result);
+    if (origin && !origin.local_id && !input.restoreDeleted)
+      return finish(
+        importResult(
+          null,
+          'ignored',
+          'Tarefa excluída localmente. Restaure explicitamente para importar novamente.',
+        ),
+      );
+    const priorSource = origin
+      ? decode<ClassroomSource>(origin.provenance)
+      : null;
+    const sameDeadline =
+      priorSource &&
+      priorSource.dueAt === source.dueAt &&
+      priorSource.originalDueDate === source.originalDueDate &&
+      priorSource.originalDueTime === source.originalDueTime;
+    if (sameDeadline) source.timeZone = priorSource.timeZone;
+    const remote = {
+      title: input.task.title,
+      description: input.task.description,
+      dueDate: sameDeadline
+        ? decode<{ dueDate: string | null }>(origin!.snapshot).dueDate
+        : input.task.dueDate,
+      ...(input.relinkSubject ? { subjectId: input.task.subjectId } : {}),
+    };
+    if (!origin?.local_id) {
+      const id = randomUUID();
+      await manager.getRepository(taskEntity).insert({
+        ...input.task,
+        id,
+        userId,
+        priority: 'MEDIUM',
+        status: 'PENDING',
+      });
+      if (origin)
+        await manager.query(
+          'UPDATE task_classroom_sources SET local_id=?,deleted=false,snapshot=?,provenance=?,revision=revision+1,conflict=NULL WHERE user_id=? AND id=?',
+          [
+            id,
+            JSON.stringify(remote),
+            JSON.stringify(source),
+            userId,
+            origin.id,
+          ],
+        );
+      else
+        await manager.query(
+          'INSERT INTO task_classroom_sources(id,user_id,google_subject,course_id,item_id,local_id,snapshot,provenance) VALUES (?,?,?,?,?,?,?,?)',
+          [
+            randomUUID(),
+            userId,
+            source.googleSubject,
+            source.courseId,
+            source.itemId,
+            id,
+            JSON.stringify(remote),
+            JSON.stringify(source),
+          ],
+        );
+      return finish(importResult(id, 'added'));
+    }
+    const task = await manager.getRepository(taskEntity).findOne({
+      where: { id: origin.local_id, userId },
+      lock: { mode: 'pessimistic_write' },
+    });
+    if (!task)
+      return finish(
+        importResult(null, 'ignored', 'Tarefa excluída localmente.'),
+      );
+    const merge = importedMerge(
+      {
+        title: task.title,
+        description: task.description,
+        dueDate: task.dueDate,
+        subjectId: task.subjectId,
+      },
+      { subjectId: null, ...decode<Record<string, unknown>>(origin.snapshot) },
+      remote,
+    );
+    if (Object.keys(merge.updates).length)
+      await manager
+        .getRepository(taskEntity)
+        .update({ id: task.id, userId }, merge.updates);
+    const conflict = merge.conflicts.length
+      ? {
+          id: origin.id,
+          localId: task.id,
+          revision: origin.revision + 1,
+          fields: merge.conflicts,
+        }
+      : null;
+    await manager.query(
+      'UPDATE task_classroom_sources SET snapshot=?,provenance=?,revision=revision+1,conflict=? WHERE user_id=? AND id=?',
+      [
+        JSON.stringify(
+          nextImportSnapshot(
+            decode<Record<string, unknown>>(origin.snapshot),
+            remote,
+            merge.conflicts,
+          ),
+        ),
+        JSON.stringify(source),
+        conflict ? JSON.stringify(conflict) : null,
+        userId,
+        origin.id,
+      ],
+    );
+    return finish({
+      ...importResult(
+        task.id,
+        conflict
+          ? 'conflict'
+          : Object.keys(merge.updates).length
+            ? 'updated'
+            : 'unchanged',
+      ),
+      conflict: conflict as ClassroomImportResult['conflict'],
+    });
+  }
   dashboardSummary(userId: string) {
     return this.source.transaction(async (manager) => {
       const counts = await manager.query<

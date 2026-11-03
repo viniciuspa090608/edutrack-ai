@@ -16,6 +16,8 @@ import {
   dashboardSubjectSchema,
 } from '@study-platform/contracts';
 import type { z } from 'zod';
+import type { EntityManager } from 'typeorm';
+import { classroomSubjectImportSchema } from '@study-platform/contracts';
 import type { PreferencesService } from '../preferences/preferences.service.js';
 import type { SubjectsRepository } from './subjects.repository.js';
 import { HttpError } from '../../shared/http-error.js';
@@ -26,6 +28,28 @@ function parse<T>(schema: z.ZodType<T>, input: unknown): T {
   return result.data;
 }
 export class SubjectsService {
+  async classroomSource(userId: string, id: string) {
+    await this.requireOwned(userId, id);
+    return this.repository.classroomSource(userId, id);
+  }
+  resolveClassroom(
+    userId: string,
+    id: string,
+    revision: number,
+    choice: 'keep_local' | 'accept_remote',
+  ) {
+    return this.repository.resolveClassroom(userId, id, revision, choice);
+  }
+  requireOwnedForImport(manager: EntityManager, userId: string, id: string) {
+    return this.repository.requireOwnedForImport(manager, userId, id);
+  }
+  importClassroom(manager: EntityManager, userId: string, input: unknown) {
+    return this.repository.importClassroom(
+      manager,
+      userId,
+      classroomSubjectImportSchema.parse(input),
+    );
+  }
   async dashboardSummary(userId: string) {
     await this.prefs.requireEnabled(userId, 'subjects');
     const candidate = await this.repository.dashboardCandidate(userId);

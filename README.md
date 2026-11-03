@@ -405,3 +405,32 @@ Gere `AI_CREDENTIAL_ENCRYPTION_KEY` (32 bytes hexadecimais) separadamente de `EM
 Limites configuráveis (inteiros positivos): `AI_USER_REQUESTS_PER_MINUTE=5`, `AI_USER_MAX_CONCURRENCY=1` para ambos os modos; `AI_DEFAULT_USER_DAILY_LIMIT=20`, `AI_DEFAULT_GLOBAL_DAILY_LIMIT=500` e `AI_DEFAULT_GLOBAL_MAX_CONCURRENCY=5` somente para o padrão. Reservas atômicas em MySQL compartilham cotas entre instâncias; chamadas iniciadas consomem cota mesmo em erro externo, recusas locais não. Contadores diários viram à meia-noite UTC; leases expiram após timeout + 10 segundos e são liberados no finally. Cotas pessoais não consomem orçamento compartilhado. Resposta 429 orienta aguardar sem revelar consumo alheio.
 
 Rollback operacional: desative geração ou volte para versão compatível conservando tabela, chave/versão de cifra e recibos. Não direcione uma chave Gemini ao código OpenAI antigo. Reverter a migration apaga configuração privada e estado de limites; exige decisão explícita de retenção e backup. Os testes aplicam/revertem em MySQL isolado e simulam somente HTTP dos provedores.
+
+## Google Classroom opcional
+
+Novas contas passam por seleção de módulos e uma etapa opcional de Classroom. Contas existentes conectam em **Perfil → Configurações → Integrações**, em `/conta#account-integrations`. O consentimento Classroom é independente de entrar com Google. Pular, cancelar ou falhar não bloqueia o uso manual.
+
+Configure `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` e `CLASSROOM_ENCRYPTION_KEY` (64 caracteres hexadecimais aleatórios, chave independente das chaves de e-mail/IA). A chave fica somente no ambiente privado. Sem configuração, a interface informa indisponibilidade. Alterar a chave sem migrar os tokens exige reconectar as contas; preserve a chave em backups privados do ambiente. Nunca coloque tokens, senha Google, segredo OAuth ou chave de criptografia em fixtures, commits ou logs.
+
+No projeto Google Cloud do cliente OAuth existente:
+
+1. Habilite **Google Classroom API** na biblioteca de APIs.
+2. Em **Google Auth Platform → Clientes**, abra o cliente web correspondente ao `GOOGLE_CLIENT_ID` e adicione `${API_PUBLIC_ORIGIN}/integrations/google-classroom/callback` aos URIs de redirecionamento autorizados. Preserve o callback de login existente. O caminho e a porta devem coincidir exatamente.
+3. No ambiente local padrão, o callback é `http://localhost:3001/integrations/google-classroom/callback`. A homologação isolada desta mudança usa `http://localhost:3002/integrations/google-classroom/callback`, com web em `http://localhost:5174`.
+4. Configure o público e os usuários de teste na tela de consentimento quando o aplicativo estiver em teste. Contas institucionais podem exigir autorização do administrador; adicionar um usuário de teste não contorna políticas do domínio.
+5. Solicite somente `classroom.courses.readonly` e `classroom.coursework.me.readonly` na importação. Atividades como professor podem exigir `classroom.coursework.students.readonly`, oferecido separadamente. Não são lidas submissões, notas escolares nem listas de participantes.
+6. Materiais e Drive não são solicitados. A importação preserva links de anexos, sem baixar ou processar arquivos. Revise as exigências Google para os escopos Classroom antes de produção.
+
+Aplique a migration `CreateClassroomIntegration` via `pnpm db:migration:run`. `synchronize` permanece falso. Contas preexistentes ficam com onboarding concluído; novas preferências começam na escolha de módulos. A migration acrescenta conexão, tentativas OAuth, seleção, fila/itens, proveniência/recibos, sem alterar dados manuais.
+
+`pnpm dev` inicia também o worker Classroom. Para executá-lo separadamente, use `pnpm dev:classroom`; após build, `pnpm --filter @study-platform/api classroom:start`. O worker processa somente operações solicitadas explicitamente: não existe sincronização agendada. Operações sobrevivem a recarga/reinício e têm lease e recibos idempotentes; o worker deve usar o mesmo banco, chaves e configuração da API. Novas solicitações concorrentes retornam a operação ativa. Limites Google/instabilidade têm tentativas limitadas; depois o usuário pode tentar novamente.
+
+Selecione turmas e associe cada uma a matéria própria ou preencha os campos de planejamento exigidos: o Classroom não fornece objetivo pessoal, prazo de estudo ou horas semanais. Com matérias desativadas, tarefas são independentes; com tarefas desativadas, só matérias são importadas. Resultados distinguem adições, atualizações, inalterados, ignorados, conflitos e erros. Atualizações comparam o último valor importado e preservam alterações locais; conflitos exigem manter local ou aceitar remoto. Alteração de destino e vínculo de tarefas anteriores exigem seleção explícita. Reimportar não reabre tarefas, não altera subtarefas, não gera eventos de conclusão e não recria exclusões sem confirmação de restauração. IDs externos são separados por usuário e identidade Google.
+
+A integração não lê PDFs/arquivos nem gera notas. Aprimoramentos existentes de roadmaps e flashcards permanecem independentes da importação; chat fica para uma mudança separada. A integração funciona com IA desligada ou provedor indisponível.
+
+Desconectar remove tokens locais imediatamente, interrompe confirmações pendentes e tenta revogar o acesso Google. Se a revogação remota falhar, a conexão local continua desativada e a interface orienta revisar permissões no Google. Conteúdo confirmado permanece. Desmarcar turma não apaga conteúdo; a exclusão de matéria mantém o comportamento atual dos vínculos. Rollback operacional deve ocultar a integração e parar o worker, preservando dados; o `down` da migration remove metadados e exige backup e decisão explícita de retenção.
+
+Verificação automatizada usa banco MySQL temporário real e simula somente a fronteira HTTP Google. A homologação real exige consentimento com uma conta autorizada, turma selecionada, atividade com/sem prazo, reimportação e revogação. `redirect_uri_mismatch` se resolve cadastrando o callback exato; `access_denied` pode exigir revisão do consentimento/usuários de teste ou administrador institucional. Registre essas evidências antes de concluir o apply; fixtures não substituem a homologação externa.
+
+Referências oficiais: [OAuth web](https://developers.google.com/identity/protocols/oauth2/web-server), [escopos Classroom](https://developers.google.com/workspace/classroom/guides/auth), [permissões de atividades](https://developers.google.com/workspace/classroom/guides/manage-coursework).

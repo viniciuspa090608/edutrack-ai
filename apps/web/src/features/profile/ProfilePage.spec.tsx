@@ -67,6 +67,20 @@ beforeEach(() => {
       const body: unknown =
         typeof init?.body === 'string' ? JSON.parse(init.body) : init?.body;
       requests.push({ path, body, method });
+      if (path === '/integrations/google-classroom/connection')
+        return Response.json({
+          available: false,
+          state: 'disconnected',
+          account: null,
+          permissions: {
+            courses: false,
+            coursework: false,
+            teacherCoursework: false,
+          },
+          version: 0,
+        });
+      if (path === '/integrations/google-classroom/operations')
+        return Response.json(null);
       if (path === loadFailed && method === 'GET') throw new Error('Offline');
       if (method !== 'GET' && mutationGate) await mutationGate;
       if (path === '/account/study-timezone')

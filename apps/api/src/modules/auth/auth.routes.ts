@@ -14,6 +14,7 @@ import { HttpError } from '../../shared/http-error.js';
 import { AuthService } from './auth.service.js';
 import { allowedReturnTo, GoogleService } from './google.service.js';
 import type { ActiveSession } from './session.repository.js';
+import { PreferencesService } from '../preferences/preferences.service.js';
 
 export function sessionCookieName(env: ApiEnv): string {
   return env.NODE_ENV === 'production'
@@ -267,7 +268,14 @@ export function authRoutes(
 
   router.get('/me', secure, async (_request, response) => {
     response.json({
-      user: await service.publicUser(authenticatedSession(response).userId),
+      user: {
+        ...(await service.publicUser(authenticatedSession(response).userId)),
+        onboardingStep: (
+          await new PreferencesService(service.users.source).onboarding(
+            authenticatedSession(response).userId,
+          )
+        ).step,
+      },
     });
   });
 

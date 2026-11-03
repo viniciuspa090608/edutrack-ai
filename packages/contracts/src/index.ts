@@ -52,6 +52,7 @@ export const authUserSchema = z.object({
   email: z.email(),
   googleLinked: z.boolean(),
   displayName: z.string().optional(),
+  onboardingStep: z.enum(['modules', 'classroom', 'completed']).optional(),
 });
 
 export const meResponseSchema = z.object({ user: authUserSchema });
@@ -151,3 +152,4 @@ export * from './study-progress.js';
 export * from './dashboard.js';
 
 export * from './ai-settings.js';
+export * from './classroom.js';

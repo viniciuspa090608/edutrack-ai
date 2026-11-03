@@ -1,4 +1,5 @@
 import { AISettingsSection } from './AISettingsSection.js';
+import { ClassroomSection } from '../classroom/ClassroomSection.js';
 import {
   AlertDescription,
   Alert,
@@ -250,6 +251,18 @@ export function ProfilePage({
             </a>
           </Card>
           <nav className="account-nav" aria-label="Configurações da conta">
+            <a
+              href="#account-integrations"
+              aria-current={
+                activeSection === '#account-integrations'
+                  ? 'location'
+                  : undefined
+              }
+            >
+              <Globe aria-hidden="true" />
+              Integrações
+              <ChevronRight aria-hidden="true" />
+            </a>
             <a
               href="#account-profile"
               aria-current={
@@ -814,6 +827,7 @@ export function ProfilePage({
             </section>
           </Card>
           <AISettingsSection />
+          <ClassroomSection prefs={prefs} />
           <Card asChild>
             <section
               id="account-access"

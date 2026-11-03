@@ -111,6 +111,7 @@ export async function seedDemo(
         subjects_enabled: true,
         flashcards_enabled: true,
         ai_enabled: true,
+        onboarding_step: 'completed',
       });
       // The user-insert trigger creates tracking and its first timezone row.
       await manager.query(

@@ -1,10 +1,19 @@
 import type { Capability, ModulePreferences } from '@study-platform/contracts';
-import type { DataSource } from 'typeorm';
+import type { DataSource, EntityManager } from 'typeorm';
 import type { RequestHandler } from 'express';
 import { HttpError } from '../../shared/http-error.js';
 import { PreferencesRepository } from './preferences.repository.js';
 
 export class PreferencesService {
+  readLocked(manager: EntityManager, userId: string) {
+    return this.repository.read(userId, manager);
+  }
+  onboarding(userId: string) {
+    return this.repository.onboarding(userId);
+  }
+  updateOnboarding(userId: string, step: string) {
+    return this.repository.updateOnboarding(userId, step);
+  }
   private readonly repository: PreferencesRepository;
   constructor(source: DataSource) {
     this.repository = new PreferencesRepository(source);

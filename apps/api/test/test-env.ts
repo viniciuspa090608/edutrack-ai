@@ -5,6 +5,7 @@ export function isolatedTestEnv(input: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
     NODE_ENV: 'test',
     GOOGLE_CLIENT_ID: '',
     GOOGLE_CLIENT_SECRET: '',
+    CLASSROOM_ENCRYPTION_KEY: '',
     SMTP_HOST: 'localhost',
     SMTP_PORT: '1025',
     SMTP_FROM: 'no-reply@example.test',

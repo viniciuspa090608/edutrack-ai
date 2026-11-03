@@ -19,6 +19,7 @@ import type { SubtaskEntity } from './subtask.entity.js';
 import { TasksRepository } from './tasks.repository.js';
 
 import type { SubjectsService } from '../subjects/subjects.service.js';
+import { classroomTaskImportSchema } from '@study-platform/contracts';
 
 function derivedStatus(
   total: number,
@@ -64,6 +65,32 @@ function dto(row: TaskRecord | null) {
   });
 }
 export class TasksService {
+  async classroomSource(userId: string, id: string) {
+    await this.detail(userId, id);
+    return this.repository.classroomSource(userId, id);
+  }
+  resolveClassroom(
+    userId: string,
+    id: string,
+    revision: number,
+    choice: 'keep_local' | 'accept_remote',
+  ) {
+    return this.repository.resolveClassroom(userId, id, revision, choice);
+  }
+  async importClassroom(
+    manager: EntityManager,
+    userId: string,
+    input: unknown,
+  ) {
+    const parsed = classroomTaskImportSchema.parse(input);
+    if (parsed.task.subjectId)
+      await this.subjects.requireOwnedForImport(
+        manager,
+        userId,
+        parsed.task.subjectId,
+      );
+    return this.repository.importClassroom(manager, userId, parsed);
+  }
   async dashboardSummary(userId: string) {
     const result = await this.repository.dashboardSummary(userId);
     const counts = { PENDING: 0, IN_PROGRESS: 0, COMPLETED: 0 };
@@ -76,7 +103,10 @@ export class TasksService {
   }
   constructor(
     private readonly repository: TasksRepository,
-    private readonly subjects: Pick<SubjectsService, 'requireOwned'>,
+    private readonly subjects: Pick<
+      SubjectsService,
+      'requireOwned' | 'requireOwnedForImport'
+    >,
   ) {}
   async create(userId: string, input: unknown) {
     const parsed = createTaskSchema.safeParse(input);

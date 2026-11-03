@@ -1,0 +1,55 @@
+.classroom-section {
+  padding: 1.25rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  display: grid;
+  gap: 1rem;
+}
+.classroom-section fieldset {
+  min-width: 0;
+  padding: 0.75rem;
+  border: 1px solid var(--border, #d5d9e0);
+  border-radius: 0.75rem;
+}
+.classroom-section label {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.classroom-section input:not([type='checkbox']),
+.classroom-section textarea,
+.classroom-section select {
+  max-width: 100%;
+  min-width: 0;
+}
+.classroom-section h2,
+.classroom-section h3 {
+  font-weight: 650;
+}
+.classroom-section h2 {
+  font-size: 1.25rem;
+}
+.classroom-courses,
+.classroom-destination,
+.classroom-destination fieldset {
+  display: grid;
+  gap: 0.75rem;
+}
+.classroom-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.classroom-section button {
+  white-space: normal;
+  height: auto;
+  min-height: 2.5rem;
+  max-width: 100%;
+}
+.classroom-section li {
+  margin-block: 0.75rem;
+}
+.classroom-section [role='alert'] {
+  color: var(--destructive, #b42318);
+}

@@ -1,4 +1,5 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ClassroomProvenance } from '../classroom/ClassroomProvenance.js';
 import {
   CardHeader,
   Card,
@@ -731,6 +732,11 @@ export function TasksPage({
             </CardHeader>
             <CardContent>
               <TaskProgress task={detail} />
+              <ClassroomProvenance
+                key={`source-${detail.id}`}
+                id={detail.id}
+                module="tasks"
+              />
               <p className="task-description">
                 {detail.description || 'Sem descrição'}
               </p>
