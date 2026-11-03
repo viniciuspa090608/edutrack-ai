@@ -1,3 +1,10 @@
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from '@study-platform/ui/components/ui/select';
 import { FormModal } from '@study-platform/ui/components/ui/form-modal';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { ClassroomProvenance } from '../classroom/ClassroomProvenance.js';
@@ -25,10 +32,6 @@ import {
 } from '@study-platform/ui/components/ui/pagination';
 import { Label } from '@study-platform/ui/components/ui/label';
 import { Input } from '@study-platform/ui/components/ui/input';
-import {
-  NativeSelect,
-  NativeSelectOption,
-} from '@study-platform/ui/components/ui/native-select';
 import { Textarea } from '@study-platform/ui/components/ui/textarea';
 import { Button } from '@study-platform/ui/components/ui/button';
 import { Badge } from '@study-platform/ui/components/ui/badge';
@@ -198,20 +201,27 @@ function SubjectForm({
                 </Label>
                 <Label>
                   Nível atual
-                  <NativeSelect
-                    value={currentLevel}
-                    onChange={(event) =>
+                  <Select
+                    value={currentLevel || '__edutrack_empty__'}
+                    onValueChange={(selected) =>
                       setLevel(
-                        event.target.value as StudySubject['currentLevel'],
+                        (selected === '__edutrack_empty__'
+                          ? ''
+                          : selected) as StudySubject['currentLevel'],
                       )
                     }
                   >
-                    {Object.entries(levels).map(([value, label]) => (
-                      <NativeSelectOption key={value} value={value}>
-                        {label}
-                      </NativeSelectOption>
-                    ))}
-                  </NativeSelect>
+                    <SelectTrigger className="w-full min-w-0">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent position="popper">
+                      {Object.entries(levels).map(([value, label]) => (
+                        <SelectItem key={value} value={value}>
+                          {label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </Label>
                 <Label className="subject-field-wide">
                   Objetivo
@@ -387,21 +397,26 @@ function PlanEditor({
             <h4>{item.title}</h4>
             <Label>
               Status de {item.title}
-              <NativeSelect
+              <Select
                 disabled={busy}
-                value={item.status}
-                onChange={(event) =>
+                value={item.status || '__edutrack_empty__'}
+                onValueChange={(selected) =>
                   void mutate(`/${item.id}`, 'PATCH', {
-                    status: event.target.value,
+                    status: selected === '__edutrack_empty__' ? '' : selected,
                   })
                 }
               >
-                {Object.entries(statuses).map(([value, label]) => (
-                  <NativeSelectOption key={value} value={value}>
-                    {label}
-                  </NativeSelectOption>
-                ))}
-              </NativeSelect>
+                <SelectTrigger className="w-full min-w-0">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent position="popper">
+                  {Object.entries(statuses).map(([value, label]) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </Label>
             <div className="subject-actions">
               <Button

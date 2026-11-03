@@ -1,3 +1,10 @@
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from '@study-platform/ui/components/ui/select';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Badge } from '@study-platform/ui/components/ui/badge';
 import { Card, CardContent } from '@study-platform/ui/components/ui/card';
@@ -31,10 +38,6 @@ import {
 
 import { Button } from '@study-platform/ui/components/ui/button';
 import { Label } from '@study-platform/ui/components/ui/label';
-import {
-  NativeSelect,
-  NativeSelectOption,
-} from '@study-platform/ui/components/ui/native-select';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type {
   PomodoroAction,
@@ -309,20 +312,29 @@ export function PomodoroPage({
                     <div>
                       <Label>
                         Tarefa opcional
-                        <NativeSelect
-                          value={taskId}
-                          onChange={(event) => setTaskId(event.target.value)}
+                        <Select
+                          value={taskId || '__edutrack_empty__'}
+                          onValueChange={(selected) =>
+                            setTaskId(
+                              selected === '__edutrack_empty__' ? '' : selected,
+                            )
+                          }
                           disabled={busy}
                         >
-                          <NativeSelectOption value="">
-                            Sem tarefa
-                          </NativeSelectOption>
-                          {tasks.map((task) => (
-                            <NativeSelectOption key={task.id} value={task.id}>
-                              {task.title}
-                            </NativeSelectOption>
-                          ))}
-                        </NativeSelect>
+                          <SelectTrigger className="w-full min-w-0">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent position="popper">
+                            <SelectItem value="__edutrack_empty__">
+                              Sem tarefa
+                            </SelectItem>
+                            {tasks.map((task) => (
+                              <SelectItem key={task.id} value={task.id}>
+                                {task.title}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </Label>
                       {taskPages > 1 && (
                         <div className="pomodoro-actions">

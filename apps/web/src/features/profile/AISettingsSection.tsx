@@ -1,3 +1,14 @@
+import {
+  RadioGroup,
+  RadioGroupItem,
+} from '@study-platform/ui/components/ui/radio-group';
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from '@study-platform/ui/components/ui/select';
 import { useEffect, useRef, useState } from 'react';
 import type {
   AICatalog,
@@ -129,6 +140,7 @@ export function AISettingsSection() {
         id="account-ai"
         className="account-card"
         aria-labelledby="account-ai-title"
+        tabIndex={-1}
       >
         <CardHeader>
           <div>
@@ -186,33 +198,26 @@ export function AISettingsSection() {
               >
                 <fieldset disabled={busy}>
                   <legend>Modo de geração</legend>
-                  <Label>
-                    <input
-                      type="radio"
-                      name="ai-mode"
-                      value="platform"
-                      checked={mode === 'platform'}
-                      onChange={() => {
-                        setMode('platform');
-                        clear();
-                        setConfirm(null);
-                      }}
-                    />{' '}
-                    Padrão EduTrack (Gemini)
-                  </Label>
-                  <Label>
-                    <input
-                      type="radio"
-                      name="ai-mode"
-                      value="personal"
-                      checked={mode === 'personal'}
-                      onChange={() => {
-                        setMode('personal');
-                        setConfirm(null);
-                      }}
-                    />{' '}
-                    Usar minha chave pessoal
-                  </Label>
+                  <RadioGroup
+                    aria-label="Modo de geração"
+                    name="ai-mode"
+                    value={mode}
+                    disabled={busy}
+                    onValueChange={(value) => {
+                      setMode(value as 'platform' | 'personal');
+                      if (value === 'platform') clear();
+                      setConfirm(null);
+                    }}
+                  >
+                    <Label htmlFor="ai-mode-platform">
+                      <RadioGroupItem id="ai-mode-platform" value="platform" />
+                      Padrão EduTrack (Gemini)
+                    </Label>
+                    <Label htmlFor="ai-mode-personal">
+                      <RadioGroupItem id="ai-mode-personal" value="personal" />
+                      Usar minha chave pessoal
+                    </Label>
+                  </RadioGroup>
                   {mode === 'personal' && (
                     <>
                       <p>
@@ -223,11 +228,13 @@ export function AISettingsSection() {
                         da API OpenAI.
                       </p>
                       <Label htmlFor="ai-provider">Provedor de IA</Label>
-                      <select
-                        id="ai-provider"
-                        value={provider}
-                        onChange={(event) => {
-                          const next = event.target.value as AIProvider;
+                      <Select
+                        disabled={busy}
+                        value={provider || '__edutrack_empty__'}
+                        onValueChange={(selected) => {
+                          const next = (
+                            selected === '__edutrack_empty__' ? '' : selected
+                          ) as AIProvider;
                           setProvider(next);
                           setModel(
                             catalog.providers.find((p) => p.id === next)!
@@ -237,33 +244,51 @@ export function AISettingsSection() {
                           setConfirm(null);
                         }}
                       >
-                        {catalog.providers.map((p) => (
-                          <option key={p.id} value={p.id}>
-                            {p.label}
-                          </option>
-                        ))}
-                      </select>
-                      <Label htmlFor="ai-model">Modelo de IA</Label>
-                      <select
-                        id="ai-model"
-                        value={model}
-                        onChange={(event) => setModel(event.target.value)}
-                      >
-                        {!catalog.providers
-                          .find((p) => p.id === provider)!
-                          .models.includes(model) && (
-                          <option value={model}>
-                            {model} (indisponível — escolha outro)
-                          </option>
-                        )}
-                        {catalog.providers
-                          .find((p) => p.id === provider)!
-                          .models.map((id) => (
-                            <option key={id} value={id}>
-                              {id}
-                            </option>
+                        <SelectTrigger
+                          id="ai-provider"
+                          className="w-full min-w-0"
+                        >
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent position="popper">
+                          {catalog.providers.map((p) => (
+                            <SelectItem key={p.id} value={p.id}>
+                              {p.label}
+                            </SelectItem>
                           ))}
-                      </select>
+                        </SelectContent>
+                      </Select>
+                      <Label htmlFor="ai-model">Modelo de IA</Label>
+                      <Select
+                        key={provider}
+                        disabled={busy}
+                        value={model || '__edutrack_empty__'}
+                        onValueChange={(selected) =>
+                          setModel(
+                            selected === '__edutrack_empty__' ? '' : selected,
+                          )
+                        }
+                      >
+                        <SelectTrigger id="ai-model" className="w-full min-w-0">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent position="popper">
+                          {!catalog.providers
+                            .find((p) => p.id === provider)!
+                            .models.includes(model) && (
+                            <SelectItem value={model}>
+                              {model} (indisponível — escolha outro)
+                            </SelectItem>
+                          )}
+                          {catalog.providers
+                            .find((p) => p.id === provider)!
+                            .models.map((id) => (
+                              <SelectItem key={id} value={id}>
+                                {id}
+                              </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
                       <Label htmlFor="ai-key">
                         Chave da API{' '}
                         {saved.hasPersonalKey && saved.provider === provider
@@ -287,7 +312,22 @@ export function AISettingsSection() {
                       </p>
                     </>
                   )}
-                  <Button disabled={busy}>Salvar configuração de IA</Button>
+                  <div className="account-ai-actions">
+                    <Button className="account-ai-save" disabled={busy}>
+                      Salvar configuração de IA
+                    </Button>
+                    <Button
+                      className="account-ai-reload"
+                      type="button"
+                      disabled={busy}
+                      onClick={() => {
+                        clear();
+                        setRetry((n) => n + 1);
+                      }}
+                    >
+                      Recarregar configuração de IA
+                    </Button>
+                  </div>
                   {saved.hasPersonalKey && (
                     <Button
                       type="button"
@@ -325,16 +365,6 @@ export function AISettingsSection() {
                   </Button>
                 </div>
               )}
-              <Button
-                type="button"
-                disabled={busy}
-                onClick={() => {
-                  clear();
-                  setRetry((n) => n + 1);
-                }}
-              >
-                Recarregar configuração de IA
-              </Button>
             </>
           )}
         </CardContent>

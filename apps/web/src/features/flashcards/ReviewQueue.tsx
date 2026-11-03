@@ -1,3 +1,10 @@
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from '@study-platform/ui/components/ui/select';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   CardHeader,
@@ -17,10 +24,6 @@ import {
 
 import { Button } from '@study-platform/ui/components/ui/button';
 import { Label } from '@study-platform/ui/components/ui/label';
-import {
-  NativeSelect,
-  NativeSelectOption,
-} from '@study-platform/ui/components/ui/native-select';
 import { useEffect, useRef, useState } from 'react';
 import type {
   PendingList,
@@ -290,20 +293,27 @@ export function ReviewQueue({
               {deckId && (
                 <Label>
                   Filtrar revisões
-                  <NativeSelect
-                    value={filter}
-                    onChange={(event) => {
-                      setFilter(event.target.value);
+                  <Select
+                    value={filter || '__edutrack_empty__'}
+                    onValueChange={(selected) => {
+                      setFilter(
+                        selected === '__edutrack_empty__' ? '' : selected,
+                      );
                       setPage(1);
                     }}
                   >
-                    <NativeSelectOption value="">
-                      Todos os baralhos
-                    </NativeSelectOption>
-                    <NativeSelectOption value={deckId}>
-                      Somente baralho aberto
-                    </NativeSelectOption>
-                  </NativeSelect>
+                    <SelectTrigger className="w-full min-w-0">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent position="popper">
+                      <SelectItem value="__edutrack_empty__">
+                        Todos os baralhos
+                      </SelectItem>
+                      <SelectItem value={deckId}>
+                        Somente baralho aberto
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
                 </Label>
               )}
               {listError ? (

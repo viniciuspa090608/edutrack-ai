@@ -1,3 +1,4 @@
+import { selectOption } from '../../test/select-option.js';
 import {
   cleanup,
   fireEvent,
@@ -119,9 +120,7 @@ it('creates and removes schedule rows by keyboard and refreshes the weekly view'
   });
   await user.click(screen.getByRole('button', { name: 'Adicionar horário' }));
   const second = screen.getByRole('group', { name: 'Horário 2' });
-  fireEvent.change(within(second).getByRole('combobox'), {
-    target: { value: '3' },
-  });
+  await selectOption(within(second).getByRole('combobox'), '3');
   fireEvent.change(within(second).getByLabelText('Início'), {
     target: { value: '19:00' },
   });

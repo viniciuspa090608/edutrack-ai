@@ -1,3 +1,4 @@
+import { useAccountSections, accountSections } from './useAccountSections.js';
 import { AISettingsSection } from './AISettingsSection.js';
 import { ClassroomSection } from '../classroom/ClassroomSection.js';
 import {
@@ -23,16 +24,16 @@ import { Badge } from '@study-platform/ui/components/ui/badge';
 import { Skeleton } from '@study-platform/ui/components/ui/skeleton';
 import {
   Camera,
+  Globe,
+  LogOut,
+  SlidersHorizontal,
+  UserRound,
   Check,
   ChevronRight,
-  Globe,
   KeyRound,
-  LogOut,
   Moon,
   ShieldCheck,
-  SlidersHorizontal,
   Sun,
-  UserRound,
 } from 'lucide-react';
 import { setTheme, useTheme } from '../../app/theme.js';
 import '../../styles/account.css';
@@ -64,24 +65,9 @@ export function ProfilePage({
   accountActions?: ReactNode;
 }) {
   const theme = useTheme();
-  const [activeSection, setActiveSection] = useState(
-    window.location.hash || '#account-profile',
-  );
-  useEffect(() => {
-    const updateSection = () =>
-      setActiveSection(window.location.hash || '#account-profile');
-    window.addEventListener('hashchange', updateSection);
-    return () => window.removeEventListener('hashchange', updateSection);
-  }, []);
   const [user, setUser] = useState<UserProfile | null>(null);
   const [prefs, setPrefs] = useState<ModulePreferences | null>(null);
-  const preferencesReady = !!user && !!prefs;
-  useEffect(() => {
-    if (!preferencesReady || activeSection !== '#account-preferences') return;
-    const section = document.getElementById('account-preferences');
-    section?.scrollIntoView?.();
-    section?.focus({ preventScroll: true });
-  }, [preferencesReady, activeSection]);
+  const activeSection = useAccountSections(!!user && !!prefs);
   const [name, setName] = useState('');
   const [image, setImage] = useState<Blob | null>(null);
   const [imageUrl, setImageUrl] = useState('');
@@ -251,80 +237,20 @@ export function ProfilePage({
             </a>
           </Card>
           <nav className="account-nav" aria-label="Configurações da conta">
-            <a
-              href="#account-integrations"
-              aria-current={
-                activeSection === '#account-integrations'
-                  ? 'location'
-                  : undefined
-              }
-            >
-              <Globe aria-hidden="true" />
-              Integrações
-              <ChevronRight aria-hidden="true" />
-            </a>
-            <a
-              href="#account-profile"
-              aria-current={
-                activeSection === '#account-profile' ? 'location' : undefined
-              }
-            >
-              <UserRound aria-hidden="true" />
-              Perfil
-              <ChevronRight aria-hidden="true" />
-            </a>
-            <a
-              href="#account-preferences"
-              aria-current={
-                activeSection === '#account-preferences'
-                  ? 'location'
-                  : undefined
-              }
-            >
-              <SlidersHorizontal aria-hidden="true" />
-              Preferências
-              <ChevronRight aria-hidden="true" />
-            </a>
-            <a
-              href="#account-appearance"
-              aria-current={
-                activeSection === '#account-appearance' ? 'location' : undefined
-              }
-            >
-              <Sun aria-hidden="true" />
-              Aparência
-              <ChevronRight aria-hidden="true" />
-            </a>
-            <a
-              href="#account-security"
-              aria-current={
-                activeSection === '#account-security' ? 'location' : undefined
-              }
-            >
-              <ShieldCheck aria-hidden="true" />
-              Segurança
-              <ChevronRight aria-hidden="true" />
-            </a>
-            <a
-              href="#account-ai"
-              aria-current={
-                activeSection === '#account-ai' ? 'location' : undefined
-              }
-            >
-              <SlidersHorizontal aria-hidden="true" />
-              Inteligência artificial
-              <ChevronRight aria-hidden="true" />
-            </a>
-            <a
-              href="#account-access"
-              aria-current={
-                activeSection === '#account-access' ? 'location' : undefined
-              }
-            >
-              <LogOut aria-hidden="true" />
-              Conta
-              <ChevronRight aria-hidden="true" />
-            </a>
+            {accountSections.map(({ id, label, icon: Icon }) => (
+              <a
+                key={id}
+                href={`#${id}`}
+                aria-current={activeSection === id ? 'location' : undefined}
+                onClick={() => {
+                  document.getElementById(id)?.focus({ preventScroll: true });
+                }}
+              >
+                <Icon aria-hidden="true" />
+                {label}
+                <ChevronRight aria-hidden="true" />
+              </a>
+            ))}
           </nav>
           <p className="account-sidebar-help">
             As alterações são salvas em cada seção. Suas preferências não
@@ -354,6 +280,7 @@ export function ProfilePage({
               id="account-profile"
               aria-labelledby="profile-title"
               className="account-card account-profile"
+              tabIndex={-1}
             >
               <CardHeader>
                 <span className="account-icon">
@@ -568,16 +495,18 @@ export function ProfilePage({
                   </div>
                 ))}
               </CardContent>
+              <div className="account-timezone">
+                <StudyTimeZoneSection />
+              </div>
             </section>
           </Card>
-          <div className="account-timezone">
-            <StudyTimeZoneSection />
-          </div>
+
           <Card asChild>
             <section
               id="account-appearance"
               className="account-card account-appearance"
               aria-labelledby="appearance-title"
+              tabIndex={-1}
             >
               <CardHeader>
                 <span className="account-icon">
@@ -624,6 +553,7 @@ export function ProfilePage({
               id="account-security"
               aria-labelledby="security-title"
               className="account-card account-security"
+              tabIndex={-1}
             >
               <CardHeader>
                 <span className="account-icon">
@@ -833,6 +763,7 @@ export function ProfilePage({
               id="account-access"
               className="account-card account-access"
               aria-labelledby="account-access-title"
+              tabIndex={-1}
             >
               <CardHeader>
                 <span className="account-icon">

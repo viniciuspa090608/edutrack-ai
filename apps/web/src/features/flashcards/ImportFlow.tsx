@@ -1,4 +1,11 @@
 import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from '@study-platform/ui/components/ui/select';
+import {
   CardHeader,
   Card,
   CardContent,
@@ -12,10 +19,6 @@ import { FieldSet } from '@study-platform/ui/components/ui/field';
 
 import { Button } from '@study-platform/ui/components/ui/button';
 import { Label } from '@study-platform/ui/components/ui/label';
-import {
-  NativeSelect,
-  NativeSelectOption,
-} from '@study-platform/ui/components/ui/native-select';
 import { Input } from '@study-platform/ui/components/ui/input';
 import {
   Table,
@@ -219,20 +222,24 @@ export function ImportFlow({
             >
               <FieldSet disabled={busy}>
                 <Label htmlFor="import-format">Formato</Label>
-                <NativeSelect
-                  id="import-format"
-                  value={format}
-                  onChange={(event) =>
-                    setFormat(event.target.value as ImportFormat)
+                <Select
+                  value={format || '__edutrack_empty__'}
+                  onValueChange={(selected) =>
+                    setFormat(
+                      (selected === '__edutrack_empty__'
+                        ? ''
+                        : selected) as ImportFormat,
+                    )
                   }
                 >
-                  <NativeSelectOption value="csv">
-                    CSV (vírgula)
-                  </NativeSelectOption>
-                  <NativeSelectOption value="tsv">
-                    TSV (tabulação)
-                  </NativeSelectOption>
-                </NativeSelect>
+                  <SelectTrigger id="import-format" className="w-full min-w-0">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent position="popper">
+                    <SelectItem value="csv">CSV (vírgula)</SelectItem>
+                    <SelectItem value="tsv">TSV (tabulação)</SelectItem>
+                  </SelectContent>
+                </Select>
                 <Label htmlFor="import-file">Arquivo UTF-8</Label>
                 <Input
                   id="import-file"
@@ -317,21 +324,34 @@ export function ImportFlow({
                             ? 'Coluna da frente'
                             : 'Coluna do verso'}
                         </Label>
-                        <NativeSelect
-                          id={`import-${side}`}
-                          value={side === 'front' ? frontColumn : backColumn}
-                          onChange={(event) =>
+                        <Select
+                          value={String(
+                            side === 'front' ? frontColumn : backColumn,
+                          )}
+                          onValueChange={(selected) =>
                             (side === 'front' ? setFront : setBack)(
-                              Number(event.target.value),
+                              Number(
+                                selected === '__edutrack_empty__'
+                                  ? ''
+                                  : selected,
+                              ),
                             )
                           }
                         >
-                          {attempt.columns.map((column, index) => (
-                            <NativeSelectOption key={index} value={index}>
-                              {index + 1}: {column || 'Sem nome'}
-                            </NativeSelectOption>
-                          ))}
-                        </NativeSelect>
+                          <SelectTrigger
+                            id={`import-${side}`}
+                            className="w-full min-w-0"
+                          >
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent position="popper">
+                            {attempt.columns.map((column, index) => (
+                              <SelectItem key={index} value={String(index)}>
+                                {index + 1}: {column || 'Sem nome'}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                     ))}
                     <Button type="submit">Pré-visualizar</Button>

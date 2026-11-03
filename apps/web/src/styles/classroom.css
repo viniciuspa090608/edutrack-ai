@@ -53,3 +53,14 @@
 .classroom-section [role='alert'] {
   color: var(--destructive, #b42318);
 }
+.classroom-logo {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+.classroom-section [data-slot='card-content'] {
+  min-width: 0;
+  display: grid;
+  gap: 16px;
+}

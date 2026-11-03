@@ -1,3 +1,10 @@
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from '@study-platform/ui/components/ui/select';
 import { FormModal } from '@study-platform/ui/components/ui/form-modal';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Skeleton } from '@study-platform/ui/components/ui/skeleton';
@@ -27,10 +34,6 @@ import {
 import { Button } from '@study-platform/ui/components/ui/button';
 import { Label } from '@study-platform/ui/components/ui/label';
 import { Input } from '@study-platform/ui/components/ui/input';
-import {
-  NativeSelect,
-  NativeSelectOption,
-} from '@study-platform/ui/components/ui/native-select';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   CalendarDays,
@@ -374,20 +377,29 @@ export function RoutinesPage() {
                       <div className="routine-slot-fields">
                         <Label>
                           Dia da semana
-                          <NativeSelect
-                            value={slot.weekday}
-                            onChange={(event) =>
+                          <Select
+                            value={String(slot.weekday)}
+                            onValueChange={(selected) =>
                               change(index, {
-                                weekday: Number(event.target.value),
+                                weekday: Number(
+                                  selected === '__edutrack_empty__'
+                                    ? ''
+                                    : selected,
+                                ),
                               })
                             }
                           >
-                            {days.map((day, i) => (
-                              <NativeSelectOption key={day} value={i + 1}>
-                                {day}
-                              </NativeSelectOption>
-                            ))}
-                          </NativeSelect>
+                            <SelectTrigger className="w-full min-w-0">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent position="popper">
+                              {days.map((day, i) => (
+                                <SelectItem key={day} value={String(i + 1)}>
+                                  {day}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </Label>
                         <Label>
                           Início

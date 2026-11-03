@@ -1,3 +1,4 @@
+import { selectOption } from '../../test/select-option.js';
 import {
   cleanup,
   render,
@@ -158,7 +159,7 @@ it('validates source and destination, supports paginated own decks and preserves
   await screen.findByLabelText('Baralho de destino');
   await user.click(screen.getByRole('button', { name: 'Gerar prévia' }));
   await screen.findByText('Escolha um baralho existente.');
-  await user.selectOptions(screen.getByLabelText('Baralho de destino'), id);
+  await selectOption(screen.getByLabelText('Baralho de destino'), id);
   await user.click(screen.getByRole('button', { name: 'Gerar prévia' }));
   expect(document.activeElement).toBe(
     screen.getByLabelText('Conteúdo ou assunto'),
@@ -168,8 +169,10 @@ it('validates source and destination, supports paginated own decks and preserves
   ).toBe('true');
   expect(calls.filter((call) => call.method === 'POST')).toHaveLength(0);
   await user.click(screen.getByRole('button', { name: 'Próxima' }));
-  await screen.findByRole('option', { name: 'Outro baralho' });
-  await user.selectOptions(screen.getByLabelText('Baralho de destino'), other);
+  await waitFor(() =>
+    expect(screen.queryByText('Carregando baralhos…')).toBeNull(),
+  );
+  await selectOption(screen.getByLabelText('Baralho de destino'), other);
   await user.type(
     screen.getByLabelText('Conteúdo ou assunto'),
     'Conteúdo privado',

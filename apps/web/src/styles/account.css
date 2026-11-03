@@ -371,24 +371,6 @@
 .account-area .account-success {
   color: var(--success);
 }
-.account-area .account-profile {
-  order: 0;
-}
-.account-area .account-preferences {
-  order: 1;
-}
-.account-area .account-timezone {
-  order: 2;
-}
-.account-area .account-appearance {
-  order: 3;
-}
-.account-area .account-security {
-  order: 4;
-}
-.account-area .account-access {
-  order: 5;
-}
 .account-loading,
 .account-session-state {
   width: min(100% - 40px, 760px);
@@ -500,4 +482,62 @@
 }
 #account-ai [role='group'] p {
   flex-basis: 100%;
+}
+.account-area .account-preferences > [data-slot='card-content'] {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.account-area .account-preference {
+  margin-top: 0;
+}
+.account-area .account-preference:last-child {
+  grid-column: 1 / -1;
+}
+.account-timezone {
+  padding-inline: 24px;
+}
+.account-ai-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 20px;
+}
+.account-ai-save {
+  flex: 1 1 16rem;
+}
+.account-ai-reload {
+  width: fit-content;
+  flex: 0 1 auto;
+}
+.account-area [data-slot='radio-group'] {
+  margin-block: 16px;
+}
+.account-area [data-slot='radio-group'] label {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+}
+.account-area [data-slot='radio-group-item'] {
+  flex: 0 0 1rem;
+  width: 1rem;
+  height: 1rem;
+  padding: 0;
+}
+.account-area [data-slot='radio-group-item'] svg {
+  width: 0.5rem;
+  height: 0.5rem;
+}
+@media (max-width: 600px) {
+  .account-area .account-preferences > [data-slot='card-content'] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+#account-ai [data-slot='radio-group-item'] {
+  min-height: 1rem;
+  height: 1rem;
+}
+.account-area .account-preferences > [data-slot='card-content'] > p {
+  grid-column: 1 / -1;
 }

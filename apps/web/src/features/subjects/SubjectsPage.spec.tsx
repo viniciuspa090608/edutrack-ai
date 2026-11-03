@@ -1,3 +1,4 @@
+import { selectOption } from '../../test/select-option.js';
 import {
   act,
   cleanup,
@@ -295,7 +296,7 @@ it('persists manual order and status by keyboard with AI disabled, edits and con
   within(plan).getByRole('button', { name: 'Subir Segundo' }).focus();
   await interaction.keyboard('{Enter}');
   await waitFor(() => expect(items[0]!.planItems[0]!.title).toBe('Segundo'));
-  await interaction.selectOptions(
+  await selectOption(
     within(plan).getByLabelText('Status de Segundo'),
     'COMPLETED',
   );
@@ -308,10 +309,9 @@ it('persists manual order and status by keyboard with AI disabled, edits and con
       .getAllByRole('heading', { level: 4 })
       .map((heading) => heading.textContent),
   ).toEqual(['Segundo', 'Primeiro']);
-  expect(
-    (within(reloaded).getByLabelText('Status de Segundo') as HTMLSelectElement)
-      .value,
-  ).toBe('COMPLETED');
+  expect(within(reloaded).getByLabelText('Status de Segundo').textContent).toBe(
+    'Concluído',
+  );
   await interaction.click(
     screen.getByRole('button', { name: 'Editar matéria' }),
   );
@@ -383,13 +383,10 @@ it('reports list/selector failure with retry and selects an optional own subject
   render(<SubjectSelect value="" onChange={changed} />);
   await waitFor(() =>
     expect(
-      (screen.getByLabelText('Matéria (opcional)') as HTMLSelectElement)
+      (screen.getByLabelText('Matéria (opcional)') as HTMLButtonElement)
         .disabled,
     ).toBe(false),
   );
-  await userEvent.selectOptions(
-    screen.getByLabelText('Matéria (opcional)'),
-    id,
-  );
+  await selectOption(screen.getByLabelText('Matéria (opcional)'), id);
   expect(changed).toHaveBeenCalledWith(id);
 });

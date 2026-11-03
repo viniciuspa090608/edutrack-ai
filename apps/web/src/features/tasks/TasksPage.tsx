@@ -1,3 +1,10 @@
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from '@study-platform/ui/components/ui/select';
 import { FormModal } from '@study-platform/ui/components/ui/form-modal';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { ClassroomProvenance } from '../classroom/ClassroomProvenance.js';
@@ -26,10 +33,6 @@ import {
 import { Label } from '@study-platform/ui/components/ui/label';
 import { Input } from '@study-platform/ui/components/ui/input';
 import { Textarea } from '@study-platform/ui/components/ui/textarea';
-import {
-  NativeSelect,
-  NativeSelectOption,
-} from '@study-platform/ui/components/ui/native-select';
 import { Button } from '@study-platform/ui/components/ui/button';
 
 import {
@@ -267,19 +270,30 @@ function TaskForm({
                 </div>
                 <div className="task-field">
                   <Label htmlFor="task-priority">Importância</Label>
-                  <NativeSelect
-                    id="task-priority"
-                    value={priority}
-                    onChange={(event) =>
-                      setPriority(event.target.value as StudyTask['priority'])
+                  <Select
+                    value={priority || '__edutrack_empty__'}
+                    onValueChange={(selected) =>
+                      setPriority(
+                        (selected === '__edutrack_empty__'
+                          ? ''
+                          : selected) as StudyTask['priority'],
+                      )
                     }
                   >
-                    {Object.entries(priorities).map(([value, label]) => (
-                      <NativeSelectOption key={value} value={value}>
-                        {label}
-                      </NativeSelectOption>
-                    ))}
-                  </NativeSelect>
+                    <SelectTrigger
+                      id="task-priority"
+                      className="w-full min-w-0"
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent position="popper">
+                      {Object.entries(priorities).map(([value, label]) => (
+                        <SelectItem key={value} value={value}>
+                          {label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="task-field">
                   <Label htmlFor="task-dueDate">Prazo (opcional)</Label>
@@ -308,19 +322,30 @@ function TaskForm({
                   ) : (
                     <>
                       <Label htmlFor="task-status">Status</Label>
-                      <NativeSelect
-                        id="task-status"
-                        value={status}
-                        onChange={(event) =>
-                          setStatus(event.target.value as StudyTask['status'])
+                      <Select
+                        value={status || '__edutrack_empty__'}
+                        onValueChange={(selected) =>
+                          setStatus(
+                            (selected === '__edutrack_empty__'
+                              ? ''
+                              : selected) as StudyTask['status'],
+                          )
                         }
                       >
-                        {Object.entries(statuses).map(([value, label]) => (
-                          <NativeSelectOption key={value} value={value}>
-                            {label}
-                          </NativeSelectOption>
-                        ))}
-                      </NativeSelect>
+                        <SelectTrigger
+                          id="task-status"
+                          className="w-full min-w-0"
+                        >
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent position="popper">
+                          {Object.entries(statuses).map(([value, label]) => (
+                            <SelectItem key={value} value={value}>
+                              {label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </>
                   )}
                 </div>
@@ -590,41 +615,59 @@ export function TasksPage({
             <div className="task-filter-grid">
               <div className="task-field">
                 <Label htmlFor="filter-status">Filtrar por status</Label>
-                <NativeSelect
-                  id="filter-status"
-                  value={draft.status}
-                  onChange={(e) =>
-                    setDraft({ ...draft, status: e.target.value })
+                <Select
+                  value={draft.status || '__edutrack_empty__'}
+                  onValueChange={(selected) =>
+                    setDraft({
+                      ...draft,
+                      status: selected === '__edutrack_empty__' ? '' : selected,
+                    })
                   }
                 >
-                  <NativeSelectOption value="">
-                    Todos os status
-                  </NativeSelectOption>
-                  {Object.entries(statuses).map(([v, label]) => (
-                    <NativeSelectOption key={v} value={v}>
-                      {label}
-                    </NativeSelectOption>
-                  ))}
-                </NativeSelect>
+                  <SelectTrigger id="filter-status" className="w-full min-w-0">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent position="popper">
+                    <SelectItem value="__edutrack_empty__">
+                      Todos os status
+                    </SelectItem>
+                    {Object.entries(statuses).map(([v, label]) => (
+                      <SelectItem key={v} value={v}>
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="task-field">
                 <Label htmlFor="filter-priority">Filtrar por importância</Label>
-                <NativeSelect
-                  id="filter-priority"
-                  value={draft.priority}
-                  onChange={(e) =>
-                    setDraft({ ...draft, priority: e.target.value })
+                <Select
+                  value={draft.priority || '__edutrack_empty__'}
+                  onValueChange={(selected) =>
+                    setDraft({
+                      ...draft,
+                      priority:
+                        selected === '__edutrack_empty__' ? '' : selected,
+                    })
                   }
                 >
-                  <NativeSelectOption value="">
-                    Todas as importâncias
-                  </NativeSelectOption>
-                  {Object.entries(priorities).map(([v, label]) => (
-                    <NativeSelectOption key={v} value={v}>
-                      {label}
-                    </NativeSelectOption>
-                  ))}
-                </NativeSelect>
+                  <SelectTrigger
+                    id="filter-priority"
+                    className="w-full min-w-0"
+                  >
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent position="popper">
+                    <SelectItem value="__edutrack_empty__">
+                      Todas as importâncias
+                    </SelectItem>
+                    {Object.entries(priorities).map(([v, label]) => (
+                      <SelectItem key={v} value={v}>
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="task-field">
                 <Label htmlFor="filter-from">Prazo de</Label>

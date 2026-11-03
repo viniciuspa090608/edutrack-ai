@@ -247,3 +247,21 @@
     transition: none !important;
   }
 }
+.dashboard-indicators > div {
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+}
+.dashboard-indicators > div > span {
+  grid-column: 1 / -1;
+  grid-row: 1;
+}
+.dashboard-indicators > div > svg {
+  grid-column: 1;
+  grid-row: 2;
+  flex-shrink: 0;
+}
+.dashboard-indicators > div > strong {
+  grid-column: 2;
+  grid-row: 2;
+  overflow-wrap: anywhere;
+}

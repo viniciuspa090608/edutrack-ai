@@ -180,12 +180,18 @@ export function AccessPage() {
           Continuar com Google
         </a>
       </Button>
-      <a className="auth-back" href="/recuperar-senha">
-        Esqueci minha senha
-      </a>
-      <a className="auth-back" href="/" onClick={navigatePublicLink}>
-        <ArrowLeft size={18} aria-hidden="true" /> Voltar à landing
-      </a>
+      <div className="auth-links">
+        <a
+          className="auth-back"
+          href="/recuperar-senha"
+          onClick={navigatePublicLink}
+        >
+          Esqueci minha senha
+        </a>
+        <a className="auth-back" href="/" onClick={navigatePublicLink}>
+          <ArrowLeft size={18} aria-hidden="true" /> Voltar à landing
+        </a>
+      </div>
     </AuthLayout>
   );
 }

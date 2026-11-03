@@ -1,3 +1,10 @@
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from '@study-platform/ui/components/ui/select';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   CardHeader,
@@ -19,10 +26,6 @@ import {
 import { Button } from '@study-platform/ui/components/ui/button';
 import { Label } from '@study-platform/ui/components/ui/label';
 import { Textarea } from '@study-platform/ui/components/ui/textarea';
-import {
-  NativeSelect,
-  NativeSelectOption,
-} from '@study-platform/ui/components/ui/native-select';
 import { useEffect, useRef, useState } from 'react';
 import {
   flashcardGenerationSchema,
@@ -359,27 +362,36 @@ export function FlashcardAIFlow({
                     )}
                     <Label>
                       Baralho de destino
-                      <NativeSelect
-                        value={deckId}
-                        onChange={(e) => setDeckId(e.target.value)}
+                      <Select
+                        value={deckId || '__edutrack_empty__'}
+                        onValueChange={(selected) =>
+                          setDeckId(
+                            selected === '__edutrack_empty__' ? '' : selected,
+                          )
+                        }
                       >
-                        <NativeSelectOption value="">
-                          Escolha um baralho
-                        </NativeSelectOption>
-                        {initialDeck &&
-                          !options.some(
-                            (deck) => deck.id === initialDeck.id,
-                          ) && (
-                            <NativeSelectOption value={initialDeck.id}>
-                              {initialDeck.name}
-                            </NativeSelectOption>
-                          )}
-                        {options.map((deck) => (
-                          <NativeSelectOption key={deck.id} value={deck.id}>
-                            {deck.name}
-                          </NativeSelectOption>
-                        ))}
-                      </NativeSelect>
+                        <SelectTrigger className="w-full min-w-0">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent position="popper">
+                          <SelectItem value="__edutrack_empty__">
+                            Escolha um baralho
+                          </SelectItem>
+                          {initialDeck &&
+                            !options.some(
+                              (deck) => deck.id === initialDeck.id,
+                            ) && (
+                              <SelectItem value={initialDeck.id}>
+                                {initialDeck.name}
+                              </SelectItem>
+                            )}
+                          {options.map((deck) => (
+                            <SelectItem key={deck.id} value={deck.id}>
+                              {deck.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </Label>
                     <Pagination aria-label="Páginas de baralhos para IA">
                       <PaginationContent className="flex-wrap">

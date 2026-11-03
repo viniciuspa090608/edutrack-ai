@@ -1,3 +1,10 @@
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from '@study-platform/ui/components/ui/select';
 import { FormModal } from '@study-platform/ui/components/ui/form-modal';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import {
@@ -19,10 +26,6 @@ import {
 } from '@study-platform/ui/components/ui/pagination';
 
 import { Label } from '@study-platform/ui/components/ui/label';
-import {
-  NativeSelect,
-  NativeSelectOption,
-} from '@study-platform/ui/components/ui/native-select';
 import { Textarea } from '@study-platform/ui/components/ui/textarea';
 import { Input } from '@study-platform/ui/components/ui/input';
 import { Button } from '@study-platform/ui/components/ui/button';
@@ -98,7 +101,7 @@ function ParametersForm({
   const [hours, setHours] = useState(String(subject.weeklyHours));
   const [topics, setTopics] = useState(subject.knownTopics.join('\n'));
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const first = useRef<HTMLSelectElement>(null);
+  const first = useRef<HTMLButtonElement>(null);
   const form = useRef<HTMLFormElement>(null);
   useEffect(() => {
     first.current?.focus();
@@ -161,21 +164,30 @@ function ParametersForm({
       <FieldSet disabled={busy}>
         <Label>
           Nível atual
-          <NativeSelect
+          <Select
             name="currentLevel"
-            ref={first}
-            value={level}
-            {...accessibility('currentLevel')}
-            onChange={(e) =>
-              setLevel(e.target.value as RoadmapParameters['currentLevel'])
+            value={level || '__edutrack_empty__'}
+            onValueChange={(selected) =>
+              setLevel(
+                (selected === '__edutrack_empty__'
+                  ? ''
+                  : selected) as RoadmapParameters['currentLevel'],
+              )
             }
           >
-            <NativeSelectOption value="BEGINNER">Iniciante</NativeSelectOption>
-            <NativeSelectOption value="INTERMEDIATE">
-              Intermediário
-            </NativeSelectOption>
-            <NativeSelectOption value="ADVANCED">Avançado</NativeSelectOption>
-          </NativeSelect>
+            <SelectTrigger
+              ref={first}
+              {...accessibility('currentLevel')}
+              className="w-full min-w-0"
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent position="popper">
+              <SelectItem value="BEGINNER">Iniciante</SelectItem>
+              <SelectItem value="INTERMEDIATE">Intermediário</SelectItem>
+              <SelectItem value="ADVANCED">Avançado</SelectItem>
+            </SelectContent>
+          </Select>
         </Label>
         {fieldError('currentLevel')}
         <Label>

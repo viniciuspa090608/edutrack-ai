@@ -1,3 +1,4 @@
+import { selectOption } from '../../test/select-option.js';
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
@@ -82,10 +83,12 @@ it('announces loading, absent personal settings and unavailable platform, with r
 it('saves an explicit personal destination with masked key, restricts dependent models, clears transient secrets and keeps secrets out of browser storage', async () => {
   const user = await personal();
   expect(screen.getByText(/Custos e cotas/)).toBeTruthy();
-  await user.selectOptions(screen.getByLabelText('Provedor de IA'), 'openai');
-  expect(
-    (screen.getByLabelText('Modelo de IA') as HTMLSelectElement).value,
-  ).toBe(aiModels.openai[0]);
+  await selectOption(screen.getByLabelText('Provedor de IA'), 'openai');
+  await waitFor(() =>
+    expect(screen.getByLabelText('Modelo de IA').textContent).toBe(
+      aiModels.openai[0],
+    ),
+  );
   const key = screen.getByLabelText(/Chave da API/) as HTMLInputElement;
   expect(key.type).toBe('password');
   await user.type(key, canary);
@@ -138,10 +141,7 @@ it('requires explicit confirmation to replace/remove and supports keyboard model
   const user = userEvent.setup();
   render(<AISettingsSection />);
   await screen.findByText(/Chave pessoal configurada/);
-  await user.selectOptions(
-    screen.getByLabelText('Modelo de IA'),
-    aiModels.openai[1],
-  );
+  await selectOption(screen.getByLabelText('Modelo de IA'), aiModels.openai[1]);
   await user.click(
     screen.getByRole('button', { name: 'Salvar configuração de IA' }),
   );

@@ -1,3 +1,4 @@
+import { selectOption } from '../../test/select-option.js';
 import {
   cleanup,
   render,
@@ -201,8 +202,10 @@ it.each(['csv', 'tsv'] as const)(
   async (format) => {
     open();
     const interaction = await upload(format);
-    expect(screen.getAllByRole('option', { name: '1: x' })).toHaveLength(2);
-    expect(screen.getAllByRole('option', { name: '2: x' })).toHaveLength(2);
+    await interaction.click(screen.getByLabelText('Coluna da frente'));
+    expect(screen.getByRole('option', { name: '1: x' })).toBeTruthy();
+    expect(screen.getByRole('option', { name: '2: x' })).toBeTruthy();
+    await interaction.keyboard('{Escape}');
     expect(
       screen.queryByRole('button', { name: 'Confirmar importação' }),
     ).toBeNull();
@@ -218,14 +221,8 @@ it.each(['csv', 'tsv'] as const)(
     await interaction.click(
       screen.getByRole('button', { name: 'Voltar ao mapeamento' }),
     );
-    await interaction.selectOptions(
-      screen.getByLabelText('Coluna da frente'),
-      '1',
-    );
-    await interaction.selectOptions(
-      screen.getByLabelText('Coluna do verso'),
-      '0',
-    );
+    await selectOption(screen.getByLabelText('Coluna da frente'), '1');
+    await selectOption(screen.getByLabelText('Coluna do verso'), '0');
     await interaction.click(
       screen.getByRole('button', { name: 'Pré-visualizar' }),
     );
@@ -263,10 +260,7 @@ it.each(['csv', 'tsv'] as const)(
 it('rejects duplicate column choices before requesting preview and cancels without confirmation', async () => {
   open();
   const interaction = await upload();
-  await interaction.selectOptions(
-    screen.getByLabelText('Coluna do verso'),
-    '0',
-  );
+  await selectOption(screen.getByLabelText('Coluna do verso'), '0');
   await interaction.click(
     screen.getByRole('button', { name: 'Pré-visualizar' }),
   );
@@ -316,9 +310,7 @@ it('preserves file/mapping on errors and shows size/format errors with retry', a
     screen.getByRole('button', { name: 'Pré-visualizar' }),
   );
   await screen.findByRole('alert');
-  expect(
-    (screen.getByLabelText('Coluna do verso') as HTMLSelectElement).value,
-  ).toBe('1');
+  expect(screen.getByLabelText('Coluna do verso').textContent).toBe('2: x');
 });
 it('recovers a lost confirmation response by reading the same attempt without resubmitting', async () => {
   open();

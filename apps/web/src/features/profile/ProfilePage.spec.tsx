@@ -160,6 +160,62 @@ async function open() {
   await screen.findByRole('heading', { name: 'Conta' });
 }
 describe('profile page', () => {
+  it('orders navigation like the content and follows scrolling without moving the edit focus', async () => {
+    await open();
+    await screen.findByRole('heading', { name: 'Inteligência artificial' });
+    const ids = [
+      'profile',
+      'preferences',
+      'appearance',
+      'security',
+      'ai',
+      'integrations',
+      'access',
+    ].map((id) => `account-${id}`);
+    const nav = screen.getByRole('navigation', {
+      name: 'Configurações da conta',
+    });
+    expect(
+      within(nav)
+        .getAllByRole('link')
+        .map((link) => link.getAttribute('href')),
+    ).toEqual(ids.map((id) => `#${id}`));
+    const input = screen.getByLabelText('Nome exibido');
+    input.focus();
+    let offset = 0;
+    const original = Element.prototype.getBoundingClientRect;
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(
+      function (this: Element) {
+        const index = ids.indexOf(this.id);
+        if (index < 0) return original.call(this);
+        return {
+          top: index * 500 - offset,
+          bottom: (index + 1) * 500 - offset,
+          height: 500,
+          width: 500,
+          left: 0,
+          right: 500,
+          x: 0,
+          y: 0,
+          toJSON: () => ({}),
+        };
+      },
+    );
+    vi.spyOn(document.documentElement, 'scrollHeight', 'get').mockReturnValue(
+      10000,
+    );
+    for (const index of [0, 4, 6, 2]) {
+      offset = index * 500;
+      act(() => window.dispatchEvent(new Event('scroll')));
+      await waitFor(() =>
+        expect(
+          within(nav).getAllByRole('link')[index]!.getAttribute('aria-current'),
+        ).toBe('location'),
+      );
+      expect(nav.querySelectorAll('[aria-current]')).toHaveLength(1);
+      expect(document.activeElement).toBe(input);
+    }
+  });
   it('focuses asynchronously loaded preferences and describes optional AI accurately', async () => {
     window.history.replaceState({}, '', '/conta#account-preferences');
     await open();

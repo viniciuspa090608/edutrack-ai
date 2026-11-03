@@ -1,3 +1,4 @@
+import { selectOption } from '../../test/select-option.js';
 import {
   cleanup,
   render,
@@ -183,11 +184,11 @@ it('loads an ordered queue without answers, supports page/filter, error retry an
   expect(screen.queryByText('Resposta secreta')).toBeNull();
   await user.click(screen.getByRole('button', { name: 'Próxima' }));
   await screen.findByText('Pergunta seguinte');
-  await user.selectOptions(screen.getByLabelText('Filtrar revisões'), id);
+  await selectOption(screen.getByLabelText('Filtrar revisões'), id);
   await screen.findByText('Pergunta inicial');
   expect(reads.at(-1)).toContain(`page=1&pageSize=20&deckId=${id}`);
   empty = true;
-  await user.selectOptions(screen.getByLabelText('Filtrar revisões'), '');
+  await selectOption(screen.getByLabelText('Filtrar revisões'), '');
   await screen.findByText('Nenhuma revisão pendente agora.');
 });
 it('requires revealing before rating and exits without a write, preserving keyboard focus', async () => {

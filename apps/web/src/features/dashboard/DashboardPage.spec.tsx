@@ -86,6 +86,17 @@ const session: PomodoroSession = {
   endedAt: null,
   serverTime: empty.asOf,
 };
+it('shows only the consultation date and minute with the original time instant', async () => {
+  vi.mocked(dashboard).mockResolvedValue(empty);
+  const { container } = render(<DashboardPage displayName="Ana" />);
+  await screen.findByText(/Crie sua primeira tarefa/);
+  const time = container.querySelector(
+    'time[datetime="2026-10-05T12:00:00.000Z"]',
+  );
+  expect(time?.textContent).toMatch(/^05\/10\/2026, \d{2}:\d{2}$/);
+  expect(container.textContent).not.toContain('Fuso de estudo:');
+  expect(container.textContent).not.toContain('Resumos consultados em');
+});
 it('keeps official weekly totals and coverage even when the chart has different observations', async () => {
   if (empty.week.state === 'error') throw new Error('Invalid fixture');
   vi.mocked(dashboard).mockResolvedValue({

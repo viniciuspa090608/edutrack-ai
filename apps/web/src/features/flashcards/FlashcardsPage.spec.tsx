@@ -1,3 +1,4 @@
+import { selectOption } from '../../test/select-option.js';
 import {
   cleanup,
   render,
@@ -415,9 +416,9 @@ it('associates and removes an optional own subject and shows it after page reloa
   );
   const select = await screen.findByRole('combobox');
   await waitFor(() =>
-    expect((select as HTMLSelectElement).disabled).toBe(false),
+    expect((select as HTMLButtonElement).disabled).toBe(false),
   );
-  await interaction.selectOptions(select, id2);
+  await selectOption(select, id2);
   await interaction.click(
     screen.getByRole('button', { name: 'Salvar baralho' }),
   );
@@ -431,9 +432,9 @@ it('associates and removes an optional own subject and shows it after page reloa
   );
   const nextSelect = await screen.findByRole('combobox');
   await waitFor(() =>
-    expect((nextSelect as HTMLSelectElement).disabled).toBe(false),
+    expect((nextSelect as HTMLButtonElement).disabled).toBe(false),
   );
-  await interaction.selectOptions(nextSelect, '');
+  await selectOption(nextSelect, '');
   await interaction.click(
     screen.getByRole('button', { name: 'Salvar baralho' }),
   );

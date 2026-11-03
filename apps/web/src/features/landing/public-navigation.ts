@@ -18,12 +18,14 @@ export function navigatePublicLink(event: MouseEvent<HTMLElement>): void {
   if (
     url.origin !== window.location.origin ||
     url.hash ||
-    !['/', '/acesso'].includes(url.pathname)
+    !['/', '/acesso', '/recuperar-senha'].includes(url.pathname)
   )
     return;
   event.preventDefault();
   const arrival =
-    window.location.pathname === '/' && url.pathname === '/acesso';
+    (window.location.pathname === '/' && url.pathname === '/acesso') ||
+    (window.location.pathname === '/acesso' &&
+      url.pathname === '/recuperar-senha');
   window.history.pushState(
     arrival ? { accessArrival: true } : {},
     '',

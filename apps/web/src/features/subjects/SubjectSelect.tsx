@@ -1,14 +1,16 @@
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from '@study-platform/ui/components/ui/select';
 import { Skeleton } from '@study-platform/ui/components/ui/skeleton';
 import {
   AlertDescription,
   Alert,
 } from '@study-platform/ui/components/ui/alert';
 import { Label } from '@study-platform/ui/components/ui/label';
-import {
-  NativeSelect,
-  NativeSelectOption,
-} from '@study-platform/ui/components/ui/native-select';
-
 import { Button } from '@study-platform/ui/components/ui/button';
 import { useEffect, useState } from 'react';
 import type { SubjectList } from '@study-platform/contracts';
@@ -48,23 +50,28 @@ export function SubjectSelect({
     <div className="subject-select">
       <Label>
         {label}
-        <NativeSelect
-          value={value}
+        <Select
+          value={value || '__edutrack_empty__'}
           disabled={disabled || !result}
-          onChange={(event) => onChange(event.target.value)}
+          onValueChange={(selected) =>
+            onChange(selected === '__edutrack_empty__' ? '' : selected)
+          }
         >
-          <NativeSelectOption value="">Sem matéria</NativeSelectOption>
-          {value && !result?.items.some((item) => item.id === value) && (
-            <NativeSelectOption value={value}>
-              Matéria selecionada
-            </NativeSelectOption>
-          )}
-          {result?.items.map((item) => (
-            <NativeSelectOption key={item.id} value={item.id}>
-              {item.name}
-            </NativeSelectOption>
-          ))}
-        </NativeSelect>
+          <SelectTrigger className="w-full min-w-0">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent position="popper">
+            <SelectItem value="__edutrack_empty__">Sem matéria</SelectItem>
+            {value && !result?.items.some((item) => item.id === value) && (
+              <SelectItem value={value}>Matéria selecionada</SelectItem>
+            )}
+            {result?.items.map((item) => (
+              <SelectItem key={item.id} value={item.id}>
+                {item.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </Label>
       {!result && !error && (
         <div>

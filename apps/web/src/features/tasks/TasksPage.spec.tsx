@@ -1,3 +1,4 @@
+import { selectOption } from '../../test/select-option.js';
 import {
   act,
   cleanup,
@@ -237,14 +238,8 @@ it('keeps combined filters when paging, resets to page one and clears empty resu
   render(<TasksPage />);
   await screen.findByRole('button', { name: /Ver detalhes/ });
   const interaction = userEvent.setup();
-  await interaction.selectOptions(
-    screen.getByLabelText('Filtrar por status'),
-    'PENDING',
-  );
-  await interaction.selectOptions(
-    screen.getByLabelText('Filtrar por importância'),
-    'HIGH',
-  );
+  await selectOption(screen.getByLabelText('Filtrar por status'), 'PENDING');
+  await selectOption(screen.getByLabelText('Filtrar por importância'), 'HIGH');
   fireEvent.change(screen.getByLabelText('Prazo de'), {
     target: { value: '2026-10-01' },
   });
@@ -268,10 +263,7 @@ it('keeps combined filters when paging, resets to page one and clears empty resu
     dueTo: '2026-10-30',
     page: '2',
   });
-  await interaction.selectOptions(
-    screen.getByLabelText('Filtrar por status'),
-    'COMPLETED',
-  );
+  await selectOption(screen.getByLabelText('Filtrar por status'), 'COMPLETED');
   await interaction.click(
     screen.getByRole('button', { name: 'Aplicar filtros' }),
   );
@@ -316,12 +308,8 @@ it('creates using keyboard/defaults, validates whitespace and retains input afte
   await interaction.keyboard('{Enter}');
   const title = screen.getByLabelText('Título');
   expect(document.activeElement).toBe(title);
-  expect(
-    (screen.getByLabelText('Importância') as HTMLSelectElement).value,
-  ).toBe('MEDIUM');
-  expect((screen.getByLabelText('Status') as HTMLSelectElement).value).toBe(
-    'PENDING',
-  );
+  expect(screen.getByLabelText('Importância').textContent).toBe('Média');
+  expect(screen.getByLabelText('Status').textContent).toBe('Pendente');
   await interaction.type(title, '   ');
   await interaction.keyboard('{Enter}');
   await screen.findByText('Informe um título de 1 a 160 caracteres.');
@@ -390,7 +378,7 @@ it('shows detail, clears optional fields and manually changes all three statuses
     fireEvent.change(screen.getByLabelText('Prazo (opcional)'), {
       target: { value: '' },
     });
-    await interaction.selectOptions(screen.getByLabelText('Status'), status);
+    await selectOption(screen.getByLabelText('Status'), status);
     await interaction.click(
       screen.getByRole('button', { name: 'Salvar tarefa' }),
     );
@@ -441,8 +429,13 @@ it('associates and clears an optional subject and omits its controls when disabl
   const view = render(<TasksPage subjectsEnabled />);
   await screen.findByText(/Nenhuma tarefa ainda/);
   await interaction.click(screen.getByRole('button', { name: 'Criar tarefa' }));
-  await screen.findByRole('option', { name: 'Matemática' });
-  await interaction.selectOptions(
+  await waitFor(() =>
+    expect(
+      (screen.getByLabelText('Matéria (opcional)') as HTMLButtonElement)
+        .disabled,
+    ).toBe(false),
+  );
+  await selectOption(
     screen.getByLabelText('Matéria (opcional)'),
     originalTask.id,
   );
@@ -457,11 +450,13 @@ it('associates and clears an optional subject and omits its controls when disabl
   await interaction.click(
     screen.getByRole('button', { name: 'Editar tarefa' }),
   );
-  await screen.findByRole('option', { name: 'Matemática' });
-  await interaction.selectOptions(
-    screen.getByLabelText('Matéria (opcional)'),
-    '',
+  await waitFor(() =>
+    expect(
+      (screen.getByLabelText('Matéria (opcional)') as HTMLButtonElement)
+        .disabled,
+    ).toBe(false),
   );
+  await selectOption(screen.getByLabelText('Matéria (opcional)'), '');
   await interaction.click(
     screen.getByRole('button', { name: 'Salvar tarefa' }),
   );

@@ -20,6 +20,13 @@ import {
 type Step = 'request' | 'code' | 'password' | 'done';
 
 export function PasswordRecoveryPage() {
+  const [arrival] = useState(
+    () => window.history.state?.accessArrival === true,
+  );
+  useEffect(() => {
+    if (window.history.state?.accessArrival)
+      window.history.replaceState({}, '');
+  }, []);
   const [step, setStep] = useState<Step>('request');
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
@@ -77,7 +84,7 @@ export function PasswordRecoveryPage() {
     }
   }
   return (
-    <AuthLayout recovery>
+    <AuthLayout recovery arrival={arrival}>
       <p className="auth-step-kicker">
         {step === 'done' ? 'Tudo pronto' : 'Recuperação de acesso'}
       </p>

@@ -241,12 +241,9 @@ export function DashboardPage({ displayName }: { displayName: string }) {
       {data && (
         <>
           <p>
-            Fuso de estudo: {data.timeZone ?? 'Indisponível'}. Resumos
-            consultados em{' '}
             <time dateTime={data.asOf}>
-              {new Date(data.asOf).toLocaleString('pt-BR')}
+              {`${new Date(data.asOf).toLocaleDateString('pt-BR')}, ${new Date(data.asOf).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', hour12: false })}`}
             </time>
-            .
           </p>
           {(['tasks', 'subjects', 'flashcards'] as const).some(
             (key) => !data.preferences[key],

@@ -1,3 +1,4 @@
+import { selectOption } from '../../test/select-option.js';
 import {
   act,
   cleanup,
@@ -230,8 +231,10 @@ it('offers own task selection and terminal history totals', async () => {
     completedBlocks: 0,
   });
   render(<PomodoroPage tasksEnabled />);
-  await screen.findByRole('option', { name: 'Álgebra' });
-  fireEvent.change(screen.getByRole('combobox'), { target: { value: row.id } });
+  await waitFor(() =>
+    expect(screen.getByRole('combobox').hasAttribute('disabled')).toBe(false),
+  );
+  await selectOption(screen.getByRole('combobox'), row.id);
   fireEvent.click(screen.getByRole('button', { name: 'Iniciar sessão' }));
   await waitFor(() =>
     expect(api.startPomodoro).toHaveBeenCalledWith(row.id, undefined),
@@ -269,21 +272,18 @@ it('selects a subject without a task, filters history and hides selectors when d
   const view = render(<PomodoroPage tasksEnabled={false} subjectsEnabled />);
   await waitFor(() =>
     expect(
-      (screen.getByLabelText('Matéria (opcional)') as HTMLSelectElement)
+      (screen.getByLabelText('Matéria (opcional)') as HTMLButtonElement)
         .disabled,
     ).toBe(false),
   );
-  await interaction.selectOptions(
-    screen.getByLabelText('Matéria (opcional)'),
-    row.id,
-  );
+  await selectOption(screen.getByLabelText('Matéria (opcional)'), row.id);
   await interaction.click(
     screen.getByRole('button', { name: 'Iniciar sessão' }),
   );
   await waitFor(() =>
     expect(api.startPomodoro).toHaveBeenCalledWith(undefined, row.id),
   );
-  await interaction.selectOptions(
+  await selectOption(
     screen.getByLabelText('Filtrar histórico por matéria'),
     row.id,
   );

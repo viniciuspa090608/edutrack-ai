@@ -26,6 +26,22 @@ it.each(['', '?mode=unknown', '?mode=login'])(
   },
 );
 
+it('animates recovery navigation in the SPA and focuses the destination heading', async () => {
+  window.history.replaceState({}, '', '/acesso');
+  render(<App />);
+  const user = userEvent.setup();
+  await user.click(screen.getByRole('link', { name: 'Esqueci minha senha' }));
+  expect(window.location.pathname).toBe('/recuperar-senha');
+  const heading = screen.getByRole('heading', { name: 'Esqueci minha senha' });
+  expect(document.activeElement).toBe(heading);
+  expect(
+    heading
+      .closest('.auth-form-content')
+      ?.classList.contains('animate__backInLeft'),
+  ).toBe(true);
+  expect(window.history.state.accessArrival).toBeUndefined();
+});
+
 it('follows same-route navigation and preserves returnTo and edited fields across ordinary renders', async () => {
   window.history.replaceState(
     {},
