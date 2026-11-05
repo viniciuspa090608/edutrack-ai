@@ -45,7 +45,7 @@ export function ClassroomProvenance({
                     title: parsed.courseName,
                     link: parsed.link,
                     deadline: parsed.dueAt
-                      ? `${new Date(parsed.dueAt).toLocaleString('pt-BR', { timeZone: parsed.timeZone })} (${parsed.timeZone})`
+                      ? `${new Date(parsed.dueAt).toLocaleString('pt-BR', { timeZone: parsed.timeZone })}`
                       : parsed.originalDueDate,
                     attachments: parsed.attachments,
                   };

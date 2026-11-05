@@ -30,7 +30,6 @@ import {
   MoreHorizontal,
   Sun,
   Timer,
-  Trophy,
   UserRound,
   X,
   type LucideIcon,
@@ -61,14 +60,17 @@ const secondary: Destination[] = [
   { path: '/app/rotinas', label: 'Rotinas', icon: CalendarDays },
   {
     path: '/app/estatisticas',
-    label: 'Estatísticas',
+    label: 'Relatório',
     icon: ChartNoAxesCombined,
   },
-  { path: '/app/progresso', label: 'Progresso', icon: Trophy },
   { path: '/conta', label: 'Conta', icon: UserRound },
 ];
 function activeDestination(item: Destination, pathname: string) {
-  return item.path === pathname || moduleAtPath(pathname)?.path === item.path;
+  return (
+    item.path === pathname ||
+    (item.path === '/app/estatisticas' && pathname === '/app/progresso') ||
+    moduleAtPath(pathname)?.path === item.path
+  );
 }
 function DestinationLink({
   item,

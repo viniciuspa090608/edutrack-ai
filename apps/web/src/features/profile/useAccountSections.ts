@@ -11,6 +11,7 @@ import {
 export const accountSections = [
   { id: 'account-profile', label: 'Perfil', icon: UserRound },
   { id: 'account-preferences', label: 'Preferências', icon: SlidersHorizontal },
+  { id: 'account-timezone', label: 'Fuso de estudo', icon: Globe },
   { id: 'account-appearance', label: 'Aparência', icon: Sun },
   { id: 'account-security', label: 'Segurança', icon: ShieldCheck },
   {

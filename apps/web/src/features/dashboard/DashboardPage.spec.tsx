@@ -1,18 +1,29 @@
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import type { Dashboard, PomodoroSession } from '@study-platform/contracts';
 import { studyAchievementCatalog } from '@study-platform/contracts';
+import { listSubjects } from '../subjects/subjects-api.js';
 import { DashboardPage } from './DashboardPage.js';
 import { dashboard } from './dashboard-api.js';
 import { currentPomodoro, startPomodoro } from '../pomodoro/pomodoro-api.js';
 import { App } from '../../app/App.js';
 import { within } from '@testing-library/react';
+vi.mock('../subjects/subjects-api.js', () => ({ listSubjects: vi.fn() }));
 vi.mock('./dashboard-api.js', () => ({ dashboard: vi.fn() }));
 vi.mock('../pomodoro/pomodoro-api.js', () => ({
   currentPomodoro: vi.fn(),
   startPomodoro: vi.fn(),
 }));
+beforeEach(() => {
+  vi.mocked(listSubjects).mockResolvedValue({
+    items: [],
+    total: 0,
+    totalPages: 0,
+    page: 1,
+    pageSize: 1,
+  });
+});
 afterEach(() => {
   cleanup();
   vi.resetAllMocks();
@@ -93,7 +104,7 @@ it('shows only the consultation date and minute with the original time instant',
   const time = container.querySelector(
     'time[datetime="2026-10-05T12:00:00.000Z"]',
   );
-  expect(time?.textContent).toMatch(/^05\/10\/2026, \d{2}:\d{2}$/);
+  expect(time?.textContent).toMatch(/^05\/10\/26 \d{2}:\d{2}$/);
   expect(container.textContent).not.toContain('Fuso de estudo:');
   expect(container.textContent).not.toContain('Resumos consultados em');
 });
@@ -260,6 +271,7 @@ it('shows official task progress, local overdue label and a contextual safe subj
               upcoming: [],
               withoutDeadline: 0,
             }),
+        counts: { PENDING: 0, IN_PROGRESS: 1, COMPLETED: 0 },
         upcoming: [
           {
             id,
@@ -367,4 +379,43 @@ it('does not request private summaries before auth confirmation and redirects a 
     await screen.findByRole('heading', { name: 'Entre na sua conta' }),
   ).toBeTruthy();
   expect(dashboard).not.toHaveBeenCalled();
+});
+
+it('confirms subjects are empty rather than inferring from the missing highlight', async () => {
+  vi.mocked(dashboard).mockResolvedValue(empty);
+  vi.mocked(listSubjects).mockResolvedValue({
+    items: [],
+    total: 0,
+    totalPages: 0,
+    page: 1,
+    pageSize: 1,
+  });
+  render(<DashboardPage displayName="Ana" />);
+  expect(await screen.findByText('Nenhuma matéria cadastrada')).toBeTruthy();
+  expect(await screen.findByText('Nenhuma tarefa cadastrada')).toBeTruthy();
+  expect(listSubjects).toHaveBeenCalledWith(1, 1);
+  await userEvent.click(
+    screen.getByRole('button', { name: 'Adicionar matéria' }),
+  );
+  expect(window.location.pathname + window.location.search).toBe(
+    '/app/materias?create=1',
+  );
+});
+it('does not claim an empty collection when subjects exist or the lookup fails', async () => {
+  vi.mocked(dashboard).mockResolvedValue(empty);
+  vi.mocked(listSubjects).mockResolvedValue({
+    items: [],
+    total: 1,
+    totalPages: 1,
+    page: 1,
+    pageSize: 1,
+  });
+  const view = render(<DashboardPage displayName="Ana" />);
+  await screen.findByText(/Nenhuma matéria em destaque/);
+  expect(screen.queryByText('Nenhuma matéria cadastrada')).toBeNull();
+  view.unmount();
+  vi.mocked(listSubjects).mockRejectedValue(new Error('offline'));
+  render(<DashboardPage displayName="Ana" />);
+  await screen.findByRole('button', { name: 'Tentar consultar matérias' });
+  expect(screen.queryByText('Nenhuma matéria cadastrada')).toBeNull();
 });

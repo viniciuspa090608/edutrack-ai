@@ -187,11 +187,7 @@ it('keeps earned achievements visible with dates and accessible progress', async
   });
   render(<StudyProgressPage />);
   expect(await screen.findByText(/Obtida em/)).toBeTruthy();
-  expect(
-    screen
-      .getByRole('link', { name: 'Editar fuso na conta' })
-      .getAttribute('href'),
-  ).toBe('/conta');
+  expect(screen.queryByText(/Fuso de estudo:/)).toBeNull();
   expect(
     screen.getByRole('progressbar', { name: 'Progresso: 1 de 1' }),
   ).toBeTruthy();

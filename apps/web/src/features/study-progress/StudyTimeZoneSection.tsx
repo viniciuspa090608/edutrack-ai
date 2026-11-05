@@ -70,6 +70,8 @@ export function StudyTimeZoneSection() {
   return (
     <Card asChild>
       <section
+        id="account-timezone"
+        tabIndex={-1}
         className="account-card study-timezone evolution-surface evolution-card"
         aria-labelledby="study-timezone-title"
       >

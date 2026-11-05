@@ -145,7 +145,6 @@ export function AISettingsSection() {
         <CardHeader>
           <div>
             <h2 id="account-ai-title">Inteligência artificial</h2>
-            <p>Escolha para onde enviar seus conteúdos de estudo.</p>
           </div>
         </CardHeader>
         <CardContent>
@@ -161,28 +160,28 @@ export function AISettingsSection() {
           {!loading && saved && catalog && (
             <>
               <p>
-                Configuração confirmada:{' '}
+                Escolha para onde enviar seus conteúdos de estudo. Configuração
+                confirmada:{' '}
                 {saved.mode === 'platform'
                   ? 'Padrão EduTrack — Gemini'
                   : `${catalog.providers.find((p) => p.id === saved.provider)?.label} — ${saved.model}`}
                 .{' '}
                 {saved.hasPersonalKey
                   ? 'Chave pessoal configurada.'
-                  : 'Nenhuma chave pessoal salva.'}
-              </p>
-              <p>
+                  : 'Nenhuma chave pessoal salva.'}{' '}
                 O padrão EduTrack usa Gemini, sem cobrança pela EduTrack,
                 sujeito à disponibilidade e a {catalog.limits.platformUserDaily}{' '}
                 gerações por dia UTC. Todos os modos permitem até{' '}
                 {catalog.limits.userPerMinute} chamadas por minuto e{' '}
                 {catalog.limits.userConcurrency} em andamento por conta.
+                {!saved.platformAvailable && (
+                  <>
+                    {' '}
+                    O padrão está indisponível no momento. Você pode configurar
+                    uma chave pessoal.
+                  </>
+                )}
               </p>
-              {!saved.platformAvailable && (
-                <p>
-                  O padrão está indisponível no momento. Você pode configurar
-                  uma chave pessoal.
-                </p>
-              )}
               <form
                 onSubmit={(event) => {
                   event.preventDefault();
@@ -209,14 +208,18 @@ export function AISettingsSection() {
                       setConfirm(null);
                     }}
                   >
-                    <Label htmlFor="ai-mode-platform">
+                    <div className="account-radio-option">
                       <RadioGroupItem id="ai-mode-platform" value="platform" />
-                      Padrão EduTrack (Gemini)
-                    </Label>
-                    <Label htmlFor="ai-mode-personal">
+                      <Label htmlFor="ai-mode-platform">
+                        Padrão EduTrack (Gemini)
+                      </Label>
+                    </div>
+                    <div className="account-radio-option">
                       <RadioGroupItem id="ai-mode-personal" value="personal" />
-                      Usar minha chave pessoal
-                    </Label>
+                      <Label htmlFor="ai-mode-personal">
+                        Usar minha chave pessoal
+                      </Label>
+                    </div>
                   </RadioGroup>
                   {mode === 'personal' && (
                     <>

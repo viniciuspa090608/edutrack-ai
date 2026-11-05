@@ -1,3 +1,4 @@
+import googleIcon from './assets/google-g.png';
 import { navigatePrivateLink } from '../../app/private-navigation.js';
 import { waitForExit } from '../../app/navigation-motion.js';
 import { Skeleton } from '@study-platform/ui/components/ui/skeleton';
@@ -305,25 +306,30 @@ export function PrivatePage({
                   onPreferences={updatePreferences}
                   accountActions={
                     <div className="account-access-actions">
-                      <div className="account-detail">
-                        <h3>Google</h3>
-                        <p>
-                          {user.googleLinked
-                            ? 'Google vinculado à sua conta.'
-                            : 'Vincule sua conta Google para usar esse meio de entrada.'}
-                        </p>
+                      <div className="account-google">
+                        <div className="account-google-identity">
+                          <img src={googleIcon} alt="" />
+                          <div>
+                            <h3>Google</h3>
+                            <p>
+                              {user.googleLinked
+                                ? 'Google vinculado à sua conta.'
+                                : 'Vincule sua conta Google para usar esse meio de entrada.'}
+                            </p>
+                          </div>
+                        </div>
+                        {!user.googleLinked && (
+                          <Button
+                            type="button"
+                            disabled={busy}
+                            onClick={() => {
+                              void linkGoogle();
+                            }}
+                          >
+                            Vincular Google
+                          </Button>
+                        )}
                       </div>
-                      {!user.googleLinked && (
-                        <Button
-                          type="button"
-                          disabled={busy}
-                          onClick={() => {
-                            void linkGoogle();
-                          }}
-                        >
-                          Vincular Google
-                        </Button>
-                      )}
                       {new URLSearchParams(window.location.search).get(
                         'google',
                       ) === 'linked' && (

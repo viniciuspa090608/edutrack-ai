@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from 'react';
 
 export type Theme = 'light' | 'dark';
+export type ThemePreference = Theme | 'system';
 export const THEME_STORAGE_KEY = 'edutrack.theme';
 const listeners = new Set<() => void>();
 let manual: Theme | null = null;
@@ -17,14 +18,28 @@ function applyTheme() {
   for (const listener of listeners) listener();
 }
 
-export function setTheme(theme: Theme): void {
-  manual = theme;
+export function setTheme(theme: ThemePreference): void {
+  manual = theme === 'system' ? null : theme;
   try {
-    window.localStorage.setItem(THEME_STORAGE_KEY, theme);
+    if (theme === 'system') window.localStorage.removeItem(THEME_STORAGE_KEY);
+    else window.localStorage.setItem(THEME_STORAGE_KEY, theme);
   } catch {
     // Keep the choice in memory when browser storage is unavailable.
   }
   applyTheme();
+}
+
+export function useThemePreference(): ThemePreference {
+  return useSyncExternalStore(
+    (listener) => {
+      listeners.add(listener);
+      return () => {
+        listeners.delete(listener);
+      };
+    },
+    () => manual ?? 'system',
+    () => 'system',
+  );
 }
 
 export function useTheme(): Theme {

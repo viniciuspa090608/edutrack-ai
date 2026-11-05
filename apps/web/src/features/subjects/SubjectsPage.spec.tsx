@@ -390,3 +390,18 @@ it('reports list/selector failure with retry and selects an optional own subject
   await selectOption(screen.getByLabelText('Matéria (opcional)'), id);
   expect(changed).toHaveBeenCalledWith(id);
 });
+
+it('opens dashboard creation once without discarding unrelated query parameters', async () => {
+  window.history.replaceState({}, '', '/app/materias?create=1&keep=yes');
+  const view = render(<SubjectsPage />);
+  await screen.findByRole('dialog');
+  expect(window.location.search).toBe('?keep=yes');
+  await userEvent.click(
+    screen.getByRole('button', { name: 'Cancelar edição' }),
+  );
+  await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+  view.unmount();
+  render(<SubjectsPage />);
+  await screen.findByRole('button', { name: 'Criar matéria' });
+  expect(screen.queryByRole('dialog')).toBeNull();
+});

@@ -38,7 +38,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   CalendarDays,
   Clock3,
-  Globe2,
   Pencil,
   Plus,
   RefreshCw,
@@ -486,10 +485,6 @@ export function RoutinesPage() {
                     <h3>{row.name}</h3>
                     <div className="routine-metadata">
                       <p>
-                        <Globe2 aria-hidden="true" />
-                        Fuso: {row.timeZone}
-                      </p>
-                      <p>
                         <Clock3 aria-hidden="true" />
                         {row.slots.length} horário(s) semanal(is)
                       </p>
@@ -637,7 +632,6 @@ export function RoutinesPage() {
                           <p className="routine-time">
                             {item.startTime}–{item.endTime}
                           </p>
-                          <p>Fuso: {item.timeZone}</p>
                         </li>
                       ))}
                   </ul>

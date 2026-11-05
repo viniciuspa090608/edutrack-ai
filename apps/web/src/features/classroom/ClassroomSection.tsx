@@ -436,13 +436,15 @@ export function ClassroomSection({
             width={48}
             height={48}
           />
-          <h2 id="classroom-title">Integrações · Google Classroom</h2>
+          <div>
+            <h2 id="classroom-title">Integrações · Google Classroom</h2>
+            <p>
+              Conecte para importar suas turmas e atividades. Seus fluxos
+              manuais continuam disponíveis.
+            </p>
+          </div>
         </CardHeader>
         <CardContent>
-          <p>
-            Conecte para importar suas turmas e atividades. Seus fluxos manuais
-            continuam disponíveis.
-          </p>
           {new URLSearchParams(window.location.search).get('classroom') ===
             'failed' && (
             <p role="alert">

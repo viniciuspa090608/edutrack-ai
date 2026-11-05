@@ -1,3 +1,6 @@
+import { CollectionEmptyState } from '../../components/CollectionEmptyState.js';
+import { DashboardPomodoro } from './DashboardPomodoro.js';
+import { listSubjects } from '../subjects/subjects-api.js';
 import {
   CardHeader,
   Card,
@@ -54,6 +57,9 @@ const sectionIcons = {
 };
 const priorities = { LOW: 'Baixa', MEDIUM: 'Média', HIGH: 'Alta' };
 export function DashboardPage({ displayName }: { displayName: string }) {
+  const [subjectsEmpty, setSubjectsEmpty] = useState<boolean | null>(null);
+  const [subjectsError, setSubjectsError] = useState(false);
+  const [subjectsRetry, setSubjectsRetry] = useState(0);
   const [data, setData] = useState<Dashboard | null>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
@@ -110,6 +116,27 @@ export function DashboardPage({ displayName }: { displayName: string }) {
       document.removeEventListener('visibilitychange', visible);
     };
   }, [load]);
+  useEffect(() => {
+    let active = true;
+    setSubjectsEmpty(null);
+    setSubjectsError(false);
+    if (
+      !data?.subjects ||
+      data.subjects.state === 'error' ||
+      data.subjects.data
+    )
+      return;
+    void listSubjects(1, 1)
+      .then((value) => {
+        if (active) setSubjectsEmpty(value.total === 0);
+      })
+      .catch(() => {
+        if (active) setSubjectsError(true);
+      });
+    return () => {
+      active = false;
+    };
+  }, [data?.subjects, subjectsRetry]);
   async function begin() {
     if (starting) return;
     setStarting(true);
@@ -156,7 +183,7 @@ export function DashboardPage({ displayName }: { displayName: string }) {
     return (
       <Card asChild>
         <section
-          className={`dashboard-card dashboard-card-${key}`}
+          className={`dashboard-card dashboard-card-${key}${(key === 'tasks' && tasksEmpty) || (key === 'subjects' && subjectsEmpty) ? ' dashboard-card-empty' : ''}`}
           aria-labelledby={`dashboard-${key}`}
         >
           <CardHeader>
@@ -203,6 +230,8 @@ export function DashboardPage({ displayName }: { displayName: string }) {
     data?.flashcards?.state !== 'error'
       ? data?.flashcards?.data.pending
       : undefined;
+  const tasksEmpty =
+    !!tasks && Object.values(tasks.counts).every((value) => value === 0);
   const today = data?.timeZone
     ? new Intl.DateTimeFormat('en-CA', {
         timeZone: data.timeZone,
@@ -216,7 +245,28 @@ export function DashboardPage({ displayName }: { displayName: string }) {
       <div className="dashboard-welcome">
         <span className="dashboard-eyebrow">SEU ESPAÇO DE ESTUDO</span>
         <h1>Olá, {displayName}</h1>
-        <p>Escolha seu próximo passo de estudo.</p>
+        <p>
+          {data ? (
+            <>
+              São{' '}
+              <time dateTime={data.asOf}>
+                {new Date(data.asOf).toLocaleDateString('pt-BR', {
+                  day: '2-digit',
+                  month: '2-digit',
+                  year: '2-digit',
+                })}{' '}
+                {new Date(data.asOf).toLocaleTimeString('pt-BR', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  hour12: false,
+                })}
+              </time>
+              , escolha seu próximo passo de aprendizado.
+            </>
+          ) : (
+            'Escolha seu próximo passo de aprendizado.'
+          )}
+        </p>
       </div>
       {loading && (
         <div>
@@ -240,11 +290,6 @@ export function DashboardPage({ displayName }: { displayName: string }) {
       )}
       {data && (
         <>
-          <p>
-            <time dateTime={data.asOf}>
-              {`${new Date(data.asOf).toLocaleDateString('pt-BR')}, ${new Date(data.asOf).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', hour12: false })}`}
-            </time>
-          </p>
           {(['tasks', 'subjects', 'flashcards'] as const).some(
             (key) => !data.preferences[key],
           ) && (
@@ -289,7 +334,9 @@ export function DashboardPage({ displayName }: { displayName: string }) {
               </div>
             )}
           </div>
-          <div className="dashboard-grid">
+          <div
+            className={`dashboard-grid${data.flashcards ? '' : ' dashboard-without-flashcards'}${data.tasks ? '' : ' dashboard-without-tasks'}`}
+          >
             {card(
               'pomodoro',
               'Pomodoro',
@@ -297,20 +344,7 @@ export function DashboardPage({ displayName }: { displayName: string }) {
               <>
                 <p>{pomo?.completedSessions} sessões concluídas.</p>
                 {pomo?.session ? (
-                  <>
-                    <p>
-                      Sessão aberta:{' '}
-                      {pomo.session.state === 'RUNNING'
-                        ? 'Em andamento'
-                        : pomo.session.state === 'PAUSED'
-                          ? 'Pausada'
-                          : 'Entre blocos'}
-                      .
-                    </p>
-                    <a className="dashboard-action" href="/app/pomodoro">
-                      Retomar Pomodoro
-                    </a>
-                  </>
+                  <DashboardPomodoro initial={pomo.session} />
                 ) : (
                   <>
                     <p>Comece um bloco de foco de 25 minutos.</p>
@@ -339,65 +373,79 @@ export function DashboardPage({ displayName }: { displayName: string }) {
               'tasks',
               'Tarefas',
               '/app/tarefas',
-              tasks && (
-                <>
-                  <p>
-                    {tasks.counts.PENDING} pendentes ·{' '}
-                    {tasks.counts.IN_PROGRESS} em andamento ·{' '}
-                    {tasks.counts.COMPLETED} concluídas.
-                  </p>
-                  {tasks.upcoming.length ? (
-                    <ul className="dashboard-task-list">
-                      {tasks.upcoming.map((task) => (
-                        <li key={task.id}>
-                          <strong>{task.title}</strong>
-                          <div className="dashboard-task-badges">
-                            <Badge variant="secondary">
-                              Prioridade {priorities[task.priority]}
-                            </Badge>
-                            <Badge variant="outline">
-                              {status[task.status]}
-                            </Badge>
-                          </div>
-                          <p>
-                            Prazo:{' '}
-                            <time dateTime={task.dueDate!}>{task.dueDate}</time>
-                            {today && task.dueDate! < today
-                              ? ' · Atrasada'
-                              : ''}
-                          </p>
-                          {task.subtaskTotal > 0 && (
-                            <p>
-                              {task.subtaskCompleted}/{task.subtaskTotal}{' '}
-                              subtarefas concluídas
-                            </p>
-                          )}
-                          {task.progressPercent !== null && (
-                            <Progress
-                              value={task.progressPercent}
-                              aria-label={`Progresso de ${task.title}`}
-                            />
-                          )}
-                          <p>
-                            {task.progressPercent === null
-                              ? status[task.status]
-                              : `${task.progressPercent.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}% concluído`}
-                          </p>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
+              tasksEmpty ? (
+                <CollectionEmptyState
+                  icon={<CheckCircle2 />}
+                  title="Nenhuma tarefa cadastrada"
+                  description="Crie sua primeira tarefa para organizar os estudos."
+                  actionLabel="Adicionar tarefa"
+                  onAction={() => navigate('/app/tarefas?create=1')}
+                />
+              ) : (
+                tasks && (
+                  <>
                     <p>
-                      {Object.values(tasks.counts).every((value) => value === 0)
-                        ? 'Crie sua primeira tarefa para organizar os estudos.'
-                        : 'Não há próximas tarefas com prazo.'}
+                      {tasks.counts.PENDING} pendentes ·{' '}
+                      {tasks.counts.IN_PROGRESS} em andamento ·{' '}
+                      {tasks.counts.COMPLETED} concluídas.
                     </p>
-                  )}
-                  <p>
-                    {tasks.withoutDeadline} tarefas ativas sem prazo permanecem
-                    no módulo de tarefas.
-                  </p>
-                </>
+                    {tasks.upcoming.length ? (
+                      <ul className="dashboard-task-list">
+                        {tasks.upcoming.map((task) => (
+                          <li key={task.id}>
+                            <strong>{task.title}</strong>
+                            <div className="dashboard-task-badges">
+                              <Badge variant="secondary">
+                                Prioridade {priorities[task.priority]}
+                              </Badge>
+                              <Badge variant="outline">
+                                {status[task.status]}
+                              </Badge>
+                            </div>
+                            <p>
+                              Prazo:{' '}
+                              <time dateTime={task.dueDate!}>
+                                {task.dueDate}
+                              </time>
+                              {today && task.dueDate! < today
+                                ? ' · Atrasada'
+                                : ''}
+                            </p>
+                            {task.subtaskTotal > 0 && (
+                              <p>
+                                {task.subtaskCompleted}/{task.subtaskTotal}{' '}
+                                subtarefas concluídas
+                              </p>
+                            )}
+                            {task.progressPercent !== null && (
+                              <Progress
+                                value={task.progressPercent}
+                                aria-label={`Progresso de ${task.title}`}
+                              />
+                            )}
+                            <p>
+                              {task.progressPercent === null
+                                ? status[task.status]
+                                : `${task.progressPercent.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}% concluído`}
+                            </p>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p>
+                        {Object.values(tasks.counts).every(
+                          (value) => value === 0,
+                        )
+                          ? 'Crie sua primeira tarefa para organizar os estudos.'
+                          : 'Não há próximas tarefas com prazo.'}
+                      </p>
+                    )}
+                    <p>
+                      {tasks.withoutDeadline} tarefas ativas sem prazo
+                      permanecem no módulo de tarefas.
+                    </p>
+                  </>
+                )
               ),
             )}
             {card(
@@ -433,10 +481,28 @@ export function DashboardPage({ displayName }: { displayName: string }) {
                     />
                   )}
                 </>
+              ) : subjectsEmpty ? (
+                <CollectionEmptyState
+                  icon={<BookOpen />}
+                  title="Nenhuma matéria cadastrada"
+                  description="Crie uma matéria e organize seu plano de estudo, com ou sem IA."
+                  actionLabel="Adicionar matéria"
+                  onAction={() => navigate('/app/materias?create=1')}
+                />
+              ) : subjectsError ? (
+                <div role="alert">
+                  <p>Não foi possível consultar suas matérias.</p>
+                  <Button
+                    onClick={() => setSubjectsRetry((value) => value + 1)}
+                  >
+                    Tentar consultar matérias
+                  </Button>
+                </div>
               ) : (
                 <p>
-                  Crie uma matéria e organize seu plano de estudo, com ou sem
-                  IA.
+                  {subjectsEmpty === null
+                    ? 'Consultando matérias…'
+                    : 'Nenhuma matéria em destaque. Abra suas matérias para continuar estudando.'}
                 </p>
               ),
             )}
@@ -485,7 +551,7 @@ export function DashboardPage({ displayName }: { displayName: string }) {
                 <>
                   <p>
                     Semana: {week.period.start} a {week.period.end} (fim
-                    exclusivo) · {week.timeZone}
+                    exclusivo)
                     {week.period.partial ? ' · Período parcial' : ''}.
                   </p>
                   <p>

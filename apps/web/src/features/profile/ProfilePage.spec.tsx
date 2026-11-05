@@ -166,6 +166,7 @@ describe('profile page', () => {
     const ids = [
       'profile',
       'preferences',
+      'timezone',
       'appearance',
       'security',
       'ai',

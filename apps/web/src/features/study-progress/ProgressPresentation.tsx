@@ -19,7 +19,7 @@ export function ProgressHeader({
       <p className="evolution-eyebrow">Sua jornada de estudos</p>
       <h1 id={titleId}>{title}</h1>
       <p className="evolution-muted">{description}</p>
-      <nav className="evolution-navigation" aria-label="Evolução e conquistas">
+      <nav className="evolution-navigation" aria-label="Abas de Relatório">
         <a
           href="/app/estatisticas"
           aria-current={current === 'analytics' ? 'page' : undefined}
@@ -30,7 +30,7 @@ export function ProgressHeader({
           href="/app/progresso"
           aria-current={current === 'progress' ? 'page' : undefined}
         >
-          <Trophy aria-hidden="true" /> Progresso e conquistas
+          <Trophy aria-hidden="true" /> Progresso
         </a>
       </nav>
     </header>

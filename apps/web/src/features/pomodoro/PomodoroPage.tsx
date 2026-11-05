@@ -1,3 +1,4 @@
+import { projectPomodoro } from './pomodoro-clock.js';
 import {
   Select,
   SelectTrigger,
@@ -170,12 +171,10 @@ export function PomodoroPage({
     );
     return () => window.clearInterval(interval);
   }, [session]);
-  const elapsed =
-    session?.state === 'RUNNING' ? Math.min(tick, session.remainingSeconds) : 0;
-  const boundary =
-    session?.state === 'RUNNING' && elapsed >= session.remainingSeconds;
-  const state = boundary ? 'BETWEEN_BLOCKS' : session?.state;
-  const blocks = (session?.completedBlocks ?? 0) + (boundary ? 1 : 0);
+  const { elapsed, boundary, state, blocks, remaining } = projectPomodoro(
+    session,
+    tick,
+  );
   useEffect(() => {
     if (boundary)
       void refresh().catch(() => {
@@ -236,9 +235,6 @@ export function PomodoroPage({
     }
   }
 
-  const remaining = session
-    ? Math.max(0, session.remainingSeconds - elapsed)
-    : 1500;
   const progress = Math.min(100, Math.max(0, (1 - remaining / 1500) * 100));
   const taskLabel = (id: string | null) =>
     id

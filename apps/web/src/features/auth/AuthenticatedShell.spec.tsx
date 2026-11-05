@@ -122,7 +122,6 @@ const paths = [
   '/app/pomodoro',
   '/app/rotinas',
   '/app/estatisticas',
-  '/app/progresso',
   '/conta',
 ];
 describe('authenticated navigation', () => {
@@ -157,7 +156,7 @@ describe('authenticated navigation', () => {
         within(screen.getByRole('navigation', { name: 'Área pessoal' }))
           .getAllByRole('link')
           .map((x) => x.getAttribute('href')),
-      ).toEqual(expected.slice(0, expected.length - 5));
+      ).toEqual(expected.slice(0, expected.length - 4));
       await userEvent.click(screen.getByRole('button', { name: 'Mais' }));
       expect(
         within(screen.getByRole('dialog'))
@@ -176,7 +175,7 @@ describe('authenticated navigation', () => {
       ).getAllByRole('link'),
     ).toHaveLength(1);
   });
-  it.each(paths)(
+  it.each([...paths, '/app/progresso'])(
     'marks only the actual destination on %s and identifies routes inside More',
     async (path) => {
       window.history.replaceState({}, '', `${path}?test=1#section`);
@@ -186,14 +185,14 @@ describe('authenticated navigation', () => {
           .getByRole('navigation')
           .querySelector('[aria-current="page"]')
           ?.getAttribute('href'),
-      ).toBe(path);
+      ).toBe(path === '/app/progresso' ? '/app/estatisticas' : path);
       expect(
         screen
           .getByRole('navigation')
           .querySelectorAll('[aria-current="page"]'),
       ).toHaveLength(1);
       resize(false);
-      if (paths.slice(4).includes(path)) {
+      if (paths.slice(4).includes(path) || path === '/app/progresso') {
         const trigger = screen.getByRole('button', {
           name: 'Mais, contém a página atual',
         });
@@ -204,14 +203,14 @@ describe('authenticated navigation', () => {
             .getByRole('dialog')
             .querySelector('[aria-current="page"]')
             ?.getAttribute('href'),
-        ).toBe(path);
+        ).toBe(path === '/app/progresso' ? '/app/estatisticas' : path);
       } else
         expect(
           screen
             .getByRole('navigation')
             .querySelector('[aria-current="page"]')
             ?.getAttribute('href'),
-        ).toBe(path);
+        ).toBe(path === '/app/progresso' ? '/app/estatisticas' : path);
     },
   );
   it('recognizes module descendants without marking Home or inventing routes', () => {

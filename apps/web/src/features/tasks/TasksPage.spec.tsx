@@ -576,3 +576,19 @@ it('omits manual status when editing a task with subtasks and subjects disabled'
     dueDate: '2026-10-01',
   });
 });
+
+it('consumes the dashboard create intent once and preserves other URL state', async () => {
+  window.history.replaceState({}, '', '/app/tarefas?create=1&keep=yes#tasks');
+  const view = render(<TasksPage />);
+  await screen.findByRole('dialog');
+  expect(window.location.search).toBe('?keep=yes');
+  expect(window.location.hash).toBe('#tasks');
+  await userEvent.click(
+    screen.getByRole('button', { name: 'Cancelar edição' }),
+  );
+  await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+  view.unmount();
+  render(<TasksPage />);
+  await screen.findByText(/Nenhuma tarefa ainda/);
+  expect(screen.queryByRole('dialog')).toBeNull();
+});

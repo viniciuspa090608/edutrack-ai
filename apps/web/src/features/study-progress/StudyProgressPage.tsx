@@ -131,10 +131,6 @@ export function StudyProgressPage() {
           </dl>
           <div className="evolution-card evolution-context">
             <p>
-              Fuso de estudo: <strong>{data.timeZone}</strong>.{' '}
-              <a href="/conta">Editar fuso na conta</a>
-            </p>
-            <p>
               Histórico rastreado desde{' '}
               <time dateTime={data.trackingStartedAt}>
                 {date(data.trackingStartedAt, data.timeZone)}

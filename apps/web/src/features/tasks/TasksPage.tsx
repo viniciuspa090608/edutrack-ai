@@ -1,3 +1,4 @@
+import { useCreateIntent } from '../../app/useCreateIntent.js';
 import {
   Select,
   SelectTrigger,
@@ -534,6 +535,11 @@ export function TasksPage({
     filters.dueTo
   );
   const refresh = () => setRevision((value) => value + 1);
+  useCreateIntent(!!result && !loading, () => {
+    setEditor({ task: null });
+    setDetail(null);
+    setSuccess('');
+  });
   const createTask = () => {
     setEditor({ task: null });
     setDetail(null);

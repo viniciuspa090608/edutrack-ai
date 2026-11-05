@@ -112,6 +112,20 @@ describe('system theme', () => {
 });
 
 describe('manual theme choice', () => {
+  it('returns explicitly to system and resumes following device changes', () => {
+    const change = preference(false);
+    const stop = initializeTheme();
+    setTheme('dark');
+    setTheme('system');
+    expect(localStorage.getItem(THEME_STORAGE_KEY)).toBeNull();
+    expect(document.documentElement.classList.contains('dark')).toBe(false);
+    change(true);
+    expect(document.documentElement.classList.contains('dark')).toBe(true);
+    stop();
+    const restart = initializeTheme();
+    expect(document.documentElement.classList.contains('dark')).toBe(true);
+    restart();
+  });
   it('persists the manual choice and ignores OS changes until storage removal', () => {
     const change = preference(false);
     const stop = initializeTheme();

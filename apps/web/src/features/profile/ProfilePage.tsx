@@ -23,7 +23,7 @@ import { Checkbox } from '@study-platform/ui/components/ui/checkbox';
 import { Badge } from '@study-platform/ui/components/ui/badge';
 import { Skeleton } from '@study-platform/ui/components/ui/skeleton';
 import {
-  Camera,
+  Monitor,
   Globe,
   LogOut,
   SlidersHorizontal,
@@ -35,7 +35,7 @@ import {
   ShieldCheck,
   Sun,
 } from 'lucide-react';
-import { setTheme, useTheme } from '../../app/theme.js';
+import { setTheme, useThemePreference } from '../../app/theme.js';
 import '../../styles/account.css';
 import { StudyTimeZoneSection } from '../study-progress/StudyTimeZoneSection.js';
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
@@ -64,7 +64,7 @@ export function ProfilePage({
   onAvatar?: (version: string | null) => void;
   accountActions?: ReactNode;
 }) {
-  const theme = useTheme();
+  const theme = useThemePreference();
   const [user, setUser] = useState<UserProfile | null>(null);
   const [prefs, setPrefs] = useState<ModulePreferences | null>(null);
   const activeSection = useAccountSections(!!user && !!prefs);
@@ -189,9 +189,6 @@ export function ProfilePage({
         <div>
           <p className="account-eyebrow">PERFIL & AJUSTES</p>
           <h1>Conta</h1>
-          <p>
-            Seu perfil, suas preferências e seu acesso. Tudo em um só lugar.
-          </p>
         </div>
         <a className="account-back" href="/app">
           Voltar ao início <ChevronRight aria-hidden="true" />
@@ -220,21 +217,6 @@ export function ProfilePage({
                   : 'E-mail pendente de confirmação'}
               </Badge>
             </div>
-            <div className="account-summary-access">
-              <span>Meios de entrada</span>
-              <strong>
-                {[
-                  user.localPassword && 'E-mail e senha',
-                  user.googleLinked && 'Google',
-                ]
-                  .filter(Boolean)
-                  .join(' e ')}
-              </strong>
-            </div>
-            <a href="#account-profile" className="account-summary-edit">
-              <Camera aria-hidden="true" />
-              Editar perfil e foto
-            </a>
           </Card>
           <nav className="account-nav" aria-label="Configurações da conta">
             {accountSections.map(({ id, label, icon: Icon }) => (
@@ -288,7 +270,6 @@ export function ProfilePage({
                 </span>
                 <div>
                   <h2 id="profile-title">Seu perfil</h2>
-                  <p>Como você aparece no EduTrack.</p>
                 </div>
               </CardHeader>
               <CardContent>
@@ -309,16 +290,11 @@ export function ProfilePage({
                     </AvatarFallback>
                   </Avatar>
                   <div className="account-photo-controls">
-                    <h3>Foto de perfil</h3>
                     {selected && (
                       <p className="account-preview-note">
                         Prévia da nova foto. Salve para confirmar a alteração.
                       </p>
                     )}
-                    <p id="photo-rules">
-                      JPEG, PNG ou WebP estático, até 2 MiB. De 64 a 4096 pixels
-                      por lado, até 16 milhões de pixels.
-                    </p>
                     <Label htmlFor="photo">Foto de perfil</Label>
                     <Input
                       id="photo"
@@ -378,6 +354,10 @@ export function ProfilePage({
                       </Button>
                     </div>
                   </div>
+                  <p id="photo-rules">
+                    JPEG, PNG ou WebP estático, até 2 MiB. De 64 a 4096 pixels
+                    por lado, até 16 milhões de pixels.
+                  </p>
                 </div>
                 <form
                   onSubmit={(event) => {
@@ -495,12 +475,10 @@ export function ProfilePage({
                   </div>
                 ))}
               </CardContent>
-              <div className="account-timezone">
-                <StudyTimeZoneSection />
-              </div>
             </section>
           </Card>
 
+          <StudyTimeZoneSection />
           <Card asChild>
             <section
               id="account-appearance"
@@ -514,7 +492,6 @@ export function ProfilePage({
                 </span>
                 <div>
                   <h2 id="appearance-title">Aparência</h2>
-                  <p>Escolha o tema mais confortável para estudar.</p>
                 </div>
               </CardHeader>
               <CardContent>
@@ -523,6 +500,16 @@ export function ProfilePage({
                   role="group"
                   aria-label="Tema da aplicação"
                 >
+                  <Button
+                    type="button"
+                    variant="outline"
+                    aria-pressed={theme === 'system'}
+                    onClick={() => setTheme('system')}
+                  >
+                    <Monitor aria-hidden="true" />
+                    <span>Sistema</span>
+                    {theme === 'system' && <Check aria-hidden="true" />}
+                  </Button>
                   <Button
                     type="button"
                     variant="outline"
@@ -561,7 +548,6 @@ export function ProfilePage({
                 </span>
                 <div>
                   <h2 id="security-title">Segurança</h2>
-                  <p>Proteja seu acesso e mantenha seus dados atualizados.</p>
                 </div>
               </CardHeader>
               <CardContent>

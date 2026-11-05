@@ -266,15 +266,10 @@ export function AnalyticsPage() {
             onChange={(event) =>
               setDraft({ ...draft, timeZone: event.target.value })
             }
-            aria-describedby="analytics-zone-help"
           />
         </Label>
         <Button type="submit">Consultar</Button>
       </form>
-      <p id="analytics-zone-help" className="evolution-context">
-        Fuso selecionado: {query.timeZone}. UTC é usado quando o navegador não
-        informa um fuso. Exemplo: America/Sao_Paulo.
-      </p>
       {loading && <ProgressLoading>Carregando estatísticas…</ProgressLoading>}
       {error && (
         <Alert variant="destructive" role="alert">
@@ -291,7 +286,7 @@ export function AnalyticsPage() {
           <div className="evolution-card evolution-context analytics-period-context">
             <p>
               Período: {data.period.start} até {data.period.end} (fim
-              exclusivo), em {data.timeZone}.
+              exclusivo).
             </p>
             <p>
               Comparação: {data.previousPeriod.start} até{' '}

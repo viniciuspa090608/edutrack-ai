@@ -15,7 +15,7 @@ A interface SHALL aplicar a linguagem visual derivada do Stitch e dos módulos a
 - **AND** continua acessando as rotas existentes, sem depender de novas telas ou ações fictícias.
 
 ### Requirement: Indicadores e contexto de progresso fiéis
-Progresso SHALL destacar sequência atual, maior sequência e dias ativos enviados pela API, preservar o fuso salvo, início do rastreamento e explicações dos limites do histórico e atividades válidas. A interface SHALL NOT recalcular sequências, apresentar pontos/níveis/XP inexistentes ou tratar frequência de analytics como sequência de gamificação.
+Progresso SHALL destacar sequência atual, maior sequência e dias ativos enviados pela API, preservar a aplicação do fuso salvo sem aviso textual repetido, início do rastreamento e explicações dos limites do histórico e atividades válidas. A interface SHALL NOT recalcular sequências, apresentar pontos/níveis/XP inexistentes ou tratar frequência de analytics como sequência de gamificação.
 
 #### Scenario: Sequência atual encerrada
 - **WHEN** a API retorna sequência atual zero, recorde positivo e dias ativos positivos
@@ -24,7 +24,7 @@ Progresso SHALL destacar sequência atual, maior sequência e dias ativos enviad
 
 #### Scenario: Histórico não retroativo
 - **WHEN** o progresso é carregado
-- **THEN** o fuso e início do rastreamento permanecem visíveis com o acesso à edição na conta
+- **THEN** o início do rastreamento permanece visível e a configuração de fuso continua disponível na conta, sem identificar o fuso em uso nesta tela
 - **AND** atividades anteriores não são apresentadas como dias creditados.
 
 ### Requirement: Catálogo completo e estados legíveis de conquistas
@@ -95,3 +95,10 @@ O escopo SHALL suportar claro/escuro com superfícies, texto, bordas, indicadore
 - **WHEN** o usuário acessa as áreas por teclado em largura de 320 px
 - **THEN** nomes e critérios completos, filtros, indicadores e ações ficam acessíveis sem overflow da página
 - **AND** efeitos decorativos respeitam preferência por movimento reduzido.
+
+### Requirement: Abas internas de Relatório
+Relatório SHALL oferecer Estatísticas e Progresso como destinos internos acessíveis e indicar a aba atual. SHALL reutilizar suas rotas, consultas, gates, conquistas e estados existentes. Estatísticas SHALL remover avisos redundantes de fuso selecionado e sufixos informativos nos resultados, preservando o campo funcional IANA, suas validações, datas e períodos.
+
+#### Scenario: Trocar abas
+- **WHEN** a pessoa alterna entre Estatísticas e Progresso por teclado
+- **THEN** acessa os conteúdos reais de cada rota, identifica a aba atual e não vê identificação informativa repetida do fuso.

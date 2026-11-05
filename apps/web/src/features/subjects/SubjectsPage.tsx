@@ -1,3 +1,4 @@
+import { useCreateIntent } from '../../app/useCreateIntent.js';
 import {
   Select,
   SelectTrigger,
@@ -612,6 +613,11 @@ export function SubjectsPage({
     setSuccess('Matéria salva.');
     setRevision(revision + 1);
   };
+  useCreateIntent(!!result && !loading, () => {
+    setEditor({ subject: null });
+    setDetail(null);
+    setSuccess('');
+  });
   const createSubject = () => {
     setEditor({ subject: null });
     setDetail(null);

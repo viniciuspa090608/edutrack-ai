@@ -171,7 +171,7 @@ it('edits saved local times and displays routine zones without device conversion
   await screen.findByRole('button', { name: 'Editar Álgebra' });
   const monday = screen.getByRole('region', { name: 'Segunda-feira' });
   expect(within(monday).getByText('08:00–09:00')).toBeTruthy();
-  expect(within(monday).getByText('Fuso: Europe/Lisbon')).toBeTruthy();
+  expect(within(monday).queryByText('Fuso: Europe/Lisbon')).toBeNull();
   fireEvent.click(screen.getByRole('button', { name: 'Editar Álgebra' }));
   await screen.findByRole('textbox', { name: 'Nome' });
   fireEvent.change(screen.getByRole('textbox', { name: 'Fuso horário' }), {
