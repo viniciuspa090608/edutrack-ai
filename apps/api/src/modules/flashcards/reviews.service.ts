@@ -1,6 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import {
   reviewRequestSchema,
+  reviewRatingSchema,
+  scheduledCardSchema,
   pendingFiltersSchema,
   pendingListSchema,
   flashcardPaginationSchema,
@@ -8,6 +10,7 @@ import {
   reviewEventSchema,
 } from '@study-platform/contracts';
 import type { z } from 'zod';
+import type { SubjectsService } from '../subjects/subjects.service.js';
 import type { PreferencesService } from '../preferences/preferences.service.js';
 import { HttpError } from '../../shared/http-error.js';
 import type { ReviewsRepository } from './reviews.repository.js';
@@ -28,10 +31,13 @@ export class ReviewsService {
     private readonly repository: ReviewsRepository,
     private readonly prefs: Pick<PreferencesService, 'requireEnabled'>,
     private readonly clock: ReviewClock = () => new Date(),
+    private readonly subjects: Pick<SubjectsService, 'requireOwned'>,
     private readonly registry = new PolicyRegistry(),
   ) {}
   async pending(userId: string, input: unknown) {
     const filters = parse(pendingFiltersSchema, input);
+    if (filters.subjectId)
+      await this.subjects.requireOwned(userId, filters.subjectId);
     const result = await this.repository.pending(userId, filters, this.clock());
     return pendingListSchema.parse({
       ...result,
@@ -43,8 +49,26 @@ export class ReviewsService {
   state(userId: string, deckId: string, cardId: string) {
     return this.repository.state(userId, deckId, cardId);
   }
-  detail(userId: string, deckId: string, cardId: string) {
-    return this.repository.detail(userId, deckId, cardId);
+  async detail(userId: string, deckId: string, cardId: string, input: unknown) {
+    const filters = parse(pendingFiltersSchema, input);
+    if (filters.subjectId)
+      await this.subjects.requireOwned(userId, filters.subjectId);
+    const detail = await this.repository.detail(
+      userId,
+      deckId,
+      cardId,
+      filters.subjectId,
+    );
+    const { state } = detail;
+    const policy = this.registry.resolve(state.policyId, state.policyVersion);
+    const now = this.clock();
+    const intervals = Object.fromEntries(
+      reviewRatingSchema.options.map((rating) => [
+        rating,
+        policy.next(state.policyState, rating, now).intervalSeconds,
+      ]),
+    );
+    return scheduledCardSchema.parse({ ...detail, intervals });
   }
   async history(
     userId: string,

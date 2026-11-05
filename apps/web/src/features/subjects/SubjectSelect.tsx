@@ -21,11 +21,13 @@ export function SubjectSelect({
   onChange,
   label = 'Matéria (opcional)',
   disabled = false,
+  emptyLabel = 'Sem matéria',
 }: {
   value: string;
   onChange: (value: string) => void;
   label?: string;
   disabled?: boolean;
+  emptyLabel?: string;
 }) {
   const [page, setPage] = useState(1);
   const [result, setResult] = useState<SubjectList | null>(null);
@@ -61,7 +63,7 @@ export function SubjectSelect({
             <SelectValue />
           </SelectTrigger>
           <SelectContent position="popper">
-            <SelectItem value="__edutrack_empty__">Sem matéria</SelectItem>
+            <SelectItem value="__edutrack_empty__">{emptyLabel}</SelectItem>
             {value && !result?.items.some((item) => item.id === value) && (
               <SelectItem value={value}>Matéria selecionada</SelectItem>
             )}

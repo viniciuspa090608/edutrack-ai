@@ -44,6 +44,7 @@ export function reviewsRoutes(
         owner(res),
         id(req.params.deckId),
         id(req.params.cardId),
+        req.query,
       ),
     );
   });

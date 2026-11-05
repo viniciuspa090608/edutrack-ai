@@ -111,8 +111,31 @@ beforeEach(() => {
       };
       if (path === '/subjects') return list([subject]);
       if (path === `/subjects/${id2}`) return Response.json(subject);
+      if (path === '/flashcard-decks/reviews/pending') {
+        const subjectId = url.searchParams.get('subjectId');
+        return Response.json({
+          items: [],
+          page: 1,
+          pageSize: 1,
+          total: subjectId ? 5 : 0,
+          totalPages: subjectId ? 5 : 0,
+          counts: subjectId
+            ? { new: 2, learning: 1, review: 2 }
+            : { new: 0, learning: 0, review: 0 },
+        });
+      }
       if (path === '/flashcard-decks') {
-        if (method === 'GET') return list(decks);
+        if (method === 'GET') {
+          const subjectId = url.searchParams.get('subjectId');
+          return list(
+            decks
+              .filter((deck) => !subjectId || deck.subjectId === subjectId)
+              .map((deck) => ({
+                ...deck,
+                counts: { new: 2, learning: 1, review: 0 },
+              })),
+          );
+        }
         const deck = { ...base, ...body } as FlashcardDeck;
         decks.push(deck);
         return Response.json(deck, { status: 201 });
@@ -158,9 +181,7 @@ afterEach(() => {
   vi.unstubAllEnvs();
 });
 async function openDeck() {
-  await userEvent.click(
-    await screen.findByRole('button', { name: 'Abrir Álgebra' }),
-  );
+  await userEvent.click(await screen.findByRole('button', { name: 'Álgebra' }));
   await screen.findByText('Pergunta 1');
 }
 it('offers AI only when enabled, keeping manual and import actions available on direct navigation', async () => {
@@ -169,9 +190,7 @@ it('offers AI only when enabled, keeping manual and import actions available on 
     <FlashcardsPage subjectsEnabled={false} aiEnabled={false} />,
   );
   expect(screen.queryByRole('button', { name: 'Aprimorar com IA' })).toBeNull();
-  await user.click(
-    await screen.findByRole('button', { name: 'Abrir Álgebra' }),
-  );
+  await user.click(await screen.findByRole('button', { name: 'Álgebra' }));
   expect(screen.getByRole('button', { name: 'Adicionar cartão' })).toBeTruthy();
   expect(
     screen.getByRole('button', { name: 'Importar CSV ou TSV' }),
@@ -370,7 +389,7 @@ it('protects direct reload and navigation, blocks disabled flashcards and rechec
   expect(calls.some((call) => call.path === '/flashcard-decks')).toBe(false);
   enabled = true;
   fireEvent(window, new Event('focus'));
-  await screen.findByRole('button', { name: 'Abrir Álgebra' });
+  await screen.findByRole('button', { name: 'Álgebra' });
   expect(
     screen.getByRole('link', { name: 'Flashcards' }).getAttribute('href'),
   ).toBe('/app/flashcards');
@@ -411,6 +430,7 @@ it('edits cards without losing the front and reloads confirmed values', async ()
 it('associates and removes an optional own subject and shows it after page reload', async () => {
   const interaction = userEvent.setup();
   const { unmount } = render(<FlashcardsPage subjectsEnabled />);
+  await openDeck();
   await interaction.click(
     await screen.findByRole('button', { name: 'Editar Álgebra' }),
   );
@@ -427,6 +447,7 @@ it('associates and removes an optional own subject and shows it after page reloa
   unmount();
   render(<FlashcardsPage subjectsEnabled />);
   await screen.findByText('Matéria própria');
+  await openDeck();
   await interaction.click(
     screen.getByRole('button', { name: 'Editar Álgebra' }),
   );
@@ -441,6 +462,34 @@ it('associates and removes an optional own subject and shows it after page reloa
   await screen.findByText('Baralho salvo.');
   expect(decks[0]?.subjectId).toBeNull();
   expect(cards).toHaveLength(2);
+});
+it('filters baralhos and opens the aggregate study overview for a subject', async () => {
+  decks = [
+    { ...base, subjectId: id2 },
+    { ...base, id: id2, name: 'Sem vínculo' },
+  ];
+  render(<FlashcardsPage subjectsEnabled />);
+  await screen.findByRole('button', { name: 'Sem vínculo' });
+  const filter = screen.getByRole('combobox', { name: 'Matéria' });
+  await waitFor(() =>
+    expect((filter as HTMLButtonElement).disabled).toBe(false),
+  );
+  await selectOption(filter, id2);
+  await waitFor(() =>
+    expect(screen.queryByRole('button', { name: 'Sem vínculo' })).toBeNull(),
+  );
+  await userEvent.click(
+    screen.getByRole('button', { name: 'Ver estudo desta matéria' }),
+  );
+  await screen.findByRole('heading', { name: 'Matéria própria' });
+  await screen.findByRole('button', { name: 'Estudar agora' });
+  expect(
+    screen.getByRole('region', { name: 'Baralhos vinculados' }),
+  ).toBeTruthy();
+  await userEvent.click(
+    screen.getByRole('button', { name: 'Voltar a Baralhos' }),
+  );
+  await screen.findByRole('heading', { name: 'Baralhos' });
 });
 it('paginates decks and cards, distinguishes card load failure and empty deck', async () => {
   decks = Array.from({ length: 21 }, (_, index) => ({
@@ -458,15 +507,15 @@ it('paginates decks and cards, distinguishes card load failure and empty deck', 
   }));
   render(<FlashcardsPage subjectsEnabled={false} />);
   const interaction = userEvent.setup();
-  await screen.findByRole('button', { name: 'Abrir Álgebra' });
+  await screen.findByRole('button', { name: 'Álgebra' });
   await interaction.click(
     within(screen.getByRole('navigation', { name: 'Baralhos' })).getByRole(
       'button',
       { name: 'Próxima' },
     ),
   );
-  await screen.findByRole('button', { name: 'Abrir Baralho 20' });
-  expect(screen.queryByRole('button', { name: 'Abrir Álgebra' })).toBeNull();
+  await screen.findByRole('button', { name: 'Baralho 20' });
+  expect(screen.queryByRole('button', { name: 'Álgebra' })).toBeNull();
   await interaction.click(
     within(screen.getByRole('navigation', { name: 'Baralhos' })).getByRole(
       'button',

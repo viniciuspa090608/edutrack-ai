@@ -6,6 +6,7 @@ import {
   deckSchema,
   cardSchema,
   deckListSchema,
+  deckFiltersSchema,
   cardListSchema,
   flashcardPaginationSchema,
 } from '@study-platform/contracts';
@@ -20,11 +21,13 @@ async function write(path: string, method: string, body: object) {
     body: JSON.stringify(body),
   });
 }
-export async function listDecks(page = 1) {
-  const query = flashcardPaginationSchema.parse({ page });
+export async function listDecks(page = 1, subjectId?: string) {
+  const query = deckFiltersSchema.parse({ page, subjectId });
   return deckListSchema.parse(
     await (
-      await send(`${root}?page=${query.page}&pageSize=${query.pageSize}`)
+      await send(
+        `${root}?page=${query.page}&pageSize=${query.pageSize}${query.subjectId ? `&subjectId=${query.subjectId}` : ''}`,
+      )
     ).json(),
   );
 }

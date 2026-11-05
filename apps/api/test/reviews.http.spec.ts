@@ -510,3 +510,110 @@ it('requires session, origin, enabled flashcards and owner/hierarchy for state, 
       ]),
     ).toEqual([]);
 });
+
+it('aggregates due states across owned subject decks and previews the current policy', async () => {
+  const a = await setup();
+  const b = await account();
+  const subject = await write('post', '/subjects', a.cookie, {
+    name: 'Biologia',
+    currentLevel: 'BEGINNER',
+    objective: 'Aprender',
+    dueDate: '2026-12-01',
+    weeklyHours: 1,
+    knownTopics: [],
+  });
+  expect(subject.status).toBe(201);
+  const subjectId = subject.body.id as string;
+  const decks = '/flashcard-decks';
+  const filter = `subjectId=${subjectId}&pageSize=1`;
+  expect(
+    (await write('patch', `${decks}/${a.deckId}`, a.cookie, { subjectId }))
+      .status,
+  ).toBe(200);
+  const second = await write('post', decks, a.cookie, {
+    name: 'Vinculado',
+    subjectId,
+  });
+  expect(second.status).toBe(201);
+  const secondDeckId = second.body.id as string;
+  async function createCard(deckId: string, front: string) {
+    const response = await write('post', `${decks}/${deckId}/cards`, a.cookie, {
+      front,
+      back: 'Resposta',
+    });
+    expect(response.status).toBe(201);
+    const cardId = response.body.id as string;
+    await setInitialCardTime(source, cardId, now);
+    return { ...a, deckId, cardId };
+  }
+  const learning = await createCard(secondDeckId, 'Em aprendizagem');
+  const consolidated = await createCard(secondDeckId, 'Para revisão');
+  const future = await createCard(secondDeckId, 'Futuro');
+  const unlinked = await write('post', decks, a.cookie, {
+    name: 'Sem matéria',
+  });
+  await createCard(unlinked.body.id as string, 'Fora do escopo');
+  const initial = (await read(`${path(a)}/review`, a.cookie)).body;
+  expect(initial.intervals).toEqual({
+    AGAIN: 600,
+    HARD: 86400,
+    GOOD: 259200,
+    EASY: 432000,
+  });
+  expect(await state(a)).toEqual(initial.state);
+  expect((await read(`${path(a)}/reviews`, a.cookie)).body.total).toBe(0);
+  const again = await rate(learning, 'AGAIN');
+  const good = await rate(consolidated, 'GOOD');
+  const baseTime = now;
+  try {
+    now = new Date(good.body.dueAt);
+    expect((await rate(future)).status).toBe(200);
+    const page = await read(`${decks}?${filter}`, a.cookie);
+    expect(page.body).toMatchObject({ total: 2, totalPages: 2 });
+    const otherPage = await read(`${decks}?${filter}&page=2`, a.cookie);
+    const counts = new Map(
+      [...page.body.items, ...otherPage.body.items].map((deck) => [
+        deck.id,
+        deck.counts,
+      ]),
+    );
+    expect(counts.get(a.deckId)).toEqual({ new: 1, learning: 0, review: 0 });
+    expect(counts.get(secondDeckId)).toEqual({
+      new: 0,
+      learning: 1,
+      review: 1,
+    });
+    const pending = await read(`${decks}/reviews/pending?${filter}`, a.cookie);
+    expect(pending.body).toMatchObject({
+      items: [{ id: a.cardId }],
+      total: 3,
+      counts: { new: 1, learning: 1, review: 1 },
+    });
+    expect(
+      (await read(`${decks}/reviews/pending?${filter}&page=2`, a.cookie)).body
+        .items[0].id,
+    ).toBe(learning.cardId);
+    expect((await read(`${decks}?${filter}`, b.cookie)).status).toBe(404);
+    expect(
+      (await read(`${decks}/reviews/pending?${filter}`, b.cookie)).status,
+    ).toBe(404);
+    for (const card of [learning, consolidated]) {
+      const preview = await read(
+        `${path(card)}/review?subjectId=${subjectId}`,
+        a.cookie,
+      );
+      expect(preview.status).toBe(200);
+      const result = await rate(card, 'GOOD', 2);
+      expect(result.status).toBe(200);
+      expect(result.body.intervalSeconds).toBe(preview.body.intervals.GOOD);
+    }
+    expect(again.body.intervalSeconds).toBe(600);
+    await new PreferencesService(source).update(a.id, { subjects: false });
+    expect(
+      (await read(`${decks}/reviews/pending?${filter}`, a.cookie)).status,
+    ).toBe(403);
+    expect((await read(decks, a.cookie)).status).toBe(200);
+  } finally {
+    now = baseTime;
+  }
+});

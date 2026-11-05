@@ -371,7 +371,7 @@ it('returns focus to the import button after cancelling and after closing a resu
   render(<FlashcardsPage subjectsEnabled={false} />);
   const interaction = userEvent.setup();
   await interaction.click(
-    await screen.findByRole('button', { name: 'Abrir Baralho' }),
+    await screen.findByRole('button', { name: 'Baralho' }),
   );
   await interaction.click(
     screen.getByRole('button', { name: 'Importar CSV ou TSV' }),

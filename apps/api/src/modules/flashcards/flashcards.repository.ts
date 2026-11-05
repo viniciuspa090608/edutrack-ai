@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import type { DataSource, EntityManager } from 'typeorm';
 import type {
   CreateDeck,
+  DeckFilters,
   UpdateDeck,
   CreateCard,
   UpdateCard,
@@ -11,6 +12,13 @@ import type {
 import { flashcardAIResultSchema } from '@study-platform/contracts';
 import { HttpError } from '../../shared/http-error.js';
 import { initializeCardReviews, resetCardReview } from './review-lifecycle.js';
+import {
+  pendingReviewSource,
+  pendingReviewCondition,
+  reviewCountColumns,
+  reviewCounts,
+} from './review-counts.js';
+import type { ReviewCountRow } from './review-counts.js';
 interface DeckRow {
   id: string;
   subject_id: string | null;
@@ -135,17 +143,35 @@ export class FlashcardsRepository {
   cardDetail(userId: string, deckId: string, cardId: string) {
     return this.card(this.source.manager, userId, deckId, cardId);
   }
-  list(userId: string, { page, pageSize }: FlashcardPagination) {
+  list(userId: string, { page, pageSize, subjectId }: DeckFilters, now: Date) {
     return this.source.transaction(async (manager) => {
+      const where = `user_id=?${subjectId ? ' AND subject_id=?' : ''}`;
+      const values = subjectId ? [userId, subjectId] : [userId];
       const rows = await manager.query<DeckRow[]>(
-        'SELECT * FROM flashcard_decks WHERE user_id=? ORDER BY created_at DESC,id DESC LIMIT ? OFFSET ?',
-        [userId, pageSize, (page - 1) * pageSize],
+        `SELECT * FROM flashcard_decks WHERE ${where} ORDER BY created_at DESC,id DESC LIMIT ? OFFSET ?`,
+        [...values, pageSize, (page - 1) * pageSize],
       );
-      const counts = await manager.query<{ total: number }[]>(
-        'SELECT COUNT(*) AS total FROM flashcard_decks WHERE user_id=?',
-        [userId],
+      const [count] = await manager.query<{ total: number }[]>(
+        `SELECT COUNT(*) AS total FROM flashcard_decks WHERE ${where}`,
+        values,
       );
-      return { items: rows.map(deckDto), total: Number(counts[0]!.total) };
+      const ids = rows.map(({ id }) => id);
+      const counts = ids.length
+        ? await manager.query<(ReviewCountRow & { id: string })[]>(
+            `SELECT d.id, ${reviewCountColumns} FROM ${pendingReviewSource}
+             WHERE ${pendingReviewCondition} AND d.id IN (${ids.map(() => '?').join(',')})
+             GROUP BY d.id`,
+            [userId, now, ...ids],
+          )
+        : [];
+      const byDeck = new Map(counts.map((row) => [row.id, row]));
+      return {
+        items: rows.map((row) => ({
+          ...deckDto(row),
+          counts: reviewCounts(byDeck.get(row.id)),
+        })),
+        total: Number(count?.total ?? 0),
+      };
     });
   }
   listCards(

@@ -9,16 +9,21 @@ import {
   Alert,
 } from '@study-platform/ui/components/ui/alert';
 import { Skeleton } from '@study-platform/ui/components/ui/skeleton';
-import {
-  CardHeader,
-  Card,
-  CardContent,
-} from '@study-platform/ui/components/ui/card';
+import { Card, CardContent } from '@study-platform/ui/components/ui/card';
 import { Button } from '@study-platform/ui/components/ui/button';
 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@study-platform/ui/components/ui/table';
 import { useEffect, useRef, useState } from 'react';
 import type {
   DeckList,
+  PendingList,
   CardList,
   FlashcardDeck,
   Flashcard,
@@ -37,9 +42,18 @@ import { ImportFlow } from './ImportFlow.js';
 import { ReviewQueue } from './ReviewQueue.js';
 import { ReviewHistory } from './ReviewHistory.js';
 import { FlashcardAIFlow } from './FlashcardAIFlow.js';
+import { pendingReviews } from './reviews-api.js';
+import { SubjectSelect } from '../subjects/SubjectSelect.js';
+import { subjectDetail } from '../subjects/subjects-api.js';
 import { SubjectName } from '../subjects/SubjectName.js';
 import { TaskConfirmation } from '../tasks/TaskConfirmation.js';
 import '../../styles/flashcards.css';
+const categories = [
+  ['new', 'Novos'],
+  ['learning', 'Em aprendizagem'],
+  ['review', 'Para revisão'],
+] as const;
+
 function Pagination({
   page,
   totalPages,
@@ -106,6 +120,17 @@ export function FlashcardsPage({
   const [viewing, setViewing] = useState<Flashcard | null>(null);
   const [importing, setImporting] = useState(false);
   const [reviewing, setReviewing] = useState(false);
+  const [subjectFilter, setSubjectFilter] = useState('');
+  const [subjectStudy, setSubjectStudy] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+  const [overview, setOverview] = useState<PendingList | null>(null);
+  const [overviewError, setOverviewError] = useState(false);
+  const filter = subjectsEnabled ? subjectFilter : '';
+  const studySubject = subjectsEnabled ? subjectStudy : null;
+  const title = deck?.name ?? studySubject?.name;
+  const studySubjectId = studySubject?.id;
   const [generating, setGenerating] = useState(false);
   const [historyCard, setHistoryCard] = useState<{
     deckId: string;
@@ -121,8 +146,7 @@ export function FlashcardsPage({
   const wasImporting = useRef(false);
   const wasReviewing = useRef(false);
   useEffect(() => {
-    if (wasReviewing.current && !reviewing)
-      document.getElementById('start-review')?.focus();
+    if (wasReviewing.current && !reviewing) heading.current?.focus();
     wasReviewing.current = reviewing;
   }, [reviewing]);
   useEffect(() => {
@@ -133,12 +157,33 @@ export function FlashcardsPage({
   const deckId = deck?.id;
   useEffect(() => {
     heading.current?.focus();
-  }, [deckId]);
+  }, [deckId, studySubjectId]);
+  useEffect(() => {
+    let active = true;
+    setOverview(null);
+    setOverviewError(false);
+    const scope = deckId
+      ? { deckId }
+      : studySubjectId
+        ? { subjectId: studySubjectId }
+        : undefined;
+    if (scope)
+      void pendingReviews(1, scope, 1)
+        .then((result) => {
+          if (active) setOverview(result);
+        })
+        .catch(() => {
+          if (active) setOverviewError(true);
+        });
+    return () => {
+      active = false;
+    };
+  }, [deckId, studySubjectId, revision]);
   useEffect(() => {
     let active = true;
     setDecks(null);
     setListError('');
-    void listDecks(page)
+    void listDecks(page, filter || undefined)
       .then((result) => {
         if (!active) return;
         if (page > 1 && !result.items.length) {
@@ -153,7 +198,7 @@ export function FlashcardsPage({
     return () => {
       active = false;
     };
-  }, [page, revision]);
+  }, [page, revision, filter]);
   useEffect(() => {
     let active = true;
     setCards(null);
@@ -192,11 +237,26 @@ export function FlashcardsPage({
       const result = await deckDetail(id);
       if (token === request.current) {
         setDeck(result);
+        setSubjectStudy(null);
         setCardPage(1);
       }
     } catch {
       if (token === request.current)
         setError('Não foi possível abrir o baralho. Tente novamente.');
+    } finally {
+      if (token === request.current) setBusy(false);
+    }
+  }
+  async function openSubject(id: string) {
+    const token = ++request.current;
+    setBusy(true);
+    setError('');
+    try {
+      const subject = await subjectDetail(id);
+      if (token === request.current) setSubjectStudy(subject);
+    } catch {
+      if (token === request.current)
+        setError('Não foi possível abrir a matéria.');
     } finally {
       if (token === request.current) setBusy(false);
     }
@@ -228,37 +288,116 @@ export function FlashcardsPage({
     setSuccess(message);
     setError('');
   };
+  if (reviewing && title)
+    return (
+      <div className="flashcards-page">
+        <ReviewQueue
+          deckId={deckId}
+          subjectId={studySubjectId}
+          title={title}
+          onClose={() => setReviewing(false)}
+          onRated={() => setRevision((value) => value + 1)}
+        />
+      </div>
+    );
   return (
     <div className="flashcards-page">
-      <p>Crie perguntas e respostas e consulte seus cartões manualmente.</p>
-      <div className="flashcard-actions">
-        {aiEnabled && (
+      {title ? (
+        <>
           <Button
-            id="start-flashcard-ai"
-            disabled={generating}
-            onClick={() => setGenerating(true)}
+            variant="outline"
+            className="justify-self-start"
+            onClick={() => {
+              request.current++;
+              setBusy(false);
+              setDeck(null);
+              setSubjectStudy(null);
+              setViewing(null);
+              setCardForm(false);
+              setImporting(false);
+              setError('');
+            }}
           >
-            Aprimorar com IA
+            Voltar a Baralhos
           </Button>
-        )}
-        <Button
-          id="start-review"
-          disabled={reviewing}
-          onClick={() => setReviewing(true)}
-        >
-          Revisões pendentes
-        </Button>
-        <Button
-          id="new-deck"
-          disabled={busy}
-          onClick={() => {
-            setEditingDeck(null);
-            setDeckForm(true);
-          }}
-        >
-          Criar baralho
-        </Button>
-      </div>
+          <section className="study-overview">
+            <h2 ref={heading} tabIndex={-1}>
+              {title}
+            </h2>
+            {subjectsEnabled && deck?.subjectId && (
+              <SubjectName id={deck.subjectId} />
+            )}
+            {deck?.description && (
+              <p className="flashcard-text">{deck.description}</p>
+            )}
+            {overviewError ? (
+              <Alert variant="destructive" role="alert">
+                <AlertDescription>
+                  Não foi possível carregar a fila.{' '}
+                  <Button onClick={() => setRevision(revision + 1)}>
+                    Tentar novamente
+                  </Button>
+                </AlertDescription>
+              </Alert>
+            ) : overview ? (
+              <div className="study-summary">
+                <dl className="study-counts">
+                  {categories.map(([key, label]) => (
+                    <div key={key} className={`queue-count-${key}`}>
+                      <dt>{label}</dt>
+                      <dd>{overview.counts?.[key] ?? '—'}</dd>
+                    </div>
+                  ))}
+                </dl>
+                {overview.total ? (
+                  <Button onClick={() => setReviewing(true)}>
+                    Estudar agora
+                  </Button>
+                ) : (
+                  <p role="status">
+                    Nenhum cartão disponível para estudar agora.
+                  </p>
+                )}
+              </div>
+            ) : (
+              <p role="status">Carregando fila de estudo…</p>
+            )}
+          </section>
+        </>
+      ) : null}
+      {(!title || aiEnabled) && (
+        <div className="deck-toolbar">
+          {!title && (
+            <h2 ref={heading} tabIndex={-1}>
+              Baralhos
+            </h2>
+          )}
+          <div className="flashcard-actions">
+            {aiEnabled && (
+              <Button
+                variant="outline"
+                id="start-flashcard-ai"
+                disabled={generating}
+                onClick={() => setGenerating(true)}
+              >
+                Aprimorar com IA
+              </Button>
+            )}
+            {!title && (
+              <Button
+                id="new-deck"
+                disabled={busy}
+                onClick={() => {
+                  setEditingDeck(null);
+                  setDeckForm(true);
+                }}
+              >
+                Criar baralho
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
       {aiEnabled && generating && (
         <FlashcardAIFlow
           initialDeck={deck}
@@ -270,9 +409,6 @@ export function FlashcardsPage({
           }}
           onSaved={() => refresh('Cartões gerados salvos.')}
         />
-      )}
-      {reviewing && (
-        <ReviewQueue deckId={deck?.id} onClose={() => setReviewing(false)} />
       )}
       {historyCard && (
         <ReviewHistory
@@ -321,90 +457,145 @@ export function FlashcardsPage({
           }}
         />
       )}
-      {listError ? (
-        <Alert variant="destructive" role="alert">
-          <AlertDescription>
-            {listError}{' '}
-            <Button onClick={() => setRevision(revision + 1)}>
-              Tentar novamente
-            </Button>
-          </AlertDescription>
-        </Alert>
-      ) : !decks ? (
-        <div>
-          <Skeleton aria-hidden="true" className="my-2 h-3 w-2/3" />
-          <p role="status">Carregando baralhos…</p>
-        </div>
-      ) : (
-        <>
-          {!decks.items.length && (
-            <p>Nenhum baralho. Crie seu primeiro baralho.</p>
-          )}
-          <ul className="flashcard-list">
-            {decks.items.map((item) => (
-              <Card key={item.id} asChild>
-                <li className="flashcard-panel">
-                  <CardHeader>
-                    <h2>{item.name}</h2>
-                  </CardHeader>
-                  <CardContent>
-                    {subjectsEnabled && (
-                      <p>
-                        <SubjectName id={item.subjectId} />
-                      </p>
-                    )}
-                    <p className="flashcard-text">{item.description}</p>
-                    <div className="flashcard-actions">
-                      <Button
-                        disabled={busy}
-                        onClick={() => void openDeck(item.id)}
-                      >
-                        Abrir {item.name}
-                      </Button>
-                      <Button
-                        id={`edit-deck-${item.id}`}
-                        disabled={busy}
-                        onClick={() => {
-                          setEditingDeck(item);
-                          setDeckForm(true);
-                        }}
-                      >
-                        Editar {item.name}
-                      </Button>
-                      <Button
-                        id={`delete-deck-${item.id}`}
-                        disabled={busy}
-                        onClick={() =>
-                          setConfirmation({
-                            deck: item,
-                            returnId: `delete-deck-${item.id}`,
-                          })
-                        }
-                      >
-                        Excluir {item.name}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </li>
-              </Card>
-            ))}
-          </ul>
-          <Pagination
-            page={page}
-            totalPages={decks.totalPages}
-            onPage={setPage}
-            label="Baralhos"
+      {!title && subjectsEnabled && (
+        <div className="deck-filter">
+          <SubjectSelect
+            value={filter}
+            label="Matéria"
+            emptyLabel="Todas as matérias"
+            disabled={busy}
+            onChange={(value) => {
+              setSubjectFilter(value);
+              setPage(1);
+            }}
           />
-        </>
+          {filter && (
+            <Button
+              variant="outline"
+              disabled={busy}
+              onClick={() => void openSubject(filter)}
+            >
+              Ver estudo desta matéria
+            </Button>
+          )}
+        </div>
+      )}
+      {!deck && (
+        <section
+          aria-label={
+            studySubject ? 'Baralhos vinculados' : 'Lista de baralhos'
+          }
+        >
+          {studySubject && <h3>Baralhos vinculados</h3>}
+          {listError ? (
+            <Alert variant="destructive" role="alert">
+              <AlertDescription>
+                {listError}{' '}
+                <Button onClick={() => setRevision(revision + 1)}>
+                  Tentar novamente
+                </Button>
+              </AlertDescription>
+            </Alert>
+          ) : !decks ? (
+            <div role="status">
+              <Skeleton aria-hidden="true" className="my-2 h-3 w-2/3" />
+              Carregando baralhos…
+            </div>
+          ) : !decks.items.length ? (
+            <p>
+              {filter
+                ? 'Nenhum baralho vinculado a esta matéria.'
+                : 'Nenhum baralho. Crie seu primeiro baralho.'}
+            </p>
+          ) : (
+            <>
+              <Table
+                className="deck-table"
+                aria-label="Baralhos e contagens de estudo"
+              >
+                <TableHeader>
+                  <TableRow>
+                    <TableHead scope="col">Baralho</TableHead>
+                    {categories.map(([key, label]) => (
+                      <TableHead scope="col" key={key}>
+                        {label}
+                      </TableHead>
+                    ))}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {decks.items.map((item) => (
+                    <TableRow key={item.id}>
+                      <TableCell>
+                        <div className="deck-name">
+                          <Button
+                            variant="link"
+                            disabled={busy}
+                            onClick={() => void openDeck(item.id)}
+                          >
+                            {item.name}
+                          </Button>
+                          {subjectsEnabled && item.subjectId && (
+                            <SubjectName id={item.subjectId} />
+                          )}
+                        </div>
+                      </TableCell>
+                      {categories.map(([key, label]) => (
+                        <TableCell
+                          key={key}
+                          className={`queue-count queue-count-${key}`}
+                        >
+                          <span
+                            className="deck-mobile-label"
+                            aria-hidden="true"
+                          >
+                            {label}
+                          </span>
+                          {item.counts?.[key] ?? '—'}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              <Pagination
+                page={page}
+                totalPages={decks.totalPages}
+                onPage={setPage}
+                label="Baralhos"
+              />
+            </>
+          )}
+        </section>
       )}
       {deck && (
         <section aria-label={`Cartões de ${deck.name}`}>
-          <h2 tabIndex={-1} ref={heading}>
-            {deck.name}: cartões
-          </h2>
+          <h3>Gerenciar baralho e cartões</h3>
           <div className="flashcard-actions">
             <Button
+              id={`edit-deck-${deck.id}`}
+              variant="outline"
+              disabled={busy}
+              onClick={() => {
+                setEditingDeck(deck);
+                setDeckForm(true);
+              }}
+            >
+              Editar {deck.name}
+            </Button>
+            <Button
+              id={`delete-deck-${deck.id}`}
+              variant="outline"
+              disabled={busy}
+              onClick={() =>
+                setConfirmation({ deck, returnId: `delete-deck-${deck.id}` })
+              }
+            >
+              Excluir {deck.name}
+            </Button>
+            <Button
               id="start-import"
+              variant="outline"
               disabled={busy || importing}
               onClick={() => setImporting(true)}
             >
@@ -412,6 +603,7 @@ export function FlashcardsPage({
             </Button>
             <Button
               id="new-card"
+              variant="outline"
               disabled={busy}
               onClick={() => {
                 setViewing(null);

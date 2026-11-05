@@ -43,6 +43,18 @@ export const cardSchema = z
   .strict();
 export const cardSummarySchema = cardSchema.omit({ back: true });
 export const flashcardPaginationSchema = subjectPaginationSchema;
+export const deckFiltersSchema = flashcardPaginationSchema
+  .extend({ subjectId: z.uuid().optional() })
+  .strict();
+export const queueCountsSchema = z
+  .object({
+    new: z.number().int().nonnegative(),
+    learning: z.number().int().nonnegative(),
+    review: z.number().int().nonnegative(),
+  })
+  .strict();
+export type QueueCounts = z.infer<typeof queueCountsSchema>;
+export type DeckFilters = z.infer<typeof deckFiltersSchema>;
 const pagination = {
   page: z.number().int().positive(),
   pageSize: z.number().int().min(1).max(100),
@@ -50,7 +62,10 @@ const pagination = {
   totalPages: z.number().int().nonnegative(),
 };
 export const deckListSchema = z
-  .object({ items: z.array(deckSchema), ...pagination })
+  .object({
+    items: z.array(deckSchema.extend({ counts: queueCountsSchema.optional() })),
+    ...pagination,
+  })
   .strict();
 export const cardListSchema = z
   .object({ items: z.array(cardSummarySchema), ...pagination })

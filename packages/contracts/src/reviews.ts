@@ -1,5 +1,9 @@
 import { z } from 'zod';
-import { flashcardPaginationSchema, cardSchema } from './flashcards.js';
+import {
+  flashcardPaginationSchema,
+  cardSchema,
+  queueCountsSchema,
+} from './flashcards.js';
 export const reviewRatingSchema = z.enum(['AGAIN', 'HARD', 'GOOD', 'EASY']);
 export const reviewRequestSchema = z
   .object({
@@ -32,8 +36,9 @@ export const reviewStateSchema = z
   })
   .strict();
 export const pendingFiltersSchema = flashcardPaginationSchema
-  .extend({ deckId: z.uuid().optional() })
-  .strict();
+  .extend({ deckId: z.uuid().optional(), subjectId: z.uuid().optional() })
+  .strict()
+  .refine(({ deckId, subjectId }) => !(deckId && subjectId));
 export const pendingCardSchema = z
   .object({
     id: z.uuid(),
@@ -52,10 +57,20 @@ const pagination = {
   totalPages: z.number().int().nonnegative(),
 };
 export const pendingListSchema = z
-  .object({ items: z.array(pendingCardSchema), ...pagination })
+  .object({
+    items: z.array(pendingCardSchema),
+    counts: queueCountsSchema.optional(),
+    ...pagination,
+  })
   .strict();
 export const scheduledCardSchema = z
-  .object({ card: cardSchema, state: reviewStateSchema })
+  .object({
+    card: cardSchema,
+    state: reviewStateSchema,
+    intervals: z
+      .record(reviewRatingSchema, z.number().int().positive())
+      .optional(),
+  })
   .strict();
 export const reviewEventSchema = z
   .object({

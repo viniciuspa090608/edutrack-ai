@@ -12,22 +12,37 @@ import type { ReviewRequest } from '@study-platform/contracts';
 import { send } from '../auth/auth-api.js';
 const cardPath = (deckId: string, cardId: string) =>
   `/flashcard-decks/${deckSchema.shape.id.parse(deckId)}/cards/${deckSchema.shape.id.parse(cardId)}`;
-export async function pendingReviews(page = 1, deckId?: string) {
+export type ReviewScope = { deckId: string } | { subjectId: string };
+
+export async function pendingReviews(
+  page = 1,
+  scope?: ReviewScope,
+  pageSize?: number,
+) {
   const filters = pendingFiltersSchema.parse({
     page,
-    ...(deckId ? { deckId } : {}),
+    pageSize,
+    ...scope,
   });
   return pendingListSchema.parse(
     await (
       await send(
-        `/flashcard-decks/reviews/pending?page=${filters.page}&pageSize=${filters.pageSize}${filters.deckId ? `&deckId=${filters.deckId}` : ''}`,
+        `/flashcard-decks/reviews/pending?page=${filters.page}&pageSize=${filters.pageSize}${filters.deckId ? `&deckId=${filters.deckId}` : ''}${filters.subjectId ? `&subjectId=${filters.subjectId}` : ''}`,
       )
     ).json(),
   );
 }
-export async function scheduledCard(deckId: string, cardId: string) {
+export async function scheduledCard(
+  deckId: string,
+  cardId: string,
+  subjectId?: string,
+) {
   return scheduledCardSchema.parse(
-    await (await send(`${cardPath(deckId, cardId)}/review`)).json(),
+    await (
+      await send(
+        `${cardPath(deckId, cardId)}/review${subjectId ? `?subjectId=${deckSchema.shape.id.parse(subjectId)}` : ''}`,
+      )
+    ).json(),
   );
 }
 export async function rateCard(

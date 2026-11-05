@@ -8,6 +8,13 @@ import type { PendingFilters, ReviewEvent } from '@study-platform/contracts';
 import { HttpError } from '../../shared/http-error.js';
 import { publishActivity } from '../analytics/activity-publisher.js';
 import { lockStudyProgress } from '../study-progress/activity-recorder.js';
+import {
+  pendingReviewSource,
+  pendingReviewCondition,
+  reviewCountColumns,
+  reviewCounts,
+} from './review-counts.js';
+import type { ReviewCountRow } from './review-counts.js';
 interface StateRow {
   card_id: string;
   due_at: Date;
@@ -62,7 +69,7 @@ const missing = () =>
   new HttpError(404, 'REVIEW_NOT_FOUND', 'Cartão ou baralho não encontrado.');
 export class ReviewsRepository {
   constructor(private readonly source: DataSource) {}
-  detail(userId: string, deckId: string, cardId: string) {
+  detail(userId: string, deckId: string, cardId: string, subjectId?: string) {
     return this.source.transaction(async (manager) => {
       const state = await this.state(userId, deckId, cardId, manager);
       const rows = await manager.query<
@@ -75,8 +82,8 @@ export class ReviewsRepository {
           updated_at: Date;
         }>
       >(
-        'SELECT c.* FROM flashcards c JOIN flashcard_decks d ON d.id=c.deck_id WHERE d.user_id=? AND d.id=? AND c.id=?',
-        [userId, deckId, cardId],
+        `SELECT c.* FROM flashcards c JOIN flashcard_decks d ON d.id=c.deck_id WHERE d.user_id=? AND d.id=? AND c.id=?${subjectId ? ' AND d.subject_id=?' : ''}`,
+        [userId, deckId, cardId, ...(subjectId ? [subjectId] : [])],
       );
       const row = rows[0];
       if (!row) throw missing();
@@ -207,8 +214,13 @@ export class ReviewsRepository {
     return this.source.transaction(async (manager) => {
       if (filters.deckId)
         await this.requireDeck(userId, filters.deckId, manager);
-      const where = `d.user_id=? AND s.due_at<=?${filters.deckId ? ' AND d.id=?' : ''}`;
-      const values = [userId, now, ...(filters.deckId ? [filters.deckId] : [])];
+      const where = `${pendingReviewCondition}${filters.deckId ? ' AND d.id=?' : ''}${filters.subjectId ? ' AND d.subject_id=?' : ''}`;
+      const values = [
+        userId,
+        now,
+        ...(filters.deckId ? [filters.deckId] : []),
+        ...(filters.subjectId ? [filters.subjectId] : []),
+      ];
       const rows = await manager.query<
         Array<{
           id: string;
@@ -220,11 +232,13 @@ export class ReviewsRepository {
           content_generation: number;
         }>
       >(
-        `SELECT c.id,c.deck_id,d.name AS deck_name,c.front,s.due_at,s.revision,s.content_generation FROM flashcard_review_states s JOIN flashcards c ON c.id=s.card_id JOIN flashcard_decks d ON d.id=c.deck_id WHERE ${where} ORDER BY s.due_at,c.id LIMIT ? OFFSET ?`,
+        `SELECT c.id,c.deck_id,d.name AS deck_name,c.front,s.due_at,s.revision,s.content_generation FROM ${pendingReviewSource} WHERE ${where} ORDER BY s.due_at,c.id LIMIT ? OFFSET ?`,
         [...values, filters.pageSize, (filters.page - 1) * filters.pageSize],
       );
-      const counts = await manager.query<{ total: number }[]>(
-        `SELECT COUNT(*) AS total FROM flashcard_review_states s JOIN flashcards c ON c.id=s.card_id JOIN flashcard_decks d ON d.id=c.deck_id WHERE ${where}`,
+      const [counts] = await manager.query<
+        (ReviewCountRow & { total: number })[]
+      >(
+        `SELECT COUNT(*) AS total, ${reviewCountColumns} FROM ${pendingReviewSource} WHERE ${where}`,
         values,
       );
       return {
@@ -237,7 +251,8 @@ export class ReviewsRepository {
           revision: row.revision,
           contentGeneration: row.content_generation,
         })),
-        total: Number(counts[0]!.total),
+        total: Number(counts?.total ?? 0),
+        counts: reviewCounts(counts),
       };
     });
   }

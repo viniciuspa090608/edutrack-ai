@@ -1,11 +1,4 @@
-import { selectOption } from '../../test/select-option.js';
-import {
-  cleanup,
-  render,
-  screen,
-  within,
-  waitFor,
-} from '@testing-library/react';
+import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import type { ReviewEvent, ScheduledCard } from '@study-platform/contracts';
@@ -38,6 +31,7 @@ const scheduled: ScheduledCard = {
     updatedAt: now,
   },
   state,
+  intervals: { AGAIN: 600, HARD: 86400, GOOD: 259200, EASY: 432000 },
 };
 const event: ReviewEvent = {
   id: other,
@@ -163,94 +157,87 @@ afterEach(() => {
   vi.unstubAllGlobals();
   vi.unstubAllEnvs();
 });
-async function start() {
+async function start(onClose = vi.fn()) {
   const user = userEvent.setup();
-  render(<ReviewQueue deckId={id} onClose={vi.fn()} />);
-  await user.click(
-    await screen.findByRole('button', { name: 'Revisar cartão' }),
-  );
-  await screen.findByRole('button', { name: 'Revelar resposta' });
+  render(<ReviewQueue deckId={id} onClose={onClose} />);
+  await screen.findByRole('button', { name: 'Mostrar resposta' });
   return user;
 }
-it('loads an ordered queue without answers, supports page/filter, error retry and empty state', async () => {
+it('scopes the queue to a subject and retries a failed read', async () => {
   queueError = true;
   const user = userEvent.setup();
-  render(<ReviewQueue deckId={id} onClose={vi.fn()} />);
-  expect(screen.getByText('Carregando pendências…')).toBeTruthy();
+  render(<ReviewQueue subjectId={id} onClose={vi.fn()} />);
   await screen.findByRole('alert');
   queueError = false;
-  await user.click(screen.getByRole('button', { name: 'Tentar novamente' }));
+  await user.click(screen.getByRole('button', { name: 'Recarregar fila' }));
   await screen.findByText('Pergunta inicial');
-  expect(screen.queryByText('Resposta secreta')).toBeNull();
-  await user.click(screen.getByRole('button', { name: 'Próxima' }));
-  await screen.findByText('Pergunta seguinte');
-  await selectOption(screen.getByLabelText('Filtrar revisões'), id);
-  await screen.findByText('Pergunta inicial');
-  expect(reads.at(-1)).toContain(`page=1&pageSize=20&deckId=${id}`);
-  empty = true;
-  await selectOption(screen.getByLabelText('Filtrar revisões'), '');
-  await screen.findByText('Nenhuma revisão pendente agora.');
+  expect(reads).toContain(
+    `/flashcard-decks/reviews/pending?page=1&pageSize=1&subjectId=${id}`,
+  );
+  expect(reads.at(-1)).toContain(`/review?subjectId=${id}`);
 });
-it('requires revealing before rating and exits without a write, preserving keyboard focus', async () => {
-  const user = await start();
-  expect(screen.queryByRole('button', { name: 'Bom (GOOD)' })).toBeNull();
+it('reveals by keyboard and associates each rating with its interval without writing', async () => {
+  const close = vi.fn();
+  const user = await start(close);
+  expect(screen.queryByRole('button', { name: 'Bom' })).toBeNull();
   expect(screen.queryByText('Resposta secreta')).toBeNull();
-  expect(document.activeElement?.textContent).toBe('Frente');
+  expect(document.activeElement?.textContent).toBe('Revisão');
   await user.tab();
-  expect(document.activeElement?.textContent).toBe('Revelar resposta');
+  await user.tab();
+  expect(document.activeElement?.textContent).toBe('Mostrar resposta');
   await user.keyboard('{Enter}');
-  expect(screen.getByText('Resposta secreta')).toBeTruthy();
-  for (const rating of [
-    'De novo (AGAIN)',
-    'Difícil (HARD)',
-    'Bom (GOOD)',
-    'Fácil (EASY)',
-  ])
-    expect(screen.getByRole('button', { name: rating })).toBeTruthy();
-  await user.click(screen.getByRole('button', { name: 'Sair da sessão' }));
+  expect(document.activeElement?.textContent).toContain('Resposta secreta');
+  for (const [rating, interval] of [
+    ['De novo', '10 min'],
+    ['Difícil', '1 dia'],
+    ['Bom', '3 dias'],
+    ['Fácil', '5 dias'],
+  ] as const) {
+    const button = screen.getByRole('button', { name: rating });
+    expect(
+      document.getElementById(button.getAttribute('aria-describedby')!)
+        ?.textContent,
+    ).toBe(interval);
+  }
+  await user.click(screen.getByRole('button', { name: 'Voltar ao resumo' }));
+  expect(close).toHaveBeenCalledOnce();
   expect(writes).toHaveLength(0);
-  expect(document.activeElement?.textContent).toBe('Revisões pendentes');
 });
-it('shows the next local date, reloads the queue, advances with the answer hidden and sends once', async () => {
+it('announces the confirmed date and advances in the same scope with the answer hidden', async () => {
   const user = await start();
-  await user.click(screen.getByRole('button', { name: 'Revelar resposta' }));
-  await user.dblClick(screen.getByRole('button', { name: 'Bom (GOOD)' }));
-  await screen.findByText(/Avaliação registrada/);
+  await user.click(screen.getByRole('button', { name: 'Mostrar resposta' }));
+  await user.dblClick(screen.getByRole('button', { name: 'Bom' }));
+  await screen.findByText('Pergunta seguinte');
   expect(screen.getByText(/Avaliação registrada/).textContent).toContain(
     new Date(event.dueAt).toLocaleString(),
   );
-  expect(writes).toHaveLength(1);
-  expect(writes[0]).toEqual({
-    rating: 'GOOD',
-    expectedRevision: 1,
-    idempotencyKey: expect.any(String),
-  });
-  await waitFor(() =>
-    expect(
-      (
-        screen.getByRole('button', {
-          name: 'Próximo cartão',
-        }) as HTMLButtonElement
-      ).disabled,
-    ).toBe(false),
+  expect(writes).toEqual([
+    { rating: 'GOOD', expectedRevision: 1, idempotencyKey: expect.any(String) },
+  ]);
+  expect(reads.filter((url) => url.includes('/pending'))).toEqual(
+    Array(2).fill(
+      `/flashcard-decks/reviews/pending?page=1&pageSize=1&deckId=${id}`,
+    ),
   );
-  await user.click(screen.getByRole('button', { name: 'Próximo cartão' }));
-  await screen.findByText('Pergunta seguinte');
   expect(screen.queryByText('Resposta secreta')).toBeNull();
-  expect(screen.getByRole('button', { name: 'Revelar resposta' })).toBeTruthy();
+  expect(screen.getByRole('button', { name: 'Mostrar resposta' })).toBeTruthy();
+  empty = true;
+  await user.click(screen.getByRole('button', { name: 'Mostrar resposta' }));
+  await user.click(screen.getByRole('button', { name: 'Bom' }));
+  await screen.findByText(/Sessão concluída/);
 });
 it('retries an uncertain confirmation with the identical payload and prevents a changed rating', async () => {
   postError = 'network';
   const user = await start();
-  await user.click(screen.getByRole('button', { name: 'Revelar resposta' }));
-  await user.click(screen.getByRole('button', { name: 'Bom (GOOD)' }));
+  await user.click(screen.getByRole('button', { name: 'Mostrar resposta' }));
+  await user.click(screen.getByRole('button', { name: 'Bom' }));
   await screen.findByRole('alert');
   expect(
-    (screen.getByRole('button', { name: 'Fácil (EASY)' }) as HTMLButtonElement)
+    (screen.getByRole('button', { name: 'Fácil' }) as HTMLButtonElement)
       .disabled,
   ).toBe(true);
   postError = '';
-  await user.click(screen.getByRole('button', { name: 'Bom (GOOD)' }));
+  await user.click(screen.getByRole('button', { name: 'Bom' }));
   await screen.findByText(/Avaliação registrada/);
   expect(writes).toHaveLength(2);
   expect(writes[0]).toEqual(writes[1]);
@@ -258,15 +245,14 @@ it('retries an uncertain confirmation with the identical payload and prevents a 
 it('stops rating on a revision conflict and reloads before continuing', async () => {
   postError = 'conflict';
   const user = await start();
-  await user.click(screen.getByRole('button', { name: 'Revelar resposta' }));
-  await user.click(screen.getByRole('button', { name: 'Bom (GOOD)' }));
+  await user.click(screen.getByRole('button', { name: 'Mostrar resposta' }));
+  await user.click(screen.getByRole('button', { name: 'Bom' }));
   await screen.findByText(/O cartão foi atualizado/);
   expect(
-    (screen.getByRole('button', { name: 'Bom (GOOD)' }) as HTMLButtonElement)
-      .disabled,
+    (screen.getByRole('button', { name: 'Bom' }) as HTMLButtonElement).disabled,
   ).toBe(true);
   await user.click(screen.getByRole('button', { name: 'Recarregar fila' }));
-  await screen.findByRole('button', { name: 'Revisar cartão' });
+  await screen.findByRole('button', { name: 'Mostrar resposta' });
   expect(writes).toHaveLength(1);
 });
 it('loads paginated immutable history, handles errors/empty and returns focus to its trigger', async () => {

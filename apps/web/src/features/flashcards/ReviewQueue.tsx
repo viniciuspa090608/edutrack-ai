@@ -1,125 +1,133 @@
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from '@study-platform/ui/components/ui/select';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import {
-  CardHeader,
-  Card,
-  CardContent,
-} from '@study-platform/ui/components/ui/card';
-import {
-  AlertDescription,
-  Alert,
-} from '@study-platform/ui/components/ui/alert';
-import { Skeleton } from '@study-platform/ui/components/ui/skeleton';
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-} from '@study-platform/ui/components/ui/pagination';
-
-import { Button } from '@study-platform/ui/components/ui/button';
-import { Label } from '@study-platform/ui/components/ui/label';
 import { useEffect, useRef, useState } from 'react';
 import type {
-  PendingList,
   ReviewRequest,
   ReviewRating,
   ScheduledCard,
-  ReviewEvent,
 } from '@study-platform/contracts';
+import { Button } from '@study-platform/ui/components/ui/button';
+import {
+  Alert,
+  AlertDescription,
+} from '@study-platform/ui/components/ui/alert';
+import { Separator } from '@study-platform/ui/components/ui/separator';
+import { Skeleton } from '@study-platform/ui/components/ui/skeleton';
 import { AuthApiError } from '../auth/auth-api.js';
 import { pendingReviews, scheduledCard, rateCard } from './reviews-api.js';
+import type { ReviewScope } from './reviews-api.js';
 import { ReviewHistory } from './ReviewHistory.js';
+
 const ratings: Record<ReviewRating, string> = {
-  AGAIN: 'De novo (AGAIN)',
-  HARD: 'Difícil (HARD)',
-  GOOD: 'Bom (GOOD)',
-  EASY: 'Fácil (EASY)',
+  AGAIN: 'De novo',
+  HARD: 'Difícil',
+  GOOD: 'Bom',
+  EASY: 'Fácil',
 };
+const minutes = new Intl.NumberFormat('pt-BR', {
+  style: 'unit',
+  unit: 'minute',
+  unitDisplay: 'short',
+});
+const days = new Intl.NumberFormat('pt-BR', {
+  style: 'unit',
+  unit: 'day',
+  unitDisplay: 'long',
+});
+const intervalText = (seconds: number) =>
+  seconds % 86400 === 0
+    ? days.format(seconds / 86400)
+    : minutes.format(seconds / 60);
+
 export function ReviewQueue({
   deckId,
+  subjectId,
+  title = 'Revisão',
   onClose,
+  onRated,
 }: {
   deckId?: string | undefined;
+  subjectId?: string | undefined;
+  title?: string;
   onClose: () => void;
+  onRated?: () => void;
 }) {
-  const [filter, setFilter] = useState(''),
-    [page, setPage] = useState(1),
-    [retry, setRetry] = useState(0),
-    [list, setList] = useState<PendingList | null>(null),
-    [listError, setListError] = useState(false);
-  const [session, setSession] = useState<ScheduledCard | null>(null),
-    [revealed, setRevealed] = useState(false),
-    [busy, setBusy] = useState(false),
-    [error, setError] = useState(''),
-    [result, setResult] = useState<ReviewEvent | null>(null),
-    [history, setHistory] = useState(false),
-    [conflict, setConflict] = useState(false);
-  const heading = useRef<HTMLHeadingElement>(null),
-    sessionHeading = useRef<HTMLHeadingElement>(null),
-    historyButton = useRef<HTMLButtonElement>(null),
-    sending = useRef(false),
-    request = useRef<ReviewRequest | null>(null),
-    active = useRef(true);
+  const [session, setSession] = useState<ScheduledCard | null>(null);
+  const [revealed, setRevealed] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [attempt, setAttempt] = useState(0);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
+  const [complete, setComplete] = useState(false);
+  const [conflict, setConflict] = useState(false);
+  const [history, setHistory] = useState(false);
+  const heading = useRef<HTMLHeadingElement>(null);
+  const answer = useRef<HTMLParagraphElement>(null);
+  const historyButton = useRef<HTMLButtonElement>(null);
+  const request = useRef<ReviewRequest | null>(null);
+  const sending = useRef(false);
+  const active = useRef(false);
+
   useEffect(() => {
-    sessionHeading.current?.focus();
-  }, [session?.card.id, revealed, result?.id]);
-  useEffect(() => {
-    heading.current?.focus();
     active.current = true;
+    heading.current?.focus();
     return () => {
       active.current = false;
     };
   }, []);
   useEffect(() => {
-    let active = true;
-    setList(null);
-    setListError(false);
-    void pendingReviews(page, filter || undefined)
-      .then((value) => {
-        if (!active) return;
-        if (page > 1 && !value.items.length) {
-          setPage(Math.max(1, value.totalPages));
+    if (revealed) answer.current?.focus();
+    else if (session || complete) heading.current?.focus();
+  }, [session, revealed, complete]);
+
+  useEffect(() => {
+    let current = true;
+    const scope: ReviewScope | undefined = deckId
+      ? { deckId }
+      : subjectId
+        ? { subjectId }
+        : undefined;
+    async function load() {
+      setLoading(true);
+      setError('');
+      setConflict(false);
+      setSession(null);
+      setComplete(false);
+      setRevealed(false);
+      setHistory(false);
+      request.current = null;
+      try {
+        const { items } = await pendingReviews(1, scope, 1);
+        if (!current) return;
+        const next = items[0];
+        if (!next) {
+          setComplete(true);
           return;
         }
-        setList(value);
-      })
-      .catch(() => {
-        if (active) setListError(true);
-      });
-    return () => {
-      active = false;
-    };
-  }, [page, filter, retry]);
-  async function open(item: PendingList['items'][number]) {
-    if (sending.current) return;
-    sending.current = true;
-    setBusy(true);
-    setError('');
-    setSession(null);
-    setResult(null);
-    setRevealed(false);
-    setHistory(false);
-    setConflict(false);
-    request.current = null;
-    try {
-      const card = await scheduledCard(item.deckId, item.id);
-      if (active.current) setSession(card);
-    } catch {
-      if (active.current)
-        setError('Não foi possível abrir o cartão. Tente novamente.');
-    } finally {
-      sending.current = false;
-      if (active.current) setBusy(false);
+        const card = await scheduledCard(next.deckId, next.id, subjectId);
+        if (!current) return;
+        if (!card.intervals) throw new Error('Missing review intervals');
+        if (card.state.revision !== next.revision) {
+          setConflict(true);
+          setError(
+            'O cartão foi atualizado. Recarregue a fila para continuar.',
+          );
+          return;
+        }
+        setSession(card);
+      } catch {
+        if (current) setError('Não foi possível carregar o próximo cartão.');
+      } finally {
+        if (current) setLoading(false);
+      }
     }
-  }
+    void load();
+    return () => {
+      current = false;
+    };
+  }, [deckId, subjectId, attempt]);
+
   async function rate(rating: ReviewRating) {
-    if (!session || !revealed || sending.current) return;
+    if (!session || !revealed || conflict || sending.current) return;
     const payload = request.current ?? {
       rating,
       expectedRevision: session.state.revision,
@@ -130,260 +138,143 @@ export function ReviewQueue({
     setBusy(true);
     setError('');
     try {
-      const event = await rateCard(
+      const result = await rateCard(
         session.card.deckId,
         session.card.id,
         payload,
       );
-      if (active.current) {
-        setResult(event);
-        setRetry((value) => value + 1);
-      }
+      if (!active.current) return;
+      setNotice(
+        `Avaliação registrada. Próxima revisão: ${new Date(result.dueAt).toLocaleString()}.`,
+      );
+      setLoading(true);
+      onRated?.();
+      setAttempt((value) => value + 1);
     } catch (cause) {
-      if (active.current) {
-        if (cause instanceof AuthApiError && cause.status === 409) {
-          setConflict(true);
-          setError(
-            'O cartão foi atualizado ou ainda não está pendente. Recarregue a fila para continuar.',
-          );
-        } else
-          setError(
-            'Não foi possível confirmar. Tente novamente com a mesma avaliação; o pedido não será duplicado.',
-          );
+      if (!active.current) return;
+      if (cause instanceof AuthApiError && cause.status === 409) {
+        setConflict(true);
+        setError(
+          'O cartão foi atualizado ou ainda não está pendente. Recarregue a fila.',
+        );
+      } else {
+        setError(
+          'Não foi possível confirmar. Tente novamente com a mesma avaliação.',
+        );
       }
     } finally {
       sending.current = false;
       if (active.current) setBusy(false);
     }
   }
-  function finish() {
-    setSession(null);
-    setResult(null);
-    setHistory(false);
-    request.current = null;
-    setRevealed(false);
-    heading.current?.focus();
-  }
+
   return (
-    <Card asChild>
-      <section
-        className="flashcard-panel review-queue"
-        aria-label="Revisões pendentes"
-      >
-        <CardHeader>
-          <h2 ref={heading} tabIndex={-1}>
-            Revisões pendentes
-          </h2>
-        </CardHeader>
-        <CardContent>
-          {error && (
-            <Alert variant="destructive" role="alert">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-          {busy && (
-            <div>
-              <Skeleton aria-hidden="true" className="my-2 h-3 w-2/3" />
-              <p role="status">Processando revisão…</p>
-            </div>
-          )}
-          {session ? (
-            <Card asChild>
-              <section
-                className="flashcard-panel"
-                aria-label="Sessão de revisão"
-              >
-                <CardHeader>
-                  <h3 ref={sessionHeading} tabIndex={-1}>
-                    Frente
-                  </h3>
-                </CardHeader>
-                <CardContent>
-                  <p className="flashcard-text">{session.card.front}</p>
-                  {revealed && (
-                    <div aria-live="polite">
-                      <h4>Resposta</h4>
-                      <p className="flashcard-text">{session.card.back}</p>
-                    </div>
-                  )}
-                  {result ? (
-                    <>
-                      <p role="status">
-                        Avaliação registrada. Próxima revisão:{' '}
-                        {new Date(result.dueAt).toLocaleString()}.
-                      </p>
-                      <Button
-                        disabled={!list || listError}
-                        onClick={() => {
-                          const next = list?.items.find(
-                            (item) => item.id !== session.card.id,
-                          );
-                          if (next) void open(next);
-                          else finish();
-                        }}
-                      >
-                        Próximo cartão
-                      </Button>
-                    </>
-                  ) : (
-                    <>
-                      {!revealed ? (
-                        <Button onClick={() => setRevealed(true)}>
-                          Revelar resposta
-                        </Button>
-                      ) : (
-                        <div className="flashcard-actions">
-                          {(Object.keys(ratings) as ReviewRating[]).map(
-                            (rating) => (
-                              <Button
-                                key={rating}
-                                disabled={
-                                  busy ||
-                                  conflict ||
-                                  (!!request.current &&
-                                    request.current.rating !== rating)
-                                }
-                                onClick={() => void rate(rating)}
-                              >
-                                {ratings[rating]}
-                              </Button>
-                            ),
-                          )}
-                        </div>
-                      )}
-                      {conflict && (
-                        <Button
-                          onClick={() => {
-                            finish();
-                            setConflict(false);
-                            setError('');
-                            setRetry(retry + 1);
-                          }}
-                        >
-                          Recarregar fila
-                        </Button>
-                      )}
-                    </>
-                  )}
-                  <Button
-                    ref={historyButton}
-                    disabled={busy}
-                    onClick={() => setHistory(true)}
-                  >
-                    Ver histórico
-                  </Button>
-                  <Button disabled={busy} onClick={finish}>
-                    Sair da sessão
-                  </Button>
-                  {history && (
-                    <ReviewHistory
-                      deckId={session.card.deckId}
-                      cardId={session.card.id}
-                      onClose={() => {
-                        setHistory(false);
-                        historyButton.current?.focus();
-                      }}
-                    />
-                  )}
-                </CardContent>
-              </section>
-            </Card>
-          ) : (
-            <>
-              {deckId && (
-                <Label>
-                  Filtrar revisões
-                  <Select
-                    value={filter || '__edutrack_empty__'}
-                    onValueChange={(selected) => {
-                      setFilter(
-                        selected === '__edutrack_empty__' ? '' : selected,
-                      );
-                      setPage(1);
-                    }}
-                  >
-                    <SelectTrigger className="w-full min-w-0">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent position="popper">
-                      <SelectItem value="__edutrack_empty__">
-                        Todos os baralhos
-                      </SelectItem>
-                      <SelectItem value={deckId}>
-                        Somente baralho aberto
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </Label>
-              )}
-              {listError ? (
-                <Alert variant="destructive" role="alert">
-                  <AlertDescription>
-                    Não foi possível carregar pendências.{' '}
-                    <Button onClick={() => setRetry(retry + 1)}>
-                      Tentar novamente
-                    </Button>
-                  </AlertDescription>
-                </Alert>
-              ) : !list ? (
-                <div>
-                  <Skeleton aria-hidden="true" className="my-2 h-3 w-2/3" />
-                  <p role="status">Carregando pendências…</p>
-                </div>
-              ) : (
-                <>
-                  <p role="status">{list.total} cartões pendentes.</p>
-                  {!list.items.length && <p>Nenhuma revisão pendente agora.</p>}
-                  <ul className="flashcard-list">
-                    {list.items.map((item) => (
-                      <li key={item.id}>
-                        <h3>{item.deckName}</h3>
-                        <p className="flashcard-text">{item.front}</p>
-                        <p>
-                          Vencimento: {new Date(item.dueAt).toLocaleString()}
-                        </p>
-                        <Button disabled={busy} onClick={() => void open(item)}>
-                          Revisar cartão
-                        </Button>
-                      </li>
-                    ))}
-                  </ul>
-                  <Pagination aria-label="Páginas das pendências">
-                    <PaginationContent className="flex-wrap">
-                      <PaginationItem>
-                        <Button
-                          aria-label="Anterior"
-                          disabled={page === 1}
-                          onClick={() => setPage(page - 1)}
-                        >
-                          <ChevronLeft aria-hidden="true" />
-                        </Button>
-                      </PaginationItem>
-                      <PaginationItem>
-                        <span>
-                          Página {page} de {Math.max(1, list.totalPages)}
-                        </span>
-                      </PaginationItem>
-                      <PaginationItem>
-                        <Button
-                          aria-label="Próxima"
-                          disabled={page >= list.totalPages}
-                          onClick={() => setPage(page + 1)}
-                        >
-                          <ChevronRight aria-hidden="true" />
-                        </Button>
-                      </PaginationItem>
-                    </PaginationContent>
-                  </Pagination>
-                </>
-              )}
-            </>
-          )}
-          <Button disabled={busy} onClick={onClose}>
-            Fechar revisões
+    <section className="review-queue" aria-label="Sessão de revisão">
+      <header className="review-header">
+        <Button variant="outline" disabled={busy} onClick={onClose}>
+          Voltar ao resumo
+        </Button>
+        <h2 ref={heading} tabIndex={-1}>
+          {title}
+        </h2>
+        {session && (
+          <Button
+            variant="ghost"
+            ref={historyButton}
+            disabled={busy}
+            onClick={() => setHistory(true)}
+          >
+            Ver histórico
           </Button>
-        </CardContent>
-      </section>
-    </Card>
+        )}
+      </header>
+      <p className="review-notice" role="status">
+        {notice}
+      </p>
+      {error && (
+        <Alert variant="destructive" role="alert">
+          <AlertDescription>
+            {error}
+            {(!session || conflict) && (
+              <Button
+                variant="outline"
+                onClick={() => setAttempt((value) => value + 1)}
+              >
+                Recarregar fila
+              </Button>
+            )}
+          </AlertDescription>
+        </Alert>
+      )}
+      {loading && (
+        <div role="status">
+          <Skeleton aria-hidden="true" className="my-2 h-3 w-2/3" />
+          Carregando cartão…
+        </div>
+      )}
+      {complete && (
+        <p role="status">
+          {notice ? 'Sessão concluída. ' : ''}Nenhuma revisão pendente agora.
+        </p>
+      )}
+      {session && !loading && (
+        <div className="review-stage">
+          <div className="review-reading">
+            <p className="flashcard-text">{session.card.front}</p>
+            {revealed && (
+              <div>
+                <Separator className="my-4" />
+                <p ref={answer} tabIndex={-1} className="flashcard-text">
+                  <span className="sr-only">Resposta: </span>
+                  {session.card.back}
+                </p>
+              </div>
+            )}
+          </div>
+          <div className="review-controls">
+            {!revealed ? (
+              <Button onClick={() => setRevealed(true)}>
+                Mostrar resposta
+              </Button>
+            ) : (
+              session.intervals && (
+                <div className="review-ratings">
+                  {(Object.keys(ratings) as ReviewRating[]).map((rating) => (
+                    <div key={rating}>
+                      <span id={`interval-${rating}`}>
+                        {intervalText(session.intervals![rating])}
+                      </span>
+                      <Button
+                        className={`review-rating review-rating-${rating.toLowerCase()}`}
+                        aria-describedby={`interval-${rating}`}
+                        disabled={
+                          busy ||
+                          conflict ||
+                          (!!request.current &&
+                            request.current.rating !== rating)
+                        }
+                        onClick={() => void rate(rating)}
+                      >
+                        {ratings[rating]}
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )
+            )}
+          </div>
+        </div>
+      )}
+      {session && history && (
+        <ReviewHistory
+          deckId={session.card.deckId}
+          cardId={session.card.id}
+          onClose={() => {
+            setHistory(false);
+            historyButton.current?.focus();
+          }}
+        />
+      )}
+    </section>
   );
 }

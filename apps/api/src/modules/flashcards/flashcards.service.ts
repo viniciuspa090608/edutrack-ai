@@ -6,6 +6,7 @@ import {
   deckSchema,
   cardSchema,
   deckListSchema,
+  deckFiltersSchema,
   cardListSchema,
   flashcardPaginationSchema,
   generatedCardsSchema,
@@ -27,6 +28,7 @@ export class FlashcardsService {
     private readonly repository: FlashcardsRepository,
     private readonly subjects: Pick<SubjectsService, 'requireOwned'>,
     private readonly prefs?: Pick<PreferencesService, 'requireEnabled'>,
+    private readonly clock = () => new Date(),
   ) {}
   confirmGenerated(
     userId: string,
@@ -75,8 +77,13 @@ export class FlashcardsService {
     return this.repository.delete(userId, id);
   }
   async list(userId: string, input: unknown) {
-    const pagination = parse(flashcardPaginationSchema, input);
-    const result = await this.repository.list(userId, pagination);
+    const { subjectId, ...pagination } = parse(deckFiltersSchema, input);
+    if (subjectId) await this.subjects.requireOwned(userId, subjectId);
+    const result = await this.repository.list(
+      userId,
+      { ...pagination, subjectId },
+      this.clock(),
+    );
     return deckListSchema.parse({
       ...result,
       ...pagination,

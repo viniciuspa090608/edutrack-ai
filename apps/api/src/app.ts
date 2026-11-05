@@ -197,6 +197,7 @@ export function createApp({
       new ReviewsRepository(source),
       prefs,
       reviewClock,
+      subjects,
     );
     const progress = new StudyProgressService(
       new StudyProgressRepository(source),
@@ -225,6 +226,7 @@ export function createApp({
       new FlashcardsRepository(source),
       subjects,
       prefs,
+      reviewClock,
     );
     app.use(
       '/flashcard-decks',
@@ -241,15 +243,7 @@ export function createApp({
         env,
       ),
     );
-    app.use(
-      '/flashcard-decks',
-      reviewsRoutes(
-        service,
-        new ReviewsService(new ReviewsRepository(source), prefs, reviewClock),
-        prefs,
-        env,
-      ),
-    );
+    app.use('/flashcard-decks', reviewsRoutes(service, reviews, prefs, env));
     app.use(
       '/decks',
       importRoutes(
