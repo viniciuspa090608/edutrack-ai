@@ -239,11 +239,27 @@
   font-size: 0.875rem;
 }
 .routine-week {
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 20px;
   align-items: stretch;
 }
+.routine-week > :last-child {
+  grid-column: 1 / -1;
+}
+@media (min-width: 1100px) {
+  .routine-week {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+  }
+  .routine-week > .routine-day {
+    grid-column: span 3;
+  }
+  .routine-week > .routine-day:nth-child(n + 5) {
+    grid-column: span 4;
+  }
+}
 .routine-day {
+  min-width: 0;
+  overflow-wrap: anywhere;
   gap: 1rem;
   padding: 1.25rem;
 }
@@ -298,9 +314,18 @@
     padding-inline: 1rem;
   }
   .routine-form-overview,
-  .routine-slot-fields,
-  .routine-week {
+  .routine-slot-fields {
     grid-template-columns: minmax(0, 1fr);
+  }
+  .routine-week {
+    gap: 8px;
+  }
+  .routine-week .routine-day {
+    padding: 8px;
+  }
+  .routine-week .routine-day button {
+    white-space: normal;
+    height: auto;
   }
   .routine-heading > .routine-actions,
   .routine-actions > button,

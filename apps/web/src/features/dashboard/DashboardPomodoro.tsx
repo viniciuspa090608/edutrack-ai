@@ -63,7 +63,7 @@ export function DashboardPomodoro({ initial }: { initial: PomodoroSession }) {
     );
     return () => window.clearInterval(timer);
   }, [session, error]);
-  const { remaining, state, boundary } = projectPomodoro(session, tick);
+  const { remaining, boundary } = projectPomodoro(session, tick);
   useEffect(() => {
     if (boundary) void reconcile();
   }, [boundary, reconcile]);
@@ -89,20 +89,10 @@ export function DashboardPomodoro({ initial }: { initial: PomodoroSession }) {
           >
             {formatPomodoro(remaining)}
           </strong>
-          <p>
-            {state === 'RUNNING'
-              ? 'Em andamento'
-              : state === 'PAUSED'
-                ? 'Pausada'
-                : 'Entre blocos'}
-          </p>
         </>
       ) : (
         <p>Sessão encerrada.</p>
       )}
-      <a className="dashboard-action" href="/app/pomodoro">
-        Retomar Pomodoro
-      </a>
     </>
   );
 }

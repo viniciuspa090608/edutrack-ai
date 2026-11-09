@@ -203,7 +203,7 @@ it('waits for the actual subject response before offering the first creation', a
 it('does not claim a subject collection is empty when only its page is empty', async () => {
   listTotal = 21;
   render(<SubjectsPage />);
-  await screen.findByText('Página 1 de 2');
+  await screen.findByRole('navigation', { name: 'Páginas de matérias' });
   expect(
     screen.queryByRole('heading', { name: 'Nenhuma matéria ainda' }),
   ).toBeNull();
@@ -211,7 +211,7 @@ it('does not claim a subject collection is empty when only its page is empty', a
     screen.queryByRole('button', { name: 'Adicionar matéria' }),
   ).toBeNull();
   expect(
-    screen.getByRole('button', { name: 'Próxima' }).matches(':disabled'),
+    screen.getByRole('button', { name: 'Próxima página' }).matches(':disabled'),
   ).toBe(false);
 });
 it('opens the existing subject form from the empty CTA and restores focus on cancel', async () => {

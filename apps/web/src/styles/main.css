@@ -138,3 +138,10 @@ a[data-slot='button'],
     transition-duration: 0.01ms !important;
   }
 }
+
+@media (forced-colors: none) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+}

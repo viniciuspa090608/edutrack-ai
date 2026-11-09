@@ -193,7 +193,7 @@ it('waits for the actual task response before offering the first creation', asyn
 it('does not claim a task collection is empty when only its page is empty', async () => {
   listTotal = 21;
   render(<TasksPage />);
-  await screen.findByText(/Página 1 de 2/);
+  await screen.findByRole('navigation', { name: 'Paginação de tarefas' });
   expect(
     screen.queryByRole('heading', { name: 'Nenhuma tarefa ainda' }),
   ).toBeNull();
@@ -305,11 +305,23 @@ it('keeps combined filters when paging, resets to page one and clears empty resu
   await interaction.click(
     screen.getByRole('button', { name: 'Aplicar filtros' }),
   );
-  await screen.findByText(/Página 1 de 3/);
+  await waitFor(() =>
+    expect(
+      screen
+        .getByRole('button', { name: 'Página anterior' })
+        .matches(':disabled'),
+    ).toBe(true),
+  );
   await interaction.click(
     screen.getByRole('button', { name: 'Próxima página' }),
   );
-  await screen.findByText(/Página 2 de 3/);
+  await waitFor(() =>
+    expect(
+      screen
+        .getByRole('button', { name: 'Página anterior' })
+        .matches(':disabled'),
+    ).toBe(false),
+  );
   const query = requests.filter((r) => r.url.pathname === '/tasks').at(-1)!.url
     .searchParams;
   expect(Object.fromEntries(query)).toMatchObject({

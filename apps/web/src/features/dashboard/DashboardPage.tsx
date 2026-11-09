@@ -241,8 +241,12 @@ export function DashboardPage({ displayName }: { displayName: string }) {
           <CardContent>
             <div
               className="dashboard-card-body"
-              tabIndex={key === 'tasks' ? undefined : 0}
-              aria-label={key === 'tasks' ? undefined : `Conteúdo de ${title}`}
+              tabIndex={key === 'tasks' || key === 'pomodoro' ? undefined : 0}
+              aria-label={
+                key === 'tasks' || key === 'pomodoro'
+                  ? undefined
+                  : `Conteúdo de ${title}`
+              }
             >
               {section.state === 'error' ? (
                 <>
@@ -589,11 +593,16 @@ export function DashboardPage({ displayName }: { displayName: string }) {
                     </p>
                   </>
                 )}
-                <p>
-                  Histórico rastreado desde{' '}
-                  {streak?.trackingStartedAt.slice(0, 10)}. Atividades
-                  anteriores não contam.
-                </p>
+                {streak?.trackingStartedAt && (
+                  <p>
+                    Histórico desde{' '}
+                    {streak.trackingStartedAt
+                      .slice(0, 10)
+                      .split('-')
+                      .reverse()
+                      .join('/')}
+                  </p>
+                )}
                 {streak && streak.activeDays > 0 && (
                   <p>
                     <strong>{streak.activeDays} dias ativos</strong> no

@@ -121,7 +121,7 @@ const paths = [
   '/app/flashcards',
   '/app/pomodoro',
   '/app/rotinas',
-  '/app/estatisticas',
+  '/app/progresso',
   '/conta',
 ];
 describe('authenticated navigation', () => {
@@ -175,7 +175,7 @@ describe('authenticated navigation', () => {
       ).getAllByRole('link'),
     ).toHaveLength(1);
   });
-  it.each([...paths, '/app/progresso'])(
+  it.each([...paths, '/app/estatisticas'])(
     'marks only the actual destination on %s and identifies routes inside More',
     async (path) => {
       window.history.replaceState({}, '', `${path}?test=1#section`);
@@ -185,14 +185,14 @@ describe('authenticated navigation', () => {
           .getByRole('navigation')
           .querySelector('[aria-current="page"]')
           ?.getAttribute('href'),
-      ).toBe(path === '/app/progresso' ? '/app/estatisticas' : path);
+      ).toBe(path === '/app/estatisticas' ? '/app/progresso' : path);
       expect(
         screen
           .getByRole('navigation')
           .querySelectorAll('[aria-current="page"]'),
       ).toHaveLength(1);
       resize(false);
-      if (paths.slice(4).includes(path) || path === '/app/progresso') {
+      if (paths.slice(4).includes(path) || path === '/app/estatisticas') {
         const trigger = screen.getByRole('button', {
           name: 'Mais, contém a página atual',
         });
@@ -203,14 +203,14 @@ describe('authenticated navigation', () => {
             .getByRole('dialog')
             .querySelector('[aria-current="page"]')
             ?.getAttribute('href'),
-        ).toBe(path === '/app/progresso' ? '/app/estatisticas' : path);
+        ).toBe(path === '/app/estatisticas' ? '/app/progresso' : path);
       } else
         expect(
           screen
             .getByRole('navigation')
             .querySelector('[aria-current="page"]')
             ?.getAttribute('href'),
-        ).toBe(path === '/app/progresso' ? '/app/estatisticas' : path);
+        ).toBe(path === '/app/estatisticas' ? '/app/progresso' : path);
     },
   );
   it('recognizes module descendants without marking Home or inventing routes', () => {

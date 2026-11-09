@@ -1,5 +1,4 @@
 import { useTransientMessage } from '../../components/useTransientMessage.js';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { FieldSet, FieldLegend } from '@study-platform/ui/components/ui/field';
 import { Skeleton } from '@study-platform/ui/components/ui/skeleton';
 import {
@@ -9,6 +8,7 @@ import {
 import {
   Pagination,
   PaginationContent,
+  PaginationButton,
   PaginationItem,
 } from '@study-platform/ui/components/ui/pagination';
 import { Label } from '@study-platform/ui/components/ui/label';
@@ -666,29 +666,20 @@ export function RoadmapRevisionTools({
             <Pagination aria-label="Paginação do histórico">
               <PaginationContent className="flex-wrap">
                 <PaginationItem>
-                  <Button
-                    aria-label="Revisões anteriores"
+                  <PaginationButton
+                    direction="previous"
                     disabled={historyPage === 1 || busy || !!mode}
                     onClick={() => setHistoryPage(historyPage - 1)}
-                  >
-                    <ChevronLeft aria-hidden="true" />
-                  </Button>
+                  />
                 </PaginationItem>
                 <PaginationItem>
-                  <span>
-                    Página {historyPage} de {history.totalPages}
-                  </span>
-                </PaginationItem>
-                <PaginationItem>
-                  <Button
-                    aria-label="Próximas revisões"
+                  <PaginationButton
+                    direction="next"
                     disabled={
                       historyPage >= history.totalPages || busy || !!mode
                     }
                     onClick={() => setHistoryPage(historyPage + 1)}
-                  >
-                    <ChevronRight aria-hidden="true" />
-                  </Button>
+                  />
                 </PaginationItem>
               </PaginationContent>
             </Pagination>

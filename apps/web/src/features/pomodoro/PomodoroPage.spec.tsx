@@ -466,13 +466,23 @@ it('preserves history pagination, ended dates and unresolved task references', a
   expect(
     entry?.querySelector('time[datetime="2026-09-26T12:10:00.000Z"]'),
   ).toBeTruthy();
-  fireEvent.click(screen.getByRole('button', { name: 'Próxima' }));
-  await screen.findByText('Página 2 de 2');
+  fireEvent.click(screen.getByRole('button', { name: 'Próxima página' }));
+  await waitFor(() =>
+    expect(
+      screen
+        .getByRole('button', { name: 'Próxima página' })
+        .matches(':disabled'),
+    ).toBe(true),
+  );
   expect(api.pomodoroHistory).toHaveBeenLastCalledWith(2, undefined);
   expect(
-    screen.getByRole('button', { name: 'Próxima' }).hasAttribute('disabled'),
+    screen
+      .getByRole('button', { name: 'Próxima página' })
+      .hasAttribute('disabled'),
   ).toBe(true);
-  fireEvent.click(screen.getByRole('button', { name: 'Anterior' }));
-  await screen.findByText('Página 1 de 2');
+  fireEvent.click(screen.getByRole('button', { name: 'Página anterior' }));
+  await waitFor(() =>
+    expect(api.pomodoroHistory).toHaveBeenLastCalledWith(1, undefined),
+  );
   expect(listTasks).not.toHaveBeenCalled();
 });

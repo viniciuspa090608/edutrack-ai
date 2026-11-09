@@ -26,6 +26,7 @@ import { Skeleton } from '@study-platform/ui/components/ui/skeleton';
 import {
   Monitor,
   Globe,
+  Mail,
   LogOut,
   SlidersHorizontal,
   UserRound,
@@ -39,7 +40,13 @@ import {
 import { setTheme, useThemePreference } from '../../app/theme.js';
 import '../../styles/account.css';
 import { StudyTimeZoneSection } from '../study-progress/StudyTimeZoneSection.js';
-import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
 import type {
   Capability,
   ModulePreferences,
@@ -68,6 +75,7 @@ export function ProfilePage({
   accountActions?: ReactNode;
 }) {
   const theme = useThemePreference();
+  const photoInput = useRef<HTMLInputElement>(null);
   const [user, setUser] = useState<UserProfile | null>(null);
   const [prefs, setPrefs] = useState<ModulePreferences | null>(null);
   const activeSection = useAccountSections(!!user && !!prefs);
@@ -276,6 +284,7 @@ export function ProfilePage({
                 </span>
                 <div>
                   <h2 id="profile-title">Seu perfil</h2>
+                  <p>Gerencie suas informações pessoais e sua conta.</p>
                 </div>
               </CardHeader>
               <CardContent>
@@ -304,14 +313,13 @@ export function ProfilePage({
                           Prévia da nova foto. Salve para confirmar a alteração.
                         </p>
                       )}
-                      <Label htmlFor="photo" className="sr-only">
-                        Foto de perfil
-                      </Label>
                       <Input
+                        hidden
+                        ref={photoInput}
+                        aria-label="Arquivo da foto de perfil"
                         id="photo"
                         type="file"
                         accept="image/jpeg,image/png,image/webp"
-                        aria-describedby="photo-rules"
                         disabled={busy}
                         onChange={(event) => {
                           const file = event.target.files?.[0];
@@ -332,6 +340,14 @@ export function ProfilePage({
                         }}
                       />
                       <div className="account-actions">
+                        <Button
+                          type="button"
+                          disabled={busy}
+                          aria-describedby="photo-rules"
+                          onClick={() => photoInput.current?.click()}
+                        >
+                          Alterar foto
+                        </Button>
                         <Button
                           disabled={busy || !selected}
                           onClick={() => {
@@ -361,22 +377,14 @@ export function ProfilePage({
                             }, 'Foto removida.');
                           }}
                         >
-                          Remover foto
+                          Remover
                         </Button>
                       </div>
-                      <p id="photo-rules">
-                        JPEG, PNG ou WebP estático, até 2 MiB. De 64 a 4096
-                        pixels por lado, até 16 milhões de pixels.
-                      </p>
+                      <p id="photo-rules">JPG, PNG ou WebP · Máximo de 2 MB</p>
                     </div>
                   </div>
                 </section>
-                <section
-                  className="account-profile-group"
-                  aria-labelledby="account-personal-title"
-                >
-                  <h3 id="account-personal-title">Informações pessoais</h3>
-                  <p>Atualize seus dados de identificação.</p>
+                <div className="account-profile-group">
                   <form
                     onSubmit={(event) => {
                       event.preventDefault();
@@ -393,7 +401,7 @@ export function ProfilePage({
                       }, 'Nome salvo.');
                     }}
                   >
-                    <Label htmlFor="display-name">Nome exibido</Label>
+                    <Label htmlFor="display-name">Nome de exibição</Label>
                     <div className="account-name-row">
                       <Input
                         aria-describedby="account-name-help"
@@ -411,7 +419,7 @@ export function ProfilePage({
                       permanece o mesmo.
                     </p>
                   </form>
-                </section>
+                </div>
                 <section
                   className="account-profile-group"
                   aria-labelledby="account-profile-security-title"
@@ -422,14 +430,21 @@ export function ProfilePage({
                   <p>
                     Gerencie seu endereço de e-mail de acesso e recuperação.
                   </p>
-                  <div className="account-detail account-email-row">
-                    <div>
-                      <strong>Endereço de e-mail</strong>
-                      <p>{user.email}</p>
-                    </div>
-                    <a href="#account-security">
-                      Alterar e-mail com segurança{' '}
-                      <ChevronRight aria-hidden="true" />
+                  <strong id="account-email-label">Endereço de e-mail</strong>
+                  <div
+                    className="account-detail account-email-row"
+                    role="group"
+                    aria-labelledby="account-email-label"
+                  >
+                    <p>
+                      <Mail aria-hidden="true" />
+                      <span>{user.email}</span>
+                    </p>
+                    <a
+                      href="#account-security"
+                      aria-label="Alterar endereço de e-mail"
+                    >
+                      Alterar <ChevronRight aria-hidden="true" />
                     </a>
                   </div>
                 </section>

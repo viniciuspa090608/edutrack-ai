@@ -206,6 +206,9 @@
   font-weight: 650;
   margin-inline: 1.5rem;
 }
+.task-filters:not([open]) {
+  padding-block: 0.75rem;
+}
 .task-filters[open] > form {
   margin-top: 1rem;
 }
@@ -329,9 +332,18 @@
 .task-title-row [data-slot='checkbox'] {
   flex-shrink: 0;
 }
-.task-card-footer-compact {
+.task-card-summary {
   display: flex;
-  justify-content: flex-end;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+.task-card-summary > div {
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+.task-card-summary .task-detail-link {
+  margin-inline-start: auto;
 }
 .task-card-footer {
   display: flex;

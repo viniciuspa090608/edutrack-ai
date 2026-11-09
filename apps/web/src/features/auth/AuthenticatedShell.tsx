@@ -59,7 +59,7 @@ const secondary: Destination[] = [
   { path: '/app/pomodoro', label: 'Pomodoro', icon: Timer },
   { path: '/app/rotinas', label: 'Rotinas', icon: CalendarDays },
   {
-    path: '/app/estatisticas',
+    path: '/app/progresso',
     label: 'Relatório',
     icon: ChartNoAxesCombined,
   },
@@ -68,7 +68,7 @@ const secondary: Destination[] = [
 function activeDestination(item: Destination, pathname: string) {
   return (
     item.path === pathname ||
-    (item.path === '/app/estatisticas' && pathname === '/app/progresso') ||
+    (item.path === '/app/progresso' && pathname === '/app/estatisticas') ||
     moduleAtPath(pathname)?.path === item.path
   );
 }

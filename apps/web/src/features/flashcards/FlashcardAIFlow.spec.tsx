@@ -168,7 +168,7 @@ it('validates source and destination, supports paginated own decks and preserves
     screen.getByLabelText('Conteúdo ou assunto').getAttribute('aria-invalid'),
   ).toBe('true');
   expect(calls.filter((call) => call.method === 'POST')).toHaveLength(0);
-  await user.click(screen.getByRole('button', { name: 'Próxima' }));
+  await user.click(screen.getByRole('button', { name: 'Próxima página' }));
   await waitFor(() =>
     expect(screen.queryByText('Carregando baralhos…')).toBeNull(),
   );

@@ -181,7 +181,7 @@ describe('profile page', () => {
         .getAllByRole('link')
         .map((link) => link.getAttribute('href')),
     ).toEqual(ids.map((id) => `#${id}`));
-    const input = screen.getByLabelText('Nome exibido');
+    const input = screen.getByLabelText('Nome de exibição');
     input.focus();
     let offset = 0;
     const original = Element.prototype.getBoundingClientRect;
@@ -251,7 +251,7 @@ describe('profile page', () => {
     const nav = screen.getByRole('navigation', {
       name: 'Configurações da conta',
     });
-    const input = screen.getByLabelText('Nome exibido');
+    const input = screen.getByLabelText('Nome de exibição');
     await interaction.clear(input);
     await interaction.type(input, 'Nome em edição');
     for (const link of within(nav).getAllByRole('link')) {
@@ -308,8 +308,11 @@ describe('profile page', () => {
   it('blocks repeated submissions and waits for confirmed API data before showing success', async () => {
     await open();
     const interaction = userEvent.setup();
-    await interaction.clear(screen.getByLabelText('Nome exibido'));
-    await interaction.type(screen.getByLabelText('Nome exibido'), 'Novo nome');
+    await interaction.clear(screen.getByLabelText('Nome de exibição'));
+    await interaction.type(
+      screen.getByLabelText('Nome de exibição'),
+      'Novo nome',
+    );
     let release!: () => void;
     mutationGate = new Promise<void>((resolve) => {
       release = resolve;
@@ -445,7 +448,7 @@ describe('profile page', () => {
   it('keeps confirmed data after errors and saves a normalized name on retry', async () => {
     await open();
     const interaction = userEvent.setup();
-    const name = screen.getByLabelText('Nome exibido');
+    const name = screen.getByLabelText('Nome de exibição');
     await interaction.clear(name);
     await interaction.type(name, '  Joana  ');
     failed = '/profile';
@@ -480,7 +483,7 @@ describe('profile page', () => {
   it('previews, uploads and removes photos and rejects excessive file size', async () => {
     await open();
     const interaction = userEvent.setup();
-    const input = screen.getByLabelText('Foto de perfil');
+    const input = screen.getByLabelText('Arquivo da foto de perfil');
     const file = new File(['png-bytes'], 'photo.png', { type: 'image/png' });
     await interaction.upload(input, file);
     expect(
@@ -506,9 +509,7 @@ describe('profile page', () => {
       requests.find((r) => r.path === '/profile/avatar' && r.method === 'PUT')
         ?.body,
     ).toBe(file);
-    await interaction.click(
-      screen.getByRole('button', { name: 'Remover foto' }),
-    );
+    await interaction.click(screen.getByRole('button', { name: 'Remover' }));
     await screen.findByText('Foto removida.');
     expect(headerAvatar.querySelector('img')).toBeNull();
     expect(screen.getByRole('img', { name: 'Avatar padrão' })).toBeTruthy();

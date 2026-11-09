@@ -515,7 +515,7 @@ it('paginates decks and cards, distinguishes card load failure and empty deck', 
   await interaction.click(
     within(screen.getByRole('navigation', { name: 'Baralhos' })).getByRole(
       'button',
-      { name: 'Próxima' },
+      { name: 'Próxima página' },
     ),
   );
   await screen.findByRole('button', { name: 'Baralho 20' });
@@ -523,14 +523,14 @@ it('paginates decks and cards, distinguishes card load failure and empty deck', 
   await interaction.click(
     within(screen.getByRole('navigation', { name: 'Baralhos' })).getByRole(
       'button',
-      { name: 'Anterior' },
+      { name: 'Página anterior' },
     ),
   );
   await openDeck();
   await interaction.click(
     within(screen.getByRole('navigation', { name: 'Cartões' })).getByRole(
       'button',
-      { name: 'Próxima' },
+      { name: 'Próxima página' },
     ),
   );
   await screen.findByText('Pergunta 21');
@@ -538,7 +538,7 @@ it('paginates decks and cards, distinguishes card load failure and empty deck', 
   await interaction.click(
     within(screen.getByRole('navigation', { name: 'Cartões' })).getByRole(
       'button',
-      { name: 'Anterior' },
+      { name: 'Página anterior' },
     ),
   );
   await screen.findByText(/Não foi possível carregar cartões/);

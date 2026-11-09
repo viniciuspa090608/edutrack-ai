@@ -390,7 +390,7 @@ it('paginates history, reads an immutable snapshot and explicitly restores with 
   const user = userEvent.setup();
   await user.click(screen.getByRole('button', { name: 'Ver histórico' }));
   await screen.findByRole('button', { name: 'Consultar revisão 1' });
-  await user.click(screen.getByRole('button', { name: 'Próximas revisões' }));
+  await user.click(screen.getByRole('button', { name: 'Próxima página' }));
   await waitFor(() =>
     expect(calls.some((call) => call.path.endsWith('/revisions'))).toBe(true),
   );

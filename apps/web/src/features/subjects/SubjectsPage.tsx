@@ -8,7 +8,6 @@ import {
   SelectItem,
 } from '@study-platform/ui/components/ui/select';
 import { FormModal } from '@study-platform/ui/components/ui/form-modal';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { ClassroomProvenance } from '../classroom/ClassroomProvenance.js';
 import {
   CardHeader,
@@ -30,6 +29,7 @@ import {
 import {
   Pagination,
   PaginationContent,
+  PaginationButton,
   PaginationItem,
 } from '@study-platform/ui/components/ui/pagination';
 import { Label } from '@study-platform/ui/components/ui/label';
@@ -908,29 +908,18 @@ export function SubjectsPage({
             <Pagination aria-label="Páginas de matérias">
               <PaginationContent className="flex-wrap">
                 <PaginationItem>
-                  <Button
-                    aria-label="Anterior"
-                    variant="outline"
+                  <PaginationButton
+                    direction="previous"
                     disabled={page === 1 || busy}
                     onClick={() => setPage(page - 1)}
-                  >
-                    <ChevronLeft aria-hidden="true" />
-                  </Button>
+                  />
                 </PaginationItem>
                 <PaginationItem>
-                  <span>
-                    Página {page} de {result.totalPages}
-                  </span>
-                </PaginationItem>
-                <PaginationItem>
-                  <Button
-                    aria-label="Próxima"
-                    variant="outline"
+                  <PaginationButton
+                    direction="next"
                     disabled={page >= result.totalPages || busy}
                     onClick={() => setPage(page + 1)}
-                  >
-                    <ChevronRight aria-hidden="true" />
-                  </Button>
+                  />
                 </PaginationItem>
               </PaginationContent>
             </Pagination>

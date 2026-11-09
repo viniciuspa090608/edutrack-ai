@@ -41,7 +41,7 @@ it('ticks, reconciles a pause from another tab and cleans up polling', async () 
   await act(async () => {
     await vi.advanceTimersByTimeAsync(3000);
   });
-  expect(screen.getByText('Pausada')).toBeTruthy();
+  expect(screen.queryByText('Pausada')).toBeNull();
   await act(async () => {
     await vi.advanceTimersByTimeAsync(2000);
   });

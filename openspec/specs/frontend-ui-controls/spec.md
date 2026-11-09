@@ -29,7 +29,7 @@ Os checkboxes de Configurações > Módulos SHALL manter largura e altura equiva
 - **THEN** ele permanece quadrado, apresenta desativação visível e não permite alteração pelo usuário.
 
 ### Requirement: Paginação direcional acessível
-As paginações existentes SHALL apresentar ícones direcionais nos controles de anterior e próximo, com identificação acessível equivalente. A interface SHALL preservar navegação, contagem e condições existentes de indisponibilidade, desabilitando visualmente e funcionalmente anterior quando não houver página anterior e próximo quando não houver próxima página.
+As paginações existentes SHALL apresentar apenas os controles Página anterior e Próxima página, com setas, nomes acessíveis e cores da plataforma. A interface SHALL preservar navegação, contagem usada nos limites e condições existentes de indisponibilidade, desabilitando visualmente e funcionalmente anterior quando não houver página anterior e próximo quando não houver próxima página.
 
 #### Scenario: Primeira página
 - **WHEN** a paginação está na primeira página
@@ -42,6 +42,10 @@ As paginações existentes SHALL apresentar ícones direcionais nos controles de
 #### Scenario: Navegação disponível
 - **WHEN** a pessoa ativa um controle direcional habilitado por mouse ou teclado
 - **THEN** a navegação existente ocorre na direção indicada e o nome acessível informa seu significado.
+
+#### Scenario: Aparência da paginação
+- **WHEN** uma paginação está visível
+- **THEN** aparecem apenas os dois controles direcionais, sem numeração, contador visível ou reticências.
 
 ### Requirement: Consistência visual das áreas alteradas
 As áreas alteradas SHALL preservar os padrões existentes de tema claro e escuro, tipografia, hover, foco, disabled, teclado, responsividade e movimento reduzido, sem alterar regras de negócio, campos ou resultados dos fluxos; a apresentação de criação SHALL seguir os modais explicitamente definidos nesta especificação.
@@ -120,9 +124,21 @@ Painéis com múltiplos filtros SHALL iniciar recolhidos, abrir por um controle 
 - **WHEN** a pessoa abre Filtros em Tarefas, altera critérios, recolhe e reabre o painel
 - **THEN** a lista mantém os critérios aplicados até a pessoa aplicar ou limpar os filtros.
 
+#### Scenario: Filtros recolhidos em Tarefas e Estatísticas
+- **WHEN** o painel Filtros está fechado
+- **THEN** ele SHALL usar espaçamento vertical reduzido, com seta e título centralizados na altura do cabeçalho.
+- **AND** ao abrir, SHALL recuperar o espaçamento atual dos filtros.
+
 ### Requirement: Expiração de avisos transitórios
 Avisos informativos transitórios disparados por uma ação SHALL ser anunciados de forma acessível e desaparecer automaticamente após 6 segundos. Um novo aviso SHALL reiniciar seu prazo. Erros que exigem ação, validações, avisos permanentes e mensagens necessárias para recuperar um fluxo SHALL permanecer disponíveis.
 
 #### Scenario: Consultar registro sem origem
 - **WHEN** a consulta confirma que o registro não tem origem Google Classroom
 - **THEN** o aviso aparece e é anunciado, depois desaparece após o prazo.
+
+### Requirement: Aparência consistente das barras de rolagem
+As barras nativas das áreas roláveis da web SHALL usar como referência a lista de Tarefas da Home, com indicador fino em cinza do tema e trilho discreto quando o navegador permitir. As áreas SHALL preservar suas dimensões e o comportamento de rolagem por teclado, toque e ponteiro, respeitando as preferências do sistema.
+
+#### Scenario: Página ou painel com conteúdo excedente
+- **WHEN** a área já permite rolagem e o navegador oferece estilização
+- **THEN** a barra segue a aparência de referência e o último conteúdo continua alcançável.

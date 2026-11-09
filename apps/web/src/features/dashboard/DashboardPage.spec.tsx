@@ -337,7 +337,7 @@ it('offers resume for an existing session without issuing a start command', asyn
   });
   render(<DashboardPage displayName="Ana" />);
   expect(
-    await screen.findByRole('link', { name: 'Retomar Pomodoro' }),
+    await screen.findByRole('link', { name: 'Abrir pomodoro' }),
   ).toBeTruthy();
   expect(screen.queryByRole('button', { name: 'Iniciar Pomodoro' })).toBeNull();
   expect(startPomodoro).not.toHaveBeenCalled();

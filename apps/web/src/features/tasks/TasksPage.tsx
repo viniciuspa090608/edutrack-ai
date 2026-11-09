@@ -8,7 +8,6 @@ import {
   SelectItem,
 } from '@study-platform/ui/components/ui/select';
 import { FormModal } from '@study-platform/ui/components/ui/form-modal';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { ClassroomProvenance } from '../classroom/ClassroomProvenance.js';
 import {
   CardHeader,
@@ -24,6 +23,7 @@ import { Skeleton } from '@study-platform/ui/components/ui/skeleton';
 import {
   Pagination,
   PaginationContent,
+  PaginationButton,
   PaginationItem,
 } from '@study-platform/ui/components/ui/pagination';
 import {
@@ -945,82 +945,104 @@ export function TasksPage({
             ) : null
           ) : (
             <ul className="task-list">
-              {result.items.map((task) => (
-                <Card key={task.id} asChild>
-                  <li
-                    className="task-card task-list-card"
-                    data-status={task.status}
-                    data-priority={task.priority}
-                  >
-                    <CardHeader>
-                      <TaskBadges task={task} />
-                      <div className="task-title-row">
-                        <Checkbox
-                          id={`complete-task-${task.id}`}
-                          aria-label={`Concluir ${task.title}`}
-                          checked={task.status === 'COMPLETED'}
-                          disabled={completing || task.status === 'COMPLETED'}
-                          onCheckedChange={(checked) => {
-                            if (checked !== true) return;
-                            if (task.subtaskTotal > 0) {
-                              setCompletionError('');
-                              setCompletion(task);
-                            } else {
-                              void complete(task, false);
-                            }
-                          }}
-                        />
-                        <h3>{task.title}</h3>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      {task.description && (
-                        <p className="task-card-description">
-                          {task.description}
-                        </p>
-                      )}
-                      <p className="task-deadline">
-                        <CalendarDays aria-hidden="true" />
-                        {task.dueDate
-                          ? `Prazo: ${dateLabel(task.dueDate)}`
-                          : 'Sem prazo'}
-                      </p>
-                      <div
-                        className={
-                          task.subtaskTotal > 0
-                            ? 'task-card-footer'
-                            : 'task-card-footer-compact'
+              {result.items.map((task) => {
+                const hasSubtasks = task.subtaskTotal > 0;
+                const title = (
+                  <div className="task-title-row">
+                    <Checkbox
+                      id={`complete-task-${task.id}`}
+                      aria-label={`Concluir ${task.title}`}
+                      checked={task.status === 'COMPLETED'}
+                      disabled={completing || task.status === 'COMPLETED'}
+                      onCheckedChange={(checked) => {
+                        if (checked !== true) return;
+                        if (task.subtaskTotal > 0) {
+                          setCompletionError('');
+                          setCompletion(task);
+                        } else {
+                          void complete(task, false);
                         }
-                      >
-                        <TaskProgress task={task} />
-                        <Button
-                          type="button"
-                          disabled={detailLoading}
-                          variant="outline"
-                          aria-label={`Ver detalhes de ${task.title}`}
-                          className="task-detail-link"
-                          onClick={async () => {
-                            setDetailLoading(true);
-                            setSuccess('');
-                            setError('');
-                            setDetail(null);
-                            setEditor(null);
-                            try {
-                              setDetail(await taskDetail(task.id));
-                            } catch (cause) {
-                              setError(failure(cause));
-                            } finally {
-                              setDetailLoading(false);
-                            }
-                          }}
-                        >
-                          Ver detalhes
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </li>
-                </Card>
-              ))}
+                      }}
+                    />
+                    <h3>{task.title}</h3>
+                  </div>
+                );
+                const deadline = (
+                  <p className="task-deadline">
+                    <CalendarDays aria-hidden="true" />
+                    {task.dueDate
+                      ? `Prazo: ${dateLabel(task.dueDate)}`
+                      : 'Sem prazo'}
+                  </p>
+                );
+                const details = (
+                  <Button
+                    type="button"
+                    disabled={detailLoading}
+                    variant="outline"
+                    aria-label={`Ver detalhes de ${task.title}`}
+                    className="task-detail-link"
+                    onClick={async () => {
+                      setDetailLoading(true);
+                      setSuccess('');
+                      setError('');
+                      setDetail(null);
+                      setEditor(null);
+                      try {
+                        setDetail(await taskDetail(task.id));
+                      } catch (cause) {
+                        setError(failure(cause));
+                      } finally {
+                        setDetailLoading(false);
+                      }
+                    }}
+                  >
+                    Ver detalhes
+                  </Button>
+                );
+                return (
+                  <Card key={task.id} asChild>
+                    <li
+                      className="task-card task-list-card"
+                      data-status={task.status}
+                      data-priority={task.priority}
+                    >
+                      <CardHeader>
+                        <TaskBadges task={task} />
+                        {hasSubtasks ? (
+                          title
+                        ) : (
+                          <div className="task-card-summary">
+                            <div>
+                              {title}
+                              {deadline}
+                            </div>
+                            {details}
+                          </div>
+                        )}
+                      </CardHeader>
+                      {(hasSubtasks || task.description) && (
+                        <CardContent>
+                          {task.description && (
+                            <p className="task-card-description">
+                              {task.description}
+                            </p>
+                          )}
+                          {hasSubtasks && (
+                            <>
+                              {deadline}
+                              <div className="task-card-footer">
+                                <TaskProgress task={task} />
+                                {details}
+                              </div>
+                            </>
+                          )}
+                        </CardContent>
+                      )}
+                    </li>
+                  </Card>
+                );
+              })}
             </ul>
           )}
           <Pagination
@@ -1029,34 +1051,22 @@ export function TasksPage({
           >
             <PaginationContent className="flex-wrap">
               <PaginationItem>
-                <Button
-                  aria-label="Página anterior"
-                  type="button"
+                <PaginationButton
+                  direction="previous"
                   disabled={filters.page <= 1}
                   onClick={() =>
                     setFilters({ ...filters, page: filters.page - 1 })
                   }
-                >
-                  <ChevronLeft aria-hidden="true" />
-                </Button>
+                />
               </PaginationItem>
               <PaginationItem>
-                <span>
-                  Página {result.page} de {Math.max(1, result.totalPages)} ·{' '}
-                  {result.total} tarefa(s)
-                </span>
-              </PaginationItem>
-              <PaginationItem>
-                <Button
-                  aria-label="Próxima página"
-                  type="button"
+                <PaginationButton
+                  direction="next"
                   disabled={filters.page >= result.totalPages}
                   onClick={() =>
                     setFilters({ ...filters, page: filters.page + 1 })
                   }
-                >
-                  <ChevronRight aria-hidden="true" />
-                </Button>
+                />
               </PaginationItem>
             </PaginationContent>
           </Pagination>

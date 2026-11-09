@@ -12,6 +12,12 @@
   font-weight: 650;
   padding: 1rem;
 }
+.analytics-page .analytics-filters:not([open]) {
+  padding-block: 0.5rem;
+}
+.analytics-filters:not([open]) > summary {
+  padding-block: 0.25rem;
+}
 
 .analytics-controls label,
 .analytics-controls > div {
@@ -156,7 +162,6 @@
   padding: 0.5rem 0.25rem 1rem;
   margin-bottom: 1rem;
   border-radius: 0.5rem;
-  scrollbar-color: var(--primary) var(--progress-inset);
 }
 .analytics-bars {
   display: flex;

@@ -248,18 +248,12 @@
   color: var(--foreground);
   border-color: var(--border);
 }
-.account-area .account-card input[type='file'] {
-  height: auto;
-  min-height: 40px;
-  padding: 8px;
-  font-size: 0.75rem;
-}
 .account-area
   .account-card
   button:not([data-slot='checkbox']):not([data-slot='password-toggle']):not(
     [data-slot='radio-group-item']
   ) {
-  min-height: 40px;
+  min-height: var(--account-button-height, 40px);
   height: auto;
   padding-block: 9px;
   font-size: 0.8rem;
@@ -269,14 +263,14 @@
 }
 .account-photo-editor {
   display: grid;
-  grid-template-columns: 80px minmax(0, 1fr);
+  grid-template-columns: 88px minmax(0, 1fr);
   align-items: start;
   gap: 12px 16px;
 }
 .account-photo-editor > [data-slot='avatar'] {
   flex-shrink: 0;
-  width: 80px;
-  height: 80px;
+  width: 88px;
+  height: 88px;
   border: 1px solid var(--border);
 }
 .account-photo-controls {
@@ -422,12 +416,7 @@
     padding-inline: 16px;
   }
   .account-photo-editor {
-    grid-template-columns: 56px minmax(0, 1fr);
     gap: 12px;
-  }
-  .account-photo-editor > [data-slot='avatar'] {
-    width: 56px;
-    height: 56px;
   }
   .account-theme-options {
     grid-template-columns: minmax(0, 1fr);
@@ -557,10 +546,6 @@
   display: grid;
   gap: 8px;
 }
-.account-photo-controls input {
-  width: 100%;
-  min-width: 0;
-}
 .account-photo-controls .account-actions {
   display: flex;
   flex-wrap: wrap;
@@ -652,14 +637,14 @@
 }
 
 .account-area .account-profile [data-slot='card-content'] {
-  gap: 12px;
+  gap: 24px;
 }
 .account-profile-group {
   display: grid;
   min-width: 0;
   gap: 6px;
   border-top: 1px solid var(--border);
-  padding-top: 12px;
+  padding-top: 24px;
 }
 .account-profile-group > :is(h3, p) {
   margin: 0;
@@ -682,7 +667,34 @@
 }
 .account-email-row {
   justify-content: space-between;
+  border: 1px solid var(--border);
+  background: var(--background);
+}
+.account-email-row p {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.account-email-row :is(svg, a) {
+  flex-shrink: 0;
+}
+.account-email-row svg {
+  width: 1rem;
+}
+.account-name-row > input {
+  flex: 1 1 10rem;
+  min-width: 0;
+  min-height: 44px;
+}
+.account-name-row {
+  --account-button-height: 44px;
   flex-wrap: wrap;
+}
+.account-profile .account-photo-controls button {
+  max-width: 100%;
+  white-space: normal;
 }
 .account-name-row > button {
   flex-shrink: 0;
@@ -690,9 +702,4 @@
 .account-google-identity h3,
 .account-google-identity p {
   margin: 0;
-}
-@media (max-width: 480px) {
-  .account-name-row {
-    flex-wrap: wrap;
-  }
 }

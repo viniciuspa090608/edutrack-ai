@@ -5,7 +5,6 @@ import {
   SelectContent,
   SelectItem,
 } from '@study-platform/ui/components/ui/select';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   CardHeader,
   Card,
@@ -20,6 +19,7 @@ import { FieldSet, FieldLegend } from '@study-platform/ui/components/ui/field';
 import {
   Pagination,
   PaginationContent,
+  PaginationButton,
   PaginationItem,
 } from '@study-platform/ui/components/ui/pagination';
 
@@ -396,29 +396,18 @@ export function FlashcardAIFlow({
                     <Pagination aria-label="Páginas de baralhos para IA">
                       <PaginationContent className="flex-wrap">
                         <PaginationItem>
-                          <Button
-                            aria-label="Anterior"
-                            type="button"
+                          <PaginationButton
+                            direction="previous"
                             disabled={page === 1}
                             onClick={() => setPage(page - 1)}
-                          >
-                            <ChevronLeft aria-hidden="true" />
-                          </Button>
+                          />
                         </PaginationItem>
                         <PaginationItem>
-                          <span>
-                            Página {page} de {Math.max(1, decks.totalPages)}
-                          </span>
-                        </PaginationItem>
-                        <PaginationItem>
-                          <Button
-                            aria-label="Próxima"
-                            type="button"
+                          <PaginationButton
+                            direction="next"
                             disabled={page >= decks.totalPages}
                             onClick={() => setPage(page + 1)}
-                          >
-                            <ChevronRight aria-hidden="true" />
-                          </Button>
+                          />
                         </PaginationItem>
                       </PaginationContent>
                     </Pagination>

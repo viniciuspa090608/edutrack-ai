@@ -7,7 +7,6 @@ import {
   SelectItem,
 } from '@study-platform/ui/components/ui/select';
 import { FormModal } from '@study-platform/ui/components/ui/form-modal';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Skeleton } from '@study-platform/ui/components/ui/skeleton';
 import {
   AlertDescription,
@@ -29,6 +28,7 @@ import {
 import {
   Pagination,
   PaginationContent,
+  PaginationButton,
   PaginationItem,
 } from '@study-platform/ui/components/ui/pagination';
 
@@ -583,29 +583,18 @@ export function RoutinesPage() {
         <Pagination aria-label="Páginas de rotinas">
           <PaginationContent className="flex-wrap">
             <PaginationItem>
-              <Button
-                aria-label="Anterior"
-                variant="outline"
+              <PaginationButton
+                direction="previous"
                 disabled={busy || page === 1}
                 onClick={() => setPage(page - 1)}
-              >
-                <ChevronLeft aria-hidden="true" />
-              </Button>
+              />
             </PaginationItem>
             <PaginationItem>
-              <span>
-                Página {page} de {list.totalPages}
-              </span>
-            </PaginationItem>
-            <PaginationItem>
-              <Button
-                aria-label="Próxima"
-                variant="outline"
+              <PaginationButton
+                direction="next"
                 disabled={busy || page >= list.totalPages}
                 onClick={() => setPage(page + 1)}
-              >
-                <ChevronRight aria-hidden="true" />
-              </Button>
+              />
             </PaginationItem>
           </PaginationContent>
         </Pagination>

@@ -1,4 +1,3 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   CardHeader,
   Card,
@@ -12,6 +11,7 @@ import { Skeleton } from '@study-platform/ui/components/ui/skeleton';
 import {
   Pagination,
   PaginationContent,
+  PaginationButton,
   PaginationItem,
 } from '@study-platform/ui/components/ui/pagination';
 
@@ -96,27 +96,18 @@ export function ReviewHistory({
               <Pagination aria-label="Páginas do histórico">
                 <PaginationContent className="flex-wrap">
                   <PaginationItem>
-                    <Button
-                      aria-label="Anterior"
+                    <PaginationButton
+                      direction="previous"
                       disabled={page === 1}
                       onClick={() => setPage(page - 1)}
-                    >
-                      <ChevronLeft aria-hidden="true" />
-                    </Button>
+                    />
                   </PaginationItem>
                   <PaginationItem>
-                    <span>
-                      Página {page} de {Math.max(1, result.totalPages)}
-                    </span>
-                  </PaginationItem>
-                  <PaginationItem>
-                    <Button
-                      aria-label="Próxima"
+                    <PaginationButton
+                      direction="next"
                       disabled={page >= result.totalPages}
                       onClick={() => setPage(page + 1)}
-                    >
-                      <ChevronRight aria-hidden="true" />
-                    </Button>
+                    />
                   </PaginationItem>
                 </PaginationContent>
               </Pagination>

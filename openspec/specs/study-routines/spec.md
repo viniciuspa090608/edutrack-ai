@@ -119,7 +119,7 @@ Criar, listar, editar, excluir e visualizar rotinas SHALL funcionar sem tarefas,
 - **AND** não anuncia como salva uma alteração sem confirmação.
 
 ### Requirement: Programação semanal compacta e responsiva
-A programação SHALL manter segunda a domingo em ordem e mostrar um card por linha, ocupando toda a largura disponível em desktop, tablet e celular. Os cards SHALL usar a mesma altura mínima entre 160 e 180 px e poder crescer com os horários. Sábado e domingo SHALL ter tratamento visual discreto.
+A programação SHALL manter segunda a domingo em ordem e mostrar os cards em 4–3 em telas largas e 2–2–2–1 em telas menores, distribuindo os cards igualmente em toda a largura de cada linha. Os cards SHALL usar a mesma altura mínima entre 160 e 180 px e poder crescer com os horários. Sábado e domingo SHALL ter tratamento visual discreto.
 
 #### Scenario: Dia sem horários cadastrados
 - **WHEN** a programação carregada inclui um dia sem horários
@@ -128,4 +128,4 @@ A programação SHALL manter segunda a domingo em ordem e mostrar um card por li
 
 #### Scenario: Programação em diferentes larguras
 - **WHEN** a pessoa abre a programação semanal em qualquer tamanho de tela suportado
-- **THEN** os sete dias aparecem em ordem, cada card em sua própria linha.
+- **THEN** os sete dias aparecem em ordem. Em telas largas, a segunda linha tem três cards que dividem toda a largura. Em telas menores, o último dia ocupa sozinho toda a largura, inclusive a 320 px, sem rolagem horizontal.

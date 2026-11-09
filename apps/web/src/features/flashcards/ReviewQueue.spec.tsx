@@ -267,10 +267,10 @@ it('loads paginated immutable history, handles errors/empty and returns focus to
   await user.click(panel.getByRole('button', { name: 'Tentar novamente' }));
   await panel.findByText('GOOD');
   expect(panel.getByText(/Política:/).textContent).toContain('sm2-inspired-v1');
-  await user.click(panel.getByRole('button', { name: 'Próxima' }));
+  await user.click(panel.getByRole('button', { name: 'Próxima página' }));
   await panel.findByText('AGAIN');
   empty = true;
-  await user.click(panel.getByRole('button', { name: 'Anterior' }));
+  await user.click(panel.getByRole('button', { name: 'Página anterior' }));
   await panel.findByText('Nenhuma avaliação registrada.');
   await user.click(panel.getByRole('button', { name: 'Fechar histórico' }));
   expect(document.activeElement?.textContent).toBe('Ver histórico');

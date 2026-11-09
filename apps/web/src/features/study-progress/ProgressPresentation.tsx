@@ -21,16 +21,16 @@ export function ProgressHeader({
       <p className="evolution-muted">{description}</p>
       <nav className="evolution-navigation" aria-label="Abas de Relatório">
         <a
-          href="/app/estatisticas"
-          aria-current={current === 'analytics' ? 'page' : undefined}
-        >
-          <ChartNoAxesCombined aria-hidden="true" /> Estatísticas
-        </a>
-        <a
           href="/app/progresso"
           aria-current={current === 'progress' ? 'page' : undefined}
         >
           <Trophy aria-hidden="true" /> Progresso
+        </a>
+        <a
+          href="/app/estatisticas"
+          aria-current={current === 'analytics' ? 'page' : undefined}
+        >
+          <ChartNoAxesCombined aria-hidden="true" /> Estatísticas
         </a>
       </nav>
     </header>

@@ -1,8 +1,9 @@
 import { useTransientMessage } from '../../components/useTransientMessage.js';
-import { ChevronLeft, ChevronRight, Layers } from 'lucide-react';
+import { Layers } from 'lucide-react';
 import {
   Pagination as PaginationRoot,
   PaginationContent,
+  PaginationButton,
   PaginationItem,
 } from '@study-platform/ui/components/ui/pagination';
 import {
@@ -71,27 +72,18 @@ function Pagination({
     <PaginationRoot aria-label={label}>
       <PaginationContent className="flex-wrap">
         <PaginationItem>
-          <Button
-            aria-label="Anterior"
+          <PaginationButton
+            direction="previous"
             disabled={page <= 1}
             onClick={() => onPage(page - 1)}
-          >
-            <ChevronLeft aria-hidden="true" />
-          </Button>
+          />
         </PaginationItem>
         <PaginationItem>
-          <span>
-            Página {page} de {Math.max(1, totalPages)}
-          </span>
-        </PaginationItem>
-        <PaginationItem>
-          <Button
-            aria-label="Próxima"
+          <PaginationButton
+            direction="next"
             disabled={page >= totalPages}
             onClick={() => onPage(page + 1)}
-          >
-            <ChevronRight aria-hidden="true" />
-          </Button>
+          />
         </PaginationItem>
       </PaginationContent>
     </PaginationRoot>

@@ -7,7 +7,6 @@ import {
   SelectItem,
 } from '@study-platform/ui/components/ui/select';
 import { FormModal } from '@study-platform/ui/components/ui/form-modal';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   AlertDescription,
   Alert,
@@ -23,6 +22,7 @@ import {
 import {
   Pagination,
   PaginationContent,
+  PaginationButton,
   PaginationItem,
 } from '@study-platform/ui/components/ui/pagination';
 
@@ -773,27 +773,18 @@ export function RoadmapsSection({
         <Pagination aria-label="Paginação de roadmaps">
           <PaginationContent className="flex-wrap">
             <PaginationItem>
-              <Button
-                aria-label="Roadmaps anteriores"
+              <PaginationButton
+                direction="previous"
                 disabled={page === 1 || !!mode || !!busy}
                 onClick={() => setPage(page - 1)}
-              >
-                <ChevronLeft aria-hidden="true" />
-              </Button>
+              />
             </PaginationItem>
             <PaginationItem>
-              <span>
-                Página {page} de {result.totalPages}
-              </span>
-            </PaginationItem>
-            <PaginationItem>
-              <Button
-                aria-label="Próximos roadmaps"
+              <PaginationButton
+                direction="next"
                 disabled={page >= result.totalPages || !!mode || !!busy}
                 onClick={() => setPage(page + 1)}
-              >
-                <ChevronRight aria-hidden="true" />
-              </Button>
+              />
             </PaginationItem>
           </PaginationContent>
         </Pagination>

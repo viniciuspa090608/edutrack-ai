@@ -90,7 +90,7 @@ Cada indicador SHALL exibir sua descrição em cinza legível no topo e, abaixo,
 - **THEN** descrição antecede a linha de ícone e valor, com contraste acessível e sem transformar indisponibilidade em zero.
 
 ### Requirement: Pomodoro vivo no resumo da Home
-Com sessão aberta o card Pomodoro SHALL mostrar cronômetro MM:ss e estado reais da mesma sessão acessível no módulo. Durante RUNNING SHALL atualizar o tempo sem recarga; PAUSED SHALL manter o tempo parado e BETWEEN_BLOCKS SHALL indicar o estado sem iniciar novo bloco. Ao atingir zero SHALL limitar a contagem e reconciliar com o servidor sem duplicar conclusões. Retorno à Home, foco e visibilidade SHALL atualizar a sessão; falha SHALL ser identificada sem simular tempo confirmado ou iniciar outra sessão.
+Com sessão aberta o card Pomodoro SHALL mostrar somente o cronômetro MM:ss no resumo de uma sessão disponível, mantendo cabeçalho, contagem de sessões e link Abrir pomodoro. O resumo normal SHALL dispensar controles de sessão, texto de status e rolagem interna. Durante RUNNING SHALL atualizar o tempo sem recarga; PAUSED SHALL manter o tempo parado e BETWEEN_BLOCKS SHALL manter o tempo sem iniciar novo bloco. Ao atingir zero SHALL limitar a contagem e reconciliar com o servidor sem duplicar conclusões. Retorno à Home, foco e visibilidade SHALL atualizar a sessão; falha SHALL ser identificada sem simular tempo confirmado ou iniciar outra sessão.
 
 #### Scenario: Sessão em andamento
 - **WHEN** a pessoa inicia Pomodoro e volta à Home
@@ -104,12 +104,16 @@ Com sessão aberta o card Pomodoro SHALL mostrar cronômetro MM:ss e estado reai
 - **WHEN** a contagem chega a zero e a consulta de reconciliação falha
 - **THEN** não aparece tempo negativo, conclusão duplicada ou novo bloco automático, e a indisponibilidade permite tentar novamente.
 
+#### Scenario: Resumo com sessão disponível
+- **WHEN** a Home tem uma sessão de Pomodoro disponível
+- **THEN** o corpo apresenta apenas o tempo, sem rolagem interna, e o rodapé continua oferecendo Abrir pomodoro.
+
 ### Requirement: Cards vazios com altura e ações úteis
-Sem tarefas cadastradas o card Tarefas SHALL preencher a altura conjunta de Pomodoro e Flashcards na composição desktop, com ícone, Nenhuma tarefa cadastrada, orientação e ação Adicionar tarefa para o fluxo real. Sem matérias o card Matérias SHALL usar altura mínima compacta independente do card Progresso adjacente, com ícone, Nenhuma matéria cadastrada, orientação e Adicionar matéria para o fluxo real. Módulo desabilitado SHALL continuar omitido e falha SHALL NOT ser tratada como vazio. Em mobile ou sem card adjacente SHALL usar altura natural sem espaços artificiais.
+Sem tarefas cadastradas o card Tarefas SHALL preencher a altura conjunta de Pomodoro e Flashcards na composição desktop, com ícone, Nenhuma tarefa cadastrada, orientação e ação Adicionar tarefa para o fluxo real. Sem matérias o card Matérias SHALL usar a mesma altura de Progresso quando ambos estiverem lado a lado, com ícone, Nenhuma matéria cadastrada, orientação e Adicionar matéria para o fluxo real. Os estados vazios de Tarefas e Matérias na Home SHALL omitir a borda pontilhada interna e preservar a borda externa. Módulo desabilitado SHALL continuar omitido e falha SHALL NOT ser tratada como vazio. Em mobile ou sem card adjacente SHALL usar altura natural sem espaços artificiais.
 
 #### Scenario: Home vazia em desktop
 - **WHEN** os módulos habilitados estão sem cadastros e os cards adjacentes estão visíveis
-- **THEN** Tarefas preenche as duas linhas da direita e Matérias usa sua altura mínima compacta, com estados vazios e ações funcionais.
+- **THEN** Tarefas preenche as duas linhas da direita e Matérias tem a mesma altura de Progresso, com estados vazios e ações funcionais.
 
 #### Scenario: Resumo sem próximas tarefas
 - **WHEN** há tarefas cadastradas mas nenhuma aparece na lista limitada de próximas tarefas
@@ -128,7 +132,7 @@ Sem tarefas cadastradas o card Tarefas SHALL preencher a altura conjunta de Pomo
 - **THEN** o fluxo real de criação do módulo correspondente abre, respeita seus gates e não reabre automaticamente após fechar e recarregar.
 
 ### Requirement: Dimensões estáveis dos cards da Home
-Matérias e Progresso SHALL ter altura mínima compacta e ajustar suas alturas ao próprio conteúdo. Estatísticas SHALL crescer para exibir integralmente o gráfico e os indicadores, sem rolagem interna. Tarefas SHALL ocupar a altura conjunta de Pomodoro e Flashcards quando ambos estiverem presentes e sua lista SHALL rolar internamente se exceder o espaço reservado, mantendo Abrir tarefas visível. A lista de Tarefas SHALL usar barra vertical fina e discreta e mostrar um desfoque suave no tom do card em cada extremidade com conteúdo fora da área visível. O card SHALL omitir o aviso sobre tarefas ativas sem prazo. Em telas estreitas ou com cartões adjacentes omitidos, a composição SHALL se adaptar e manter todas as ações alcançáveis.
+Matérias e Progresso SHALL ter a mesma largura e altura quando lado a lado, com os links de rodapé alinhados. Empilhados ou exibidos sem o card adjacente, SHALL ajustar a altura ao próprio conteúdo. Estatísticas SHALL crescer para exibir integralmente o gráfico e os indicadores, sem rolagem interna. Tarefas SHALL ocupar a altura conjunta de Pomodoro e Flashcards quando ambos estiverem presentes e sua lista SHALL rolar internamente se exceder o espaço reservado, mantendo Abrir tarefas visível. A lista de Tarefas SHALL usar barra vertical fina e discreta e mostrar um desfoque suave no tom do card em cada extremidade com conteúdo fora da área visível. O card SHALL omitir o aviso sobre tarefas ativas sem prazo. Em telas estreitas ou com cartões adjacentes omitidos, a composição SHALL se adaptar e manter todas as ações alcançáveis.
 
 #### Scenario: Tarefas preenchem o espaço reservado
 - **WHEN** a lista de próximas tarefas é maior do que o espaço interno
@@ -136,7 +140,7 @@ Matérias e Progresso SHALL ter altura mínima compacta e ajustar suas alturas a
 
 #### Scenario: Limites da lista e conteúdo dos cards
 - **WHEN** a pessoa chega ao fim da lista de Tarefas ou consulta os demais cards
-- **THEN** o efeito inferior some ao chegar ao fim, a área de Estatísticas fica completa e Matérias e Progresso crescem ou encolhem conforme o conteúdo.
+- **THEN** o efeito inferior some ao chegar ao fim, a área de Estatísticas fica completa e Matérias e Progresso acompanham o maior conteúdo quando lado a lado.
 
 ### Requirement: Resumo alinhado ao título dos cards
 Quando houver resumo em Tarefas, Pomodoro, Flashcards e Estatísticas, o texto secundário SHALL aparecer abaixo do título, alinhado à margem esquerda dele com 3 px de distância vertical, com o ícone à esquerda do bloco.
@@ -146,7 +150,7 @@ Quando houver resumo em Tarefas, Pomodoro, Flashcards e Estatísticas, o texto s
 - **THEN** as linhas quebram na coluna do título com contraste legível.
 
 ### Requirement: Estado inicial legível do card Progresso
-Quando os dados confirmarem ausência de dias ativos registrados, o card SHALL exibir Nenhuma atividade registrada e orientar a concluir uma atividade de estudo para registrar o primeiro dia ativo. A data inicial do histórico SHALL aparecer como informação secundária quando disponível e Abrir progresso SHALL ficar no rodapé. Dados indisponíveis e falhas SHALL manter seu tratamento próprio. Com histórico de atividade, sequência atual, recorde, início do histórico e dias ativos SHALL aparecer em linhas separadas com 5 px entre elas. Os valores da sequência atual, do recorde e dos dias ativos SHALL receber destaque visual.
+Quando os dados confirmarem ausência de dias ativos registrados, o card SHALL exibir Nenhuma atividade registrada e orientar a concluir uma atividade de estudo para registrar o primeiro dia ativo. A data inicial do histórico SHALL aparecer como informação secundária quando disponível, no formato compacto “Histórico desde DD/MM/AAAA”, em uma linha quando houver espaço e com quebra em larguras estreitas e Abrir progresso SHALL ficar no rodapé. Dados indisponíveis e falhas SHALL manter seu tratamento próprio. Com histórico de atividade, sequência atual, recorde, início do histórico e dias ativos SHALL aparecer em linhas separadas com 5 px entre elas. Os valores da sequência atual, do recorde e dos dias ativos SHALL receber destaque visual.
 
 #### Scenario: Histórico válido sem dias ativos
 - **WHEN** o resumo confirma que o usuário ainda não registrou um dia ativo
