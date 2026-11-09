@@ -121,6 +121,16 @@ beforeEach(() => {
       if (method === 'GET' && url.pathname.endsWith('/subtasks'))
         return Response.json({ items: [], task: items[0] });
       if (method === 'GET') return Response.json(items[0]);
+      if (method === 'POST' && url.pathname.endsWith('/complete-subtasks')) {
+        const task = {
+          ...items[0]!,
+          status: 'COMPLETED' as const,
+          subtaskCompleted: items[0]!.subtaskTotal,
+          progressPercent: 100,
+        };
+        items = [task];
+        return Response.json({ items: [], task });
+      }
       if (method === 'POST' || method === 'PATCH') {
         if (pendingSave) return pendingSave;
         const task = { ...originalTask, ...body } as StudyTask;
@@ -224,6 +234,51 @@ it('protects direct access and preserves the internal login destination', async 
   );
   expect(requests.some((r) => r.url.pathname.startsWith('/tasks'))).toBe(false);
 });
+it('completes a task without subtasks directly from the list', async () => {
+  items = [originalTask];
+  render(<TasksPage />);
+  await userEvent.click(
+    await screen.findByRole('checkbox', { name: /Concluir/ }),
+  );
+  await waitFor(() =>
+    expect(
+      screen.getByRole('checkbox', { name: /Concluir/, checked: true }),
+    ).toBeTruthy(),
+  );
+  expect(requests.find((request) => request.method === 'PATCH')?.body).toEqual({
+    status: 'COMPLETED',
+  });
+});
+
+it('confirms before completing all subtasks from the list', async () => {
+  items = [
+    {
+      ...originalTask,
+      subtaskTotal: 2,
+      subtaskCompleted: 0,
+      progressPercent: 0,
+    },
+  ];
+  render(<TasksPage />);
+  const checkbox = await screen.findByRole('checkbox', { name: /Concluir/ });
+  await userEvent.click(checkbox);
+  await userEvent.click(screen.getByRole('button', { name: 'Cancelar' }));
+  expect(checkbox.getAttribute('aria-checked')).toBe('false');
+  expect(requests.some((request) => request.method === 'POST')).toBe(false);
+  await userEvent.click(checkbox);
+  await userEvent.click(screen.getByRole('button', { name: 'Concluir todas' }));
+  await waitFor(() =>
+    expect(
+      screen.getByRole('checkbox', { name: /Concluir/, checked: true }),
+    ).toBeTruthy(),
+  );
+  expect(
+    requests.find((request) =>
+      request.url.pathname.endsWith('/complete-subtasks'),
+    )?.body,
+  ).toEqual({ confirm: true });
+});
+
 it('loads behind session/preferences and offers the first task action', async () => {
   render(<App />);
   expect(screen.getByText('Verificando sessão…')).toBeTruthy();
@@ -238,6 +293,7 @@ it('keeps combined filters when paging, resets to page one and clears empty resu
   render(<TasksPage />);
   await screen.findByRole('button', { name: /Ver detalhes/ });
   const interaction = userEvent.setup();
+  await interaction.click(screen.getByText('Filtros', { exact: true }));
   await selectOption(screen.getByLabelText('Filtrar por status'), 'PENDING');
   await selectOption(screen.getByLabelText('Filtrar por importância'), 'HIGH');
   fireEvent.change(screen.getByLabelText('Prazo de'), {
@@ -286,6 +342,7 @@ it('rejects an inverted calendar range and recovers from a list network error', 
     .setup()
     .click(screen.getByRole('button', { name: 'Tentar novamente' }));
   await screen.findByText(/Nenhuma tarefa ainda/);
+  await userEvent.click(screen.getByText('Filtros', { exact: true }));
   fireEvent.change(screen.getByLabelText('Prazo de'), {
     target: { value: '2026-10-30' },
   });

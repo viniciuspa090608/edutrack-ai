@@ -486,5 +486,6 @@
   flex-direction: column;
 }
 .subjects-collection > .collection-empty-state {
+  align-items: center;
   justify-content: center;
 }

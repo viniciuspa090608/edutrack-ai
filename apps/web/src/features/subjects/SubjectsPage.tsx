@@ -1,3 +1,4 @@
+import { useTransientMessage } from '../../components/useTransientMessage.js';
 import { useCreateIntent } from '../../app/useCreateIntent.js';
 import {
   Select,
@@ -566,7 +567,7 @@ export function SubjectsPage({
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [success, setSuccess] = useTransientMessage();
   const [deleting, setDeleting] = useState(false);
   const newButton = useRef<HTMLButtonElement>(null);
   const heading = useRef<HTMLHeadingElement>(null);

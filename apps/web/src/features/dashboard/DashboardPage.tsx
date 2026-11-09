@@ -56,6 +56,48 @@ const sectionIcons = {
   week: BarChart3,
 };
 const priorities = { LOW: 'Baixa', MEDIUM: 'Média', HIGH: 'Alta' };
+function DashboardTaskList({ children }: { children: ReactNode }) {
+  const list = useRef<HTMLUListElement>(null);
+  const [edges, setEdges] = useState({ above: false, below: false });
+  const updateEdges = useCallback(() => {
+    const element = list.current;
+    if (!element) return;
+    setEdges({
+      above: element.scrollTop > 1,
+      below:
+        element.scrollHeight - element.clientHeight - element.scrollTop > 1,
+    });
+  }, []);
+
+  useEffect(() => {
+    updateEdges();
+    const element = list.current;
+    if (!element || typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(updateEdges);
+    observer.observe(element);
+    for (const item of element.children) observer.observe(item);
+    return () => observer.disconnect();
+  }, [children, updateEdges]);
+
+  return (
+    <div
+      className="dashboard-task-scroll"
+      data-above={edges.above}
+      data-below={edges.below}
+    >
+      <ul
+        ref={list}
+        className="dashboard-task-list"
+        aria-label="Próximas tarefas"
+        tabIndex={0}
+        onScroll={updateEdges}
+      >
+        {children}
+      </ul>
+    </div>
+  );
+}
+
 export function DashboardPage({ displayName }: { displayName: string }) {
   const [subjectsEmpty, setSubjectsEmpty] = useState<boolean | null>(null);
   const [subjectsError, setSubjectsError] = useState(false);
@@ -395,11 +437,7 @@ export function DashboardPage({ displayName }: { displayName: string }) {
                 tasks && (
                   <>
                     {tasks.upcoming.length ? (
-                      <ul
-                        className="dashboard-task-list"
-                        aria-label="Próximas tarefas"
-                        tabIndex={0}
-                      >
+                      <DashboardTaskList>
                         {tasks.upcoming.map((task) => (
                           <li key={task.id}>
                             <strong>{task.title}</strong>
@@ -439,7 +477,7 @@ export function DashboardPage({ displayName }: { displayName: string }) {
                             </p>
                           </li>
                         ))}
-                      </ul>
+                      </DashboardTaskList>
                     ) : (
                       <p>
                         {Object.values(tasks.counts).every(
@@ -449,10 +487,6 @@ export function DashboardPage({ displayName }: { displayName: string }) {
                           : 'Não há próximas tarefas com prazo.'}
                       </p>
                     )}
-                    <p>
-                      {tasks.withoutDeadline} tarefas ativas sem prazo
-                      permanecem no módulo de tarefas.
-                    </p>
                   </>
                 )
               ),
@@ -541,14 +575,19 @@ export function DashboardPage({ displayName }: { displayName: string }) {
               'streak',
               'Progresso',
               '/app/progresso',
-              <>
+              <div className="dashboard-streak-lines">
                 {streak?.activeDays === 0 ? (
                   <h3>Nenhuma atividade registrada</h3>
                 ) : (
-                  <p>
-                    Sequência atual: {streak?.currentStreak} dias. Recorde:{' '}
-                    {streak?.longestStreak} dias.
-                  </p>
+                  <>
+                    <p>
+                      Sequência atual:{' '}
+                      <strong>{streak?.currentStreak} dias</strong>.
+                    </p>
+                    <p>
+                      Recorde: <strong>{streak?.longestStreak} dias</strong>.
+                    </p>
+                  </>
                 )}
                 <p>
                   Histórico rastreado desde{' '}
@@ -556,7 +595,10 @@ export function DashboardPage({ displayName }: { displayName: string }) {
                   anteriores não contam.
                 </p>
                 {streak && streak.activeDays > 0 && (
-                  <p>{streak.activeDays} dias ativos no histórico rastreado.</p>
+                  <p>
+                    <strong>{streak.activeDays} dias ativos</strong> no
+                    histórico rastreado.
+                  </p>
                 )}
                 {streak?.activeDays === 0 && (
                   <p>
@@ -564,7 +606,7 @@ export function DashboardPage({ displayName }: { displayName: string }) {
                     dia ativo.
                   </p>
                 )}
-              </>,
+              </div>,
             )}
             {card(
               'week',

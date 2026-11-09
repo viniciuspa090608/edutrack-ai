@@ -196,7 +196,7 @@ export function AISettingsSection() {
                 }}
               >
                 <fieldset disabled={busy}>
-                  <legend>Modo de geração</legend>
+                  <legend className="sr-only">Modo de geração</legend>
                   <RadioGroup
                     aria-label="Modo de geração"
                     name="ai-mode"

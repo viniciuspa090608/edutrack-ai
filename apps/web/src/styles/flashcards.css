@@ -125,13 +125,9 @@
   justify-content: space-between;
 }
 
-.deck-toolbar h2 {
-  font-size: 1.125rem;
-  font-weight: 600;
-}
-
 .deck-toolbar .flashcard-actions {
   margin-block: 0;
+  margin-inline-start: auto;
 }
 
 .deck-filter {

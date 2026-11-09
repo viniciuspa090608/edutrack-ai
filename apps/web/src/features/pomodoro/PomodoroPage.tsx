@@ -1,3 +1,4 @@
+import { useTransientMessage } from '../../components/useTransientMessage.js';
 import { projectPomodoro } from './pomodoro-clock.js';
 import {
   Select,
@@ -82,7 +83,7 @@ export function PomodoroPage({
   const [busy, setBusy] = useState(true);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useTransientMessage();
   const [canceling, setCanceling] = useState(false);
   const [tick, setTick] = useState(0);
   const receivedAt = useRef(performance.now());

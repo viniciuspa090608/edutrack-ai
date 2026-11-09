@@ -7,6 +7,7 @@ import {
   TabsList,
   TabsTrigger,
 } from '@study-platform/ui/components/ui/tabs';
+import { registerDisplayNameSchema } from '@study-platform/contracts';
 import { Field } from '@study-platform/ui/components/ui/field';
 import { AuthLayout } from '../auth/AuthLayout.js';
 import googleLogo from '../auth/assets/google-g.png';
@@ -50,6 +51,8 @@ export function AccessPage() {
   const [mode, setMode] = useState<'login' | 'register'>(modeFromUrl);
   const [search, setSearch] = useState(() => window.location.search);
   const [email, setEmail] = useState('');
+  const [displayName, setDisplayName] = useState('');
+  const [nameError, setNameError] = useState('');
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -70,9 +73,17 @@ export function AccessPage() {
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError('');
+    setNameError('');
+    const name = registerDisplayNameSchema.safeParse(
+      mode === 'register' ? displayName : undefined,
+    );
+    if (!name.success) {
+      setNameError(name.error.issues[0]?.message ?? 'Informe um nome válido.');
+      return;
+    }
     setBusy(true);
     try {
-      const result = await localAccess(mode, email, password);
+      const result = await localAccess(mode, email, password, name.data);
       navigate(result.kind === 'pending' ? '/confirmar-email' : returnTo);
     } catch (cause) {
       setError(
@@ -139,6 +150,30 @@ export function AccessPage() {
           void submit(event);
         }}
       >
+        {mode === 'register' && (
+          <Field>
+            <Label htmlFor="auth-display-name">
+              Nome de exibição (opcional)
+            </Label>
+            <Input
+              id="auth-display-name"
+              name="displayName"
+              autoComplete="nickname"
+              value={displayName}
+              aria-invalid={!!nameError}
+              aria-describedby={nameError ? 'auth-name-error' : undefined}
+              onChange={(event) => {
+                setDisplayName(event.target.value);
+                setNameError('');
+              }}
+            />
+            {nameError && (
+              <p id="auth-name-error" role="alert">
+                {nameError}
+              </p>
+            )}
+          </Field>
+        )}
         <Field>
           <Label htmlFor="auth-email">E-mail</Label>
           <Input

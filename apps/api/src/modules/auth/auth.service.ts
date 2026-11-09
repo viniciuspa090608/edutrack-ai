@@ -143,6 +143,7 @@ export class AuthService {
           hash,
           salt,
           manager,
+          input.displayName,
         );
         await this.email.issue(
           user.id,

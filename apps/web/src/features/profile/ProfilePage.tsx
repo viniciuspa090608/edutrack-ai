@@ -1,3 +1,4 @@
+import { useTransientMessage } from '../../components/useTransientMessage.js';
 import { useAccountSections, accountSections } from './useAccountSections.js';
 import { AISettingsSection } from './AISettingsSection.js';
 import { ClassroomSection } from '../classroom/ClassroomSection.js';
@@ -76,7 +77,7 @@ export function ProfilePage({
   const [selected, setSelected] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useTransientMessage();
   const [email, setEmail] = useState('');
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');

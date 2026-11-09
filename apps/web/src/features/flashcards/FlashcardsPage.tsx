@@ -1,4 +1,5 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useTransientMessage } from '../../components/useTransientMessage.js';
+import { ChevronLeft, ChevronRight, Layers } from 'lucide-react';
 import {
   Pagination as PaginationRoot,
   PaginationContent,
@@ -47,6 +48,7 @@ import { SubjectSelect } from '../subjects/SubjectSelect.js';
 import { subjectDetail } from '../subjects/subjects-api.js';
 import { SubjectName } from '../subjects/SubjectName.js';
 import { TaskConfirmation } from '../tasks/TaskConfirmation.js';
+import { CollectionEmptyState } from '../../components/CollectionEmptyState.js';
 import '../../styles/flashcards.css';
 const categories = [
   ['new', 'Novos'],
@@ -111,7 +113,7 @@ export function FlashcardsPage({
   const [listError, setListError] = useState('');
   const [cardsError, setCardsError] = useState('');
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [success, setSuccess] = useTransientMessage();
   const [busy, setBusy] = useState(false);
   const [deckForm, setDeckForm] = useState(false);
   const [editingDeck, setEditingDeck] = useState<FlashcardDeck | null>(null);
@@ -368,9 +370,32 @@ export function FlashcardsPage({
       {(!title || aiEnabled) && (
         <div className="deck-toolbar">
           {!title && (
-            <h2 ref={heading} tabIndex={-1}>
+            <h2 ref={heading} tabIndex={-1} className="sr-only">
               Baralhos
             </h2>
+          )}
+          {!title && subjectsEnabled && (
+            <div className="deck-filter">
+              <SubjectSelect
+                value={filter}
+                label="Matéria"
+                emptyLabel="Todas as matérias"
+                disabled={busy}
+                onChange={(value) => {
+                  setSubjectFilter(value);
+                  setPage(1);
+                }}
+              />
+              {filter && (
+                <Button
+                  variant="outline"
+                  disabled={busy}
+                  onClick={() => void openSubject(filter)}
+                >
+                  Ver estudo desta matéria
+                </Button>
+              )}
+            </div>
           )}
           <div className="flashcard-actions">
             {aiEnabled && (
@@ -457,29 +482,6 @@ export function FlashcardsPage({
           }}
         />
       )}
-      {!title && subjectsEnabled && (
-        <div className="deck-filter">
-          <SubjectSelect
-            value={filter}
-            label="Matéria"
-            emptyLabel="Todas as matérias"
-            disabled={busy}
-            onChange={(value) => {
-              setSubjectFilter(value);
-              setPage(1);
-            }}
-          />
-          {filter && (
-            <Button
-              variant="outline"
-              disabled={busy}
-              onClick={() => void openSubject(filter)}
-            >
-              Ver estudo desta matéria
-            </Button>
-          )}
-        </div>
-      )}
       {!deck && (
         <section
           className="deck-list"
@@ -503,11 +505,22 @@ export function FlashcardsPage({
               Carregando baralhos…
             </div>
           ) : !decks.items.length ? (
-            <p>
-              {filter
-                ? 'Nenhum baralho vinculado a esta matéria.'
-                : 'Nenhum baralho. Crie seu primeiro baralho.'}
-            </p>
+            filter ? (
+              <p>Nenhum baralho vinculado a esta matéria.</p>
+            ) : decks.total === 0 ? (
+              <CollectionEmptyState
+                icon={<Layers />}
+                title="Nenhum baralho ainda"
+                description="Crie seu primeiro baralho para começar a estudar com flashcards."
+                actionLabel="Criar baralho"
+                onAction={() => {
+                  setEditingDeck(null);
+                  setDeckForm(true);
+                }}
+              />
+            ) : (
+              <p>Nenhum baralho nesta página.</p>
+            )
           ) : (
             <>
               <Table

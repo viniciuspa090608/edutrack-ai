@@ -214,7 +214,7 @@ it('keeps available cards on partial failure, retries by keyboard and preserves 
   expect(
     await screen.findByText(/Nenhuma atividade registrada nesta semana/),
   ).toBeTruthy();
-  expect(screen.getByText(/1 tarefas ativas sem prazo/)).toBeTruthy();
+  expect(screen.queryByText(/tarefas ativas sem prazo/)).toBeNull();
 });
 it('omits disabled cards and refreshes visibility when preferences change in another tab', async () => {
   const minimal = {

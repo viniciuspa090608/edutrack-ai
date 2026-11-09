@@ -79,12 +79,40 @@
   width: 28px;
   height: 28px;
 }
-.classroom-embedded .classroom-connection-row {
+.classroom-section > [data-slot='card-header'] {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+.classroom-section > [data-slot='card-header'] > div:nth-child(2) {
+  flex: 1 1 14rem;
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+.classroom-section > [data-slot='card-header'] p {
+  margin: 0;
+}
+.classroom-title-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.classroom-status {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+.classroom-status[data-state='connected'] {
+  color: var(--primary);
+}
+.classroom-connection-row {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 8px;
-}
-.classroom-embedded .classroom-connection-row > p {
-  flex: 1 1 12rem;
 }

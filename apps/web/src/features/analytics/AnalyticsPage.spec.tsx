@@ -66,6 +66,7 @@ it('preserves draft on theme changes, validates query and refreshes only on exis
   const view = render(<AnalyticsPage />);
   await screen.findByText(/Período atual parcial/);
   const user = userEvent.setup();
+  await user.click(screen.getByText('Filtros', { exact: true }));
   const zone = screen.getByLabelText('Fuso IANA');
   await user.clear(zone);
   await user.type(zone, 'Invalid/Timezone');
@@ -145,6 +146,7 @@ it.each([
     render(<AnalyticsPage />);
     await screen.findByText(/Período atual parcial/);
     const user = userEvent.setup();
+    await user.click(screen.getByText('Filtros', { exact: true }));
     await user.click(screen.getByRole('combobox', { name: 'Período' }));
     await user.click(screen.getByRole('option', { name: label }));
     fireEvent.change(screen.getByLabelText('Data de referência'), {
@@ -177,6 +179,7 @@ it('shows partial comparisons, text series and omitted modules, and submits filt
   expect(
     screen.getByRole('table', { name: 'Valores diários em texto' }),
   ).toBeTruthy();
+  await user.click(screen.getByText('Filtros', { exact: true }));
   await user.click(screen.getByRole('combobox', { name: 'Período' }));
   await user.click(screen.getByRole('option', { name: 'Ano' }));
   await user.clear(screen.getByLabelText('Fuso IANA'));

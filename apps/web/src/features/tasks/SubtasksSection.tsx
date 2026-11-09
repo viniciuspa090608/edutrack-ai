@@ -1,3 +1,4 @@
+import { useTransientMessage } from '../../components/useTransientMessage.js';
 import { CheckCheck, ListChecks, Plus, Pencil, Trash2 } from 'lucide-react';
 import { Skeleton } from '@study-platform/ui/components/ui/skeleton';
 import {
@@ -42,7 +43,7 @@ export function SubtasksSection({
   const [loading, setLoading] = useState(true);
   const [revision, setRevision] = useState(0);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [success, setSuccess] = useTransientMessage();
   const [busy, setBusy] = useState(false);
   const busyRef = useRef(false);
   const [title, setTitle] = useState('');

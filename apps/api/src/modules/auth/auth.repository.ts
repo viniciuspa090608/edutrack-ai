@@ -77,6 +77,7 @@ export class AuthRepository {
     hash: Buffer,
     salt: Buffer,
     transaction?: EntityManager,
+    displayName?: string,
   ): Promise<AuthUser> {
     const id = randomUUID();
     const persist = async (manager: EntityManager) => {
@@ -85,6 +86,11 @@ export class AuthRepository {
         id,
         email,
       ]);
+      if (displayName !== undefined)
+        await manager.query('UPDATE users SET display_name = ? WHERE id = ?', [
+          displayName,
+          id,
+        ]);
       await manager.query('INSERT INTO user_preferences (user_id) VALUES (?)', [
         id,
       ]);

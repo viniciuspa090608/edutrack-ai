@@ -7,6 +7,12 @@
   align-items: end;
   gap: 1rem;
 }
+.analytics-filters > summary {
+  cursor: pointer;
+  font-weight: 650;
+  padding: 1rem;
+}
+
 .analytics-controls label,
 .analytics-controls > div {
   display: grid;

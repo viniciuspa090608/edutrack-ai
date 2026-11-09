@@ -18,10 +18,31 @@ export type ErrorResponse = z.infer<typeof errorResponseSchema>;
 
 const emailSchema = z.string().trim().toLowerCase().pipe(z.email().max(320));
 
+export const displayNameSchema = z
+  .string()
+  .refine((s) => !/\p{Cc}/u.test(s), 'Não use caracteres de controle.')
+  .transform((s) => s.normalize('NFC').trim())
+  .refine(
+    (s) =>
+      Array.from(s).length >= 2 &&
+      Array.from(s).length <= 60 &&
+      !/\p{Cc}/u.test(s),
+    'Use de 2 a 60 caracteres, sem caracteres de controle.',
+  );
+
+export const registerDisplayNameSchema = z.preprocess(
+  (value) =>
+    typeof value === 'string' && value.trim() === '' && !/\p{Cc}/u.test(value)
+      ? undefined
+      : value,
+  displayNameSchema.optional(),
+);
+
 export const registerRequestSchema = z
   .object({
     email: emailSchema,
     password: z.string().min(12).max(128),
+    displayName: registerDisplayNameSchema,
   })
   .strict();
 
@@ -81,17 +102,6 @@ export type LoginRequest = z.infer<typeof loginRequestSchema>;
 export type AuthUser = z.infer<typeof authUserSchema>;
 export type MeResponse = z.infer<typeof meResponseSchema>;
 
-export const displayNameSchema = z
-  .string()
-  .refine((s) => !/\p{Cc}/u.test(s), 'Não use caracteres de controle.')
-  .transform((s) => s.normalize('NFC').trim())
-  .refine(
-    (s) =>
-      Array.from(s).length >= 2 &&
-      Array.from(s).length <= 60 &&
-      !/\p{Cc}/u.test(s),
-    'Use de 2 a 60 caracteres, sem caracteres de controle.',
-  );
 export const profileUpdateSchema = z
   .object({ displayName: displayNameSchema })
   .strict();

@@ -1,3 +1,4 @@
+import { useTransientMessage } from '../../components/useTransientMessage.js';
 import {
   Select,
   SelectTrigger,
@@ -257,7 +258,7 @@ export function RoadmapsSection({
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [success, setSuccess] = useTransientMessage();
   const [busy, setBusy] = useState<'generate' | 'save' | 'delete' | null>(null);
   const [mode, setMode] = useState<'manual' | 'parameters' | 'preview' | null>(
     null,

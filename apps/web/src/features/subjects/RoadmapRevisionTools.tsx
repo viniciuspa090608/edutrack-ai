@@ -1,3 +1,4 @@
+import { useTransientMessage } from '../../components/useTransientMessage.js';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { FieldSet, FieldLegend } from '@study-platform/ui/components/ui/field';
 import { Skeleton } from '@study-platform/ui/components/ui/skeleton';
@@ -99,7 +100,7 @@ export function RoadmapRevisionTools({
     [steps, setSteps] = useState<SequenceStep[]>([]);
   const [busy, setBusy] = useState(false),
     [error, setError] = useState(''),
-    [success, setSuccess] = useState(''),
+    [success, setSuccess] = useTransientMessage(),
     [conflict, setConflict] = useState(false),
     [expired, setExpired] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false),

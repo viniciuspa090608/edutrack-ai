@@ -651,12 +651,25 @@
   margin-top: 8px;
 }
 
+.account-area .account-profile [data-slot='card-content'] {
+  gap: 12px;
+}
 .account-profile-group {
   display: grid;
   min-width: 0;
-  gap: 8px;
+  gap: 6px;
   border-top: 1px solid var(--border);
-  padding-top: 20px;
+  padding-top: 12px;
+}
+.account-profile-group > :is(h3, p) {
+  margin: 0;
+}
+.account-profile-group form {
+  margin-block: 0;
+}
+.account-google-identity > div {
+  display: grid;
+  gap: 3px;
 }
 .account-profile-group h3 {
   font-weight: 650;

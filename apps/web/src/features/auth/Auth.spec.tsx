@@ -167,6 +167,10 @@ describe('account access', () => {
     );
     await interaction.tab();
     expect(document.activeElement).toBe(
+      screen.getByRole('textbox', { name: 'Nome de exibição (opcional)' }),
+    );
+    await interaction.tab();
+    expect(document.activeElement).toBe(
       screen.getByRole('textbox', { name: 'E-mail' }),
     );
     await interaction.tab();

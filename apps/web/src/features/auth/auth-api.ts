@@ -90,9 +90,16 @@ export async function localAccess(
   mode: 'register' | 'login',
   email: string,
   password: string,
+  displayName?: string,
 ): Promise<{ kind: 'active'; user: AuthUser } | { kind: 'pending' }> {
   const body: unknown = await (
-    await postJson(`/auth/${mode}`, { email, password })
+    await postJson(`/auth/${mode}`, {
+      email,
+      password,
+      ...(mode === 'register' && displayName !== undefined
+        ? { displayName }
+        : {}),
+    })
   ).json();
   if (pendingVerificationSchema.safeParse(body).success)
     return { kind: 'pending' };

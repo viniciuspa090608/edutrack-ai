@@ -1,3 +1,4 @@
+import { useTransientMessage } from '../../components/useTransientMessage.js';
 import {
   Select,
   SelectTrigger,
@@ -79,7 +80,7 @@ export function RoutinesPage() {
   const [page, setPage] = useState(1);
   const [busy, setBusy] = useState(true);
   const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useTransientMessage();
   const [editing, setEditing] = useState(false);
   const [id, setId] = useState<string | null>(null);
   const [name, setName] = useState('');

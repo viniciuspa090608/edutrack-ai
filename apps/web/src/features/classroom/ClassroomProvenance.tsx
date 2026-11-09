@@ -1,3 +1,4 @@
+import { useTransientMessage } from '../../components/useTransientMessage.js';
 import { useState } from 'react';
 import {
   classroomSourceSchema,
@@ -24,7 +25,7 @@ export function ClassroomProvenance({
         attachments: Array<{ title: string; link: string }>;
       }>
     >([]),
-    [message, setMessage] = useState(''),
+    [message, setMessage] = useTransientMessage(),
     [error, setError] = useState(''),
     [busy, setBusy] = useState(false);
   return (
@@ -61,7 +62,7 @@ export function ClassroomProvenance({
               setData(result);
               setMessage(
                 result.length
-                  ? 'Origem da importação'
+                  ? ''
                   : 'Este registro não tem origem Google Classroom.',
               );
             })
@@ -73,6 +74,7 @@ export function ClassroomProvenance({
       </Button>
       {message && <p role="status">{message}</p>}
       {error && <p role="alert">{error}</p>}
+      {data.length > 0 && <p>Origem da importação</p>}
       {data.map((item, index) => (
         <div key={index}>
           <p>{item.title}</p>

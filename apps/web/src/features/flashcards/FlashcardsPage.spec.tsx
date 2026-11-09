@@ -373,8 +373,12 @@ it('distinguishes loading, error/retry and empty list, creating the first deck w
   await userEvent.click(
     screen.getByRole('button', { name: 'Tentar novamente' }),
   );
-  await screen.findByText(/Nenhum baralho/);
-  await userEvent.click(screen.getByRole('button', { name: 'Criar baralho' }));
+  const empty = await screen.findByRole('region', {
+    name: 'Nenhum baralho ainda',
+  });
+  await userEvent.click(
+    within(empty).getByRole('button', { name: 'Criar baralho' }),
+  );
   await userEvent.type(screen.getByLabelText('Nome'), 'Primeiro');
   await userEvent.click(screen.getByRole('button', { name: 'Salvar baralho' }));
   await screen.findByText('Baralho salvo.');

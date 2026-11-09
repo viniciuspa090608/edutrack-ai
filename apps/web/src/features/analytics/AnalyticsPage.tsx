@@ -206,70 +206,73 @@ export function AnalyticsPage() {
         current="analytics"
         description="Entenda seu ritmo de estudos e acompanhe a evolução das suas atividades ao longo do tempo."
       />
-      <form
-        className="analytics-controls evolution-card"
-        onSubmit={(event) => {
-          event.preventDefault();
-          const result = analyticsQuerySchema.safeParse(draft);
-          if (!result.success) {
-            setError('Informe uma data e um fuso IANA válidos.');
-            return;
-          }
-          setQuery(result.data);
-        }}
-      >
-        <div>
-          <Label htmlFor="analytics-period">Período</Label>
-          <Select
-            value={draft.granularity}
-            onValueChange={(value) =>
-              setDraft({
-                ...draft,
-                granularity: value as AnalyticsQuery['granularity'],
-              })
+      <details className="analytics-filters evolution-card">
+        <summary>Filtros</summary>
+        <form
+          className="analytics-controls"
+          onSubmit={(event) => {
+            event.preventDefault();
+            const result = analyticsQuerySchema.safeParse(draft);
+            if (!result.success) {
+              setError('Informe uma data e um fuso IANA válidos.');
+              return;
             }
-          >
-            <SelectTrigger id="analytics-period">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="analytics-period-options">
-              {[
-                ['day', 'Dia'],
-                ['week', 'Semana'],
-                ['quarter', 'Trimestre'],
-                ['semester', 'Semestre'],
-                ['year', 'Ano'],
-              ].map(([id, label]) => (
-                <SelectItem key={id} value={id!}>
-                  {label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <Label>
-          Data de referência
-          <Input
-            type="date"
-            required
-            value={draft.date}
-            onChange={(event) =>
-              setDraft({ ...draft, date: event.target.value })
-            }
-          />
-        </Label>
-        <Label>
-          Fuso IANA
-          <Input
-            required
-            value={draft.timeZone}
-            onChange={(event) =>
-              setDraft({ ...draft, timeZone: event.target.value })
-            }
-          />
-        </Label>
-        <Button type="submit">Consultar</Button>
-      </form>
+            setQuery(result.data);
+          }}
+        >
+          <div>
+            <Label htmlFor="analytics-period">Período</Label>
+            <Select
+              value={draft.granularity}
+              onValueChange={(value) =>
+                setDraft({
+                  ...draft,
+                  granularity: value as AnalyticsQuery['granularity'],
+                })
+              }
+            >
+              <SelectTrigger id="analytics-period">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="analytics-period-options">
+                {[
+                  ['day', 'Dia'],
+                  ['week', 'Semana'],
+                  ['quarter', 'Trimestre'],
+                  ['semester', 'Semestre'],
+                  ['year', 'Ano'],
+                ].map(([id, label]) => (
+                  <SelectItem key={id} value={id!}>
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <Label>
+            Data de referência
+            <Input
+              type="date"
+              required
+              value={draft.date}
+              onChange={(event) =>
+                setDraft({ ...draft, date: event.target.value })
+              }
+            />
+          </Label>
+          <Label>
+            Fuso IANA
+            <Input
+              required
+              value={draft.timeZone}
+              onChange={(event) =>
+                setDraft({ ...draft, timeZone: event.target.value })
+              }
+            />
+          </Label>
+          <Button type="submit">Consultar</Button>
+        </form>
+      </details>
       {loading && <ProgressLoading>Carregando estatísticas…</ProgressLoading>}
       {error && (
         <Alert variant="destructive" role="alert">

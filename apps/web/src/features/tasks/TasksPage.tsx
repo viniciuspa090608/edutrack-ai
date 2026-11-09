@@ -1,3 +1,4 @@
+import { useTransientMessage } from '../../components/useTransientMessage.js';
 import { useCreateIntent } from '../../app/useCreateIntent.js';
 import {
   Select,
@@ -41,13 +42,14 @@ import {
   CheckCheck,
   ClipboardList,
   Flag,
-  ListFilter,
   Plus,
   Pencil,
   Trash2,
   X,
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { TaskConfirmation } from './TaskConfirmation.js';
+import { Checkbox } from '@study-platform/ui/components/ui/checkbox';
 import { SubtasksSection } from './SubtasksSection.js';
 import { TaskProgress } from './TaskProgress.js';
 import { createTaskSchema, taskFiltersSchema } from '@study-platform/contracts';
@@ -57,7 +59,13 @@ import type {
   TaskList,
 } from '@study-platform/contracts';
 import { AuthApiError, navigate } from '../auth/auth-api.js';
-import { deleteTask, listTasks, saveTask, taskDetail } from './tasks-api.js';
+import {
+  deleteTask,
+  listTasks,
+  mutateSubtask,
+  saveTask,
+  taskDetail,
+} from './tasks-api.js';
 import '../../styles/tasks.css';
 import { CollectionEmptyState } from '../../components/CollectionEmptyState.js';
 
@@ -479,11 +487,15 @@ export function TasksPage({
   const [result, setResult] = useState<TaskList | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [success, setSuccess] = useTransientMessage();
   const [revision, setRevision] = useState(0);
   const [editor, setEditor] = useState<{ task: StudyTask | null } | null>(null);
   const [detail, setDetail] = useState<StudyTask | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
+  const [completion, setCompletion] = useState<StudyTask | null>(null);
+  const [completing, setCompleting] = useState(false);
+  const completionPending = useRef(false);
+  const [completionError, setCompletionError] = useState('');
   const [deleting, setDeleting] = useState<StudyTask | null>(null);
   const newButton = useRef<HTMLButtonElement>(null);
   const detailHeading = useRef<HTMLHeadingElement>(null);
@@ -540,6 +552,40 @@ export function TasksPage({
     setDetail(null);
     setSuccess('');
   });
+  async function complete(task: StudyTask, withSubtasks: boolean) {
+    if (completionPending.current) return;
+    completionPending.current = true;
+    setCompleting(true);
+    setCompletionError('');
+    setSuccess('');
+    try {
+      const saved = withSubtasks
+        ? (
+            await mutateSubtask(task.id, '/complete-subtasks', 'POST', {
+              confirm: true,
+            })
+          ).task
+        : await saveTask(task.id, { status: 'COMPLETED' });
+      setDetail((current) => (current?.id === saved.id ? saved : current));
+      setCompletion(null);
+      setSuccess('Tarefa concluída.');
+      refresh();
+    } catch (cause) {
+      if (withSubtasks) throw new Error(failure(cause), { cause });
+      if (
+        cause instanceof AuthApiError &&
+        cause.code === 'SUBTASK_CONFIRMATION_REQUIRED'
+      ) {
+        setCompletion(task);
+      } else {
+        setCompletionError(failure(cause));
+      }
+    } finally {
+      completionPending.current = false;
+      setCompleting(false);
+    }
+  }
+
   const createTask = () => {
     setEditor({ task: null });
     setDetail(null);
@@ -585,151 +631,169 @@ export function TasksPage({
           }}
         />
       )}
+      {completionError && (
+        <Alert variant="destructive" role="alert">
+          <AlertDescription>{completionError}</AlertDescription>
+        </Alert>
+      )}
+      {completion && (
+        <TaskConfirmation
+          title="Concluir todas as subtarefas?"
+          description="As subtarefas pendentes e a tarefa principal serão concluídas."
+          action="Concluir todas"
+          returnFocusId={`complete-task-${completion.id}`}
+          onCancel={() => setCompletion(null)}
+          onConfirm={() => complete(completion, true)}
+          destructive={false}
+        />
+      )}
       <Card asChild>
-        <form
-          className="task-card task-filters"
-          aria-label="Filtrar tarefas"
-          onSubmit={(event) => {
-            event.preventDefault();
-            const parsed = taskFiltersSchema.safeParse(
-              Object.fromEntries(
-                Object.entries({
-                  ...draft,
-                  page: 1,
-                  pageSize: filters.pageSize,
-                }).filter(([, value]) => value !== ''),
-              ),
-            );
-            if (!parsed.success) {
-              setFilterError(
-                'Informe filtros válidos e um prazo final igual ou posterior ao inicial.',
+        <details className="task-card task-filters">
+          <summary className="task-filter-summary">Filtros</summary>
+          <form
+            aria-label="Filtrar tarefas"
+            onSubmit={(event) => {
+              event.preventDefault();
+              const parsed = taskFiltersSchema.safeParse(
+                Object.fromEntries(
+                  Object.entries({
+                    ...draft,
+                    page: 1,
+                    pageSize: filters.pageSize,
+                  }).filter(([, value]) => value !== ''),
+                ),
               );
-              return;
-            }
-            setFilterError('');
-            setFilters(parsed.data);
-            setSuccess('');
-          }}
-        >
-          <CardHeader>
-            <div className="task-section-heading">
-              <ListFilter aria-hidden="true" />
-              <h2>Filtros</h2>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="task-filter-grid">
-              <div className="task-field">
-                <Label htmlFor="filter-status">Filtrar por status</Label>
-                <Select
-                  value={draft.status || '__edutrack_empty__'}
-                  onValueChange={(selected) =>
-                    setDraft({
-                      ...draft,
-                      status: selected === '__edutrack_empty__' ? '' : selected,
-                    })
-                  }
-                >
-                  <SelectTrigger id="filter-status" className="w-full min-w-0">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent position="popper">
-                    <SelectItem value="__edutrack_empty__">
-                      Todos os status
-                    </SelectItem>
-                    {Object.entries(statuses).map(([v, label]) => (
-                      <SelectItem key={v} value={v}>
-                        {label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="task-field">
-                <Label htmlFor="filter-priority">Filtrar por importância</Label>
-                <Select
-                  value={draft.priority || '__edutrack_empty__'}
-                  onValueChange={(selected) =>
-                    setDraft({
-                      ...draft,
-                      priority:
-                        selected === '__edutrack_empty__' ? '' : selected,
-                    })
-                  }
-                >
-                  <SelectTrigger
-                    id="filter-priority"
-                    className="w-full min-w-0"
+              if (!parsed.success) {
+                setFilterError(
+                  'Informe filtros válidos e um prazo final igual ou posterior ao inicial.',
+                );
+                return;
+              }
+              setFilterError('');
+              setFilters(parsed.data);
+              setSuccess('');
+            }}
+          >
+            <CardContent>
+              <div className="task-filter-grid">
+                <div className="task-field">
+                  <Label htmlFor="filter-status">Filtrar por status</Label>
+                  <Select
+                    value={draft.status || '__edutrack_empty__'}
+                    onValueChange={(selected) =>
+                      setDraft({
+                        ...draft,
+                        status:
+                          selected === '__edutrack_empty__' ? '' : selected,
+                      })
+                    }
                   >
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent position="popper">
-                    <SelectItem value="__edutrack_empty__">
-                      Todas as importâncias
-                    </SelectItem>
-                    {Object.entries(priorities).map(([v, label]) => (
-                      <SelectItem key={v} value={v}>
-                        {label}
+                    <SelectTrigger
+                      id="filter-status"
+                      className="w-full min-w-0"
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent position="popper">
+                      <SelectItem value="__edutrack_empty__">
+                        Todos os status
                       </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                      {Object.entries(statuses).map(([v, label]) => (
+                        <SelectItem key={v} value={v}>
+                          {label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="task-field">
+                  <Label htmlFor="filter-priority">
+                    Filtrar por importância
+                  </Label>
+                  <Select
+                    value={draft.priority || '__edutrack_empty__'}
+                    onValueChange={(selected) =>
+                      setDraft({
+                        ...draft,
+                        priority:
+                          selected === '__edutrack_empty__' ? '' : selected,
+                      })
+                    }
+                  >
+                    <SelectTrigger
+                      id="filter-priority"
+                      className="w-full min-w-0"
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent position="popper">
+                      <SelectItem value="__edutrack_empty__">
+                        Todas as importâncias
+                      </SelectItem>
+                      {Object.entries(priorities).map(([v, label]) => (
+                        <SelectItem key={v} value={v}>
+                          {label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="task-field">
+                  <Label htmlFor="filter-from">Prazo de</Label>
+                  <Input
+                    id="filter-from"
+                    type="date"
+                    min="1000-01-01"
+                    max="9999-12-31"
+                    value={draft.dueFrom}
+                    aria-describedby={filterError ? 'filter-error' : undefined}
+                    onChange={(e) =>
+                      setDraft({ ...draft, dueFrom: e.target.value })
+                    }
+                  />
+                </div>
+                <div className="task-field">
+                  <Label htmlFor="filter-to">Prazo até</Label>
+                  <Input
+                    id="filter-to"
+                    type="date"
+                    min="1000-01-01"
+                    max="9999-12-31"
+                    value={draft.dueTo}
+                    aria-describedby={filterError ? 'filter-error' : undefined}
+                    onChange={(e) =>
+                      setDraft({ ...draft, dueTo: e.target.value })
+                    }
+                  />
+                </div>
               </div>
-              <div className="task-field">
-                <Label htmlFor="filter-from">Prazo de</Label>
-                <Input
-                  id="filter-from"
-                  type="date"
-                  min="1000-01-01"
-                  max="9999-12-31"
-                  value={draft.dueFrom}
-                  aria-describedby={filterError ? 'filter-error' : undefined}
-                  onChange={(e) =>
-                    setDraft({ ...draft, dueFrom: e.target.value })
-                  }
-                />
+              <div className="task-actions">
+                <Button type="submit">Aplicar filtros</Button>
+                <Button
+                  variant="outline"
+                  type="button"
+                  onClick={() => {
+                    setDraft({
+                      status: '',
+                      priority: '',
+                      dueFrom: '',
+                      dueTo: '',
+                    });
+                    setFilters({ ...initialFilters });
+                    setFilterError('');
+                  }}
+                >
+                  Limpar filtros
+                </Button>
               </div>
-              <div className="task-field">
-                <Label htmlFor="filter-to">Prazo até</Label>
-                <Input
-                  id="filter-to"
-                  type="date"
-                  min="1000-01-01"
-                  max="9999-12-31"
-                  value={draft.dueTo}
-                  aria-describedby={filterError ? 'filter-error' : undefined}
-                  onChange={(e) =>
-                    setDraft({ ...draft, dueTo: e.target.value })
-                  }
-                />
-              </div>
-            </div>
-            <div className="task-actions">
-              <Button type="submit">Aplicar filtros</Button>
-              <Button
-                variant="outline"
-                type="button"
-                onClick={() => {
-                  setDraft({
-                    status: '',
-                    priority: '',
-                    dueFrom: '',
-                    dueTo: '',
-                  });
-                  setFilters({ ...initialFilters });
-                  setFilterError('');
-                }}
-              >
-                Limpar filtros
-              </Button>
-            </div>
-            {filterError && (
-              <Alert variant="destructive" id="filter-error" role="alert">
-                <AlertDescription>{filterError}</AlertDescription>
-              </Alert>
-            )}
-          </CardContent>
-        </form>
+              {filterError && (
+                <Alert variant="destructive" id="filter-error" role="alert">
+                  <AlertDescription>{filterError}</AlertDescription>
+                </Alert>
+              )}
+            </CardContent>
+          </form>
+        </details>
       </Card>
       {loading && (
         <div className="task-loading">
@@ -890,7 +954,24 @@ export function TasksPage({
                   >
                     <CardHeader>
                       <TaskBadges task={task} />
-                      <h3>{task.title}</h3>
+                      <div className="task-title-row">
+                        <Checkbox
+                          id={`complete-task-${task.id}`}
+                          aria-label={`Concluir ${task.title}`}
+                          checked={task.status === 'COMPLETED'}
+                          disabled={completing || task.status === 'COMPLETED'}
+                          onCheckedChange={(checked) => {
+                            if (checked !== true) return;
+                            if (task.subtaskTotal > 0) {
+                              setCompletionError('');
+                              setCompletion(task);
+                            } else {
+                              void complete(task, false);
+                            }
+                          }}
+                        />
+                        <h3>{task.title}</h3>
+                      </div>
                     </CardHeader>
                     <CardContent>
                       {task.description && (
@@ -904,7 +985,13 @@ export function TasksPage({
                           ? `Prazo: ${dateLabel(task.dueDate)}`
                           : 'Sem prazo'}
                       </p>
-                      <div className="task-card-footer">
+                      <div
+                        className={
+                          task.subtaskTotal > 0
+                            ? 'task-card-footer'
+                            : 'task-card-footer-compact'
+                        }
+                      >
                         <TaskProgress task={task} />
                         <Button
                           type="button"

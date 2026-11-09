@@ -443,14 +443,46 @@ export function ClassroomSection({
           height={48}
         />
         <div>
-          <Heading id="classroom-title">
-            {embedded ? 'Google Classroom' : 'Integrações · Google Classroom'}
-          </Heading>
+          <div className="classroom-title-row">
+            <Heading id="classroom-title">
+              {embedded ? 'Google Classroom' : 'Integrações · Google Classroom'}
+            </Heading>
+            {connection && (
+              <span className="classroom-status" data-state={connection.state}>
+                {!connection.available
+                  ? 'Indisponível'
+                  : connection.state === 'connected'
+                    ? 'Conectado'
+                    : connection.state === 'reconnect_required'
+                      ? 'Reconexão necessária'
+                      : 'Desconectado'}
+              </span>
+            )}
+          </div>
           <p>
             Conecte para importar suas turmas e atividades. Seus fluxos manuais
             continuam disponíveis.
           </p>
+          {connection?.account && <p>{connection.account.email}</p>}
         </div>
+        {connection?.available && (
+          <div className="classroom-connection-row">
+            <Button disabled={busy || active} onClick={() => connect('import')}>
+              {connection.state === 'disconnected'
+                ? 'Conectar Google Classroom'
+                : 'Reconectar conta'}
+            </Button>
+            {connection.state !== 'disconnected' && (
+              <Button
+                variant="outline"
+                disabled={busy}
+                onClick={() => setConfirmDisconnect(true)}
+              >
+                Desconectar
+              </Button>
+            )}
+          </div>
+        )}
       </CardHeader>
       <CardContent>
         {new URLSearchParams(window.location.search).get('classroom') ===
@@ -477,34 +509,6 @@ export function ClassroomSection({
         )}
         {connection?.available && (
           <>
-            <div className="classroom-connection-row">
-              <p>
-                Conexão:{' '}
-                {connection.state === 'connected'
-                  ? 'Conectada'
-                  : connection.state === 'reconnect_required'
-                    ? 'Reconexão necessária'
-                    : 'Desconectada'}
-                {connection.account ? ` · ${connection.account.email}` : ''}
-              </p>
-              <Button
-                disabled={busy || active}
-                onClick={() => connect('import')}
-              >
-                {connection.state === 'disconnected'
-                  ? 'Conectar Google Classroom'
-                  : 'Reconectar conta'}
-              </Button>
-              {connection.state !== 'disconnected' && (
-                <Button
-                  variant="outline"
-                  disabled={busy}
-                  onClick={() => setConfirmDisconnect(true)}
-                >
-                  Desconectar
-                </Button>
-              )}
-            </div>
             {confirmDisconnect && (
               <div role="group" aria-label="Confirmar desconexão">
                 <p>

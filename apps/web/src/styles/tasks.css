@@ -201,8 +201,13 @@
 .task-filters {
   padding-block: 1.25rem;
 }
-.task-filters [data-slot='card-header'] {
-  padding-bottom: 0;
+.task-filter-summary {
+  cursor: pointer;
+  font-weight: 650;
+  margin-inline: 1.5rem;
+}
+.task-filters[open] > form {
+  margin-top: 1rem;
 }
 .task-filter-grid {
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -315,6 +320,18 @@
   color: var(--muted-foreground);
   font-size: 0.8rem;
   margin: 0;
+}
+.task-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+.task-title-row [data-slot='checkbox'] {
+  flex-shrink: 0;
+}
+.task-card-footer-compact {
+  display: flex;
+  justify-content: flex-end;
 }
 .task-card-footer {
   display: flex;

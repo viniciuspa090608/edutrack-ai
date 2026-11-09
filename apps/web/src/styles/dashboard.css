@@ -316,15 +316,49 @@
   }
 }
 
-@media (min-width: 1000px) {
-  .dashboard-grid:has(.dashboard-card-subjects.dashboard-card-empty)
-    .dashboard-card-streak {
-    align-self: stretch;
-  }
-}
-
 .dashboard-card-empty .collection-empty-state {
   align-content: center;
+}
+
+.dashboard-card-subjects,
+.dashboard-card-streak {
+  min-height: 11rem;
+  align-self: start;
+}
+.dashboard-streak-lines {
+  display: grid;
+  gap: 5px;
+}
+.dashboard-streak-lines p {
+  margin: 0;
+}
+.dashboard-streak-lines strong {
+  color: var(--foreground);
+}
+.dashboard-task-scroll {
+  position: relative;
+}
+.dashboard-task-scroll::before,
+.dashboard-task-scroll::after {
+  position: absolute;
+  z-index: 1;
+  inset-inline: 0 10px;
+  height: 16px;
+  pointer-events: none;
+}
+.dashboard-task-scroll[data-above='true']::before {
+  content: '';
+  top: 0;
+  background: linear-gradient(var(--card), transparent);
+  backdrop-filter: blur(3px);
+  mask-image: linear-gradient(black, transparent);
+}
+.dashboard-task-scroll[data-below='true']::after {
+  content: '';
+  bottom: 0;
+  background: linear-gradient(transparent, var(--card));
+  backdrop-filter: blur(3px);
+  mask-image: linear-gradient(transparent, black);
 }
 
 .dashboard-card-heading {
@@ -347,8 +381,7 @@
 }
 @media (min-width: 1000px) {
   .dashboard-grid:not(.dashboard-without-tasks, .dashboard-without-flashcards) {
-    grid-template-rows: 16.5rem 14.5rem 28rem 32rem;
-    align-items: stretch;
+    grid-template-rows: 16.5rem 14.5rem auto auto;
   }
   .dashboard-grid:not(.dashboard-without-tasks, .dashboard-without-flashcards)
     .dashboard-card
@@ -358,7 +391,7 @@
     flex-direction: column;
   }
   .dashboard-grid:not(.dashboard-without-tasks, .dashboard-without-flashcards)
-    .dashboard-card:not(.dashboard-card-tasks)
+    :is(.dashboard-card-pomodoro, .dashboard-card-flashcards)
     .dashboard-card-body {
     overflow: auto;
     padding: 4px;
@@ -382,9 +415,26 @@
     flex-direction: column;
     min-height: 0;
   }
+  .dashboard-grid:not(.dashboard-without-flashcards) .dashboard-card-tasks {
+    align-self: stretch;
+  }
+  .dashboard-grid:not(.dashboard-without-flashcards)
+    :is(.dashboard-card-pomodoro, .dashboard-card-flashcards) {
+    align-self: stretch;
+  }
+  .dashboard-grid:not(.dashboard-without-flashcards) .dashboard-task-scroll {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+  }
   .dashboard-grid:not(.dashboard-without-flashcards) .dashboard-task-list {
+    min-height: 0;
     overflow: auto;
     padding: 4px;
+    margin: 0;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
   }
   .dashboard-grid:not(.dashboard-without-flashcards)
     .dashboard-card-tasks

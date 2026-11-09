@@ -118,9 +118,38 @@ describe('authentication HTTP with MySQL', () => {
       .send({ email, password });
     expect(firstLogin.status).toBe(200);
     cookie = issuedCookie(firstLogin.headers['set-cookie']);
+    expect(firstLogin.body.user.displayName).toBe('Estudante');
     expect(
       JSON.stringify(await source.query('SELECT token_hash FROM sessions')),
     ).not.toContain(cookie.split('=')[1]);
+  });
+
+  it('stores a validated optional display name without requiring uniqueness', async () => {
+    const displayName = 'Nome escolhido';
+    for (const suffix of ['first', 'second']) {
+      const address = `named-${suffix}-${randomBytes(4).toString('hex')}@example.com`;
+      const registration = await request(app)
+        .post('/auth/register')
+        .set('Origin', origin)
+        .send({ email: address, password, displayName: `  ${displayName}  ` });
+      expect(registration.status).toBe(201);
+      const rows = await source.query(
+        'SELECT display_name FROM users WHERE email = ?',
+        [address],
+      );
+      expect(rows).toEqual([{ display_name: displayName }]);
+    }
+    const invalidAddress = `invalid-name-${randomBytes(4).toString('hex')}@example.com`;
+    const invalid = await request(app)
+      .post('/auth/register')
+      .set('Origin', origin)
+      .send({ email: invalidAddress, password, displayName: 'X' });
+    expect(invalid.status).toBe(400);
+    expect(
+      await source.query('SELECT id FROM users WHERE email = ?', [
+        invalidAddress,
+      ]),
+    ).toEqual([]);
   });
 
   it('uses generic login failure, persists the session, and revokes on logout', async () => {
