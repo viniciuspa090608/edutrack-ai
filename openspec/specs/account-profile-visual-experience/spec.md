@@ -120,11 +120,11 @@ O modo de geração SHALL apresentar seleção única estilizada conforme a plat
 - **THEN** somente um modo fica selecionado e os botões mantêm a hierarquia de tamanho e os estados reais de loading, disabled, erro e sucesso.
 
 ### Requirement: Integração Classroom em card único
-Título, logo fiel do Google Classroom, descrição, estado de conexão e ações e conteúdo existentes da integração SHALL integrar um único card coerente com as demais configurações. O logo SHALL NOT substituir o nome acessível ou alterar o OAuth e fluxos existentes.
+Título, logo fiel do Google Classroom, descrição, estado de conexão, ações e conteúdo existentes SHALL integrar uma seção do card Acesso à conta entre Google e Sessão atual, com divisórias. O logo SHALL manter nome acessível associado à integração. O fluxo OAuth e os demais fluxos existentes SHALL ser preservados.
 
 #### Scenario: Integração desconectada ou conectada
 - **WHEN** a integração é exibida em qualquer estado disponível
-- **THEN** seu conteúdo pertence ao mesmo card, com logo identificável e feedback e ações existentes alcançáveis em ambos os temas e desde 320 px.
+- **THEN** logo, texto e estado pertencem ao card compartilhado, com a ação principal à direita quando houver espaço e com conteúdo, feedback e ações alcançáveis nos dois temas e desde 320 px.
 
 ### Requirement: Cabeçalhos e informações compactas da conta
 A Conta SHALL omitir os subtítulos Seu perfil, suas preferências e seu acesso. Tudo em um só lugar.; Como você aparece no EduTrack.; Escolha o tema mais confortável para estudar.; e Proteja seu acesso e mantenha seus dados atualizados. Os títulos Seu perfil, Aparência e Segurança SHALL ficar centralizados verticalmente com seus ícones. A descrição Classroom SHALL ficar logo abaixo do título, alinhada ao texto do título, ao lado do logo.
@@ -134,18 +134,18 @@ A Conta SHALL omitir os subtítulos Seu perfil, suas preferências e seu acesso.
 - **THEN** os quatro subtítulos indicados não aparecem, os títulos com ícone ficam alinhados e a descrição Classroom permanece abaixo do título.
 
 ### Requirement: Foto com organização responsiva
-A edição de foto SHALL remover apenas o primeiro título redundante Foto de perfil, preservar o label associado ao input e mostrar os requisitos cinza abaixo da foto. Em celular o input SHALL ficar ao lado do círculo da foto, inclusive em 320 px, sem overflow horizontal; textos longos SHALL quebrar dentro do espaço disponível. Preview, salvar, remover e feedback SHALL permanecer acessíveis.
+O card Seu perfil SHALL conter uma seção Foto de perfil, sem repetir esse título nos controles internos. SHALL preservar o label associado ao input. Avatar e ações SHALL aparecer lado a lado, inclusive em 320 px, com quebra das ações dentro de sua coluna quando necessário. Os requisitos em texto secundário SHALL aparecer abaixo das ações. Preview, salvar, remover e feedback SHALL permanecer acessíveis.
 
 #### Scenario: Foto no celular
 - **WHEN** a pessoa abre a edição em 320 px
-- **THEN** foto e input ficam lado a lado, os requisitos aparecem abaixo da foto e não há título redundante nem perda das ações.
+- **THEN** foto e controles ficam lado a lado, os requisitos aparecem abaixo das ações e não há título redundante, corte nem perda de ações.
 
 ### Requirement: Acesso Google alinhado e compacto
-Acesso à conta SHALL usar o ícone Google existente junto à identificação do vínculo e reduzir espaços verticais. O bloco Google com sua descrição e o botão Vincular Google SHALL ocupar a mesma linha, texto à esquerda e ação à direita com distribuição space-between quando houver espaço. Em telas estreitas SHALL adaptar sem cortes, preservando vínculo confirmado, OAuth, sessão atual e logout.
+Acesso à conta SHALL usar o ícone Google existente à esquerda e centralizado verticalmente em relação ao bloco com título e descrição, com espaçamento consistente entre ícone e texto. O botão Vincular Google SHALL ficar à direita quando houver espaço. Em telas estreitas SHALL adaptar sem cortes, preservando vínculo confirmado, OAuth, sessão atual e logout.
 
 #### Scenario: Google não vinculado
 - **WHEN** o card de acesso aparece em desktop sem vínculo Google
-- **THEN** ícone e identificação estão alinhados e Vincular Google fica à direita do bloco textual, sem grandes espaços vazios.
+- **THEN** o ícone está centralizado em relação ao título e descrição juntos e Vincular Google fica à direita.
 
 ### Requirement: IA com explicação única e seleção centralizada
 Os textos cinza do card Inteligência artificial SHALL formar um único parágrafo compacto, preservando orientação, configuração confirmada, existência de chave e limites reais de uso, inclusive referência UTC necessária para explicar a cota. RadioButtons de padrão EduTrack e chave pessoal SHALL ter círculos proporcionais e indicador centralizado, com seleção única, labels, teclado e foco preservados nos dois temas.
@@ -160,3 +160,10 @@ Fuso de estudo SHALL ser um card independente de Preferências de estudo, com t�
 #### Scenario: Configuração e uso fora da conta
 - **WHEN** a pessoa abre configurações e depois Home, Relatório, Rotinas ou detalhes Classroom
 - **THEN** encontra o card independente nas configurações e não vê avisos repetidos de fuso nas demais áreas, mantendo controles funcionais e datas corretas.
+
+### Requirement: Card Seu perfil dividido por finalidade
+O card Seu perfil SHALL organizar Foto de perfil, Informações pessoais e Segurança da conta com divisórias. O nome de exibição SHALL ter Salvar nome à direita na mesma linha quando houver espaço, com a ajuda abaixo do campo e quebra responsiva da ação em telas estreitas. Segurança da conta SHALL apresentar o e-mail atual e a ação de alteração disponível, preservando os fluxos reais de segurança e feedback.
+
+#### Scenario: Editar nome e acessar alteração de e-mail
+- **WHEN** a pessoa abre Seu perfil
+- **THEN** encontra os três grupos em ordem, pode salvar o nome pelo formulário existente e acessar o fluxo real de troca de e-mail.

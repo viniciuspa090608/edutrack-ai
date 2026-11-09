@@ -15,7 +15,7 @@ import { Button } from '@study-platform/ui/components/ui/button';
 import { Label } from '@study-platform/ui/components/ui/label';
 import { Input } from '@study-platform/ui/components/ui/input';
 import { ArrowLeft, ArrowRight, BookOpen } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { navigatePublicLink } from './public-navigation.js';
 import {
@@ -32,13 +32,21 @@ function modeFromUrl(): 'login' | 'register' {
 }
 
 export function AccessPage() {
+  const heading = useRef<HTMLHeadingElement>(null);
+  const [returnArrival] = useState(
+    () => window.history.state?.returnArrival === true,
+  );
   const [arrival] = useState(
     () => window.history.state?.accessArrival === true,
   );
   useEffect(() => {
-    if (window.history.state?.accessArrival)
+    if (
+      window.history.state?.accessArrival ||
+      window.history.state?.returnArrival
+    )
       window.history.replaceState({}, '');
-  }, []);
+    if (returnArrival) heading.current?.focus({ preventScroll: true });
+  }, [returnArrival]);
   const [mode, setMode] = useState<'login' | 'register'>(modeFromUrl);
   const [search, setSearch] = useState(() => window.location.search);
   const [email, setEmail] = useState('');
@@ -78,12 +86,14 @@ export function AccessPage() {
   }
 
   return (
-    <AuthLayout arrival={arrival}>
+    <AuthLayout arrival={arrival} transition={returnArrival}>
       <span className="auth-heading-icon" aria-hidden="true">
         <BookOpen size={24} />
       </span>
       <p className="section-kicker">EduTrack</p>
-      <h1>{mode === 'login' ? 'Entre na sua conta' : 'Crie sua conta'}</h1>
+      <h1 ref={heading} tabIndex={-1}>
+        {mode === 'login' ? 'Entre na sua conta' : 'Crie sua conta'}
+      </h1>
       <p className="auth-description">
         Organize seus estudos em um espaço só seu.
       </p>

@@ -57,11 +57,13 @@ export function ProfilePage({
   onName,
   onPreferences,
   onAvatar,
+  googleActions,
   accountActions,
 }: {
   onName: (name: string) => void;
   onPreferences: (prefs: ModulePreferences) => void;
   onAvatar?: (version: string | null) => void;
+  googleActions?: ReactNode;
   accountActions?: ReactNode;
 }) {
   const theme = useThemePreference();
@@ -171,7 +173,10 @@ export function ProfilePage({
             <CardHeader>
               <h2>Acesso à conta</h2>
             </CardHeader>
-            <CardContent>{accountActions}</CardContent>
+            <CardContent>
+              {googleActions}
+              {accountActions}
+            </CardContent>
           </Card>
         )}
       </section>
@@ -273,130 +278,160 @@ export function ProfilePage({
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="account-photo-editor">
-                  <Avatar className="size-24">
-                    {imageUrl && (
-                      <AvatarImage
-                        src={imageUrl}
-                        alt={
-                          selected
-                            ? 'Prévia da nova foto'
-                            : 'Sua foto de perfil'
-                        }
+                <section className="account-profile-group">
+                  <h3>Foto de perfil</h3>
+                  <p>Escolha como sua imagem aparece na plataforma.</p>
+                  <div className="account-photo-editor">
+                    <Avatar className="size-24">
+                      {imageUrl && (
+                        <AvatarImage
+                          src={imageUrl}
+                          alt={
+                            selected
+                              ? 'Prévia da nova foto'
+                              : 'Sua foto de perfil'
+                          }
+                        />
+                      )}
+                      <AvatarFallback role="img" aria-label="Avatar padrão">
+                        {user.displayName.slice(0, 1).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="account-photo-controls">
+                      {selected && (
+                        <p className="account-preview-note">
+                          Prévia da nova foto. Salve para confirmar a alteração.
+                        </p>
+                      )}
+                      <Label htmlFor="photo" className="sr-only">
+                        Foto de perfil
+                      </Label>
+                      <Input
+                        id="photo"
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        aria-describedby="photo-rules"
+                        disabled={busy}
+                        onChange={(event) => {
+                          const file = event.target.files?.[0];
+                          if (!file) return;
+                          if (
+                            !['image/jpeg', 'image/png', 'image/webp'].includes(
+                              file.type,
+                            ) ||
+                            file.size > 2 * 1024 * 1024
+                          ) {
+                            setError('Escolha JPEG, PNG ou WebP de até 2 MiB.');
+                            event.target.value = '';
+                            return;
+                          }
+                          setSelected(file);
+                          setImage(file);
+                          setError('');
+                        }}
                       />
-                    )}
-                    <AvatarFallback role="img" aria-label="Avatar padrão">
-                      {user.displayName.slice(0, 1).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="account-photo-controls">
-                    {selected && (
-                      <p className="account-preview-note">
-                        Prévia da nova foto. Salve para confirmar a alteração.
-                      </p>
-                    )}
-                    <Label htmlFor="photo">Foto de perfil</Label>
-                    <Input
-                      id="photo"
-                      type="file"
-                      accept="image/jpeg,image/png,image/webp"
-                      aria-describedby="photo-rules"
-                      disabled={busy}
-                      onChange={(event) => {
-                        const file = event.target.files?.[0];
-                        if (!file) return;
-                        if (
-                          !['image/jpeg', 'image/png', 'image/webp'].includes(
-                            file.type,
-                          ) ||
-                          file.size > 2 * 1024 * 1024
-                        ) {
-                          setError('Escolha JPEG, PNG ou WebP de até 2 MiB.');
-                          event.target.value = '';
-                          return;
-                        }
-                        setSelected(file);
-                        setImage(file);
-                        setError('');
-                      }}
-                    />
-                    <div className="account-actions">
-                      <Button
-                        disabled={busy || !selected}
-                        onClick={() => {
-                          void run(async () => {
-                            if (selected) {
-                              const saved = await api.uploadAvatar(selected);
-                              onAvatar?.(saved.avatarVersion);
+                      <div className="account-actions">
+                        <Button
+                          disabled={busy || !selected}
+                          onClick={() => {
+                            void run(async () => {
+                              if (selected) {
+                                const saved = await api.uploadAvatar(selected);
+                                onAvatar?.(saved.avatarVersion);
+                                setUser(saved);
+                                setSelected(null);
+                                setImage(await api.avatar());
+                              }
+                            }, 'Foto salva.');
+                          }}
+                        >
+                          Salvar foto
+                        </Button>
+                        <Button
+                          variant="outline"
+                          disabled={busy || !user.avatarVersion}
+                          onClick={() => {
+                            void run(async () => {
+                              const saved = await api.removeAvatar();
                               setUser(saved);
+                              onAvatar?.(saved.avatarVersion);
+                              setImage(null);
                               setSelected(null);
-                              setImage(await api.avatar());
-                            }
-                          }, 'Foto salva.');
-                        }}
-                      >
-                        Salvar foto
-                      </Button>
-                      <Button
-                        variant="outline"
-                        disabled={busy || !user.avatarVersion}
-                        onClick={() => {
-                          void run(async () => {
-                            const saved = await api.removeAvatar();
-                            setUser(saved);
-                            onAvatar?.(saved.avatarVersion);
-                            setImage(null);
-                            setSelected(null);
-                          }, 'Foto removida.');
-                        }}
-                      >
-                        Remover foto
-                      </Button>
+                            }, 'Foto removida.');
+                          }}
+                        >
+                          Remover foto
+                        </Button>
+                      </div>
+                      <p id="photo-rules">
+                        JPEG, PNG ou WebP estático, até 2 MiB. De 64 a 4096
+                        pixels por lado, até 16 milhões de pixels.
+                      </p>
                     </div>
                   </div>
-                  <p id="photo-rules">
-                    JPEG, PNG ou WebP estático, até 2 MiB. De 64 a 4096 pixels
-                    por lado, até 16 milhões de pixels.
-                  </p>
-                </div>
-                <form
-                  onSubmit={(event) => {
-                    event.preventDefault();
-                    void run(async () => {
-                      const parsed = displayNameSchema.safeParse(name);
-                      if (!parsed.success)
-                        throw new Error(
-                          'Use de 2 a 60 caracteres, sem caracteres de controle.',
-                        );
-                      const saved = await api.updateName(parsed.data);
-                      setUser(saved);
-                      setName(saved.displayName);
-                      onName(saved.displayName);
-                    }, 'Nome salvo.');
-                  }}
+                </section>
+                <section
+                  className="account-profile-group"
+                  aria-labelledby="account-personal-title"
                 >
-                  <Label htmlFor="display-name">Nome exibido</Label>
-                  <Input
-                    id="display-name"
-                    value={name}
-                    disabled={busy}
-                    onChange={(e) => setName(e.target.value)}
-                    autoComplete="nickname"
-                    required
-                  />
+                  <h3 id="account-personal-title">Informações pessoais</h3>
+                  <p>Atualize seus dados de identificação.</p>
+                  <form
+                    onSubmit={(event) => {
+                      event.preventDefault();
+                      void run(async () => {
+                        const parsed = displayNameSchema.safeParse(name);
+                        if (!parsed.success)
+                          throw new Error(
+                            'Use de 2 a 60 caracteres, sem caracteres de controle.',
+                          );
+                        const saved = await api.updateName(parsed.data);
+                        setUser(saved);
+                        setName(saved.displayName);
+                        onName(saved.displayName);
+                      }, 'Nome salvo.');
+                    }}
+                  >
+                    <Label htmlFor="display-name">Nome exibido</Label>
+                    <div className="account-name-row">
+                      <Input
+                        aria-describedby="account-name-help"
+                        id="display-name"
+                        value={name}
+                        disabled={busy}
+                        onChange={(e) => setName(e.target.value)}
+                        autoComplete="nickname"
+                        required
+                      />
+                      <Button disabled={busy}>Salvar nome</Button>
+                    </div>
+                    <p id="account-name-help">
+                      Seu nome pode se repetir. O identificador da conta
+                      permanece o mesmo.
+                    </p>
+                  </form>
+                </section>
+                <section
+                  className="account-profile-group"
+                  aria-labelledby="account-profile-security-title"
+                >
+                  <h3 id="account-profile-security-title">
+                    Segurança da conta
+                  </h3>
                   <p>
-                    Seu nome pode se repetir. O identificador da conta permanece
-                    o mesmo.
+                    Gerencie seu endereço de e-mail de acesso e recuperação.
                   </p>
-                  <Button disabled={busy}>Salvar nome</Button>
-                </form>
-                <div className="account-detail">
-                  <p>Seu e-mail é usado para acessar e recuperar a conta.</p>
-                  <a href="#account-security">
-                    Alterar e-mail com segurança{' '}
-                    <ChevronRight aria-hidden="true" />
-                  </a>
-                </div>
+                  <div className="account-detail account-email-row">
+                    <div>
+                      <strong>Endereço de e-mail</strong>
+                      <p>{user.email}</p>
+                    </div>
+                    <a href="#account-security">
+                      Alterar e-mail com segurança{' '}
+                      <ChevronRight aria-hidden="true" />
+                    </a>
+                  </div>
+                </section>
               </CardContent>
             </section>
           </Card>
@@ -743,7 +778,6 @@ export function ProfilePage({
             </section>
           </Card>
           <AISettingsSection />
-          <ClassroomSection prefs={prefs} />
           <Card asChild>
             <section
               id="account-access"
@@ -760,7 +794,11 @@ export function ProfilePage({
                   <p>Gerencie seu vínculo com o Google e sua sessão atual.</p>
                 </div>
               </CardHeader>
-              <CardContent>{accountActions}</CardContent>
+              <CardContent>
+                {googleActions}
+                <ClassroomSection prefs={prefs} embedded />
+                {accountActions}
+              </CardContent>
             </section>
           </Card>
         </div>

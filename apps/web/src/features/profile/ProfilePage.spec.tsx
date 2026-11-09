@@ -170,8 +170,8 @@ describe('profile page', () => {
       'appearance',
       'security',
       'ai',
-      'integrations',
       'access',
+      'integrations',
     ].map((id) => `account-${id}`);
     const nav = screen.getByRole('navigation', {
       name: 'Configurações da conta',
@@ -303,7 +303,7 @@ describe('profile page', () => {
     expect(
       await screen.findByRole('heading', { name: 'Seu perfil' }),
     ).toBeTruthy();
-    expect(screen.getByText(profile.email)).toBeTruthy();
+    expect(screen.getAllByText(profile.email)).not.toHaveLength(0);
   });
   it('blocks repeated submissions and waits for confirmed API data before showing success', async () => {
     await open();
@@ -342,7 +342,7 @@ describe('profile page', () => {
       screen.getByRole('button', { name: 'Encerrar sessão' }),
     );
     await screen.findByText('Não foi possível sair agora. Tente novamente.');
-    expect(screen.getByText(profile.email)).toBeTruthy();
+    expect(screen.getAllByText(profile.email)).not.toHaveLength(0);
     failed = '/auth/google/link/start';
     await interaction.click(
       screen.getByRole('button', { name: 'Vincular Google' }),
@@ -414,7 +414,7 @@ describe('profile page', () => {
   });
   it('shows own profile, labelled keyboard controls and independent preferences', async () => {
     await open();
-    expect(screen.getByText('ana@example.com')).toBeTruthy();
+    expect(screen.getAllByText('ana@example.com')).not.toHaveLength(0);
     expect(screen.getByRole('img', { name: 'Avatar padrão' })).toBeTruthy();
     for (const name of ['Tarefas', 'Matérias', 'Flashcards', 'Recursos de IA'])
       expect(screen.getByRole('checkbox', { name })).toBeTruthy();

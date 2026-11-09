@@ -102,6 +102,15 @@ function FeatureSection({
 
 export function PublicLanding() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [returnArrival] = useState(
+    () => window.history.state?.returnArrival === true,
+  );
+  const main = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (!returnArrival) return;
+    window.history.replaceState({}, '');
+    main.current?.focus({ preventScroll: true });
+  }, [returnArrival]);
   const menuButton = useRef<HTMLButtonElement>(null);
   const page = useRef<HTMLDivElement>(null);
   const hero = useRef<HTMLDivElement>(null);
@@ -191,7 +200,12 @@ export function PublicLanding() {
           </nav>
         </SheetContent>
       </Sheet>
-      <main id="conteudo" tabIndex={-1}>
+      <main
+        id="conteudo"
+        tabIndex={-1}
+        ref={main}
+        className={returnArrival ? 'public-return-arrival' : undefined}
+      >
         <section
           className="landing-container landing-hero"
           aria-labelledby="hero-title"

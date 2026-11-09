@@ -315,7 +315,7 @@ export function AnalyticsPage() {
           {data.frequency.activeDays === 0 && (
             <ProgressEmpty title="Seu ritmo de estudo">
               {data.frequency.status === 'available'
-                ? 'Nenhuma atividade neste período.'
+                ? 'Nenhuma atividade registrada neste período.'
                 : 'Nenhuma atividade registrada; o histórico anterior ao início da cobertura está indisponível.'}
             </ProgressEmpty>
           )}
@@ -387,22 +387,42 @@ export function AnalyticsPage() {
                 <DailyChart key={metric} metric={metric} data={data} />
               ))}
             </div>
-            <h3 className="analytics-text-title">Valores diários em texto</h3>
-            <ol className="analytics-series">
-              {data.series.map((day) => (
-                <li key={day.date} className="evolution-card">
-                  <h3>{day.date}</h3>
-                  <dl>
-                    {metrics.map((metric) => (
-                      <div key={metric}>
-                        <dt>{labels[metric]}</dt>
-                        <dd>{value(metric, day.values[metric])}</dd>
-                      </div>
+            <details className="analytics-daily-details">
+              <summary>Ver detalhes por dia</summary>
+              <div
+                className="analytics-daily-scroll"
+                role="region"
+                aria-label="Valores diários em texto"
+                tabIndex={0}
+              >
+                <table aria-label="Valores diários em texto">
+                  <thead>
+                    <tr>
+                      <th scope="col">Data</th>
+                      {metrics.map((metric) => (
+                        <th scope="col" key={metric}>
+                          {labels[metric]}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.series.map((day) => (
+                      <tr key={day.date}>
+                        <th scope="row">
+                          <time dateTime={day.date}>{day.date}</time>
+                        </th>
+                        {metrics.map((metric) => (
+                          <td key={metric}>
+                            {value(metric, day.values[metric])}
+                          </td>
+                        ))}
+                      </tr>
                     ))}
-                  </dl>
-                </li>
-              ))}
-            </ol>
+                  </tbody>
+                </table>
+              </div>
+            </details>
           </section>
         </>
       )}

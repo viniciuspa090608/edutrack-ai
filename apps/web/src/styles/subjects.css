@@ -475,3 +475,16 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+.private-route-content:has(.subjects-collection > .collection-empty-state),
+.subjects-module:has(.subjects-collection > .collection-empty-state),
+.subjects-page:has(.subjects-collection > .collection-empty-state),
+.subjects-collection:has(> .collection-empty-state),
+.subjects-collection > .collection-empty-state {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+.subjects-collection > .collection-empty-state {
+  justify-content: center;
+}

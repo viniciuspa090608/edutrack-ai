@@ -293,8 +293,10 @@ function ConflictReview({
 }
 export function ClassroomSection({
   prefs,
+  embedded = false,
 }: {
   prefs: ModulePreferences | null;
+  embedded?: boolean;
 }) {
   const [connection, setConnection] = useState<ClassroomConnection | null>(
       null,
@@ -420,56 +422,62 @@ export function ClassroomSection({
       ),
     );
   }
-  return (
-    <Card asChild>
-      <section
-        tabIndex={-1}
-        id="account-integrations"
-        className="account-card classroom-section"
-        aria-labelledby="classroom-title"
-      >
-        <CardHeader>
-          <img
-            className="classroom-logo"
-            src={classroomLogo}
-            alt=""
-            width={48}
-            height={48}
-          />
-          <div>
-            <h2 id="classroom-title">Integrações · Google Classroom</h2>
-            <p>
-              Conecte para importar suas turmas e atividades. Seus fluxos
-              manuais continuam disponíveis.
-            </p>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {new URLSearchParams(window.location.search).get('classroom') ===
-            'failed' && (
-            <p role="alert">
-              A autorização não foi concluída. Você pode continuar ou tentar
-              conectar novamente.
-            </p>
-          )}
-          {error && (
-            <p role="alert">
-              {error}{' '}
-              <Button variant="outline" onClick={() => void act(load)}>
-                Tentar novamente
-              </Button>
-            </p>
-          )}
-          {message && <p role="status">{message}</p>}
-          {!connection && !error && <p role="status">Carregando integração…</p>}
-          {connection && !connection.available && (
-            <p>
-              A integração ainda não está configurada. Você pode conectar
-              depois.
-            </p>
-          )}
-          {connection?.available && (
-            <>
+  const Heading = embedded ? 'h3' : 'h2';
+  const section = (
+    <section
+      tabIndex={-1}
+      id="account-integrations"
+      className={
+        embedded
+          ? 'classroom-section classroom-embedded'
+          : 'account-card classroom-section'
+      }
+      aria-labelledby="classroom-title"
+    >
+      <CardHeader>
+        <img
+          className="classroom-logo"
+          src={classroomLogo}
+          alt=""
+          width={48}
+          height={48}
+        />
+        <div>
+          <Heading id="classroom-title">
+            {embedded ? 'Google Classroom' : 'Integrações · Google Classroom'}
+          </Heading>
+          <p>
+            Conecte para importar suas turmas e atividades. Seus fluxos manuais
+            continuam disponíveis.
+          </p>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {new URLSearchParams(window.location.search).get('classroom') ===
+          'failed' && (
+          <p role="alert">
+            A autorização não foi concluída. Você pode continuar ou tentar
+            conectar novamente.
+          </p>
+        )}
+        {error && (
+          <p role="alert">
+            {error}{' '}
+            <Button variant="outline" onClick={() => void act(load)}>
+              Tentar novamente
+            </Button>
+          </p>
+        )}
+        {message && <p role="status">{message}</p>}
+        {!connection && !error && <p role="status">Carregando integração…</p>}
+        {connection && !connection.available && (
+          <p>
+            A integração ainda não está configurada. Você pode conectar depois.
+          </p>
+        )}
+        {connection?.available && (
+          <>
+            <div className="classroom-connection-row">
               <p>
                 Conexão:{' '}
                 {connection.state === 'connected'
@@ -496,356 +504,354 @@ export function ClassroomSection({
                   Desconectar
                 </Button>
               )}
-              {confirmDisconnect && (
-                <div role="group" aria-label="Confirmar desconexão">
+            </div>
+            {confirmDisconnect && (
+              <div role="group" aria-label="Confirmar desconexão">
+                <p>
+                  Interromper futuras importações e operações pendentes?
+                  Matérias, tarefas e notas já salvas serão preservadas.
+                </p>
+                <Button
+                  disabled={busy}
+                  onClick={() =>
+                    void act(async () => {
+                      const value = classroomRevocationSchema.parse(
+                        await request(`${base}/connection`, 'DELETE'),
+                      );
+                      setConfirmDisconnect(false);
+                      await load();
+                      setMessage(
+                        value.revocationConfirmed
+                          ? 'Integração desconectada.'
+                          : 'Integração desconectada localmente. Não foi possível confirmar a revogação no Google; revise o acesso na sua conta Google.',
+                      );
+                    })
+                  }
+                >
+                  Confirmar desconexão
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setConfirmDisconnect(false)}
+                >
+                  Cancelar
+                </Button>
+              </div>
+            )}
+            {connection.state === 'connected' && (
+              <>
+                <h3>Turmas selecionadas</h3>
+                {!prefs?.tasks && !prefs?.subjects && (
                   <p>
-                    Interromper futuras importações e operações pendentes?
-                    Matérias, tarefas e notas já salvas serão preservadas.
+                    Ative tarefas ou matérias nas preferências para importar.
                   </p>
+                )}
+                {loading && (
+                  <p role="status">Carregando turmas e associações…</p>
+                )}
+                {courses.length === 0 && !loading && !error && (
+                  <p>Nenhuma turma acessível encontrada nesta conta.</p>
+                )}
+                <div className="classroom-courses">
+                  {courses.map((course) => {
+                    const selected = selection.courses.find(
+                      (item) => item.courseId === course.id,
+                    );
+                    return (
+                      <fieldset key={course.id} disabled={busy || active}>
+                        <legend>
+                          <Label>
+                            <Checkbox
+                              checked={!!selected}
+                              disabled={busy || active || loading}
+                              onCheckedChange={(checked) =>
+                                setSelection((value) => ({
+                                  courses: checked
+                                    ? [
+                                        ...value.courses,
+                                        {
+                                          courseId: course.id,
+                                          destination: { kind: 'none' },
+                                          confirmDestinationChange: false,
+                                          linkExistingTasks: false,
+                                          restoreDeleted: false,
+                                        },
+                                      ]
+                                    : value.courses.filter(
+                                        (item) => item.courseId !== course.id,
+                                      ),
+                                }))
+                              }
+                            />
+                            {course.name}
+                            {course.section ? ` · ${course.section}` : ''}
+                          </Label>
+                        </legend>
+                        {course.link && (
+                          <a
+                            href={course.link}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            Abrir turma no Classroom
+                          </a>
+                        )}
+                        {selected && prefs?.subjects && (
+                          <>
+                            <SubjectDestination
+                              course={course}
+                              value={selected.destination}
+                              subjects={subjects}
+                              onChange={(destination) =>
+                                replace(course.id, destination)
+                              }
+                            />
+                            <Label>
+                              <Checkbox
+                                checked={selected.confirmDestinationChange}
+                                onCheckedChange={(checked) =>
+                                  setSelection((value) => ({
+                                    courses: value.courses.map((item) =>
+                                      item.courseId === course.id
+                                        ? {
+                                            ...item,
+                                            confirmDestinationChange:
+                                              checked === true,
+                                          }
+                                        : item,
+                                    ),
+                                  }))
+                                }
+                              />
+                              Confirmo a troca da matéria de destino, caso já
+                              exista associação
+                            </Label>
+                            <Label>
+                              <Checkbox
+                                checked={selected.linkExistingTasks}
+                                onCheckedChange={(checked) =>
+                                  setSelection((value) => ({
+                                    courses: value.courses.map((item) =>
+                                      item.courseId === course.id
+                                        ? {
+                                            ...item,
+                                            linkExistingTasks: checked === true,
+                                          }
+                                        : item,
+                                    ),
+                                  }))
+                                }
+                              />
+                              Vincular também as tarefas já importadas desta
+                              turma à matéria escolhida
+                            </Label>
+                          </>
+                        )}
+                      </fieldset>
+                    );
+                  })}
+                </div>
+                {nextToken && (
                   <Button
+                    variant="outline"
                     disabled={busy}
                     onClick={() =>
                       void act(async () => {
-                        const value = classroomRevocationSchema.parse(
-                          await request(`${base}/connection`, 'DELETE'),
+                        const page = classroomCoursesSchema.parse(
+                          await request(
+                            `${base}/courses?pageToken=${encodeURIComponent(nextToken)}`,
+                          ),
                         );
-                        setConfirmDisconnect(false);
-                        await load();
+                        setCourses((value) => [
+                          ...value,
+                          ...page.items.filter(
+                            (course) =>
+                              !value.some(
+                                (existing) => existing.id === course.id,
+                              ),
+                          ),
+                        ]);
+                        setNextToken(page.nextPageToken);
+                      })
+                    }
+                  >
+                    Mais turmas
+                  </Button>
+                )}
+                <Label>
+                  <Checkbox
+                    checked={restoreDeleted}
+                    onCheckedChange={(checked) =>
+                      setRestoreDeleted(checked === true)
+                    }
+                  />
+                  Confirmo restaurar registros excluídos localmente nesta nova
+                  solicitação
+                </Label>
+                <div className="classroom-actions">
+                  <Button
+                    disabled={
+                      busy ||
+                      active ||
+                      !selection.courses.length ||
+                      (!prefs?.tasks && !prefs?.subjects)
+                    }
+                    onClick={() => void act(() => start())}
+                  >
+                    Importar seleção
+                  </Button>
+                  <Button
+                    variant="outline"
+                    disabled={busy || active}
+                    onClick={() =>
+                      void act(async () => {
+                        await request(`${base}/selection`, 'PUT', selection);
                         setMessage(
-                          value.revocationConfirmed
-                            ? 'Integração desconectada.'
-                            : 'Integração desconectada localmente. Não foi possível confirmar a revogação no Google; revise o acesso na sua conta Google.',
+                          'Seleção salva. Nenhuma importação iniciada.',
                         );
                       })
                     }
                   >
-                    Confirmar desconexão
+                    Salvar seleção
                   </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => setConfirmDisconnect(false)}
-                  >
-                    Cancelar
-                  </Button>
-                </div>
-              )}
-              {connection.state === 'connected' && (
-                <>
-                  <h3>Turmas selecionadas</h3>
-                  {!prefs?.tasks && !prefs?.subjects && (
-                    <p>
-                      Ative tarefas ou matérias nas preferências para importar.
-                    </p>
-                  )}
-                  {loading && (
-                    <p role="status">Carregando turmas e associações…</p>
-                  )}
-                  {courses.length === 0 && !loading && !error && (
-                    <p>Nenhuma turma acessível encontrada nesta conta.</p>
-                  )}
-                  <div className="classroom-courses">
-                    {courses.map((course) => {
-                      const selected = selection.courses.find(
-                        (item) => item.courseId === course.id,
-                      );
-                      return (
-                        <fieldset key={course.id} disabled={busy || active}>
-                          <legend>
-                            <Label>
-                              <Checkbox
-                                checked={!!selected}
-                                disabled={busy || active || loading}
-                                onCheckedChange={(checked) =>
-                                  setSelection((value) => ({
-                                    courses: checked
-                                      ? [
-                                          ...value.courses,
-                                          {
-                                            courseId: course.id,
-                                            destination: { kind: 'none' },
-                                            confirmDestinationChange: false,
-                                            linkExistingTasks: false,
-                                            restoreDeleted: false,
-                                          },
-                                        ]
-                                      : value.courses.filter(
-                                          (item) => item.courseId !== course.id,
-                                        ),
-                                  }))
-                                }
-                              />
-                              {course.name}
-                              {course.section ? ` · ${course.section}` : ''}
-                            </Label>
-                          </legend>
-                          {course.link && (
-                            <a
-                              href={course.link}
-                              target="_blank"
-                              rel="noreferrer"
-                            >
-                              Abrir turma no Classroom
-                            </a>
-                          )}
-                          {selected && prefs?.subjects && (
-                            <>
-                              <SubjectDestination
-                                course={course}
-                                value={selected.destination}
-                                subjects={subjects}
-                                onChange={(destination) =>
-                                  replace(course.id, destination)
-                                }
-                              />
-                              <Label>
-                                <Checkbox
-                                  checked={selected.confirmDestinationChange}
-                                  onCheckedChange={(checked) =>
-                                    setSelection((value) => ({
-                                      courses: value.courses.map((item) =>
-                                        item.courseId === course.id
-                                          ? {
-                                              ...item,
-                                              confirmDestinationChange:
-                                                checked === true,
-                                            }
-                                          : item,
-                                      ),
-                                    }))
-                                  }
-                                />
-                                Confirmo a troca da matéria de destino, caso já
-                                exista associação
-                              </Label>
-                              <Label>
-                                <Checkbox
-                                  checked={selected.linkExistingTasks}
-                                  onCheckedChange={(checked) =>
-                                    setSelection((value) => ({
-                                      courses: value.courses.map((item) =>
-                                        item.courseId === course.id
-                                          ? {
-                                              ...item,
-                                              linkExistingTasks:
-                                                checked === true,
-                                            }
-                                          : item,
-                                      ),
-                                    }))
-                                  }
-                                />
-                                Vincular também as tarefas já importadas desta
-                                turma à matéria escolhida
-                              </Label>
-                            </>
-                          )}
-                        </fieldset>
-                      );
-                    })}
-                  </div>
-                  {nextToken && (
+                  {!connection.permissions.teacherCoursework && (
                     <Button
                       variant="outline"
                       disabled={busy}
-                      onClick={() =>
-                        void act(async () => {
-                          const page = classroomCoursesSchema.parse(
-                            await request(
-                              `${base}/courses?pageToken=${encodeURIComponent(nextToken)}`,
-                            ),
-                          );
-                          setCourses((value) => [
-                            ...value,
-                            ...page.items.filter(
-                              (course) =>
-                                !value.some(
-                                  (existing) => existing.id === course.id,
-                                ),
-                            ),
-                          ]);
-                          setNextToken(page.nextPageToken);
-                        })
-                      }
+                      onClick={() => connect('teacher')}
                     >
-                      Mais turmas
+                      Autorizar atividades de turmas que ensino
                     </Button>
                   )}
-                  <Label>
-                    <Checkbox
-                      checked={restoreDeleted}
-                      onCheckedChange={(checked) =>
-                        setRestoreDeleted(checked === true)
+                </div>
+              </>
+            )}
+          </>
+        )}
+        {result && (
+          <section aria-labelledby="classroom-result">
+            <h3 id="classroom-result">
+              Importação: {statusLabels[result.operation.state]}
+            </h3>
+            <p role="status" aria-live="polite">
+              {result.operation.phase === 'finished'
+                ? 'Processamento finalizado'
+                : {
+                    queued: 'Aguardando processamento',
+                    discovering: 'Localizando conteúdos',
+                    importing: 'Importando registros',
+                  }[result.operation.phase]}{' '}
+              · {result.operation.processed} itens processados
+              {result.operation.total === null
+                ? ''
+                : ` de ${result.operation.total}`}
+            </p>
+            {result.operation.message && <p>{result.operation.message}</p>}
+            <dl>
+              {Object.entries(result.operation.counts).map(
+                ([entity, count]) => (
+                  <div key={entity}>
+                    <dt>
+                      {
+                        {
+                          subjects: 'Matérias',
+                          tasks: 'Tarefas',
+                        }[entity as 'subjects' | 'tasks']
+                      }
+                    </dt>
+                    <dd>
+                      {count.added} adicionadas · {count.updated} atualizadas ·{' '}
+                      {count.unchanged} sem alteração · {count.ignored}{' '}
+                      ignoradas · {count.conflict} conflitos · {count.error}{' '}
+                      erros
+                    </dd>
+                  </div>
+                ),
+              )}
+            </dl>
+            {result.totalItems === 0 && !active && (
+              <p>Nenhum conteúdo encontrado para processar.</p>
+            )}
+            <ul>
+              {result.items.map((item) => (
+                <li key={item.id}>
+                  <strong>{item.title}</strong>: {outcomeLabels[item.outcome]}
+                  {item.reason ? ` — ${item.reason}` : ''}
+                  {item.conflictId && item.localId && (
+                    <ConflictReview
+                      entity={item.entity}
+                      localId={item.localId}
+                      conflictId={item.conflictId}
+                      onResolved={() =>
+                        setMessage('Conflito resolvido. Sua decisão foi salva.')
                       }
                     />
-                    Confirmo restaurar registros excluídos localmente nesta nova
-                    solicitação
-                  </Label>
-                  <div className="classroom-actions">
-                    <Button
-                      disabled={
-                        busy ||
-                        active ||
-                        !selection.courses.length ||
-                        (!prefs?.tasks && !prefs?.subjects)
-                      }
-                      onClick={() => void act(() => start())}
-                    >
-                      Importar seleção
-                    </Button>
-                    <Button
-                      variant="outline"
-                      disabled={busy || active}
-                      onClick={() =>
-                        void act(async () => {
-                          await request(`${base}/selection`, 'PUT', selection);
-                          setMessage(
-                            'Seleção salva. Nenhuma importação iniciada.',
-                          );
-                        })
-                      }
-                    >
-                      Salvar seleção
-                    </Button>
-                    {!connection.permissions.teacherCoursework && (
-                      <Button
-                        variant="outline"
-                        disabled={busy}
-                        onClick={() => connect('teacher')}
-                      >
-                        Autorizar atividades de turmas que ensino
-                      </Button>
-                    )}
-                  </div>
-                </>
+                  )}
+                </li>
+              ))}
+            </ul>
+            <div className="classroom-actions">
+              {result.page > 1 && (
+                <Button
+                  variant="outline"
+                  onClick={() =>
+                    void act(async () =>
+                      setResult(
+                        classroomOperationResultSchema.parse(
+                          await request(
+                            `${base}/operations/${result.operation.id}?page=${result.page - 1}`,
+                          ),
+                        ),
+                      ),
+                    )
+                  }
+                >
+                  Resultados anteriores
+                </Button>
               )}
-            </>
-          )}
-          {result && (
-            <section aria-labelledby="classroom-result">
-              <h3 id="classroom-result">
-                Importação: {statusLabels[result.operation.state]}
-              </h3>
-              <p role="status" aria-live="polite">
-                {result.operation.phase === 'finished'
-                  ? 'Processamento finalizado'
-                  : {
-                      queued: 'Aguardando processamento',
-                      discovering: 'Localizando conteúdos',
-                      importing: 'Importando registros',
-                    }[result.operation.phase]}{' '}
-                · {result.operation.processed} itens processados
-                {result.operation.total === null
-                  ? ''
-                  : ` de ${result.operation.total}`}
-              </p>
-              {result.operation.message && <p>{result.operation.message}</p>}
-              <dl>
-                {Object.entries(result.operation.counts).map(
-                  ([entity, count]) => (
-                    <div key={entity}>
-                      <dt>
-                        {
-                          {
-                            subjects: 'Matérias',
-                            tasks: 'Tarefas',
-                          }[entity as 'subjects' | 'tasks']
-                        }
-                      </dt>
-                      <dd>
-                        {count.added} adicionadas · {count.updated} atualizadas
-                        · {count.unchanged} sem alteração · {count.ignored}{' '}
-                        ignoradas · {count.conflict} conflitos · {count.error}{' '}
-                        erros
-                      </dd>
-                    </div>
-                  ),
-                )}
-              </dl>
-              {result.totalItems === 0 && !active && (
-                <p>Nenhum conteúdo encontrado para processar.</p>
+              {result.page * 20 < result.totalItems && (
+                <Button
+                  variant="outline"
+                  onClick={() =>
+                    void act(async () =>
+                      setResult(
+                        classroomOperationResultSchema.parse(
+                          await request(
+                            `${base}/operations/${result.operation.id}?page=${result.page + 1}`,
+                          ),
+                        ),
+                      ),
+                    )
+                  }
+                >
+                  Mais resultados
+                </Button>
               )}
-              <ul>
-                {result.items.map((item) => (
-                  <li key={item.id}>
-                    <strong>{item.title}</strong>: {outcomeLabels[item.outcome]}
-                    {item.reason ? ` — ${item.reason}` : ''}
-                    {item.conflictId && item.localId && (
-                      <ConflictReview
-                        entity={item.entity}
-                        localId={item.localId}
-                        conflictId={item.conflictId}
-                        onResolved={() =>
-                          setMessage(
-                            'Conflito resolvido. Sua decisão foi salva.',
-                          )
-                        }
-                      />
-                    )}
-                  </li>
-                ))}
-              </ul>
-              <div className="classroom-actions">
-                {result.page > 1 && (
-                  <Button
-                    variant="outline"
-                    onClick={() =>
-                      void act(async () =>
-                        setResult(
-                          classroomOperationResultSchema.parse(
-                            await request(
-                              `${base}/operations/${result.operation.id}?page=${result.page - 1}`,
-                            ),
+              {['partial', 'failed'].includes(result.operation.state) && (
+                <Button
+                  disabled={busy}
+                  onClick={() =>
+                    void act(async () =>
+                      setResult(
+                        classroomOperationResultSchema.parse(
+                          await request(
+                            `${base}/operations/${result.operation.id}/retry`,
+                            'POST',
+                            {},
                           ),
                         ),
-                      )
-                    }
-                  >
-                    Resultados anteriores
-                  </Button>
-                )}
-                {result.page * 20 < result.totalItems && (
-                  <Button
-                    variant="outline"
-                    onClick={() =>
-                      void act(async () =>
-                        setResult(
-                          classroomOperationResultSchema.parse(
-                            await request(
-                              `${base}/operations/${result.operation.id}?page=${result.page + 1}`,
-                            ),
-                          ),
-                        ),
-                      )
-                    }
-                  >
-                    Mais resultados
-                  </Button>
-                )}
-                {['partial', 'failed'].includes(result.operation.state) && (
-                  <Button
-                    disabled={busy}
-                    onClick={() =>
-                      void act(async () =>
-                        setResult(
-                          classroomOperationResultSchema.parse(
-                            await request(
-                              `${base}/operations/${result.operation.id}/retry`,
-                              'POST',
-                              {},
-                            ),
-                          ),
-                        ),
-                      )
-                    }
-                  >
-                    Tentar novamente os itens pendentes
-                  </Button>
-                )}
-              </div>
-            </section>
-          )}
-        </CardContent>{' '}
-      </section>
-    </Card>
+                      ),
+                    )
+                  }
+                >
+                  Tentar novamente os itens pendentes
+                </Button>
+              )}
+            </div>
+          </section>
+        )}
+      </CardContent>
+    </section>
   );
+  return embedded ? section : <Card asChild>{section}</Card>;
 }

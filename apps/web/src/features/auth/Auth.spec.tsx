@@ -277,7 +277,7 @@ describe('account access', () => {
     vi.stubGlobal('fetch', fetchMock);
     render(<App />);
     expect(await screen.findByRole('heading', { name: 'Conta' })).toBeTruthy();
-    expect(screen.getByText(user.email)).toBeTruthy();
+    expect(screen.getAllByText(user.email).length).toBeGreaterThan(0);
     await userEvent.setup().click(screen.getByRole('button', { name: 'Sair' }));
     expect(
       await screen.findByRole('heading', { name: 'Entre na sua conta' }),

@@ -275,3 +275,15 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+.authenticated-shell
+  .private-content:has(
+    .deck-list,
+    .subjects-collection > .collection-empty-state
+  ) {
+  min-height: calc(
+    100dvh - var(--shell-header-height) - var(--shell-bottom-height) - 64px
+  );
+  display: flex;
+  flex-direction: column;
+}

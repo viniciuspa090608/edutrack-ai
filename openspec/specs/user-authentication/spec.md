@@ -424,3 +424,17 @@ O fluxo de autenticação SHALL reconhecer `/app/flashcards` como destino intern
 #### Scenario: Preservar destinos já permitidos
 - **WHEN** a pessoa conclui autenticação com outro destino interno já permitido
 - **THEN** o comportamento de retorno existente é preservado.
+
+### Requirement: Separação abaixo da ação Google
+Login e cadastro SHALL acrescentar cerca de 3 px de espaço vertical entre Continuar com Google e o grupo de links de recuperação e retorno à landing.
+
+#### Scenario: Links em tela estreita
+- **WHEN** a largura exige quebra dos links
+- **THEN** a separação abaixo do botão continua visível e os links permanecem legíveis e operáveis.
+
+### Requirement: Transição ao retornar à landing
+Ao ativar Voltar à landing em login ou cadastro, a interface SHALL executar uma transição breve uma única vez por navegação efetiva e permitir acesso imediato com movimento reduzido. A ausência ou interrupção do efeito SHALL preservar navegação e foco no destino.
+
+#### Scenario: Retorno por teclado
+- **WHEN** a pessoa ativa Voltar à landing por teclado
+- **THEN** chega à landing com foco utilizável, com efeito breve quando permitido pela preferência de movimento.

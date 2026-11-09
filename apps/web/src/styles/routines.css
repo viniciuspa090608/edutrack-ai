@@ -239,8 +239,9 @@
   font-size: 0.875rem;
 }
 .routine-week {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  align-items: start;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 20px;
+  align-items: stretch;
 }
 .routine-day {
   gap: 1rem;
@@ -323,4 +324,23 @@
     animation: none;
     transition: none;
   }
+}
+
+.routine-day {
+  min-height: 160px;
+}
+.routine-weekend {
+  border-color: color-mix(in srgb, var(--primary) 35%, var(--routine-line));
+}
+.routine-day-empty {
+  display: grid;
+  flex: 1;
+  place-items: center;
+  align-content: center;
+  gap: 4px;
+  text-align: center;
+  color: var(--muted-foreground);
+}
+.routine-day-empty button {
+  white-space: normal;
 }

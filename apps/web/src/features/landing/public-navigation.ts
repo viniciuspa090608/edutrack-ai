@@ -22,14 +22,22 @@ export function navigatePublicLink(event: MouseEvent<HTMLElement>): void {
   )
     return;
   event.preventDefault();
-  const arrival =
-    (window.location.pathname === '/' && url.pathname === '/acesso') ||
-    (window.location.pathname === '/acesso' &&
-      url.pathname === '/recuperar-senha');
+  navigatePublicRoute(url.pathname + url.search);
+}
+
+export function navigatePublicRoute(path: string): void {
+  const from = window.location.pathname;
+  const to = new URL(path, window.location.origin).pathname;
+  const accessArrival =
+    (from === '/' && to === '/acesso') ||
+    (from === '/acesso' && to === '/recuperar-senha');
+  const returnArrival =
+    (from === '/acesso' && to === '/') ||
+    (from === '/recuperar-senha' && to === '/acesso');
   window.history.pushState(
-    arrival ? { accessArrival: true } : {},
+    accessArrival ? { accessArrival } : returnArrival ? { returnArrival } : {},
     '',
-    url.pathname + url.search,
+    path,
   );
   window.dispatchEvent(new PopStateEvent('popstate'));
   window.scrollTo({ top: 0, left: 0, behavior: 'instant' });

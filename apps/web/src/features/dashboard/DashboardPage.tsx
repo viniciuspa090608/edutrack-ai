@@ -176,6 +176,7 @@ export function DashboardPage({ displayName }: { displayName: string }) {
     title: string,
     href: string,
     content: ReactNode,
+    summary?: ReactNode,
   ) {
     const section = data?.[key];
     if (!section) return null;
@@ -190,26 +191,35 @@ export function DashboardPage({ displayName }: { displayName: string }) {
             <span className="dashboard-section-icon" aria-hidden="true">
               <Icon size={20} />
             </span>
-            <h2 id={`dashboard-${key}`}>{title}</h2>
+            <div className="dashboard-card-heading">
+              <h2 id={`dashboard-${key}`}>{title}</h2>
+              {section.state !== 'error' && summary && <p>{summary}</p>}
+            </div>
           </CardHeader>
           <CardContent>
-            {section.state === 'error' ? (
-              <>
-                <Alert variant="destructive" role="alert">
-                  <AlertDescription>{section.message}</AlertDescription>
-                </Alert>
-                <Button
-                  disabled={loading}
-                  onClick={() => {
-                    void load(key);
-                  }}
-                >
-                  Tentar novamente: {title}
-                </Button>
-              </>
-            ) : (
-              content
-            )}
+            <div
+              className="dashboard-card-body"
+              tabIndex={key === 'tasks' ? undefined : 0}
+              aria-label={key === 'tasks' ? undefined : `Conteúdo de ${title}`}
+            >
+              {section.state === 'error' ? (
+                <>
+                  <Alert variant="destructive" role="alert">
+                    <AlertDescription>{section.message}</AlertDescription>
+                  </Alert>
+                  <Button
+                    disabled={loading}
+                    onClick={() => {
+                      void load(key);
+                    }}
+                  >
+                    Tentar novamente: {title}
+                  </Button>
+                </>
+              ) : (
+                content
+              )}
+            </div>
             <a className="dashboard-module-link" href={href}>
               Abrir {title.toLowerCase()}{' '}
               <ArrowUpRight size={16} aria-hidden="true" />
@@ -342,7 +352,6 @@ export function DashboardPage({ displayName }: { displayName: string }) {
               'Pomodoro',
               '/app/pomodoro',
               <>
-                <p>{pomo?.completedSessions} sessões concluídas.</p>
                 {pomo?.session ? (
                   <DashboardPomodoro initial={pomo.session} />
                 ) : (
@@ -368,6 +377,7 @@ export function DashboardPage({ displayName }: { displayName: string }) {
                   </Alert>
                 )}
               </>,
+              pomo && <>{pomo.completedSessions} sessões concluídas.</>,
             )}
             {card(
               'tasks',
@@ -384,13 +394,12 @@ export function DashboardPage({ displayName }: { displayName: string }) {
               ) : (
                 tasks && (
                   <>
-                    <p>
-                      {tasks.counts.PENDING} pendentes ·{' '}
-                      {tasks.counts.IN_PROGRESS} em andamento ·{' '}
-                      {tasks.counts.COMPLETED} concluídas.
-                    </p>
                     {tasks.upcoming.length ? (
-                      <ul className="dashboard-task-list">
+                      <ul
+                        className="dashboard-task-list"
+                        aria-label="Próximas tarefas"
+                        tabIndex={0}
+                      >
                         {tasks.upcoming.map((task) => (
                           <li key={task.id}>
                             <strong>{task.title}</strong>
@@ -446,6 +455,12 @@ export function DashboardPage({ displayName }: { displayName: string }) {
                     </p>
                   </>
                 )
+              ),
+              tasks && !tasksEmpty && (
+                <>
+                  {tasks.counts.PENDING} pendentes · {tasks.counts.IN_PROGRESS}{' '}
+                  em andamento · {tasks.counts.COMPLETED} concluídas.
+                </>
               ),
             )}
             {card(
@@ -511,7 +526,6 @@ export function DashboardPage({ displayName }: { displayName: string }) {
               'Flashcards',
               '/app/flashcards',
               <>
-                <p>{pending} cartões pendentes de revisão.</p>
                 {pending === 0 && (
                   <p>
                     Abra flashcards para criar um baralho ou consultar seus
@@ -519,22 +533,31 @@ export function DashboardPage({ displayName }: { displayName: string }) {
                   </p>
                 )}
               </>,
+              pending !== undefined && (
+                <>{pending} cartões pendentes de revisão.</>
+              ),
             )}
             {card(
               'streak',
               'Progresso',
               '/app/progresso',
               <>
-                <p>
-                  Sequência atual: {streak?.currentStreak} dias. Recorde:{' '}
-                  {streak?.longestStreak} dias.
-                </p>
+                {streak?.activeDays === 0 ? (
+                  <h3>Nenhuma atividade registrada</h3>
+                ) : (
+                  <p>
+                    Sequência atual: {streak?.currentStreak} dias. Recorde:{' '}
+                    {streak?.longestStreak} dias.
+                  </p>
+                )}
                 <p>
                   Histórico rastreado desde{' '}
                   {streak?.trackingStartedAt.slice(0, 10)}. Atividades
                   anteriores não contam.
                 </p>
-                <p>{streak?.activeDays} dias ativos no histórico rastreado.</p>
+                {streak && streak.activeDays > 0 && (
+                  <p>{streak.activeDays} dias ativos no histórico rastreado.</p>
+                )}
                 {streak?.activeDays === 0 && (
                   <p>
                     Conclua uma atividade de estudo para registrar seu primeiro
@@ -549,11 +572,6 @@ export function DashboardPage({ displayName }: { displayName: string }) {
               '/app/estatisticas',
               week && (
                 <>
-                  <p>
-                    Semana: {week.period.start} a {week.period.end} (fim
-                    exclusivo)
-                    {week.period.partial ? ' · Período parcial' : ''}.
-                  </p>
                   <p>
                     {week.frequency.activeDays} dias ativos nesta semana
                     {week.frequency.status === 'history_unavailable'
@@ -582,6 +600,13 @@ export function DashboardPage({ displayName }: { displayName: string }) {
                       módulos disponíveis.
                     </p>
                   )}
+                </>
+              ),
+              week && (
+                <>
+                  Semana: {week.period.start} a {week.period.end} (fim
+                  exclusivo)
+                  {week.period.partial ? ' · Período parcial' : ''}.
                 </>
               ),
             )}

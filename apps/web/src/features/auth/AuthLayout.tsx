@@ -14,10 +14,14 @@ export function AuthLayout({
   children,
   recovery = false,
   arrival = false,
+  transition = false,
+  transitionKey,
 }: {
   children: ReactNode;
   recovery?: boolean;
   arrival?: boolean;
+  transition?: boolean;
+  transitionKey?: string;
 }) {
   return (
     <main className={`auth-layout${recovery ? ' auth-layout-recovery' : ''}`}>
@@ -102,7 +106,8 @@ export function AuthLayout({
         </div>
         <Card className="auth-surface">
           <CardContent
-            className={`auth-form-content${arrival ? ' animate__animated animate__backInLeft' : ''}`}
+            key={transitionKey}
+            className={`auth-form-content${arrival ? ' animate__animated animate__backInLeft' : ''}${transition ? ' public-return-arrival' : ''}`}
           >
             {children}
           </CardContent>

@@ -346,3 +346,34 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+.private-content:has(.deck-list) {
+  height: max(
+    30rem,
+    calc(
+      100dvh - var(--shell-header-height) - var(--shell-bottom-height) - 64px
+    )
+  );
+}
+.private-route-content:has(.deck-list),
+.private-route-content > section:has(.deck-list),
+.flashcards-page:has(.deck-list),
+.flashcards-page .deck-list {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+.flashcards-page .deck-list > [data-slot='table-container'] {
+  flex: 0 1 auto;
+  min-height: 8rem;
+  padding: 0.25rem;
+}
+.flashcards-page .deck-list > nav {
+  position: sticky;
+  bottom: calc(var(--shell-bottom-height) + 8px);
+  margin: auto 0 0;
+  padding-block: 0.75rem;
+  background: var(--background);
+  z-index: 1;
+}

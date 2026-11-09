@@ -482,6 +482,7 @@ export function FlashcardsPage({
       )}
       {!deck && (
         <section
+          className="deck-list"
           aria-label={
             studySubject ? 'Baralhos vinculados' : 'Lista de baralhos'
           }

@@ -304,7 +304,7 @@ export function PrivatePage({
                   onName={updateName}
                   onAvatar={updateAvatar}
                   onPreferences={updatePreferences}
-                  accountActions={
+                  googleActions={
                     <div className="account-access-actions">
                       <div className="account-google">
                         <div className="account-google-identity">
@@ -347,6 +347,10 @@ export function PrivatePage({
                           </AlertDescription>
                         </Alert>
                       )}
+                    </div>
+                  }
+                  accountActions={
+                    <div className="account-access-actions">
                       <div className="account-signout">
                         <div>
                           <h3>Sessão atual</h3>

@@ -64,3 +64,27 @@
   display: grid;
   gap: 16px;
 }
+
+.account-access .classroom-embedded {
+  min-width: 0;
+  border-top: 1px solid var(--border);
+  padding: 16px 0 0;
+}
+.account-access
+  .classroom-embedded
+  > :is([data-slot='card-header'], [data-slot='card-content']) {
+  padding-inline: 0;
+}
+.account-access .classroom-embedded .classroom-logo {
+  width: 28px;
+  height: 28px;
+}
+.classroom-embedded .classroom-connection-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.classroom-embedded .classroom-connection-row > p {
+  flex: 1 1 12rem;
+}

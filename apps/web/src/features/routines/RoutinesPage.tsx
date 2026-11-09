@@ -145,16 +145,14 @@ export function RoutinesPage() {
       setBusy(false);
     }
   }
-  function create() {
-    initial.current = JSON.stringify([
-      '',
-      Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
-      [initialSlot()],
-    ]);
+  function create(weekday = initialSlot().weekday) {
+    const zone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+    const initialSlots = [{ ...initialSlot(), weekday }];
+    initial.current = JSON.stringify(['', zone, initialSlots]);
     setId(null);
     setName('');
-    setTimeZone(Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC');
-    setSlots([initialSlot()]);
+    setTimeZone(zone);
+    setSlots(initialSlots);
     setError('');
     setMessage('');
     setEditing(true);
@@ -284,7 +282,7 @@ export function RoutinesPage() {
           </p>
         </div>
         <div className="routine-actions">
-          <Button disabled={busy} onClick={create}>
+          <Button disabled={busy} onClick={() => create()}>
             <Plus aria-hidden="true" />
             Criar rotina
           </Button>
@@ -618,7 +616,15 @@ export function RoutinesPage() {
       {schedule && (
         <div className="routine-week">
           {days.map((day, index) => (
-            <Card asChild key={day} className="routine-card routine-day">
+            <Card
+              asChild
+              key={day}
+              className={
+                index >= 5
+                  ? 'routine-card routine-day routine-weekend'
+                  : 'routine-card routine-day'
+              }
+            >
               <section aria-label={day}>
                 <h3>{day}</h3>
                 {schedule.items.filter((item) => item.weekday === index + 1)
@@ -636,7 +642,18 @@ export function RoutinesPage() {
                       ))}
                   </ul>
                 ) : (
-                  <p>Sem horários.</p>
+                  <div className="routine-day-empty">
+                    <Clock3 size={18} aria-hidden="true" />
+                    <p>Sem horários cadastrados</p>
+                    <Button
+                      variant="ghost"
+                      disabled={busy || editing}
+                      aria-label={`Adicionar horário: ${day}`}
+                      onClick={() => create(index + 1)}
+                    >
+                      Adicionar horário
+                    </Button>
+                  </div>
                 )}
               </section>
             </Card>

@@ -120,7 +120,8 @@
 }
 .tasks-surface input,
 .tasks-surface textarea,
-.tasks-surface select {
+.tasks-surface select,
+.tasks-surface [data-slot='select-trigger'] {
   width: 100%;
   min-width: 0;
   max-width: 100%;
@@ -129,6 +130,10 @@
   background: var(--tasks-inset);
   color: var(--foreground);
   border-color: var(--input);
+}
+.tasks-surface :is(input, select, [data-slot='select-trigger']) {
+  height: 2.75rem;
+  padding: 0.25rem 0.75rem;
 }
 .tasks-surface textarea {
   min-height: 8rem;

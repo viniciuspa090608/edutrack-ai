@@ -279,6 +279,11 @@
   flex: 1;
   flex-direction: column;
 }
+.dashboard-card-empty .dashboard-card-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
 .dashboard-card-empty .collection-empty-state {
   flex: 1;
   padding: 24px 12px;
@@ -320,4 +325,70 @@
 
 .dashboard-card-empty .collection-empty-state {
   align-content: center;
+}
+
+.dashboard-card-heading {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.dashboard-card-heading > p {
+  margin: 3px 0 0;
+}
+.dashboard-card > [data-slot='card-content'] {
+  min-height: 0;
+}
+.dashboard-card-streak > [data-slot='card-content'] {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+.dashboard-card-streak .dashboard-module-link {
+  margin-top: auto;
+}
+@media (min-width: 1000px) {
+  .dashboard-grid:not(.dashboard-without-tasks, .dashboard-without-flashcards) {
+    grid-template-rows: 16.5rem 14.5rem 28rem 32rem;
+    align-items: stretch;
+  }
+  .dashboard-grid:not(.dashboard-without-tasks, .dashboard-without-flashcards)
+    .dashboard-card
+    > [data-slot='card-content'] {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+  }
+  .dashboard-grid:not(.dashboard-without-tasks, .dashboard-without-flashcards)
+    .dashboard-card:not(.dashboard-card-tasks)
+    .dashboard-card-body {
+    overflow: auto;
+    padding: 4px;
+  }
+  .dashboard-grid:not(.dashboard-without-tasks, .dashboard-without-flashcards)
+    .dashboard-module-link {
+    margin-top: auto;
+  }
+  .dashboard-grid:not(.dashboard-without-flashcards)
+    .dashboard-card-tasks
+    > [data-slot='card-content'] {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+  }
+  .dashboard-grid:not(.dashboard-without-flashcards)
+    .dashboard-card-tasks
+    .dashboard-card-body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .dashboard-grid:not(.dashboard-without-flashcards) .dashboard-task-list {
+    overflow: auto;
+    padding: 4px;
+  }
+  .dashboard-grid:not(.dashboard-without-flashcards)
+    .dashboard-card-tasks
+    .dashboard-module-link {
+    margin-top: auto;
+  }
 }

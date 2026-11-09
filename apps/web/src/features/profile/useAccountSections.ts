@@ -19,8 +19,8 @@ export const accountSections = [
     label: 'Inteligência artificial',
     icon: SlidersHorizontal,
   },
-  { id: 'account-integrations', label: 'Integrações', icon: Globe },
   { id: 'account-access', label: 'Conta', icon: LogOut },
+  { id: 'account-integrations', label: 'Integrações', icon: Globe },
 ];
 
 export function useAccountSections(ready: boolean) {

@@ -46,8 +46,13 @@ it('renders original daily values and dates with distinct zeros and gaps without
   expect(
     Array.from(taskChart.querySelectorAll('time')).map((item) => item.dateTime),
   ).toEqual(['2026-10-01', '2026-10-02', '2026-10-03']);
-  const textSeries = screen.getByRole('list');
-  expect(within(textSeries).getAllByRole('listitem')).toHaveLength(3);
+  const disclosure = screen.getByText('Ver detalhes por dia');
+  expect(disclosure.closest('details')?.open).toBe(false);
+  await userEvent.click(disclosure);
+  const textSeries = screen.getByRole('table', {
+    name: 'Valores diários em texto',
+  });
+  expect(within(textSeries).getAllByRole('rowheader')).toHaveLength(3);
   expect(within(textSeries).getByText('1,5 min')).toBeTruthy();
   expect(
     within(textSeries).getAllByText('Histórico indisponível'),
@@ -97,7 +102,9 @@ it('retains every annual sample and provides a focusable local chart region', as
   });
   expect(region.getAttribute('tabindex')).toBe('0');
   expect(region.querySelectorAll('time')).toHaveLength(365);
-  expect(screen.getAllByRole('listitem')).toHaveLength(365);
+  await userEvent.click(screen.getByText('Ver detalhes por dia'));
+  const table = screen.getByRole('table', { name: 'Valores diários em texto' });
+  expect(within(table).getAllByRole('rowheader')).toHaveLength(365);
   expect(region.querySelector('time')?.dateTime).toBe('2025-01-01');
   expect(Array.from(region.querySelectorAll('time')).at(-1)?.dateTime).toBe(
     '2025-12-31',
@@ -164,8 +171,12 @@ it('shows partial comparisons, text series and omitted modules, and submits filt
     2,
   );
   expect(screen.queryByText('Flashcards avaliados')).toBeNull();
-  expect(screen.getByRole('list')).toBeTruthy();
   const user = userEvent.setup();
+  screen.getByText('Ver detalhes por dia').focus();
+  await user.keyboard('{Enter}');
+  expect(
+    screen.getByRole('table', { name: 'Valores diários em texto' }),
+  ).toBeTruthy();
   await user.click(screen.getByRole('combobox', { name: 'Período' }));
   await user.click(screen.getByRole('option', { name: 'Ano' }));
   await user.clear(screen.getByLabelText('Fuso IANA'));
@@ -218,6 +229,6 @@ it('distinguishes loading, recoverable failure, empty and unavailable history', 
   });
   render(<AnalyticsPage />);
   expect(
-    await screen.findByText('Nenhuma atividade neste período.'),
+    await screen.findByText('Nenhuma atividade registrada neste período.'),
   ).toBeTruthy();
 });

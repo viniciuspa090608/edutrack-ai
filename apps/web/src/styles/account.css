@@ -272,8 +272,6 @@
   grid-template-columns: 80px minmax(0, 1fr);
   align-items: start;
   gap: 12px 16px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid var(--border);
 }
 .account-photo-editor > [data-slot='avatar'] {
   flex-shrink: 0;
@@ -553,7 +551,6 @@
 }
 
 .account-photo-editor #photo-rules {
-  grid-column: 1 / -1;
   margin: 0;
 }
 .account-photo-controls {
@@ -652,4 +649,37 @@
 }
 #account-ai .account-ai-actions {
   margin-top: 8px;
+}
+
+.account-profile-group {
+  display: grid;
+  min-width: 0;
+  gap: 8px;
+  border-top: 1px solid var(--border);
+  padding-top: 20px;
+}
+.account-profile-group h3 {
+  font-weight: 650;
+}
+.account-name-row,
+.account-email-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.account-email-row {
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+.account-name-row > button {
+  flex-shrink: 0;
+}
+.account-google-identity h3,
+.account-google-identity p {
+  margin: 0;
+}
+@media (max-width: 480px) {
+  .account-name-row {
+    flex-wrap: wrap;
+  }
 }

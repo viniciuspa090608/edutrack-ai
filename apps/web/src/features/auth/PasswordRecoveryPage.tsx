@@ -3,6 +3,7 @@ import {
   Alert,
 } from '@study-platform/ui/components/ui/alert';
 import { AuthLayout } from './AuthLayout.js';
+import { navigatePublicRoute } from '../landing/public-navigation.js';
 
 import { Label } from '@study-platform/ui/components/ui/label';
 import { Input } from '@study-platform/ui/components/ui/input';
@@ -11,7 +12,6 @@ import { useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import {
   AuthApiError,
-  navigate,
   requestRecovery,
   resetPassword,
   verifyRecovery,
@@ -28,6 +28,11 @@ export function PasswordRecoveryPage() {
       window.history.replaceState({}, '');
   }, []);
   const [step, setStep] = useState<Step>('request');
+  const [hasChangedStep, setHasChangedStep] = useState(false);
+  function changeStep(next: Step) {
+    setHasChangedStep(true);
+    setStep(next);
+  }
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
   const [password, setPassword] = useState('');
@@ -45,15 +50,15 @@ export function PasswordRecoveryPage() {
     try {
       if (step === 'request') {
         setMessage(await requestRecovery(email));
-        setStep('code');
+        changeStep('code');
       } else if (step === 'code') {
         await verifyRecovery(email, code);
         setMessage('Código validado. Crie uma nova senha.');
-        setStep('password');
+        changeStep('password');
       } else if (step === 'password') {
         await resetPassword(password);
         setMessage('Senha redefinida. Entre novamente para continuar.');
-        setStep('done');
+        changeStep('done');
       }
     } catch (cause) {
       setError(
@@ -84,7 +89,12 @@ export function PasswordRecoveryPage() {
     }
   }
   return (
-    <AuthLayout recovery arrival={arrival}>
+    <AuthLayout
+      recovery
+      arrival={arrival && !hasChangedStep}
+      transition={hasChangedStep}
+      transitionKey={step}
+    >
       <p className="auth-step-kicker">
         {step === 'done' ? 'Tudo pronto' : 'Recuperação de acesso'}
       </p>
@@ -197,7 +207,7 @@ export function PasswordRecoveryPage() {
           type="button"
           disabled={busy}
           onClick={() => {
-            setStep('request');
+            changeStep('request');
             setCode('');
             setPassword('');
             setError('');
@@ -211,7 +221,7 @@ export function PasswordRecoveryPage() {
         className="auth-text-button"
         variant="ghost"
         type="button"
-        onClick={() => navigate('/acesso')}
+        onClick={() => navigatePublicRoute('/acesso')}
       >
         Voltar para entrada
       </Button>

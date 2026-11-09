@@ -220,34 +220,6 @@
   font-size: 0.65rem;
   margin-top: 0.25rem;
 }
-.analytics-text-title {
-  font-size: 1rem;
-  margin: 1.5rem 0 1rem;
-}
-.analytics-series {
-  display: grid;
-  gap: 0.8rem;
-  padding: 0;
-  list-style: none;
-}
-.analytics-series h3 {
-  font-size: 0.85rem;
-  color: var(--primary);
-}
-.analytics-series dl {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
-  gap: 1rem;
-  margin-bottom: 0;
-}
-.analytics-series dt {
-  font-size: 0.8rem;
-  color: var(--muted-foreground);
-}
-.analytics-series dd {
-  margin: 0.3rem 0 0;
-  font-weight: 600;
-}
 @media (max-width: 900px) {
   .analytics-controls {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -267,4 +239,33 @@
     animation: none !important;
     transition: none !important;
   }
+}
+
+.analytics-daily-details {
+  margin-block-start: 1rem;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+}
+.analytics-daily-details summary {
+  cursor: pointer;
+  font-weight: 650;
+}
+.analytics-daily-scroll {
+  margin-block-start: 0.75rem;
+  overflow-x: auto;
+}
+.analytics-daily-scroll table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: start;
+}
+.analytics-daily-scroll :is(th, td) {
+  border-bottom: 1px solid var(--border);
+  padding: 0.5rem 0.75rem;
+  text-align: start;
+}
+.analytics-daily-scroll tbody th {
+  white-space: nowrap;
 }
