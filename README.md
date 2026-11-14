@@ -1,4 +1,9 @@
-# EduTrack
+# EduTrack AI
+
+Projeto da disciplina Innovation Lab – Faculdade Impacta  
+Aluno: Vinicius Pereira RA: 2601578  
+Aluno: Gustavo Ramos RA: 2600928  
+2026
 
 Plataforma de estudos com autenticação local ou Google, tarefas e subtarefas, matérias e roadmaps, rotinas, Pomodoro, flashcards, revisão espaçada, estatísticas e conquistas. A IA complementa os fluxos manuais de roadmaps e flashcards. A landing pública apresenta esses recursos; `/status` oferece diagnóstico técnico. O monorepo integra React, API Express, contratos compartilhados e MySQL.
 
