@@ -7,6 +7,16 @@ Aluno: Gustavo Ramos RA: 2600928
 
 Plataforma de estudos com autenticação local ou Google, tarefas e subtarefas, matérias e roadmaps, rotinas, Pomodoro, flashcards, revisão espaçada, estatísticas e conquistas. A IA complementa os fluxos manuais de roadmaps e flashcards. A landing pública apresenta esses recursos; `/status` oferece diagnóstico técnico. O monorepo integra React, API Express, contratos compartilhados e MySQL.
 
+## Tecnologias Utilizadas
+
+| Área | Tecnologias e uso |
+| --- | --- |
+| Frontend | React para a interface, Vite para desenvolvimento e build, e Tailwind CSS para estilos. |
+| Backend | Node.js e Express para a API HTTP. |
+| Banco de dados | MySQL para persistência, com TypeORM para acesso aos dados e migrations. |
+| Linguagem e contratos | TypeScript na aplicação e Zod para validação de dados e definição de contratos compartilhados. |
+| Monorepo e qualidade | pnpm workspaces para gerenciar os pacotes, ESLint para análise de código e Vitest para testes. |
+
 ## Git e conclusão de mudanças OpenSpec
 
 O repositório é [viniciuspa090608/edutrack-ai](https://github.com/viniciuspa090608/edutrack-ai), com branch principal `master`. Novos applies usam `codex/<nome-da-mudança>` quando não existe uma branch de trabalho adequada. A `master` acompanha `origin/master`; consulte o servidor com `git fetch origin` e compare com `git branch -vv` antes de afirmar que algo está publicado. Uma branch de trabalho ganha upstream somente quando for publicada explicitamente.
