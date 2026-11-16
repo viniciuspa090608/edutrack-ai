@@ -15,6 +15,8 @@ export interface AccountStructuredProvider {
     schema: z.ZodType,
     name: string,
     instructions: string,
+    assistantModels?: ReadonlySet<string>,
+    onCall?: () => void,
   ): Promise<unknown>;
 }
 const invalid = () =>
@@ -371,12 +373,28 @@ export class RoutedStructuredProvider implements AccountStructuredProvider {
     schema: z.ZodType,
     name: string,
     instructions: string,
+    assistantModels?: ReadonlySet<string>,
+    onCall?: () => void,
   ) {
     const snapshot = await this.resolver.resolve(userId);
+    if (
+      assistantModels &&
+      !assistantModels.has(`${snapshot.provider}:${snapshot.model}`)
+    )
+      throw new HttpError(
+        422,
+        'AI_ASSISTANT_INCOMPATIBLE',
+        'O provedor e modelo configurados ainda não estão disponíveis no Assistente IA. Revise sua configuração em Conta.',
+      );
     // Check local errors before reserving quota.
     this.transport.validate(snapshot, input, schema, name, instructions);
-    const release = await this.usage.reserve(userId, snapshot.shared);
+    const release = await this.usage.reserve(
+      userId,
+      snapshot.shared,
+      assistantModels !== undefined,
+    );
     try {
+      onCall?.();
       return await this.transport.structured(
         snapshot,
         input,

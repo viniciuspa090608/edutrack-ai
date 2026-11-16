@@ -25,6 +25,8 @@ import { AnalyticsPage } from '../analytics/AnalyticsPage.js';
 import { StudyProgressPage } from '../study-progress/StudyProgressPage.js';
 import { DashboardPage } from '../dashboard/DashboardPage.js';
 import { OnboardingGate } from '../classroom/OnboardingGate.js';
+import { AssistantPage } from '../assistant/AssistantPage.js';
+import { assistantAvailability } from '../assistant/assistant-api.js';
 import {
   AuthApiError,
   currentUser,
@@ -43,6 +45,7 @@ export function PrivatePage({
     | 'pomodoro'
     | 'rotinas'
     | 'estatisticas'
+    | 'assistente'
     | 'progresso';
 }) {
   const content = useRef<HTMLDivElement>(null);
@@ -67,6 +70,23 @@ export function PrivatePage({
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [prefs, setPrefs] = useState<ModulePreferences | null>(null);
+  const [assistantLimit, setAssistantLimit] = useState<number | null>(null);
+  const aiEnabled = prefs?.ai === true;
+  useEffect(() => {
+    if (!aiEnabled || !user) return;
+    let active = true;
+    void assistantAvailability()
+      .then(({ enabled, messageLimit }) => {
+        if (active) setAssistantLimit(enabled ? messageLimit : null);
+      })
+      .catch(() => {
+        if (active) setAssistantLimit(null);
+      });
+    return () => {
+      active = false;
+      setAssistantLimit(null);
+    };
+  }, [aiEnabled, user?.id]);
   const [confirmedAvatar, setConfirmedAvatar] =
     useState<ConfirmedAvatar | null>(null);
   const updateAvatar = useCallback(
@@ -93,6 +113,7 @@ export function PrivatePage({
       '/app/materias',
       '/app/estatisticas',
       '/app/progresso',
+      '/app/assistente-ia',
     ].includes(window.location.pathname)
       ? window.location.pathname
       : window.location.pathname === '/conta'
@@ -216,6 +237,7 @@ export function PrivatePage({
     <AuthenticatedShell
       user={user}
       prefs={prefs}
+      assistantEnabled={aiEnabled && assistantLimit !== null}
       busy={busy}
       onLogout={() => {
         void leave();
@@ -243,7 +265,19 @@ export function PrivatePage({
             inert={exiting}
             className={`private-route-content animate__animated ${exiting ? 'animate__backOutLeft' : 'animate__fadeIn'}`}
           >
-            {page === 'progresso' ? (
+            {page === 'assistente' ? (
+              prefs?.ai && assistantLimit !== null ? (
+                <AssistantPage prefs={prefs} messageLimit={assistantLimit} />
+              ) : (
+                <section>
+                  <h1>Assistente IA</h1>
+                  <p>
+                    Verifique a disponibilidade do piloto e a preferência de IA.{' '}
+                    <a href="/conta">Abrir Conta</a>
+                  </p>
+                </section>
+              )
+            ) : page === 'progresso' ? (
               <StudyProgressPage />
             ) : page === 'estatisticas' ? (
               <AnalyticsPage />

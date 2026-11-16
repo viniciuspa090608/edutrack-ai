@@ -263,23 +263,26 @@ export class TasksRepository {
     });
   }
   async create(userId: string, input: CreateTask) {
+    return this.source.transaction((manager) =>
+      this.createIn(manager, userId, input),
+    );
+  }
+  async createIn(manager: EntityManager, userId: string, input: CreateTask) {
     const id = randomUUID();
-    await this.source.transaction(async (manager) => {
-      await lockStudyProgress(manager, userId);
-      await manager.getRepository(taskEntity).insert({ id, userId, ...input });
-      if (input.status === 'COMPLETED')
-        await publishActivity(
-          manager,
-          userId,
-          'TASK_COMPLETED',
-          'task',
-          id,
-          undefined,
-          undefined,
-          false,
-        );
-    });
-    return this.find(userId, id);
+    await lockStudyProgress(manager, userId);
+    await manager.getRepository(taskEntity).insert({ id, userId, ...input });
+    if (input.status === 'COMPLETED')
+      await publishActivity(
+        manager,
+        userId,
+        'TASK_COMPLETED',
+        'task',
+        id,
+        undefined,
+        undefined,
+        false,
+      );
+    return this.readTask(manager, userId, id);
   }
   find(userId: string, id: string) {
     return this.source.transaction((manager) =>

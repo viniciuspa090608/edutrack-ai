@@ -162,4 +162,5 @@ export * from './study-progress.js';
 export * from './dashboard.js';
 
 export * from './ai-settings.js';
+export * from './ai-assistant.js';
 export * from './classroom.js';

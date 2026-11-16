@@ -43,6 +43,8 @@ export function App() {
       return <PrivatePage page="estatisticas" />;
     case '/app/progresso':
       return <PrivatePage page="progresso" />;
+    case '/app/assistente-ia':
+      return <PrivatePage page="assistente" />;
     case '/conta':
       return <PrivatePage page="conta" />;
     default:

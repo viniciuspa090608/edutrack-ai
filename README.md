@@ -9,13 +9,13 @@ Plataforma de estudos com autenticação local ou Google, tarefas e subtarefas, 
 
 ## Tecnologias Utilizadas
 
-| Área | Tecnologias e uso |
-| --- | --- |
-| Frontend | React para a interface, Vite para desenvolvimento e build, e Tailwind CSS para estilos. |
-| Backend | Node.js e Express para a API HTTP. |
-| Banco de dados | MySQL para persistência, com TypeORM para acesso aos dados e migrations. |
+| Área                  | Tecnologias e uso                                                                              |
+| --------------------- | ---------------------------------------------------------------------------------------------- |
+| Frontend              | React para a interface, Vite para desenvolvimento e build, e Tailwind CSS para estilos.        |
+| Backend               | Node.js e Express para a API HTTP.                                                             |
+| Banco de dados        | MySQL para persistência, com TypeORM para acesso aos dados e migrations.                       |
 | Linguagem e contratos | TypeScript na aplicação e Zod para validação de dados e definição de contratos compartilhados. |
-| Monorepo e qualidade | pnpm workspaces para gerenciar os pacotes, ESLint para análise de código e Vitest para testes. |
+| Monorepo e qualidade  | pnpm workspaces para gerenciar os pacotes, ESLint para análise de código e Vitest para testes. |
 
 ## Git e conclusão de mudanças OpenSpec
 
@@ -449,3 +449,11 @@ Desconectar remove tokens locais imediatamente, interrompe confirmações penden
 Verificação automatizada usa banco MySQL temporário real e simula somente a fronteira HTTP Google. A homologação real exige consentimento com uma conta autorizada, turma selecionada, atividade com/sem prazo, reimportação e revogação. `redirect_uri_mismatch` se resolve cadastrando o callback exato; `access_denied` pode exigir revisão do consentimento/usuários de teste ou administrador institucional. Registre essas evidências antes de concluir o apply; fixtures não substituem a homologação externa.
 
 Referências oficiais: [OAuth web](https://developers.google.com/identity/protocols/oauth2/web-server), [escopos Classroom](https://developers.google.com/workspace/classroom/guides/auth), [permissões de atividades](https://developers.google.com/workspace/classroom/guides/manage-coursework).
+
+## Piloto do Assistente IA
+
+Aplique as migrations antes de iniciar a API e configure o fallback da SPA para `/app/assistente-ia`. A API executa a limpeza na inicialização e a cada hora, inclusive com o piloto fechado. Verifique `assistant.cleanup` no início e após reiniciar a API. O comando pós-build `pnpm --filter @study-platform/api assistant:cleanup` permite uma execução sob demanda.
+
+Com o piloto fechado, valide os provedores com dados sintéticos. Configure `AI_ASSISTANT_MODELS` com pares `provedor:modelo` do catálogo separados por vírgulas. Inclua somente os pares aprovados no smoke. Configure `AI_ASSISTANT_USER_DAILY_LIMIT` e `AI_ASSISTANT_GLOBAL_DAILY_LIMIT` abaixo dos tetos gerais. Defina `AI_ASSISTANT_GLOBAL_MAX_CONCURRENCY` abaixo do máximo global quando houver mais de um slot. Defina `AI_ASSISTANT_ENABLED=true` depois de verificar a limpeza e os tetos. A aba exige também a preferência de IA da conta.
+
+Agregue os eventos `assistant_attempt` por período para acompanhar latência, chamadas externas e erros de cota. Acompanhe `retainedMessages` e `oldestExpiredMs` nos eventos de limpeza. Antes de ampliar acesso, registre volume, concorrência, latência e folga para roadmaps e flashcards. Para fechar o piloto, desative `AI_ASSISTANT_ENABLED`. A limpeza continua até expirar o histórico vigente.

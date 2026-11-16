@@ -179,8 +179,10 @@ export function allowedReturnTo(
   | '/app/rotinas'
   | '/app/estatisticas'
   | '/app/progresso'
+  | '/app/assistente-ia'
   | '/app/materias' {
   if (value === '/app/progresso') return value;
+  if (value === '/app/assistente-ia') return value;
   if (value === '/app/estatisticas') return value;
   if (value === '/app/rotinas') return value;
   if (value === '/app/pomodoro') return value;

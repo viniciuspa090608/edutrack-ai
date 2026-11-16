@@ -98,6 +98,7 @@ function DestinationLink({
 export function AuthenticatedShell({
   user,
   prefs,
+  assistantEnabled = false,
   busy,
   onLogout,
   confirmedAvatar,
@@ -107,6 +108,7 @@ export function AuthenticatedShell({
 }: {
   user: AuthUser;
   prefs: ModulePreferences | null;
+  assistantEnabled?: boolean;
   busy: boolean;
   onLogout: () => void;
   confirmedAvatar: ConfirmedAvatar | null;
@@ -130,7 +132,13 @@ export function AuthenticatedShell({
         }))
       : []),
   ];
-  const moreActive = secondary.some((item) =>
+  const destinations = assistantEnabled
+    ? [
+        { path: '/app/assistente-ia', label: 'Assistente IA', icon: Layers },
+        ...secondary,
+      ]
+    : secondary;
+  const moreActive = destinations.some((item) =>
     activeDestination(item, pathname),
   );
   useEffect(() => {
@@ -199,7 +207,7 @@ export function AuthenticatedShell({
             aria-label="Navegação da área pessoal"
           >
             <nav aria-label="Área pessoal">
-              {[...primary, ...secondary].map((item) => (
+              {[...primary, ...destinations].map((item) => (
                 <DestinationLink
                   key={item.path}
                   item={item}
@@ -280,7 +288,7 @@ export function AuthenticatedShell({
               className="shell-more-destinations"
               aria-label="Outros destinos"
             >
-              {secondary.map((item) => (
+              {destinations.map((item) => (
                 <DestinationLink
                   key={item.path}
                   item={item}

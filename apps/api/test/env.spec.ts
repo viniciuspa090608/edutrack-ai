@@ -22,6 +22,30 @@ const validEnv = {
 };
 
 describe('API environment', () => {
+  it('requires compatible assistant models and preserves shared budget', () => {
+    const pilot = {
+      ...validEnv,
+      AI_ASSISTANT_ENABLED: 'true',
+      AI_ASSISTANT_MODELS: 'gemini:gemini-3.8-flash',
+      AI_ASSISTANT_USER_DAILY_LIMIT: '4',
+      AI_ASSISTANT_GLOBAL_DAILY_LIMIT: '30',
+      AI_ASSISTANT_GLOBAL_MAX_CONCURRENCY: '2',
+    };
+    expect(parseEnv(pilot).AI_ASSISTANT_MODELS).toEqual([
+      'gemini:gemini-3.8-flash',
+    ]);
+    for (const patch of [
+      { AI_ASSISTANT_MODELS: '' },
+      { AI_ASSISTANT_MODELS: 'openai:gemini-3.8-flash' },
+      { AI_ASSISTANT_USER_DAILY_LIMIT: '20' },
+      { AI_ASSISTANT_GLOBAL_DAILY_LIMIT: '500' },
+      { AI_ASSISTANT_GLOBAL_MAX_CONCURRENCY: '5' },
+      { AI_ASSISTANT_MESSAGE_CHARS: '8001' },
+    ])
+      expect(() => parseEnv({ ...pilot, ...patch })).toThrow(
+        EnvValidationError,
+      );
+  });
   it('requires explicit Gemini pairs, independent credential encryption and positive limits without leaking secrets', () => {
     expect(parseEnv(validEnv).GEMINI_API_KEY).toBeUndefined();
     expect(

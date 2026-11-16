@@ -25,6 +25,7 @@ export function navigatePrivateLink(event: MouseEvent<HTMLElement>) {
       '/app/rotinas',
       '/app/estatisticas',
       '/app/progresso',
+      '/app/assistente-ia',
     ].includes(url.pathname) &&
     !moduleAtPath(url.pathname)
   )

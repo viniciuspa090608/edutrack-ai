@@ -6,7 +6,12 @@ export function requestContext(logger: AppLogger): RequestHandler {
   return (request, response, next) => {
     const requestId = randomUUID();
     const started = performance.now();
-    const path = request.originalUrl.split('?')[0];
+    const path = request.originalUrl
+      .split('?')[0]
+      ?.replace(
+        /^\/assistant\/conversations\/[^/]+\/messages\/?$/,
+        '/assistant/conversations/:id/messages',
+      );
     response.locals.requestId = requestId;
     response.setHeader('X-Request-Id', requestId);
     response.on('finish', () => {

@@ -62,6 +62,9 @@ import {
 import { AISettingsRepository } from './modules/ai-settings/ai-settings.repository.js';
 import { AISettingsService } from './modules/ai-settings/ai-settings.service.js';
 import { AIUsageRepository } from './modules/ai-settings/ai-usage.repository.js';
+import { AssistantHistory } from './modules/ai/assistant-history.js';
+import { AssistantService } from './modules/ai/assistant.service.js';
+import { assistantRoutes } from './modules/ai/assistant.routes.js';
 import { aiSettingsRoutes } from './modules/ai-settings/ai-settings.routes.js';
 import { FlashcardAIService } from './modules/ai/flashcard-ai.service.js';
 import { FlashcardReceipt } from './modules/ai/flashcard-receipt.js';
@@ -227,6 +230,29 @@ export function createApp({
       subjects,
       prefs,
       reviewClock,
+    );
+    const assistantHistory = new AssistantHistory(
+      source,
+      env.AI_TIMEOUT_MS,
+      aiClock,
+    );
+    app.use(
+      '/assistant',
+      assistantRoutes(
+        service,
+        new AssistantService(
+          env,
+          assistantHistory,
+          aiProvider,
+          prefs,
+          subjects,
+          tasks,
+          flashcards,
+          async (userId) => (await progress.settings(userId)).timeZone,
+        ),
+        assistantHistory,
+        env,
+      ),
     );
     app.use(
       '/flashcard-decks',

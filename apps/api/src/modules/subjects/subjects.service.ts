@@ -86,6 +86,10 @@ export class SubjectsService {
     await this.prefs.requireEnabled(userId, 'subjects');
     await this.repository.detail(userId, id);
   }
+  async findByName(userId: string, name: string) {
+    await this.prefs.requireEnabled(userId, 'subjects');
+    return this.repository.findByName(userId, name);
+  }
   async listRoadmaps(userId: string, id: string, input: unknown) {
     await this.requireOwned(userId, id);
     const pagination = parse(subjectPaginationSchema, input);
@@ -213,6 +217,15 @@ export class SubjectsService {
   async create(userId: string, input: unknown) {
     return subjectSchema.parse(
       await this.repository.create(userId, parse(createSubjectSchema, input)),
+    );
+  }
+  async createIn(manager: EntityManager, userId: string, input: unknown) {
+    return subjectSchema.parse(
+      await this.repository.createIn(
+        manager,
+        userId,
+        parse(createSubjectSchema, input),
+      ),
     );
   }
   async detail(userId: string, id: string) {

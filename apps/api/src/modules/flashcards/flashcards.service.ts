@@ -12,8 +12,10 @@ import {
   generatedCardsSchema,
 } from '@study-platform/contracts';
 import type { GeneratedCard } from '@study-platform/contracts';
+import { randomUUID } from 'node:crypto';
+import type { EntityManager } from 'typeorm';
+import { z } from 'zod';
 import type { PreferencesService } from '../preferences/preferences.service.js';
-import type { z } from 'zod';
 import type { SubjectsService } from '../subjects/subjects.service.js';
 import type { FlashcardsRepository } from './flashcards.repository.js';
 import { HttpError } from '../../shared/http-error.js';
@@ -30,6 +32,9 @@ export class FlashcardsService {
     private readonly prefs?: Pick<PreferencesService, 'requireEnabled'>,
     private readonly clock = () => new Date(),
   ) {}
+  findDecksByName(userId: string, name: string) {
+    return this.repository.findDecksByName(userId, name);
+  }
   confirmGenerated(
     userId: string,
     deckId: string,
@@ -114,6 +119,23 @@ export class FlashcardsService {
         deckId,
         parse(createCardSchema, input),
       ),
+    );
+  }
+  requireDeckIn(manager: EntityManager, userId: string, deckId: string) {
+    return this.repository.requireDeckIn(manager, userId, deckId);
+  }
+  async createCardsIn(
+    manager: EntityManager,
+    userId: string,
+    deckId: string,
+    input: unknown,
+  ) {
+    const cards = parse(z.array(createCardSchema).min(1).max(20), input);
+    return this.repository.createCardsIn(
+      manager,
+      userId,
+      deckId,
+      cards.map((card) => ({ ...card, id: randomUUID() })),
     );
   }
   async updateCard(
