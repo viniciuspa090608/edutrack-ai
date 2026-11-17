@@ -1,0 +1,257 @@
+.evolution-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.evolution-title-row h1 {
+  min-width: 0;
+  hyphens: auto;
+}
+
+.evolution-title-row .report-print-button {
+  flex: 0 0 auto;
+  min-height: 44px;
+  max-width: 50%;
+  height: auto;
+  padding: 0.5rem;
+  white-space: normal;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.report-print-reason:empty,
+.report-print-metadata {
+  display: none;
+}
+
+.analytics-bar-row {
+  display: contents;
+}
+
+@media print {
+  @page study-report {
+    size: A4 portrait;
+    margin: 14mm;
+  }
+
+  html:has(.study-report),
+  body:has(.study-report),
+  .authenticated-shell:has(.study-report),
+  .authenticated-shell:has(.study-report)
+    :is(
+      .shell-layout,
+      .shell-content-region,
+      .private-content,
+      .private-route-content
+    ),
+  .study-report.evolution-surface {
+    display: block;
+    width: auto;
+    max-width: none;
+    height: auto;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+    background: white;
+    color: #161616;
+    color-scheme: light;
+    animation: none;
+  }
+
+  body:has(.study-report)
+    :is(.shell-header, .shell-sidebar, .shell-bottom-nav, .shell-more-sheet),
+  .study-report
+    :is(
+      button,
+      nav,
+      summary,
+      .analytics-filters,
+      .evolution-header > .evolution-muted,
+      .evolution-eyebrow,
+      .analytics-period-context p:first-child,
+      #analytics-chart-help,
+      a[href='/conta']
+    ) {
+    display: none;
+  }
+
+  .study-report.evolution-surface {
+    --background: #fff;
+    --foreground: #161616;
+    --muted-foreground: #333;
+    --border: #aaa;
+    --primary: #222;
+    --success: #333;
+    --info: #333;
+    --warning: #333;
+    --chart-1: #555;
+    --progress-panel: #fff;
+    --progress-inset: #eee;
+    --progress-line: #aaa;
+    font-size: 10pt;
+    page: study-report;
+  }
+
+  .study-report .evolution-title-row h1 {
+    font-size: 21pt;
+    margin-block: 0 2mm;
+  }
+
+  .study-report .report-print-metadata p {
+    margin-block: 1mm;
+  }
+
+  .study-report .report-print-metadata {
+    display: block;
+  }
+
+  .study-report
+    :is(.evolution-header, .evolution-section-heading, figcaption, h2, h3) {
+    break-after: avoid;
+  }
+
+  .study-report :is(.evolution-card, .evolution-empty, .analytics-bar-row, tr) {
+    break-inside: avoid;
+  }
+
+  .study-report
+    :is(
+      .evolution-card,
+      .evolution-empty,
+      .evolution-context,
+      .evolution-header
+    ) {
+    margin-block-end: 3mm;
+    box-shadow: none;
+    background: white;
+  }
+
+  .study-report :is(.evolution-card, .evolution-empty) {
+    padding: 3mm;
+    border-color: #aaa;
+  }
+
+  .study-report :is(.evolution-metrics, .progress-achievements) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 3mm;
+    margin-block: 0 3mm;
+  }
+
+  .study-report
+    :is(.evolution-metrics, .progress-achievements)
+    > .evolution-card {
+    margin-block-end: 0;
+  }
+
+  .study-report .evolution-icon {
+    width: 6mm;
+    height: 6mm;
+  }
+
+  .study-report .progress-stat dt {
+    line-height: 6mm;
+  }
+
+  .study-report .progress-stat dd:not(.progress-stat-note) {
+    font-size: 21pt;
+    margin-block: 2mm 1mm;
+  }
+
+  .study-report :is(.achievement-card, .achievement-footer) {
+    gap: 2mm;
+  }
+
+  .study-report .achievement-footer {
+    padding-top: 2mm;
+  }
+
+  .study-report .analytics-charts {
+    display: block;
+  }
+
+  .study-report .analytics-chart:has(.analytics-bar-row:nth-child(2)) {
+    break-inside: auto;
+  }
+
+  .study-report :is(.analytics-chart-scroll, .analytics-daily-scroll) {
+    overflow: visible;
+    padding: 0;
+  }
+
+  .study-report .analytics-chart-legend {
+    break-after: avoid;
+  }
+
+  .study-report .analytics-bars {
+    display: block;
+    width: auto;
+  }
+
+  .study-report .analytics-bar-row {
+    display: grid;
+    grid-template-columns: repeat(10, minmax(0, 1fr));
+    gap: 1mm;
+    margin-block-end: 2mm;
+  }
+
+  .study-report .analytics-sample {
+    width: auto;
+    min-width: 0;
+  }
+
+  .study-report .analytics-sample-value {
+    min-height: 0;
+    padding-bottom: 1mm;
+    font-size: 7pt;
+  }
+
+  .study-report .analytics-sample :is(time, .analytics-sample-unavailable) {
+    font-size: 7pt;
+  }
+
+  .study-report .analytics-plot {
+    height: 17mm;
+    background: none;
+  }
+
+  .study-report .analytics-bar {
+    width: 5mm;
+    border: 1px solid #555;
+    print-color-adjust: exact;
+  }
+
+  .study-report [data-slot='progress'] {
+    border: 1px solid #aaa;
+    print-color-adjust: exact;
+  }
+
+  .study-report .analytics-daily-details {
+    padding: 0;
+    border: 0;
+  }
+
+  .study-report .analytics-daily-scroll table {
+    table-layout: fixed;
+    font-size: 8pt;
+  }
+
+  .study-report .analytics-daily-scroll caption {
+    display: table-caption;
+    margin-block-end: 2mm;
+    font-weight: 700;
+    text-align: start;
+    break-after: avoid;
+  }
+
+  .study-report .analytics-daily-scroll thead {
+    display: table-header-group;
+  }
+
+  .study-report .analytics-daily-scroll :is(th, td) {
+    padding: 1mm 1.5mm;
+    white-space: normal;
+  }
+}

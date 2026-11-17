@@ -111,6 +111,30 @@ it('retains every annual sample and provides a focusable local chart region', as
     '2025-12-31',
   );
 });
+it('prints the applied period and opens the daily table for print only', async () => {
+  vi.mocked(studyAnalytics).mockResolvedValue(data);
+  const print = vi.spyOn(window, 'print').mockImplementation(() => {
+    fireEvent(window, new Event('beforeprint'));
+  });
+  try {
+    render(<AnalyticsPage />);
+    const disclosure = await screen.findByText('Ver detalhes por dia');
+    const details = disclosure.closest('details')!;
+    expect(details.open).toBe(false);
+    screen.getByRole('button', { name: 'Imprimir relatório' }).focus();
+    await userEvent.keyboard('{Enter}');
+    expect(print).toHaveBeenCalledOnce();
+    expect(details.open).toBe(true);
+    expect(screen.getByText(/Semana · 2026-10-01 até 2026-10-02/)).toBeTruthy();
+    expect(
+      document.querySelector('.report-print-metadata time')?.textContent,
+    ).toBeTruthy();
+    fireEvent(window, new Event('afterprint'));
+    expect(details.open).toBe(false);
+  } finally {
+    print.mockRestore();
+  }
+});
 const metric = {
   current: 5,
   previous: 0,
@@ -198,11 +222,23 @@ it('shows partial comparisons, text series and omitted modules, and submits filt
 it('distinguishes loading, recoverable failure, empty and unavailable history', async () => {
   vi.mocked(studyAnalytics).mockImplementationOnce(() => new Promise(() => {}));
   const first = render(<AnalyticsPage />);
-  expect(screen.getByRole('status').textContent).toContain('Carregando');
+  const printButton = () =>
+    screen.getByRole<HTMLButtonElement>('button', {
+      name: 'Imprimir relatório',
+    });
+  expect(screen.getByText('Carregando estatísticas…')).toBeTruthy();
+  expect(
+    screen.getByText('Aguarde o carregamento para imprimir.'),
+  ).toBeTruthy();
+  expect(printButton().disabled).toBe(true);
   first.unmount();
   vi.mocked(studyAnalytics).mockRejectedValueOnce(new Error('offline'));
   render(<AnalyticsPage />);
   expect(await screen.findByRole('alert')).toBeTruthy();
+  expect(
+    screen.getByText('Relatório indisponível por erro na consulta.'),
+  ).toBeTruthy();
+  expect(printButton().disabled).toBe(true);
   vi.mocked(studyAnalytics).mockResolvedValueOnce({
     ...data,
     metrics: {
@@ -234,4 +270,8 @@ it('distinguishes loading, recoverable failure, empty and unavailable history', 
   expect(
     await screen.findByText('Nenhuma atividade registrada neste período.'),
   ).toBeTruthy();
+  expect(
+    screen.getByText('Nenhuma atividade para imprimir neste período.'),
+  ).toBeTruthy();
+  expect(printButton().disabled).toBe(true);
 });

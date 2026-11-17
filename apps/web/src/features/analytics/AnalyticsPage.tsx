@@ -29,7 +29,7 @@ import { Label } from '@study-platform/ui/components/ui/label';
 import { Input } from '@study-platform/ui/components/ui/input';
 import { Button } from '@study-platform/ui/components/ui/button';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type {
   AnalyticsMetric,
   AnalyticsQuery,
@@ -54,6 +54,14 @@ const metricIcons = {
   planItems: ListChecks,
   roadmapBlocks: Milestone,
 };
+const periodLabels = {
+  day: 'Dia',
+  week: 'Semana',
+  quarter: 'Trimestre',
+  semester: 'Semestre',
+  year: 'Ano',
+} satisfies Record<AnalyticsQuery['granularity'], string>;
+
 function value(metric: AnalyticsMetric, amount: number | null | undefined) {
   if (amount === null || amount === undefined) return 'Histórico indisponível';
   return metric === 'activeMs'
@@ -87,6 +95,12 @@ function DailyChart({
     ...data.series.map((day) => day.values[metric] ?? 0),
   );
   const hasValues = data.series.some((day) => day.values[metric] !== undefined);
+  const daysPerRow = 10;
+  const rows = Array.from(
+    { length: Math.ceil(data.series.length / daysPerRow) },
+    (_, index) =>
+      data.series.slice(index * daysPerRow, (index + 1) * daysPerRow),
+  );
   return (
     <figure
       className="evolution-card analytics-chart"
@@ -113,32 +127,36 @@ function DailyChart({
           aria-describedby="analytics-chart-help"
         >
           <div className="analytics-bars">
-            {data.series.map((day) => {
-              const amount = day.values[metric];
-              return (
-                <div className="analytics-sample" key={day.date}>
-                  <span className="analytics-sample-value">
-                    {amount === undefined ? '—' : value(metric, amount)}
-                  </span>
-                  <div className="analytics-plot" aria-hidden="true">
-                    {amount === undefined ? (
-                      <span className="analytics-missing">?</span>
-                    ) : (
-                      <span
-                        className={`analytics-bar${amount === 0 ? ' analytics-bar-zero' : ''}`}
-                        style={{ height: `${(amount / maximum) * 100}%` }}
-                      />
-                    )}
-                  </div>
-                  <time dateTime={day.date}>{day.date}</time>
-                  {amount === undefined && (
-                    <span className="analytics-sample-unavailable">
-                      Indisponível
-                    </span>
-                  )}
-                </div>
-              );
-            })}
+            {rows.map((row) => (
+              <div className="analytics-bar-row" key={row[0]!.date}>
+                {row.map((day) => {
+                  const amount = day.values[metric];
+                  return (
+                    <div className="analytics-sample" key={day.date}>
+                      <span className="analytics-sample-value">
+                        {amount === undefined ? '—' : value(metric, amount)}
+                      </span>
+                      <div className="analytics-plot" aria-hidden="true">
+                        {amount === undefined ? (
+                          <span className="analytics-missing">?</span>
+                        ) : (
+                          <span
+                            className={`analytics-bar${amount === 0 ? ' analytics-bar-zero' : ''}`}
+                            style={{ height: `${(amount / maximum) * 100}%` }}
+                          />
+                        )}
+                      </div>
+                      <time dateTime={day.date}>{day.date}</time>
+                      {amount === undefined && (
+                        <span className="analytics-sample-unavailable">
+                          Indisponível
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
           </div>
         </div>
       )}
@@ -159,6 +177,7 @@ export function AnalyticsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [retry, setRetry] = useState(0);
+  const report = useRef<HTMLElement>(null);
   useEffect(() => {
     let active = true;
     setLoading(true);
@@ -182,7 +201,11 @@ export function AnalyticsPage() {
     };
   }, [query, retry]);
   useEffect(() => {
-    const refresh = () => setRetry((value) => value + 1);
+    const refresh = () => {
+      if (!report.current?.hasAttribute('data-printing')) {
+        setRetry((value) => value + 1);
+      }
+    };
     window.addEventListener('edutrack:preferences', refresh);
     window.addEventListener('focus', refresh);
     return () => {
@@ -195,15 +218,30 @@ export function AnalyticsPage() {
         a === 'activeMs' ? -1 : b === 'activeMs' ? 1 : 0,
       )
     : [];
+  const printUnavailable = error
+    ? 'Relatório indisponível por erro na consulta.'
+    : loading
+      ? 'Aguarde o carregamento para imprimir.'
+      : !data || data.frequency.activeDays === 0 || metrics.length === 0
+        ? 'Nenhuma atividade para imprimir neste período.'
+        : '';
   return (
     <section
-      className="analytics-page evolution-surface"
+      ref={report}
+      className="analytics-page evolution-surface study-report"
       aria-labelledby="analytics-title"
     >
       <ProgressHeader
         title="Estatísticas de estudo"
         titleId="analytics-title"
         current="analytics"
+        printUnavailable={printUnavailable}
+        printPeriod={
+          data
+            ? `${periodLabels[query.granularity]} · ${data.period.start} até ${data.period.end} (fim exclusivo)`
+            : undefined
+        }
+        timeZone={data?.timeZone}
         description="Entenda seu ritmo de estudos e acompanhe a evolução das suas atividades ao longo do tempo."
       />
       <details className="analytics-filters evolution-card">
@@ -235,14 +273,8 @@ export function AnalyticsPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="analytics-period-options">
-                {[
-                  ['day', 'Dia'],
-                  ['week', 'Semana'],
-                  ['quarter', 'Trimestre'],
-                  ['semester', 'Semestre'],
-                  ['year', 'Ano'],
-                ].map(([id, label]) => (
-                  <SelectItem key={id} value={id!}>
+                {Object.entries(periodLabels).map(([id, label]) => (
+                  <SelectItem key={id} value={id}>
                     {label}
                   </SelectItem>
                 ))}
@@ -399,6 +431,9 @@ export function AnalyticsPage() {
                 tabIndex={0}
               >
                 <table aria-label="Valores diários em texto">
+                  <caption className="report-print-metadata">
+                    Valores diários
+                  </caption>
                   <thead>
                     <tr>
                       <th scope="col">Data</th>

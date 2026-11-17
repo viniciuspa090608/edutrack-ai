@@ -61,15 +61,29 @@ export function StudyProgressPage() {
       active = false;
     };
   }, [retry]);
+  const printUnavailable = error
+    ? 'Relatório indisponível por erro no carregamento.'
+    : !data
+      ? 'Aguarde o carregamento para imprimir.'
+      : data.activeDays === 0
+        ? 'Nenhuma atividade para imprimir.'
+        : '';
   return (
     <section
-      className="study-progress evolution-surface"
+      className="study-progress evolution-surface study-report"
       aria-labelledby="study-progress-title"
     >
       <ProgressHeader
         title="Seu progresso"
         titleId="study-progress-title"
         current="progress"
+        printUnavailable={printUnavailable}
+        printPeriod={
+          data
+            ? `Histórico rastreado de ${date(data.trackingStartedAt, data.timeZone)} a ${date(data.today, 'UTC')}`
+            : undefined
+        }
+        timeZone={data?.timeZone}
         description="Cada dia de estudo faz parte da sua evolução. Acompanhe sua constância e os marcos que já alcançou."
       />
       {error ? (
