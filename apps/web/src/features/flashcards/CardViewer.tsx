@@ -23,6 +23,14 @@ export function CardViewer({
     <Card asChild>
       <section className="flashcard-panel" aria-label="Consulta do cartão">
         <CardHeader>
+          <Button
+            type="button"
+            variant="outline"
+            className="justify-self-start"
+            onClick={onClose}
+          >
+            ← Voltar
+          </Button>
           <h3 tabIndex={-1} ref={heading}>
             Frente
           </h3>
@@ -44,9 +52,6 @@ export function CardViewer({
               onClick={() => setRevealed(!revealed)}
             >
               {revealed ? 'Mostrar frente' : 'Revelar resposta'}
-            </Button>
-            <Button type="button" onClick={onClose}>
-              Fechar cartão
             </Button>
           </div>
         </CardContent>

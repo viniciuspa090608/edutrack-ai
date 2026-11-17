@@ -30,6 +30,9 @@ export class FlashcardsService {
     private readonly prefs?: Pick<PreferencesService, 'requireEnabled'>,
     private readonly clock = () => new Date(),
   ) {}
+  dashboardDecks(userId: string) {
+    return this.repository.dashboardDecks(userId);
+  }
   confirmGenerated(
     userId: string,
     deckId: string,

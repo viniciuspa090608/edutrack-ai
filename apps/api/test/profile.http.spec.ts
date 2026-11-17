@@ -134,6 +134,8 @@ describe('own profile and module preferences on MySQL', () => {
       subjects: false,
       flashcards: false,
       ai: true,
+      pomodoro: true,
+      reports: true,
     });
     expect(
       (
@@ -307,6 +309,8 @@ describe('own profile and module preferences on MySQL', () => {
       subjects: true,
       flashcards: true,
       ai: false,
+      pomodoro: true,
+      reports: true,
     };
     expect(await prefs.read(a.id)).toEqual(initial);
     const before = await users.userById(a.id);
@@ -338,6 +342,52 @@ describe('own profile and module preferences on MySQL', () => {
     expect(
       (await request(app).get('/tasks').set('Cookie', a.cookie)).status,
     ).toBe(200);
+  });
+  it('persists Pomodoro and report preferences independently and gates Pomodoro across sessions', async () => {
+    const a = await account();
+    const b = await account();
+    const history = '/pomodoro/sessions';
+    const session = await request(app)
+      .post(history)
+      .set('Origin', env.WEB_ORIGIN)
+      .set('Cookie', a.cookie)
+      .send({});
+    expect(session.status).toBe(201);
+    const cancelled = await request(app)
+      .post(`${history}/${session.body.id}/cancel`)
+      .set('Origin', env.WEB_ORIGIN)
+      .set('Cookie', a.cookie)
+      .send({ version: session.body.version });
+    expect(cancelled.status).toBe(200);
+    const original = await request(app).get(history).set('Cookie', a.cookie);
+    expect(original.status).toBe(200);
+    expect(original.body.items).toHaveLength(1);
+    expect(
+      (await patch('/preferences', a.cookie, { pomodoro: false })).body,
+    ).toMatchObject({ pomodoro: false, reports: true });
+    expect(
+      (await patch('/preferences', a.cookie, { reports: false })).body,
+    ).toMatchObject({ pomodoro: false, reports: false });
+    const cookie = `edutrack_session=${await sessions.create(a.id)}`;
+    expect((await request(app).get(history).set('Cookie', cookie)).status).toBe(
+      403,
+    );
+    expect(
+      (await request(app).get('/study-progress').set('Cookie', cookie)).status,
+    ).toBe(200);
+    expect(await prefs.read(b.id)).toMatchObject({
+      pomodoro: true,
+      reports: true,
+    });
+    expect(
+      (await patch('/preferences', cookie, { pomodoro: true })).status,
+    ).toBe(200);
+    const restored = await request(app).get(history).set('Cookie', cookie);
+    expect(restored.status).toBe(200);
+    expect(restored.body).toEqual({
+      ...original.body,
+      items: [{ ...original.body.items[0], serverTime: expect.any(String) }],
+    });
   });
   it('guards reads/writes and AI before any data/provider work and fails closed', async () => {
     const a = await account();

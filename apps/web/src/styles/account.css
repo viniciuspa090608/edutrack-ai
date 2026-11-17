@@ -482,14 +482,10 @@
 }
 .account-area .account-preferences > [data-slot='card-content'] {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
 }
 .account-area .account-preference {
   margin-top: 0;
-}
-.account-area .account-preference:last-child {
-  grid-column: 1 / -1;
 }
 .account-timezone {
   padding-inline: 24px;
@@ -526,17 +522,9 @@
   width: 0.5rem;
   height: 0.5rem;
 }
-@media (max-width: 600px) {
-  .account-area .account-preferences > [data-slot='card-content'] {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
 #account-ai [data-slot='radio-group-item'] {
   min-height: 1rem;
   height: 1rem;
-}
-.account-area .account-preferences > [data-slot='card-content'] > p {
-  grid-column: 1 / -1;
 }
 
 .account-photo-editor #photo-rules {
@@ -702,4 +690,19 @@
 .account-google-identity h3,
 .account-google-identity p {
   margin: 0;
+}
+.account-preferences-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+@media (max-width: 640px) {
+  .account-preferences-grid {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  }
+}
+
+.account-area .account-google-identity h3 + p {
+  margin-block: 0;
 }

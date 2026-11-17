@@ -203,6 +203,12 @@ export function createApp({
       new StudyProgressRepository(source),
       progressClock,
     );
+    const flashcards = new FlashcardsService(
+      new FlashcardsRepository(source),
+      subjects,
+      prefs,
+      reviewClock,
+    );
     app.use(
       '/dashboard',
       dashboardRoutes(
@@ -214,6 +220,7 @@ export function createApp({
             subjects,
             pomodoro,
             reviews,
+            flashcards,
             progress,
             analytics: new AnalyticsService(source, prefs, dashboardClock),
           },
@@ -221,12 +228,6 @@ export function createApp({
         ),
         env,
       ),
-    );
-    const flashcards = new FlashcardsService(
-      new FlashcardsRepository(source),
-      subjects,
-      prefs,
-      reviewClock,
     );
     app.use(
       '/flashcard-decks',
@@ -299,6 +300,7 @@ export function createApp({
           subjects,
         ),
         env,
+        prefs,
       ),
     );
     app.use(

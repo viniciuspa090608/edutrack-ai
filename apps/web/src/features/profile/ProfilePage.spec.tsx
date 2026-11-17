@@ -52,7 +52,14 @@ beforeEach(() => {
     localPassword: true,
     avatarVersion: null,
   };
-  prefs = { tasks: true, subjects: true, flashcards: true, ai: false };
+  prefs = {
+    tasks: true,
+    subjects: true,
+    flashcards: true,
+    pomodoro: true,
+    reports: true,
+    ai: false,
+  };
   failed = '';
   loadFailed = '';
   mutationGate = null;
@@ -374,7 +381,14 @@ describe('profile page', () => {
     expect(screen.getByText('Google vinculado à sua conta.')).toBeTruthy();
   });
   it('refuses to disable the last study module even when AI is enabled', async () => {
-    prefs = { tasks: true, subjects: false, flashcards: false, ai: true };
+    prefs = {
+      tasks: true,
+      subjects: false,
+      flashcards: false,
+      ai: true,
+      pomodoro: true,
+      reports: true,
+    };
     await open();
     await userEvent
       .setup()

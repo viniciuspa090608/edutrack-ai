@@ -1,5 +1,6 @@
 import { useTransientMessage } from '../../components/useTransientMessage.js';
 import { useState } from 'react';
+import '../../styles/classroom.css';
 import {
   classroomSourceSchema,
   classroomCourseSchema,
@@ -29,7 +30,7 @@ export function ClassroomProvenance({
     [error, setError] = useState(''),
     [busy, setBusy] = useState(false);
   return (
-    <section>
+    <section className="classroom-provenance">
       <Button
         variant="outline"
         disabled={busy}

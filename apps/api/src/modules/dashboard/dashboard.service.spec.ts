@@ -12,10 +12,13 @@ it('bounds a slow producer and keeps independent sections without consulting dis
         subjects: false,
         flashcards: false,
         ai: false,
+        pomodoro: true,
+        reports: true,
       }),
     },
     tasks: { dashboardSummary: () => new Promise(() => {}) },
     subjects: { dashboardSummary: vi.fn(unavailable) },
+    flashcards: { dashboardDecks: vi.fn(unavailable) },
     reviews: { pending: vi.fn(unavailable) },
     pomodoro: {
       dashboardSummary: async () => ({ session: null, completedSessions: 0 }),

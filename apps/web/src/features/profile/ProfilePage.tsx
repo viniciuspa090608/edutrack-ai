@@ -194,6 +194,8 @@ export function ProfilePage({
     tasks: 'Tarefas',
     subjects: 'Matérias',
     flashcards: 'Flashcards',
+    pomodoro: 'Pomodoro',
+    reports: 'Relatório',
     ai: 'Recursos de IA',
   };
   const wait = Math.max(0, Math.ceil((waitUntil - now) / 1000));
@@ -422,14 +424,8 @@ export function ProfilePage({
                 </div>
                 <section
                   className="account-profile-group"
-                  aria-labelledby="account-profile-security-title"
+                  aria-labelledby="account-email-label"
                 >
-                  <h3 id="account-profile-security-title">
-                    Segurança da conta
-                  </h3>
-                  <p>
-                    Gerencie seu endereço de e-mail de acesso e recuperação.
-                  </p>
                   <strong id="account-email-label">Endereço de e-mail</strong>
                   <div
                     className="account-detail account-email-row"
@@ -470,61 +466,64 @@ export function ProfilePage({
               <CardContent>
                 <p>
                   Mantenha pelo menos um módulo de estudo ativo entre tarefas,
-                  matérias e flashcards. A IA não conta como módulo de estudo.
-                </p>
-                <p>
+                  matérias e flashcards. A IA não conta como módulo de estudo.{' '}
                   Desativar um módulo preserva seus dados. A IA é opcional e não
                   interfere no uso manual.
                 </p>
-                {(Object.keys(labels) as Capability[]).map((key) => (
-                  <div className="account-preference" key={key}>
-                    <Label>
-                      <Checkbox
-                        checked={prefs[key]}
-                        disabled={busy}
-                        onCheckedChange={(e) => {
-                          const enabled = e === true;
-                          void run(
-                            async () => {
-                              if (
-                                !hasEnabledStudyModule({
-                                  ...prefs,
+                <div className="account-preferences-grid">
+                  {(Object.keys(labels) as Capability[]).map((key) => (
+                    <div className="account-preference" key={key}>
+                      <Label>
+                        <Checkbox
+                          checked={prefs[key]}
+                          disabled={busy}
+                          onCheckedChange={(e) => {
+                            const enabled = e === true;
+                            void run(
+                              async () => {
+                                if (
+                                  !hasEnabledStudyModule({
+                                    ...prefs,
+                                    [key]: enabled,
+                                  })
+                                )
+                                  throw new Error(
+                                    'Mantenha pelo menos um módulo de estudo ativo: tarefas, matérias ou flashcards.',
+                                  );
+                                const saved = await api.updatePreferences({
                                   [key]: enabled,
-                                })
-                              )
-                                throw new Error(
-                                  'Mantenha pelo menos um módulo de estudo ativo: tarefas, matérias ou flashcards.',
+                                });
+                                setPrefs(saved);
+                                onPreferences(saved);
+                                window.dispatchEvent(
+                                  new Event('edutrack:preferences'),
                                 );
-                              const saved = await api.updatePreferences({
-                                [key]: enabled,
-                              });
-                              setPrefs(saved);
-                              onPreferences(saved);
-                              window.dispatchEvent(
-                                new Event('edutrack:preferences'),
-                              );
-                            },
-                            `${labels[key]} ${enabled ? 'ativado' : 'desativado'}.`,
-                          );
-                        }}
-                      />
-                      {labels[key]}
-                    </Label>
-                    {key === 'ai' ? (
-                      <small>
-                        Complemento opcional para Flashcards e Matérias. O uso
-                        depende das preferências e da disponibilidade do serviço
-                        de IA. Os recursos manuais continuam disponíveis.
-                      </small>
-                    ) : !moduleCatalog.find((m) => m.capability === key)
-                        ?.delivered ? (
-                      <small>
-                        Funcionalidade ainda não disponível. A preferência será
-                        aplicada quando for entregue.
-                      </small>
-                    ) : null}
-                  </div>
-                ))}
+                              },
+                              `${labels[key]} ${enabled ? 'ativado' : 'desativado'}.`,
+                            );
+                          }}
+                        />
+                        {labels[key]}
+                      </Label>
+                      {key === 'ai' ? (
+                        <small>
+                          Complemento opcional para Flashcards e Matérias. O uso
+                          depende das preferências e da disponibilidade do
+                          serviço de IA. Os recursos manuais continuam
+                          disponíveis.
+                        </small>
+                      ) : key !== 'pomodoro' &&
+                        key !== 'reports' &&
+                        !moduleCatalog.find((m) => m.capability === key)
+                          ?.delivered ? (
+                        <small>
+                          Funcionalidade ainda não disponível. A preferência
+                          será aplicada quando for entregue.
+                        </small>
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
               </CardContent>
             </section>
           </Card>

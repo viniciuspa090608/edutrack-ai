@@ -34,7 +34,14 @@ afterEach(() => {
 const empty: Dashboard = {
   asOf: '2026-10-05T12:00:00.000Z',
   timeZone: 'UTC',
-  preferences: { tasks: true, subjects: true, flashcards: true, ai: false },
+  preferences: {
+    tasks: true,
+    subjects: true,
+    flashcards: true,
+    pomodoro: true,
+    reports: true,
+    ai: false,
+  },
   tasks: {
     state: 'empty',
     data: {
@@ -44,7 +51,7 @@ const empty: Dashboard = {
     },
   },
   subjects: { state: 'empty', data: null },
-  flashcards: { state: 'empty', data: { pending: 0 } },
+  flashcards: { state: 'empty', data: { pending: 0, decks: [] } },
   pomodoro: { state: 'empty', data: { session: null, completedSessions: 0 } },
   streak: {
     state: 'empty',
@@ -223,6 +230,8 @@ it('omits disabled cards and refreshes visibility when preferences change in ano
       tasks: false,
       subjects: false,
       flashcards: false,
+      pomodoro: true,
+      reports: true,
       ai: false,
     },
   };

@@ -74,3 +74,12 @@ A integração SHALL importar somente metadados de turmas/atividades e links HTT
 #### Scenario: Importar com IA habilitada
 - **WHEN** a pessoa importa turmas com IA habilitada e o provedor de IA indisponível
 - **THEN** matérias/tarefas elegíveis são processadas sem chamar IA ou Drive e a integração não oferece geração de notas.
+
+### Requirement: Separação visual do aviso de origem
+
+O aviso apresentado abaixo de Consultar origem Google Classroom SHALL ter espaçamento vertical visível em relação ao botão.
+
+#### Scenario: Separação visual do aviso de origem
+
+- **WHEN** a consulta informa que o registro não tem origem Google Classroom
+- **THEN** o aviso aparece separado do botão.

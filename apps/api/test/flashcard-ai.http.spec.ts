@@ -151,8 +151,13 @@ it('applies and reverses confirmation migration with real isolated MySQL without
   expect(
     await source.query("SHOW TABLES LIKE 'flashcard_ai_confirmations'"),
   ).toEqual([]);
-  expect(await count(a)).toBe(1);
+  expect(
+    await source.query('SELECT id FROM flashcards WHERE deck_id = ?', [
+      a.deckId,
+    ]),
+  ).toEqual([{ id: a.preexisting.id }]);
   expect(await source.runMigrations()).toHaveLength(1 + later);
+  expect(await count(a)).toBe(1);
   await expect(
     source.query(
       'INSERT INTO flashcard_ai_confirmations (generation_id,user_id,deck_id,result) VALUES (?,?,?,?)',

@@ -9,13 +9,13 @@ Plataforma de estudos com autenticação local ou Google, tarefas e subtarefas, 
 
 ## Tecnologias Utilizadas
 
-| Área | Tecnologias e uso |
-| --- | --- |
-| Frontend | React para a interface, Vite para desenvolvimento e build, e Tailwind CSS para estilos. |
-| Backend | Node.js e Express para a API HTTP. |
-| Banco de dados | MySQL para persistência, com TypeORM para acesso aos dados e migrations. |
+| Área                  | Tecnologias e uso                                                                              |
+| --------------------- | ---------------------------------------------------------------------------------------------- |
+| Frontend              | React para a interface, Vite para desenvolvimento e build, e Tailwind CSS para estilos.        |
+| Backend               | Node.js e Express para a API HTTP.                                                             |
+| Banco de dados        | MySQL para persistência, com TypeORM para acesso aos dados e migrations.                       |
 | Linguagem e contratos | TypeScript na aplicação e Zod para validação de dados e definição de contratos compartilhados. |
-| Monorepo e qualidade | pnpm workspaces para gerenciar os pacotes, ESLint para análise de código e Vitest para testes. |
+| Monorepo e qualidade  | pnpm workspaces para gerenciar os pacotes, ESLint para análise de código e Vitest para testes. |
 
 ## Git e conclusão de mudanças OpenSpec
 
@@ -330,11 +330,13 @@ Produtor, evento e concessões participam da mesma transação, com bloqueio por
 
 ## Dashboard pessoal
 
-`/app` reúne os resumos após confirmar a sessão. `GET /dashboard` deriva a conta da sessão, rejeita parâmetros de proprietário e lê preferências antes de consultar os serviços públicos habilitados. Seções usam `ready`, `empty` ou `error`; módulos de tarefas, matérias e flashcards desativados são omitidos, inclusive seus links. Reativação recupera dados preservados. Foco da janela, retorno à aba visível e mudanças de preferência atualizam a leitura. Falhas ficam no cartão correspondente, com tentativa de recarga que preserva os valores dos demais cartões; falha de sessão ou preferências impede a composição. Consultas de seção têm limite de espera de cinco segundos. `asOf` identifica o instante aproximado, sem prometer snapshot global entre módulos.
+`/app` reúne os resumos após confirmar a sessão. `GET /dashboard` deriva a conta da sessão, rejeita parâmetros de proprietário e lê preferências antes de consultar os serviços públicos habilitados. Seções usam `ready`, `empty` ou `error`; módulos de tarefas, matérias e flashcards desativados são omitidos, inclusive seus links. Desativar Pomodoro também o oculta da Home e preserva seu histórico. Ocultar Relatório remove a entrada do menu e mantém o acesso por link direto. Reativação recupera dados preservados. Foco da janela, retorno à aba visível e mudanças de preferência atualizam a leitura. Falhas ficam no cartão correspondente, com tentativa de recarga que preserva os valores dos demais cartões; falha de sessão ou preferências impede a composição. Consultas de seção têm limite de espera de cinco segundos. `asOf` identifica o instante aproximado, sem prometer snapshot global entre módulos.
 
 Tarefas mostram totais por status, até cinco não concluídas com prazo (`dueDate ASC, id ASC`) e o progresso oficial de subtarefas. Atraso usa a data civil no fuso salvo. Tarefas sem prazo permanecem acessíveis no módulo. Matérias priorizam estudo pendente por prazo crescente, depois atualização decrescente e ID crescente; sem pendências, destaca-se a mais recentemente atualizada, com empate por ID. O roadmap ativo mostrado é o mais recentemente criado, na mesma ordem pública do módulo; sem roadmap, aparece o plano manual. O link abre a matéria selecionada e focaliza o roadmap correspondente. IA desligada não oculta estudo salvo ou manual.
 
-Pomodoro informa sessão aberta e total de sessões `COMPLETED`, excluindo canceladas dessa contagem. **Iniciar Pomodoro** usa o comando público sem vínculos obrigatórios; **Retomar Pomodoro** abre a sessão atual. Conflito ou resposta de rede incerta provoca consulta da sessão atual antes de qualquer novo comando, evitando uma sessão dupla entre abas. Pendências vêm da fila oficial de repetição espaçada; sequência vem do módulo de progresso; semana ISO e métricas vêm de analytics no fuso de estudo salvo. Falha ao ler o fuso torna o resumo semanal indisponível sem simular UTC. As métricas semanais respeitam preferências e limites do histórico dos produtores.
+Aplique `AddPomodoroAndReportPreferences` com `pnpm db:migration:run` antes de iniciar a API atualizada. Os dois controles começam ativos nas contas novas e existentes.
+
+Pomodoro informa sessão aberta e total de sessões `COMPLETED`, excluindo canceladas dessa contagem. **Iniciar Pomodoro** usa o comando público sem vínculos obrigatórios; **Retomar Pomodoro** abre a sessão atual. Conflito ou resposta de rede incerta provoca consulta da sessão atual antes de qualquer novo comando, evitando uma sessão dupla entre abas. Pendências vêm da fila oficial de repetição espaçada e a prévia de baralhos é ordenada pelo total de cartões da conta; sequência vem do módulo de progresso; semana ISO e métricas vêm de analytics no fuso de estudo salvo. Falha ao ler o fuso torna o resumo semanal indisponível sem simular UTC. As métricas semanais respeitam preferências e limites do histórico dos produtores.
 
 Não há migration nem armazenamento próprios do dashboard. Aplique previamente as migrations dos módulos produtores. Rollback de código pode restaurar a área inicial mínima sem apagar dados de estudo. O layout funciona desde 320 px, com navegação por teclado, foco visível e preferência por movimento reduzido.
 

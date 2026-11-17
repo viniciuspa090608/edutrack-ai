@@ -569,6 +569,7 @@ export function SubjectsPage({
   const [error, setError] = useState('');
   const [success, setSuccess] = useTransientMessage();
   const [deleting, setDeleting] = useState(false);
+  const detailOpenedFromList = useRef(false);
   const newButton = useRef<HTMLButtonElement>(null);
   const heading = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
@@ -671,6 +672,31 @@ export function SubjectsPage({
         <Card asChild>
           <section className="subject-card subject-detail">
             <CardHeader>
+              <Button
+                variant="outline"
+                className="justify-self-start"
+                disabled={busy}
+                onClick={() => {
+                  if (
+                    new URLSearchParams(window.location.search).has(
+                      'subject',
+                    ) &&
+                    !detailOpenedFromList.current
+                  ) {
+                    const returnTo = window.history.state?.detailOrigin;
+                    navigate(returnTo === '/app' ? returnTo : '/app/materias');
+                    return;
+                  }
+                  const opener = document.getElementById(
+                    `subject-detail-${detail.id}`,
+                  );
+                  setDetail(null);
+                  setDeleting(false);
+                  (opener ?? newButton.current)?.focus();
+                }}
+              >
+                ← Voltar
+              </Button>
               <span className="subject-eyebrow">Sua matéria</span>
               <h2 ref={heading} tabIndex={-1}>
                 {detail.name}
@@ -732,17 +758,6 @@ export function SubjectsPage({
                 >
                   <Trash2 aria-hidden="true" />
                   Excluir matéria
-                </Button>
-                <Button
-                  variant="ghost"
-                  disabled={busy}
-                  onClick={() => {
-                    setDetail(null);
-                    setDeleting(false);
-                    newButton.current?.focus();
-                  }}
-                >
-                  Fechar detalhe
                 </Button>
               </div>
               {deleting && (
@@ -878,6 +893,7 @@ export function SubjectsPage({
                         </span>
                       </div>
                       <Button
+                        id={`subject-detail-${subject.id}`}
                         disabled={busy}
                         onClick={async () => {
                           setBusy(true);
@@ -887,7 +903,9 @@ export function SubjectsPage({
                           setDetail(null);
                           setDeleting(false);
                           try {
-                            setDetail(await subjectDetail(subject.id));
+                            const selected = await subjectDetail(subject.id);
+                            detailOpenedFromList.current = true;
+                            setDetail(selected);
                           } catch (cause) {
                             setError(failure(cause));
                           } finally {

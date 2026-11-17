@@ -37,5 +37,12 @@ export function navigatePrivateLink(event: MouseEvent<HTMLElement>) {
     return;
   event.preventDefault();
   if (url.href === window.location.href) return;
-  navigate(url.pathname + url.search + url.hash);
+  const detailOrigin =
+    window.location.pathname === '/app' &&
+    url.pathname === '/app/materias' &&
+    url.searchParams.has('subject');
+  navigate(
+    url.pathname + url.search + url.hash,
+    detailOrigin ? { detailOrigin: '/app' } : undefined,
+  );
 }

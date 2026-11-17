@@ -208,12 +208,18 @@ it('offers AI only when enabled, keeping manual and import actions available on 
     await screen.findByRole('button', { name: 'Aprimorar com IA' }),
   ).toBeTruthy();
 });
+async function chooseCardAction(name: string, index = 0) {
+  await userEvent.click(
+    screen.getAllByRole('button', { name: 'Ações' })[index]!,
+  );
+  const dialog = await screen.findByRole('dialog', { name: 'Ações do cartão' });
+  await userEvent.click(within(dialog).getByRole('button', { name }));
+}
+
 it('reveals by keyboard only, resets when changing cards and never writes during consultation', async () => {
   render(<FlashcardsPage subjectsEnabled={false} />);
   await openDeck();
-  await userEvent.click(
-    screen.getAllByRole('button', { name: 'Abrir cartão' })[0]!,
-  );
+  await chooseCardAction('Abrir cartão');
   await screen.findByRole('region', { name: 'Consulta do cartão' });
   expect(screen.queryByText('Resposta secreta 1')).toBeNull();
   const interaction = userEvent.setup();
@@ -231,9 +237,7 @@ it('reveals by keyboard only, resets when changing cards and never writes during
   await interaction.click(
     screen.getByRole('button', { name: 'Revelar resposta' }),
   );
-  await interaction.click(
-    screen.getAllByRole('button', { name: 'Abrir cartão' })[1]!,
-  );
+  await chooseCardAction('Abrir cartão', 1);
   await waitFor(() =>
     expect(
       within(
@@ -282,15 +286,11 @@ it('confirms deletions, preserves data on cancellation/failure and describes dec
   render(<FlashcardsPage subjectsEnabled={false} />);
   await openDeck();
   const interaction = userEvent.setup();
-  await interaction.click(
-    screen.getAllByRole('button', { name: 'Excluir cartão' })[0]!,
-  );
+  await chooseCardAction('Excluir cartão');
   await interaction.click(screen.getByRole('button', { name: 'Cancelar' }));
   expect(cards).toHaveLength(2);
   expect(calls.some((call) => call.method === 'DELETE')).toBe(false);
-  await interaction.click(
-    screen.getAllByRole('button', { name: 'Excluir cartão' })[0]!,
-  );
+  await chooseCardAction('Excluir cartão');
   failed = 'DELETE';
   await interaction.click(
     screen.getByRole('button', { name: 'Confirmar exclusão' }),
@@ -406,9 +406,7 @@ it('edits cards without losing the front and reloads confirmed values', async ()
   render(<FlashcardsPage subjectsEnabled={false} />);
   await openDeck();
   const interaction = userEvent.setup();
-  await interaction.click(
-    screen.getAllByRole('button', { name: 'Editar cartão' })[0]!,
-  );
+  await chooseCardAction('Editar cartão');
   const form = await screen.findByRole('form', { name: 'Editar cartão' });
   await interaction.clear(within(form).getByLabelText('Verso'));
   await interaction.type(
@@ -423,9 +421,7 @@ it('edits cards without losing the front and reloads confirmed values', async ()
     front: 'Pergunta 1',
     back: 'Resposta editada',
   });
-  await interaction.click(
-    screen.getAllByRole('button', { name: 'Abrir cartão' })[0]!,
-  );
+  await chooseCardAction('Abrir cartão');
   await interaction.click(
     await screen.findByRole('button', { name: 'Revelar resposta' }),
   );
@@ -490,9 +486,7 @@ it('filters baralhos and opens the aggregate study overview for a subject', asyn
   expect(
     screen.getByRole('region', { name: 'Baralhos vinculados' }),
   ).toBeTruthy();
-  await userEvent.click(
-    screen.getByRole('button', { name: 'Voltar a Baralhos' }),
-  );
+  await userEvent.click(screen.getByRole('button', { name: '← Voltar' }));
   await screen.findByRole('heading', { name: 'Baralhos' });
 });
 it('paginates decks and cards, distinguishes card load failure and empty deck', async () => {

@@ -11,6 +11,7 @@ import {
   requireOrigin,
   requireSession,
 } from '../auth/auth.routes.js';
+import type { PreferencesService } from '../preferences/preferences.service.js';
 import type { AuthService } from '../auth/auth.service.js';
 import { PomodoroConflict, PomodoroService } from './pomodoro.service.js';
 
@@ -18,9 +19,17 @@ export function pomodoroRoutes(
   auth: AuthService,
   service: PomodoroService,
   env: ApiEnv,
+  preferences: PreferencesService,
 ) {
   const router = Router();
   router.use(requireSession(auth, env));
+  router.use(async (_req, res, next) => {
+    await preferences.requireEnabled(
+      authenticatedSession(res).userId,
+      'pomodoro',
+    );
+    next();
+  });
   router.use((_req, res, next) => {
     res.setHeader('Cache-Control', 'private, no-store');
     next();

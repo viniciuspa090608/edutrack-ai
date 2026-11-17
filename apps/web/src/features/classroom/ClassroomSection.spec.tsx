@@ -4,7 +4,14 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { ClassroomSection } from './ClassroomSection.js';
 import { OnboardingGate } from './OnboardingGate.js';
 
-const prefs = { tasks: true, subjects: false, flashcards: true, ai: false };
+const prefs = {
+  tasks: true,
+  subjects: false,
+  flashcards: true,
+  pomodoro: true,
+  reports: true,
+  ai: false,
+};
 const connection = {
   available: true,
   state: 'connected',

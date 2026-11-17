@@ -129,3 +129,12 @@ Quando confirmar ausência de baralhos cadastrados, Flashcards SHALL mostrar um 
 #### Scenario: Coleção vazia e resultado filtrado
 - **WHEN** a consulta termina com a coleção realmente vazia
 - **THEN** o estado oferece criação. Se houver baralhos e apenas o filtro não encontrar resultados, a interface identifica a ausência de resultados do filtro. Carregamento e erro têm tratamento próprio.
+
+### Requirement: Ações do cartão em modal
+
+Cada cartão na lista SHALL oferecer um botão Ações que abre um modal com Abrir cartão, Histórico do cartão, Editar cartão e Excluir cartão, mantendo o comportamento de cada ação e a confirmação de exclusão.
+
+#### Scenario: Ações do cartão em modal
+
+- **WHEN** a pessoa aciona Ações em um cartão
+- **THEN** vê as quatro opções para o cartão selecionado e consegue operá-las por teclado.

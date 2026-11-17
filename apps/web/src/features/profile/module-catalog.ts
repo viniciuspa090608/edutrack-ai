@@ -1,7 +1,7 @@
 import type { Capability, ModulePreferences } from '@study-platform/contracts';
 
 export const moduleCatalog: ReadonlyArray<{
-  capability: Exclude<Capability, 'ai'>;
+  capability: Extract<Capability, 'tasks' | 'subjects' | 'flashcards'>;
   path: string;
   label: string;
   delivered: boolean;
@@ -37,7 +37,7 @@ export function moduleAtPath(path: string) {
 }
 export function canUseAI(
   prefs: ModulePreferences,
-  module: Exclude<Capability, 'ai'>,
+  module: (typeof moduleCatalog)[number]['capability'],
   delivered: boolean,
 ): boolean {
   return delivered && prefs[module] && prefs.ai;

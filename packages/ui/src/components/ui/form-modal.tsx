@@ -19,12 +19,14 @@ export function FormModal({
   title,
   dirty,
   busy,
+  returnFocusId,
   onClose,
   children,
 }: {
   title: string;
   dirty: boolean;
   busy: boolean;
+  returnFocusId?: string;
   onClose: () => void;
   children: (requestClose: () => void) => ReactNode;
 }) {
@@ -69,7 +71,10 @@ export function FormModal({
           }}
           onCloseAutoFocus={(event) => {
             event.preventDefault();
-            if (opener?.isConnected) opener.focus();
+            const target = returnFocusId
+              ? document.getElementById(returnFocusId)
+              : opener;
+            if (target?.isConnected) target.focus();
             else
               document
                 .querySelector<HTMLElement>(
@@ -85,12 +90,14 @@ export function FormModal({
             type="button"
             variant="ghost"
             size="icon"
-            className="form-modal-close"
+            className="form-modal-close modal-close"
             aria-label="Fechar formulário"
             disabled={busy}
             onClick={requestClose}
           >
-            ×
+            <span className="modal-close-icon" aria-hidden="true">
+              ×
+            </span>
           </Button>
           <DialogDescription className="sr-only">
             Preencha os dados e salve ou cancele.

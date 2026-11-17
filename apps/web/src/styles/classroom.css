@@ -116,3 +116,10 @@
   flex-wrap: wrap;
   gap: 8px;
 }
+.classroom-provenance > button + :is(p, div) {
+  margin-block-start: 0.75rem;
+}
+
+.classroom-section .classroom-title-row + p {
+  margin-block: 0;
+}

@@ -250,10 +250,17 @@ export function PrivatePage({
             ) : page === 'rotinas' ? (
               <RoutinesPage />
             ) : page === 'pomodoro' ? (
-              <PomodoroPage
-                tasksEnabled={prefs?.tasks ?? false}
-                subjectsEnabled={prefs?.subjects ?? false}
-              />
+              prefs?.pomodoro === false ? (
+                <p>
+                  Pomodoro desativado.{' '}
+                  <a href="/conta#account-preferences">Ver preferências</a>
+                </p>
+              ) : (
+                <PomodoroPage
+                  tasksEnabled={prefs?.tasks ?? false}
+                  subjectsEnabled={prefs?.subjects ?? false}
+                />
+              )
             ) : page === 'app' ? (
               <DashboardPage displayName={user.displayName ?? user.email} />
             ) : page === 'module' ? (
@@ -263,7 +270,9 @@ export function PrivatePage({
                     ? 'subjects-module'
                     : window.location.pathname === '/app/tarefas'
                       ? 'tasks-module'
-                      : undefined
+                      : window.location.pathname === '/app/flashcards'
+                        ? 'flashcards-module'
+                        : undefined
                 }
               >
                 <h1>{moduleAtPath(window.location.pathname)?.label}</h1>

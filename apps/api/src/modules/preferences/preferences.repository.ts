@@ -7,6 +7,8 @@ const columns = {
   subjects: 'subjects_enabled',
   flashcards: 'flashcards_enabled',
   ai: 'ai_enabled',
+  pomodoro: 'pomodoro_enabled',
+  reports: 'reports_visible',
 } as const;
 export class PreferencesRepository {
   constructor(private readonly source: DataSource) {}
@@ -31,7 +33,7 @@ export class PreferencesRepository {
     const rows = await (transaction ?? this.source).query<
       Array<Record<string, number>>
     >(
-      `SELECT tasks_enabled, subjects_enabled, flashcards_enabled, ai_enabled FROM user_preferences WHERE user_id = ?${transaction ? ' FOR UPDATE' : ''}`,
+      `SELECT ${Object.values(columns).join(', ')} FROM user_preferences WHERE user_id = ?${transaction ? ' FOR UPDATE' : ''}`,
       [userId],
     );
     if (!rows[0])

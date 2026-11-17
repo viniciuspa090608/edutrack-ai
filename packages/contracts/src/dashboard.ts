@@ -9,6 +9,8 @@ const modulePreferencesSchema = z
     subjects: z.boolean(),
     flashcards: z.boolean(),
     ai: z.boolean(),
+    pomodoro: z.boolean().default(true),
+    reports: z.boolean().default(true),
   })
   .strict();
 const count = z.number().int().nonnegative();
@@ -60,7 +62,15 @@ export const dashboardSchema = z
       dashboardSubjectSchema.nullable(),
     ).optional(),
     flashcards: dashboardSectionSchema(
-      z.object({ pending: count }).strict(),
+      z
+        .object({
+          pending: count,
+          decks: z
+            .array(z.object({ id: z.string(), name: z.string() }).strict())
+            .max(5)
+            .default([]),
+        })
+        .strict(),
     ).optional(),
     pomodoro: dashboardSectionSchema(dashboardPomodoroSchema),
     streak: dashboardSectionSchema(studyProgressSchema),

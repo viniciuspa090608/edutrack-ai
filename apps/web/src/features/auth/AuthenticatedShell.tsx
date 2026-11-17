@@ -19,6 +19,7 @@ import {
 } from '@study-platform/ui/components/ui/sheet';
 import {
   BookOpen,
+  Sparkles,
   CalendarDays,
   ChartNoAxesCombined,
   ClipboardList,
@@ -55,7 +56,7 @@ const moduleIcons = {
 };
 type Destination = { path: string; label: string; icon: LucideIcon };
 const home: Destination = { path: '/app', label: 'Início', icon: House };
-const secondary: Destination[] = [
+const secondaryDestinations: Destination[] = [
   { path: '/app/pomodoro', label: 'Pomodoro', icon: Timer },
   { path: '/app/rotinas', label: 'Rotinas', icon: CalendarDays },
   {
@@ -63,9 +64,21 @@ const secondary: Destination[] = [
     label: 'Relatório',
     icon: ChartNoAxesCombined,
   },
+  { path: '/conta#account-ai', label: 'IA', icon: Sparkles },
   { path: '/conta', label: 'Conta', icon: UserRound },
 ];
-function activeDestination(item: Destination, pathname: string) {
+function activeDestination(
+  item: Destination,
+  pathname: string,
+  mobile = false,
+) {
+  if (
+    !mobile &&
+    pathname === '/conta' &&
+    window.location.hash === '#account-ai'
+  ) {
+    return item.path === '/conta#account-ai';
+  }
   return (
     item.path === pathname ||
     (item.path === '/app/progresso' && pathname === '/app/estatisticas') ||
@@ -86,7 +99,9 @@ function DestinationLink({
     <a
       className="shell-nav-link"
       href={item.path}
-      aria-current={activeDestination(item, pathname) ? 'page' : undefined}
+      aria-current={
+        activeDestination(item, pathname, close) ? 'page' : undefined
+      }
     >
       <Icon aria-hidden="true" />
       <span>{item.label}</span>
@@ -130,8 +145,28 @@ export function AuthenticatedShell({
         }))
       : []),
   ];
+  const secondary = secondaryDestinations.filter(
+    ({ path }) =>
+      (desktop || path !== '/conta#account-ai') &&
+      (path !== '/app/pomodoro' || prefs?.pomodoro !== false) &&
+      (path !== '/app/progresso' || prefs?.reports !== false),
+  );
+  const desktopOrder = [
+    '/app',
+    '/app/materias',
+    '/app/tarefas',
+    '/app/flashcards',
+    '/app/rotinas',
+    '/app/pomodoro',
+    '/app/progresso',
+    '/conta#account-ai',
+    '/conta',
+  ];
+  const desktopDestinations = [...primary, ...secondary].sort(
+    (a, b) => desktopOrder.indexOf(a.path) - desktopOrder.indexOf(b.path),
+  );
   const moreActive = secondary.some((item) =>
-    activeDestination(item, pathname),
+    activeDestination(item, pathname, true),
   );
   useEffect(() => {
     if (desktop) setMoreOpen(false);
@@ -199,7 +234,7 @@ export function AuthenticatedShell({
             aria-label="Navegação da área pessoal"
           >
             <nav aria-label="Área pessoal">
-              {[...primary, ...secondary].map((item) => (
+              {desktopDestinations.map((item) => (
                 <DestinationLink
                   key={item.path}
                   item={item}

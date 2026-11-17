@@ -58,6 +58,13 @@ const cardDto = (row: CardRow) => ({
   updatedAt: row.updated_at.toISOString(),
 });
 export class FlashcardsRepository {
+  dashboardDecks(userId: string) {
+    return this.source.query<Array<{ id: string; name: string }>>(
+      'SELECT d.id, d.name FROM flashcard_decks d LEFT JOIN flashcards c ON c.deck_id = d.id WHERE d.user_id = ? GROUP BY d.id, d.name ORDER BY COUNT(c.id) DESC, d.id ASC LIMIT 5',
+      [userId],
+    );
+  }
+
   constructor(private readonly source: DataSource) {}
   confirmGenerated(
     userId: string,

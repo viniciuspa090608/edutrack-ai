@@ -1,4 +1,12 @@
 import { useTransientMessage } from '../../components/useTransientMessage.js';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  DialogTrigger,
+} from '@study-platform/ui/components/ui/dialog';
 import { Layers } from 'lucide-react';
 import {
   Pagination as PaginationRoot,
@@ -105,6 +113,7 @@ export function FlashcardsPage({
   const [listError, setListError] = useState('');
   const [cardsError, setCardsError] = useState('');
   const [error, setError] = useState('');
+  const [reviewToast, setReviewToast] = useTransientMessage();
   const [success, setSuccess] = useTransientMessage();
   const [busy, setBusy] = useState(false);
   const [deckForm, setDeckForm] = useState(false);
@@ -124,7 +133,7 @@ export function FlashcardsPage({
   const filter = subjectsEnabled ? subjectFilter : '';
   const studySubject = subjectsEnabled ? subjectStudy : null;
   const title = deck?.name ?? studySubject?.name;
-  const studySubjectId = studySubject?.id;
+  const studySubjectId = deck ? undefined : studySubject?.id;
   const [generating, setGenerating] = useState(false);
   const [historyCard, setHistoryCard] = useState<{
     deckId: string;
@@ -138,11 +147,9 @@ export function FlashcardsPage({
   const request = useRef(0);
   const heading = useRef<HTMLHeadingElement>(null);
   const wasImporting = useRef(false);
-  const wasReviewing = useRef(false);
   useEffect(() => {
-    if (wasReviewing.current && !reviewing) heading.current?.focus();
-    wasReviewing.current = reviewing;
-  }, [reviewing]);
+    if (title && !reviewing) heading.current?.focus();
+  }, [title, reviewing]);
   useEffect(() => {
     if (wasImporting.current && !importing)
       document.getElementById('start-import')?.focus();
@@ -231,7 +238,6 @@ export function FlashcardsPage({
       const result = await deckDetail(id);
       if (token === request.current) {
         setDeck(result);
-        setSubjectStudy(null);
         setCardPage(1);
       }
     } catch {
@@ -284,13 +290,21 @@ export function FlashcardsPage({
   };
   if (reviewing && title)
     return (
-      <div className="flashcards-page">
+      <div className={`flashcards-page${deckId ? ' deck-review-page' : ''}`}>
         <ReviewQueue
           deckId={deckId}
           subjectId={studySubjectId}
           title={title}
           onClose={() => setReviewing(false)}
           onRated={() => setRevision((value) => value + 1)}
+          onComplete={
+            deckId
+              ? () => {
+                  setReviewing(false);
+                  setReviewToast('Revisão concluída');
+                }
+              : undefined
+          }
         />
       </div>
     );
@@ -304,15 +318,21 @@ export function FlashcardsPage({
             onClick={() => {
               request.current++;
               setBusy(false);
+              const destination = deck
+                ? `open-deck-${deck.id}`
+                : 'study-subject';
               setDeck(null);
-              setSubjectStudy(null);
+              if (!deck) setSubjectStudy(null);
               setViewing(null);
               setCardForm(false);
               setImporting(false);
               setError('');
+              requestAnimationFrame(() =>
+                document.getElementById(destination)?.focus(),
+              );
             }}
           >
-            Voltar a Baralhos
+            ← Voltar
           </Button>
           <section className="study-overview">
             <h2 ref={heading} tabIndex={-1}>
@@ -382,6 +402,7 @@ export function FlashcardsPage({
                 <Button
                   variant="outline"
                   disabled={busy}
+                  id="study-subject"
                   onClick={() => void openSubject(filter)}
                 >
                   Ver estudo desta matéria
@@ -436,7 +457,7 @@ export function FlashcardsPage({
             const id = historyCard.cardId;
             setHistoryCard(null);
             requestAnimationFrame(() =>
-              document.getElementById(`history-card-${id}`)?.focus(),
+              document.getElementById(`card-actions-${id}`)?.focus(),
             );
           }}
         />
@@ -445,6 +466,11 @@ export function FlashcardsPage({
         <Alert variant="destructive" role="alert">
           <AlertDescription>{error}</AlertDescription>
         </Alert>
+      )}
+      {reviewToast && (
+        <p className="flashcard-review-toast" role="status">
+          {reviewToast}
+        </p>
       )}
       {success && <p role="status">{success}</p>}
       {busy && (
@@ -536,6 +562,7 @@ export function FlashcardsPage({
                         <div className="deck-name">
                           <Button
                             variant="link"
+                            id={`open-deck-${item.id}`}
                             disabled={busy}
                             onClick={() => void openDeck(item.id)}
                           >
@@ -636,10 +663,7 @@ export function FlashcardsPage({
               key={editingCard?.id ?? 'new'}
               deckId={deck.id}
               card={editingCard}
-              onCancel={() => {
-                setCardForm(false);
-                document.getElementById('new-card')?.focus();
-              }}
+              onCancel={() => setCardForm(false)}
               onSaved={() => {
                 setCardForm(false);
                 setViewing(null);
@@ -654,7 +678,7 @@ export function FlashcardsPage({
               onClose={() => {
                 const id = viewing.id;
                 setViewing(null);
-                document.getElementById(`open-card-${id}`)?.focus();
+                document.getElementById(`card-actions-${id}`)?.focus();
               }}
             />
           )}
@@ -683,45 +707,66 @@ export function FlashcardsPage({
                     <li className="flashcard-panel">
                       <CardContent>
                         <p className="flashcard-text">{item.front}</p>
-                        <div className="flashcard-actions">
-                          <Button
-                            id={`open-card-${item.id}`}
-                            disabled={busy}
-                            onClick={() => void openCard(item.id, false)}
-                          >
-                            Abrir cartão
-                          </Button>
-                          <Button
-                            id={`history-card-${item.id}`}
-                            onClick={() =>
-                              setHistoryCard({
-                                deckId: deck.id,
-                                cardId: item.id,
-                              })
-                            }
-                          >
-                            Histórico do cartão
-                          </Button>
-                          <Button
-                            disabled={busy}
-                            onClick={() => void openCard(item.id, true)}
-                          >
-                            Editar cartão
-                          </Button>
-                          <Button
-                            id={`delete-card-${item.id}`}
-                            disabled={busy}
-                            onClick={() =>
-                              setConfirmation({
-                                deck,
-                                cardId: item.id,
-                                returnId: `delete-card-${item.id}`,
-                              })
-                            }
-                          >
-                            Excluir cartão
-                          </Button>
-                        </div>
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button
+                              id={`card-actions-${item.id}`}
+                              disabled={busy}
+                            >
+                              Ações
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogTitle>Ações do cartão</DialogTitle>
+                            <DialogDescription className="flashcard-text">
+                              {item.front}
+                            </DialogDescription>
+                            <div className="flashcard-actions">
+                              <DialogClose asChild>
+                                <Button
+                                  disabled={busy}
+                                  onClick={() => void openCard(item.id, false)}
+                                >
+                                  Abrir cartão
+                                </Button>
+                              </DialogClose>
+                              <DialogClose asChild>
+                                <Button
+                                  onClick={() =>
+                                    setHistoryCard({
+                                      deckId: deck.id,
+                                      cardId: item.id,
+                                    })
+                                  }
+                                >
+                                  Histórico do cartão
+                                </Button>
+                              </DialogClose>
+                              <DialogClose asChild>
+                                <Button
+                                  disabled={busy}
+                                  onClick={() => void openCard(item.id, true)}
+                                >
+                                  Editar cartão
+                                </Button>
+                              </DialogClose>
+                              <DialogClose asChild>
+                                <Button
+                                  disabled={busy}
+                                  onClick={() =>
+                                    setConfirmation({
+                                      deck,
+                                      cardId: item.id,
+                                      returnId: `card-actions-${item.id}`,
+                                    })
+                                  }
+                                >
+                                  Excluir cartão
+                                </Button>
+                              </DialogClose>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
                       </CardContent>
                     </li>
                   </Card>

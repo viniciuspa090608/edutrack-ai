@@ -294,6 +294,13 @@ it('uses official reviews, streak and local ISO week values and completed Pomodo
   const deck = (
     await write('post', '/flashcard-decks', a.cookie, { name: 'Baralho' })
   ).body;
+  const other = (
+    await write('post', '/flashcard-decks', a.cookie, { name: 'Sem cartões' })
+  ).body;
+  const foreign = await account();
+  await write('post', '/flashcard-decks', foreign.cookie, {
+    name: 'Baralho alheio',
+  });
   const card = await write(
     'post',
     `/flashcard-decks/${deck.id}/cards`,
@@ -326,6 +333,10 @@ it('uses official reviews, streak and local ISO week values and completed Pomodo
   expect(result.flashcards).toEqual({
     state: 'ready',
     data: {
+      decks: [
+        { id: deck.id, name: 'Baralho' },
+        { id: other.id, name: 'Sem cartões' },
+      ],
       pending: (await read('/flashcard-decks/reviews/pending', a.cookie)).body
         .total,
     },

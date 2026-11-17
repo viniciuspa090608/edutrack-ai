@@ -4,6 +4,22 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import type { ReviewEvent, ScheduledCard } from '@study-platform/contracts';
 import { ReviewQueue } from './ReviewQueue.js';
 
+it('signals completion only after the final rating is confirmed', async () => {
+  finishAfterRating = true;
+  postError = 'network';
+  const onComplete = vi.fn();
+  render(<ReviewQueue deckId={id} onClose={vi.fn()} onComplete={onComplete} />);
+  await userEvent.click(
+    await screen.findByRole('button', { name: 'Mostrar resposta' }),
+  );
+  await userEvent.click(screen.getByRole('button', { name: 'Bom' }));
+  await screen.findByRole('alert');
+  expect(onComplete).not.toHaveBeenCalled();
+  postError = '';
+  await userEvent.click(screen.getByRole('button', { name: 'Bom' }));
+  await vi.waitFor(() => expect(onComplete).toHaveBeenCalledTimes(1));
+});
+
 const id = '00000000-0000-4000-8000-000000000001';
 const other = '00000000-0000-4000-8000-000000000002';
 const now = '2026-09-26T12:00:00.000Z';
@@ -57,6 +73,7 @@ const event: ReviewEvent = {
     },
   },
 };
+let finishAfterRating: boolean;
 let queueError: boolean,
   postError: 'network' | 'conflict' | '',
   rated: boolean,
@@ -65,6 +82,7 @@ let queueError: boolean,
 const writes: Array<Record<string, unknown>> = [];
 const reads: string[] = [];
 beforeEach(() => {
+  finishAfterRating = false;
   queueError = false;
   postError = '';
   rated = false;
@@ -100,7 +118,8 @@ beforeEach(() => {
       reads.push(url.pathname + url.search);
       if (url.pathname.endsWith('/pending')) {
         if (queueError) throw new Error('offline');
-        const items = empty
+        const noPending = empty || (rated && finishAfterRating);
+        const items = noPending
           ? []
           : [
               {
@@ -120,8 +139,8 @@ beforeEach(() => {
           items,
           page,
           pageSize: 20,
-          total: empty ? 0 : rated ? 1 : 21,
-          totalPages: empty ? 0 : rated ? 1 : 2,
+          total: noPending ? 0 : rated ? 1 : 21,
+          totalPages: noPending ? 0 : rated ? 1 : 2,
         });
       }
       if (url.pathname.endsWith('/reviews')) {
@@ -183,6 +202,10 @@ it('reveals by keyboard and associates each rating with its interval without wri
   expect(screen.queryByText('Resposta secreta')).toBeNull();
   expect(document.activeElement?.textContent).toBe('Revisão');
   await user.tab();
+  await user.tab();
+  expect(document.activeElement?.getAttribute('aria-label')).toBe(
+    'Conteúdo do cartão',
+  );
   await user.tab();
   expect(document.activeElement?.textContent).toBe('Mostrar resposta');
   await user.keyboard('{Enter}');

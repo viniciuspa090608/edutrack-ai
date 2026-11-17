@@ -96,6 +96,8 @@ it('renders authenticated routines independently of tasks preferences', async ()
     tasks: false,
     subjects: true,
     flashcards: false,
+    pomodoro: true,
+    reports: true,
     ai: false,
   });
   render(<App />);

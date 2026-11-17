@@ -198,6 +198,7 @@ export function CardForm({
   return (
     <FormModal
       title={card ? 'Editar cartão' : 'Novo card de estudo'}
+      returnFocusId={card ? `card-actions-${card.id}` : 'new-card'}
       dirty={JSON.stringify([front, back]) !== initial.current}
       busy={busy}
       onClose={onCancel}

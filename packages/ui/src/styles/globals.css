@@ -158,6 +158,52 @@
   overflow-wrap: anywhere;
   background: var(--popover);
 }
+[data-slot='dialog-content'] {
+  max-block-size: calc(100dvh - 2rem);
+  overflow-y: auto;
+  overflow-wrap: anywhere;
+}
+
+[data-slot='dialog-content'] > [data-slot='card'],
+[data-slot='alert-dialog-content'] > [data-slot='card'] {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+}
+
+:is([data-slot='dialog-content'], [data-slot='alert-dialog-content'])
+  > [data-slot='card']
+  > :is(
+    [data-slot='card-header'],
+    [data-slot='card-content'],
+    [data-slot='card-footer']
+  ) {
+  padding-inline: 0;
+}
+
+.modal-close {
+  background: transparent;
+}
+
+.modal-close[data-slot='button']:hover,
+.modal-close:hover {
+  background: transparent;
+}
+
+.modal-close-icon {
+  display: grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 0.25rem;
+}
+
+.modal-close:hover .modal-close-icon {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
 .form-modal > * {
   min-width: 0;
 }

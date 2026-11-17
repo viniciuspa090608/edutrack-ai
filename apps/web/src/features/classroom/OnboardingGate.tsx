@@ -20,7 +20,7 @@ export function OnboardingGate({
   children: ReactNode;
 }) {
   const [step, setStep] = useState(initialStep ?? 'completed'),
-    [draft, setDraft] = useState<ModulePreferences>({
+    [draft, setDraft] = useState({
       tasks: true,
       subjects: true,
       flashcards: true,
@@ -33,7 +33,10 @@ export function OnboardingGate({
     heading.current?.focus();
   }, [step]);
   useEffect(() => {
-    if (prefs) setDraft(prefs);
+    if (prefs) {
+      const { tasks, subjects, flashcards, ai } = prefs;
+      setDraft({ tasks, subjects, flashcards, ai });
+    }
   }, [prefs]);
   async function advance(next: 'classroom' | 'completed') {
     setBusy(true);

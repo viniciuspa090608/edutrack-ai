@@ -177,3 +177,12 @@ A seção Segurança da conta SHALL exibir “Gerencie seu endereço de e-mail d
 #### Scenario: Nome e endereço em largura estreita
 - **WHEN** o campo e o botão não cabem na mesma linha ou o endereço é longo
 - **THEN** o botão pode passar para outra linha e a ação Alterar continua visível, sem rolagem horizontal.
+
+### Requirement: Textos e espaçamento da Conta
+
+Em Seu perfil, a EduTrack SHALL remover “Segurança da conta” e “Gerencie seu endereço de e-mail de acesso e recuperação.”, mantendo “Endereço de e-mail” e sua ação. Nos blocos Google e Google Classroom, SHALL reduzir o espaço vertical entre título e descrição.
+
+#### Scenario: Textos e espaçamento da Conta
+
+- **WHEN** a pessoa abre Conta
+- **THEN** o e-mail fica identificado pelo seu próprio título e as descrições de Google e Google Classroom aparecem próximas de seus respectivos títulos.

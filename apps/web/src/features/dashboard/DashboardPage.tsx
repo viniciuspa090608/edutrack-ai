@@ -56,7 +56,15 @@ const sectionIcons = {
   week: BarChart3,
 };
 const priorities = { LOW: 'Baixa', MEDIUM: 'Média', HIGH: 'Alta' };
-function DashboardTaskList({ children }: { children: ReactNode }) {
+function DashboardPreviewList({
+  children,
+  label,
+  blur = true,
+}: {
+  children: ReactNode;
+  label: string;
+  blur?: boolean;
+}) {
   const list = useRef<HTMLUListElement>(null);
   const [edges, setEdges] = useState({ above: false, below: false });
   const updateEdges = useCallback(() => {
@@ -82,13 +90,13 @@ function DashboardTaskList({ children }: { children: ReactNode }) {
   return (
     <div
       className="dashboard-task-scroll"
-      data-above={edges.above}
-      data-below={edges.below}
+      data-above={blur && edges.above}
+      data-below={blur && edges.below}
     >
       <ul
         ref={list}
         className="dashboard-task-list"
-        aria-label="Próximas tarefas"
+        aria-label={label}
         tabIndex={0}
         onScroll={updateEdges}
       >
@@ -391,40 +399,41 @@ export function DashboardPage({ displayName }: { displayName: string }) {
             )}
           </div>
           <div
-            className={`dashboard-grid${data.flashcards ? '' : ' dashboard-without-flashcards'}${data.tasks ? '' : ' dashboard-without-tasks'}`}
+            className={`dashboard-grid${data.flashcards ? '' : ' dashboard-without-flashcards'}${data.tasks ? '' : ' dashboard-without-tasks'}${data.preferences.pomodoro ? '' : ' dashboard-without-pomodoro'}`}
           >
-            {card(
-              'pomodoro',
-              'Pomodoro',
-              '/app/pomodoro',
-              <>
-                {pomo?.session ? (
-                  <DashboardPomodoro initial={pomo.session} />
-                ) : (
-                  <>
-                    <p>Comece um bloco de foco de 25 minutos.</p>
-                    <Button
-                      disabled={starting}
-                      onClick={() => {
-                        void begin();
-                      }}
-                    >
-                      {starting
-                        ? 'Consultando sessão…'
-                        : uncertain
-                          ? 'Consultar sessão e iniciar'
-                          : 'Iniciar Pomodoro'}
-                    </Button>
-                  </>
-                )}
-                {startError && (
-                  <Alert variant="destructive" role="alert">
-                    <AlertDescription>{startError}</AlertDescription>
-                  </Alert>
-                )}
-              </>,
-              pomo && <>{pomo.completedSessions} sessões concluídas.</>,
-            )}
+            {data.preferences.pomodoro &&
+              card(
+                'pomodoro',
+                'Pomodoro',
+                '/app/pomodoro',
+                <>
+                  {pomo?.session ? (
+                    <DashboardPomodoro initial={pomo.session} />
+                  ) : (
+                    <>
+                      <p>Comece um bloco de foco de 25 minutos.</p>
+                      <Button
+                        disabled={starting}
+                        onClick={() => {
+                          void begin();
+                        }}
+                      >
+                        {starting
+                          ? 'Consultando sessão…'
+                          : uncertain
+                            ? 'Consultar sessão e iniciar'
+                            : 'Iniciar Pomodoro'}
+                      </Button>
+                    </>
+                  )}
+                  {startError && (
+                    <Alert variant="destructive" role="alert">
+                      <AlertDescription>{startError}</AlertDescription>
+                    </Alert>
+                  )}
+                </>,
+                pomo && <>{pomo.completedSessions} sessões concluídas.</>,
+              )}
             {card(
               'tasks',
               'Tarefas',
@@ -441,7 +450,7 @@ export function DashboardPage({ displayName }: { displayName: string }) {
                 tasks && (
                   <>
                     {tasks.upcoming.length ? (
-                      <DashboardTaskList>
+                      <DashboardPreviewList label="Próximas tarefas">
                         {tasks.upcoming.map((task) => (
                           <li key={task.id}>
                             <strong>{task.title}</strong>
@@ -481,7 +490,7 @@ export function DashboardPage({ displayName }: { displayName: string }) {
                             </p>
                           </li>
                         ))}
-                      </DashboardTaskList>
+                      </DashboardPreviewList>
                     ) : (
                       <p>
                         {Object.values(tasks.counts).every(
@@ -508,32 +517,36 @@ export function DashboardPage({ displayName }: { displayName: string }) {
                 ? `/app/materias?subject=${encodeURIComponent(subject.id)}${subject.roadmapId ? `#roadmap-${encodeURIComponent(subject.roadmapId)}` : ''}`
                 : '/app/materias',
               subject ? (
-                <>
-                  <h3>{subject.name}</h3>
-                  <p>
-                    Prazo: {subject.dueDate}.{' '}
-                    {subject.hasPending
-                      ? 'Há estudo pendente.'
-                      : 'Sem pendências de estudo.'}
-                  </p>
-                  <p>
-                    {subject.title} ·{' '}
-                    {subject.source === 'roadmap' ? 'Roadmap' : 'Plano manual'}
-                  </p>
-                  <p>
-                    {subject.completed} de {subject.total} concluídos
-                    {subject.progressPercent !== null
-                      ? ` · ${subject.progressPercent.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`
-                      : ''}
-                    .
-                  </p>
-                  {subject.progressPercent !== null && (
-                    <Progress
-                      value={subject.progressPercent}
-                      aria-label={`Progresso de ${subject.name}`}
-                    />
-                  )}
-                </>
+                <DashboardPreviewList label="Matéria em destaque" blur={false}>
+                  <li>
+                    <h3>{subject.name}</h3>
+                    <p>
+                      Prazo: {subject.dueDate}.{' '}
+                      {subject.hasPending
+                        ? 'Há estudo pendente.'
+                        : 'Sem pendências de estudo.'}
+                    </p>
+                    <p>
+                      {subject.title} ·{' '}
+                      {subject.source === 'roadmap'
+                        ? 'Roadmap'
+                        : 'Plano manual'}
+                    </p>
+                    <p>
+                      {subject.completed} de {subject.total} concluídos
+                      {subject.progressPercent !== null
+                        ? ` · ${subject.progressPercent.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`
+                        : ''}
+                      .
+                    </p>
+                    {subject.progressPercent !== null && (
+                      <Progress
+                        value={subject.progressPercent}
+                        aria-label={`Progresso de ${subject.name}`}
+                      />
+                    )}
+                  </li>
+                </DashboardPreviewList>
               ) : subjectsEmpty ? (
                 <CollectionEmptyState
                   icon={<BookOpen />}
@@ -563,14 +576,23 @@ export function DashboardPage({ displayName }: { displayName: string }) {
               'flashcards',
               'Flashcards',
               '/app/flashcards',
-              <>
-                {pending === 0 && (
-                  <p>
-                    Abra flashcards para criar um baralho ou consultar seus
-                    cartões.
-                  </p>
-                )}
-              </>,
+              data.flashcards?.state !== 'error' &&
+                data.flashcards?.data.decks.length ? (
+                <DashboardPreviewList label="Principais baralhos">
+                  {data.flashcards.data.decks.map((deck) => (
+                    <li key={deck.id}>{deck.name}</li>
+                  ))}
+                </DashboardPreviewList>
+              ) : (
+                <>
+                  {pending === 0 && (
+                    <p>
+                      Abra flashcards para criar um baralho ou consultar seus
+                      cartões.
+                    </p>
+                  )}
+                </>
+              ),
               pending !== undefined && (
                 <>{pending} cartões pendentes de revisão.</>
               ),

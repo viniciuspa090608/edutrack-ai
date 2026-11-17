@@ -190,7 +190,10 @@ export function allowedReturnTo(
   return value === '/conta' ? '/conta' : '/app';
 }
 
-export function navigate(path: string): void {
-  window.history.pushState({}, '', path);
+export function navigate(
+  path: string,
+  state: Record<string, string> = {},
+): void {
+  window.history.pushState(state, '', path);
   window.dispatchEvent(new PopStateEvent('popstate'));
 }

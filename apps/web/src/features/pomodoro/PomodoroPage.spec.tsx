@@ -100,6 +100,8 @@ it('renders authenticated Pomodoro independently of disabled tasks', async () =>
     tasks: false,
     subjects: true,
     flashcards: false,
+    pomodoro: true,
+    reports: true,
     ai: false,
   });
   render(<App />);

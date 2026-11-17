@@ -111,6 +111,8 @@ const preferencesObjectSchema = z
     subjects: z.boolean(),
     flashcards: z.boolean(),
     ai: z.boolean(),
+    pomodoro: z.boolean(),
+    reports: z.boolean(),
   })
   .strict();
 export function hasEnabledStudyModule(value: {
@@ -120,10 +122,15 @@ export function hasEnabledStudyModule(value: {
 }): boolean {
   return value.tasks || value.subjects || value.flashcards;
 }
-export const preferencesSchema = preferencesObjectSchema.refine(
-  hasEnabledStudyModule,
-  'Mantenha pelo menos um módulo de estudo ativo.',
-);
+export const preferencesSchema = preferencesObjectSchema
+  .extend({
+    pomodoro: z.boolean().default(true),
+    reports: z.boolean().default(true),
+  })
+  .refine(
+    hasEnabledStudyModule,
+    'Mantenha pelo menos um módulo de estudo ativo.',
+  );
 export const preferencesUpdateSchema = preferencesObjectSchema
   .partial()
   .refine((v) => Object.keys(v).length > 0);

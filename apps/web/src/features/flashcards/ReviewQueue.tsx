@@ -4,6 +4,11 @@ import type {
   ReviewRating,
   ScheduledCard,
 } from '@study-platform/contracts';
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from '@study-platform/ui/components/ui/dialog';
 import { Button } from '@study-platform/ui/components/ui/button';
 import {
   Alert,
@@ -43,12 +48,14 @@ export function ReviewQueue({
   title = 'Revisão',
   onClose,
   onRated,
+  onComplete,
 }: {
   deckId?: string | undefined;
   subjectId?: string | undefined;
   title?: string;
   onClose: () => void;
   onRated?: () => void;
+  onComplete?: (() => void) | undefined;
 }) {
   const [session, setSession] = useState<ScheduledCard | null>(null);
   const [revealed, setRevealed] = useState(false);
@@ -64,6 +71,11 @@ export function ReviewQueue({
   const answer = useRef<HTMLParagraphElement>(null);
   const historyButton = useRef<HTMLButtonElement>(null);
   const request = useRef<ReviewRequest | null>(null);
+  const rated = useRef(false);
+  const completeCallback = useRef(onComplete);
+  useEffect(() => {
+    completeCallback.current = onComplete;
+  }, [onComplete]);
   const sending = useRef(false);
   const active = useRef(false);
 
@@ -100,6 +112,10 @@ export function ReviewQueue({
         if (!current) return;
         const next = items[0];
         if (!next) {
+          if (rated.current && completeCallback.current) {
+            completeCallback.current();
+            return;
+          }
           setComplete(true);
           return;
         }
@@ -147,6 +163,7 @@ export function ReviewQueue({
       setNotice(
         `Avaliação registrada. Próxima revisão: ${new Date(result.dueAt).toLocaleString()}.`,
       );
+      rated.current = true;
       setLoading(true);
       onRated?.();
       setAttempt((value) => value + 1);
@@ -219,7 +236,12 @@ export function ReviewQueue({
       )}
       {session && !loading && (
         <div className="review-stage">
-          <div className="review-reading">
+          <div
+            key={session.card.id}
+            className="review-reading"
+            tabIndex={deckId ? 0 : undefined}
+            aria-label={deckId ? 'Conteúdo do cartão' : undefined}
+          >
             <p className="flashcard-text">{session.card.front}</p>
             {revealed && (
               <div>
@@ -266,14 +288,29 @@ export function ReviewQueue({
         </div>
       )}
       {session && history && (
-        <ReviewHistory
-          deckId={session.card.deckId}
-          cardId={session.card.id}
-          onClose={() => {
-            setHistory(false);
-            historyButton.current?.focus();
+        <Dialog
+          open
+          onOpenChange={(open) => {
+            if (!open) setHistory(false);
           }}
-        />
+        >
+          <DialogContent
+            aria-describedby={undefined}
+            onCloseAutoFocus={(event) => {
+              event.preventDefault();
+              historyButton.current?.focus();
+            }}
+          >
+            <DialogTitle className="sr-only">Histórico de revisões</DialogTitle>
+            <ReviewHistory
+              deckId={session.card.deckId}
+              cardId={session.card.id}
+              onClose={() => {
+                setHistory(false);
+              }}
+            />
+          </DialogContent>
+        </Dialog>
       )}
     </section>
   );

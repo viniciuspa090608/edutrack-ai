@@ -33,6 +33,8 @@ const prefs: ModulePreferences = {
   tasks: true,
   subjects: true,
   flashcards: true,
+  pomodoro: true,
+  reports: true,
   ai: false,
 };
 let media: MediaQueryList;
@@ -116,12 +118,13 @@ function openShell(
 }
 const paths = [
   '/app',
-  '/app/tarefas',
   '/app/materias',
+  '/app/tarefas',
   '/app/flashcards',
-  '/app/pomodoro',
   '/app/rotinas',
+  '/app/pomodoro',
   '/app/progresso',
+  '/conta#account-ai',
   '/conta',
 ];
 describe('authenticated navigation', () => {
@@ -156,13 +159,17 @@ describe('authenticated navigation', () => {
         within(screen.getByRole('navigation', { name: 'Área pessoal' }))
           .getAllByRole('link')
           .map((x) => x.getAttribute('href')),
-      ).toEqual(expected.slice(0, expected.length - 4));
+      ).toEqual(
+        ['/app', '/app/tarefas', '/app/materias', '/app/flashcards'].filter(
+          (path) => expected.includes(path),
+        ),
+      );
       await userEvent.click(screen.getByRole('button', { name: 'Mais' }));
       expect(
         within(screen.getByRole('dialog'))
           .getAllByRole('link')
           .map((x) => x.getAttribute('href')),
-      ).toEqual(paths.slice(4));
+      ).toEqual(['/app/pomodoro', '/app/rotinas', '/app/progresso', '/conta']);
     },
   );
   it('keeps conditional modules absent when preferences are unavailable', () => {
@@ -178,7 +185,11 @@ describe('authenticated navigation', () => {
   it.each([...paths, '/app/estatisticas'])(
     'marks only the actual destination on %s and identifies routes inside More',
     async (path) => {
-      window.history.replaceState({}, '', `${path}?test=1#section`);
+      window.history.replaceState(
+        {},
+        '',
+        path.includes('#') ? path : `${path}?test=1#section`,
+      );
       openShell();
       expect(
         screen
@@ -203,7 +214,9 @@ describe('authenticated navigation', () => {
             .getByRole('dialog')
             .querySelector('[aria-current="page"]')
             ?.getAttribute('href'),
-        ).toBe(path === '/app/estatisticas' ? '/app/progresso' : path);
+        ).toBe(
+          path === '/app/estatisticas' ? '/app/progresso' : path.split('#')[0],
+        );
       } else
         expect(
           screen

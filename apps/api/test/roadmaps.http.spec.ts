@@ -219,9 +219,12 @@ it('applies and rolls back both migrations with preserved manual content and sim
     'subject_roadmap_steps',
   ])
     expect(await source.query(`SHOW TABLES LIKE '${table}'`)).toEqual([]);
-  expect((await read(`/subjects/${id}`, a.cookie)).body.planItems).toHaveLength(
-    1,
-  );
+  expect(
+    await source.query(
+      'SELECT title FROM subject_plan_items WHERE subject_id = ?',
+      [id],
+    ),
+  ).toEqual([{ title: 'Plano simples' }]);
   expect(await source.runMigrations()).toHaveLength(3 + later);
   await expect(
     source.query(

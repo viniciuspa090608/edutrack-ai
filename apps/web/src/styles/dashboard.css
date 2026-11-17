@@ -293,6 +293,26 @@
   margin-top: auto;
 }
 @media (min-width: 1000px) {
+  .dashboard-without-pomodoro .dashboard-card-tasks,
+  .dashboard-without-pomodoro .dashboard-card-flashcards {
+    grid-row: 1;
+  }
+  .dashboard-without-pomodoro.dashboard-without-tasks
+    .dashboard-card-flashcards,
+  .dashboard-without-pomodoro.dashboard-without-flashcards
+    .dashboard-card-tasks {
+    grid-column: 1 / -1;
+  }
+  .dashboard-without-pomodoro .dashboard-card-subjects,
+  .dashboard-without-pomodoro .dashboard-card-streak {
+    grid-row: 2;
+  }
+  .dashboard-grid.dashboard-without-pomodoro .dashboard-task-list {
+    height: auto;
+    contain: none;
+    max-block-size: 12rem;
+    overflow-y: auto;
+  }
   .dashboard-without-flashcards .dashboard-card-tasks {
     grid-row: 1;
   }
@@ -336,6 +356,13 @@
 .dashboard-streak-lines strong {
   color: var(--foreground);
 }
+.dashboard-card-flashcards .dashboard-task-list,
+.dashboard-card-subjects .dashboard-task-list {
+  max-block-size: 8rem;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
 .dashboard-task-scroll {
   position: relative;
 }
@@ -386,7 +413,11 @@
     :is(.dashboard-card-subjects, .dashboard-card-streak) {
     align-self: stretch;
   }
-  .dashboard-grid:not(.dashboard-without-tasks, .dashboard-without-flashcards) {
+  .dashboard-grid:not(
+    .dashboard-without-tasks,
+    .dashboard-without-flashcards,
+    .dashboard-without-pomodoro
+  ) {
     grid-template-rows: minmax(16.5rem, auto) 14.5rem auto auto;
   }
   .dashboard-grid:not(.dashboard-without-tasks, .dashboard-without-flashcards)
@@ -399,21 +430,40 @@
   .dashboard-grid:not(.dashboard-without-tasks, .dashboard-without-flashcards)
     .dashboard-card-flashcards
     .dashboard-card-body {
-    overflow: auto;
-    padding: 4px;
+    display: flex;
+    flex: 1;
+    min-height: 0;
+  }
+  .dashboard-grid:not(.dashboard-without-tasks, .dashboard-without-flashcards)
+    .dashboard-card-flashcards
+    .dashboard-task-scroll {
+    flex: 1;
+    min-height: 0;
+  }
+  .dashboard-grid:not(.dashboard-without-tasks, .dashboard-without-flashcards)
+    .dashboard-card-flashcards
+    .dashboard-task-list {
+    height: 100%;
+    margin: 0;
   }
   .dashboard-grid:not(.dashboard-without-tasks, .dashboard-without-flashcards)
     .dashboard-module-link {
     margin-top: auto;
   }
-  .dashboard-grid:not(.dashboard-without-flashcards)
+  .dashboard-grid:not(
+      .dashboard-without-flashcards,
+      .dashboard-without-pomodoro
+    )
     .dashboard-card-tasks
     > [data-slot='card-content'] {
     display: flex;
     flex: 1;
     flex-direction: column;
   }
-  .dashboard-grid:not(.dashboard-without-flashcards)
+  .dashboard-grid:not(
+      .dashboard-without-flashcards,
+      .dashboard-without-pomodoro
+    )
     .dashboard-card-tasks
     .dashboard-card-body {
     display: flex;
@@ -421,20 +471,37 @@
     flex-direction: column;
     min-height: 0;
   }
-  .dashboard-grid:not(.dashboard-without-flashcards) .dashboard-card-tasks {
+  .dashboard-grid:not(
+      .dashboard-without-flashcards,
+      .dashboard-without-pomodoro
+    )
+    .dashboard-card-tasks {
     align-self: stretch;
   }
-  .dashboard-grid:not(.dashboard-without-flashcards)
+  .dashboard-grid:not(
+      .dashboard-without-flashcards,
+      .dashboard-without-pomodoro
+    )
     :is(.dashboard-card-pomodoro, .dashboard-card-flashcards) {
     align-self: stretch;
   }
-  .dashboard-grid:not(.dashboard-without-flashcards) .dashboard-task-scroll {
+  .dashboard-grid:not(
+      .dashboard-without-flashcards,
+      .dashboard-without-pomodoro
+    )
+    .dashboard-card-tasks
+    .dashboard-task-scroll {
     display: flex;
     flex: 1;
     flex-direction: column;
     min-height: 0;
   }
-  .dashboard-grid:not(.dashboard-without-flashcards) .dashboard-task-list {
+  .dashboard-grid:not(
+      .dashboard-without-flashcards,
+      .dashboard-without-pomodoro
+    )
+    .dashboard-card-tasks
+    .dashboard-task-list {
     contain: size;
     flex: 1;
     min-height: 0;
@@ -442,7 +509,10 @@
     padding: 4px;
     margin: 0;
   }
-  .dashboard-grid:not(.dashboard-without-flashcards)
+  .dashboard-grid:not(
+      .dashboard-without-flashcards,
+      .dashboard-without-pomodoro
+    )
     .dashboard-card-tasks
     .dashboard-module-link {
     margin-top: auto;

@@ -45,7 +45,6 @@ import {
   Plus,
   Pencil,
   Trash2,
-  X,
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { TaskConfirmation } from './TaskConfirmation.js';
@@ -826,6 +825,19 @@ export function TasksPage({
             aria-labelledby="task-detail-heading"
           >
             <CardHeader>
+              <Button
+                variant="outline"
+                className="justify-self-start"
+                onClick={() => {
+                  const opener = document.getElementById(
+                    `task-detail-${detail.id}`,
+                  );
+                  setDetail(null);
+                  (opener ?? newButton.current)?.focus();
+                }}
+              >
+                ← Voltar
+              </Button>
               <TaskBadges task={detail} />
               <h2 id="task-detail-heading" ref={detailHeading} tabIndex={-1}>
                 {detail.title}
@@ -896,16 +908,6 @@ export function TasksPage({
                   }}
                 >
                   <Trash2 aria-hidden="true" /> Excluir tarefa
-                </Button>
-                <Button
-                  variant="ghost"
-                  type="button"
-                  onClick={() => {
-                    setDetail(null);
-                    newButton.current?.focus();
-                  }}
-                >
-                  <X aria-hidden="true" /> Fechar detalhe
                 </Button>
               </div>
               {!editor && (
@@ -981,6 +983,7 @@ export function TasksPage({
                     disabled={detailLoading}
                     variant="outline"
                     aria-label={`Ver detalhes de ${task.title}`}
+                    id={`task-detail-${task.id}`}
                     className="task-detail-link"
                     onClick={async () => {
                       setDetailLoading(true);

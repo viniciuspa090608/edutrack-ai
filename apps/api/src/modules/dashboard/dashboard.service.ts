@@ -5,6 +5,7 @@ import type { PreferencesService } from '../preferences/preferences.service.js';
 import type { TasksService } from '../tasks/tasks.service.js';
 import type { SubjectsService } from '../subjects/subjects.service.js';
 import type { PomodoroService } from '../pomodoro/pomodoro.service.js';
+import type { FlashcardsService } from '../flashcards/flashcards.service.js';
 import type { ReviewsService } from '../flashcards/reviews.service.js';
 import type { StudyProgressService } from '../study-progress/study-progress.service.js';
 import type { AnalyticsService } from '../analytics/analytics.service.js';
@@ -13,6 +14,7 @@ export interface DashboardSources {
   tasks: Pick<TasksService, 'dashboardSummary'>;
   subjects: Pick<SubjectsService, 'dashboardSummary'>;
   pomodoro: Pick<PomodoroService, 'dashboardSummary'>;
+  flashcards: Pick<FlashcardsService, 'dashboardDecks'>;
   reviews: Pick<ReviewsService, 'pending'>;
   progress: Pick<StudyProgressService, 'read' | 'settings'>;
   analytics: Pick<AnalyticsService, 'read'>;
@@ -80,6 +82,7 @@ export class DashboardService {
         preferences.flashcards
           ? this.section(
               async () => ({
+                decks: await this.sources.flashcards.dashboardDecks(userId),
                 pending: (
                   await this.sources.reviews.pending(userId, {
                     page: 1,
@@ -90,10 +93,15 @@ export class DashboardService {
               (data) => data.pending === 0,
             )
           : undefined,
-        this.section(
-          () => this.sources.pomodoro.dashboardSummary(userId),
-          (data) => !data.session && data.completedSessions === 0,
-        ),
+        preferences.pomodoro
+          ? this.section(
+              () => this.sources.pomodoro.dashboardSummary(userId),
+              (data) => !data.session && data.completedSessions === 0,
+            )
+          : {
+              state: 'empty' as const,
+              data: { session: null, completedSessions: 0 },
+            },
         this.section(
           () => this.sources.progress.read(userId),
           (data) => data.activeDays === 0,
