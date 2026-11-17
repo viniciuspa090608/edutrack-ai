@@ -24,6 +24,7 @@ export function ProgressHeader({
 }) {
   const reasonId = useId();
   const generatedAt = useRef<HTMLTimeElement>(null);
+  const generatedMonth = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
     if (printUnavailable) return;
@@ -42,6 +43,13 @@ export function ProgressHeader({
         timeStyle: 'short',
         timeZone,
       });
+      if (generatedMonth.current) {
+        generatedMonth.current.textContent = now.toLocaleDateString('pt-BR', {
+          month: 'long',
+          year: 'numeric',
+          timeZone,
+        });
+      }
       report.setAttribute('data-printing', '');
       if (details && !details.open) {
         restoreCollapsed = true;
@@ -64,6 +72,15 @@ export function ProgressHeader({
 
   return (
     <header className="evolution-header">
+      {timeZone && (
+        <style media="print">
+          {`@page study-report { @bottom-center {
+            content: ${JSON.stringify(`Horário: ${timeZone}`)};
+            font: 8pt sans-serif;
+            color: #42556e;
+          } }`}
+        </style>
+      )}
       <p className="evolution-eyebrow">Sua jornada de estudos</p>
       <div className="evolution-title-row">
         <h1 id={titleId}>{title}</h1>
@@ -85,10 +102,18 @@ export function ProgressHeader({
         {printUnavailable}
       </p>
       <div className="report-print-metadata">
+        <p className="report-print-brand">
+          <ChartNoAxesCombined aria-hidden="true" /> EduTrack
+        </p>
+        <p>
+          Relatórios / {current === 'progress' ? 'Progresso' : 'Estatísticas'}
+        </p>
+        <span ref={generatedMonth} className="report-print-month" />
+        <p className="report-print-title">Relatório de estudos</p>
+        <p>{description}</p>
         {printPeriod && <p>Período: {printPeriod}</p>}
         <p>
           Gerado em <time ref={generatedAt} />
-          {timeZone && ` (${timeZone})`}
         </p>
       </div>
       <p className="evolution-muted">{description}</p>

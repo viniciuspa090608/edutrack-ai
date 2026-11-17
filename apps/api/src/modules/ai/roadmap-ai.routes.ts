@@ -26,7 +26,11 @@ export function roadmapAIRoutes(
   const id = (value: unknown) => {
     const parsed = subjectSchema.shape.id.safeParse(value);
     if (!parsed.success)
-      throw new HttpError(404, 'SUBJECT_NOT_FOUND', 'Matéria não encontrada.');
+      throw new HttpError(
+        404,
+        'SUBJECT_NOT_FOUND',
+        'Disciplina não encontrada.',
+      );
     return parsed.data;
   };
   router.post('/:id/roadmap-generations', ...guards, async (req, res) => {

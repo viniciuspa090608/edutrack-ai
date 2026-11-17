@@ -109,6 +109,32 @@ it('applies and reverses both migrations on real MySQL with foreign keys and ind
     ),
   ).rejects.toThrow();
 });
+it('searches literal name fragments across pages and counts only owned results', async () => {
+  const a = await account();
+  const b = await account();
+  for (const [owner, name] of [
+    [a, 'Álgebra %_ I'],
+    [a, 'Álgebra %_ II'],
+    [a, 'Álgebra XX III'],
+    [b, 'Álgebra %_ IV'],
+  ] as const) {
+    expect(
+      (await write('post', '/subjects', owner.cookie, { ...input, name }))
+        .status,
+    ).toBe(201);
+  }
+  const query = '/subjects?pageSize=1&name=%20%C3%81LGEBRA%20%25_%20';
+  const first = await read(query, a.cookie);
+  const second = await read(`${query}&page=2`, a.cookie);
+  expect(first.status).toBe(200);
+  expect(second.status).toBe(200);
+  expect(first.body).toMatchObject({ total: 2, totalPages: 2 });
+  expect(second.body).toMatchObject({ page: 2, total: 2 });
+  expect(
+    new Set([first.body.items[0].name, second.body.items[0].name]),
+  ).toEqual(new Set(['Álgebra %_ I', 'Álgebra %_ II']));
+});
+
 it('requires session and origin, validates all fields and rejects client ownership', async () => {
   const a = await account();
   const id = randomUUID();

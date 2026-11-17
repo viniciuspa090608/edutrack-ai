@@ -13,7 +13,7 @@ export function SubjectName({ id }: { id: string | null }) {
           if (active) setName(subject.name);
         })
         .catch(() => {
-          if (active) setName('Matéria indisponível');
+          if (active) setName('Disciplina indisponível');
         });
     return () => {
       active = false;
@@ -21,7 +21,7 @@ export function SubjectName({ id }: { id: string | null }) {
   }, [id]);
   return (
     <Badge className="subject-name" variant="secondary">
-      {id ? name || 'Carregando matéria…' : 'Sem matéria'}
+      {id ? name || 'Carregando disciplina…' : 'Sem disciplina'}
     </Badge>
   );
 }

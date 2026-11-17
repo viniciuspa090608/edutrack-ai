@@ -357,6 +357,21 @@
   gap: 20px;
   min-width: 0;
 }
+.roadmaps-section .roadmap-card {
+  border: 0;
+  border-top: 1px solid var(--border);
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+.roadmaps-section .roadmap-content > li {
+  border: 0;
+  border-top: 1px solid var(--border);
+  border-radius: 0;
+  background: transparent;
+}
+
 .roadmap-card [data-slot='card-content'] {
   display: grid;
   gap: 16px;

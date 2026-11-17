@@ -325,14 +325,18 @@ it('keeps the shell DOM and session bootstrap when navigating and replaying hist
   const header = document.querySelector('.shell-header')!;
   sidebar.scrollTop = 37;
   const main = document.querySelector('.private-route-content');
-  await userEvent.setup().click(screen.getByRole('link', { name: 'Matérias' }));
+  await userEvent
+    .setup()
+    .click(screen.getByRole('link', { name: 'Disciplinas' }));
   await waitFor(() => expect(window.location.pathname).toBe('/app/materias'));
   expect(document.querySelector('.shell-sidebar')).toBe(sidebar);
   expect(document.querySelector('.shell-header')).toBe(header);
   expect(sidebar.scrollTop).toBe(37);
   expect(document.querySelector('.private-route-content')).not.toBe(main);
   expect(
-    screen.getByRole('link', { name: 'Matérias' }).getAttribute('aria-current'),
+    screen
+      .getByRole('link', { name: 'Disciplinas' })
+      .getAttribute('aria-current'),
   ).toBe('page');
   act(() => navigate('/app/tarefas?filter=pending'));
   await screen.findByText(/Este módulo está desativado/);

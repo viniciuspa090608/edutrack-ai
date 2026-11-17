@@ -15,7 +15,7 @@ export const moduleCatalog: ReadonlyArray<{
   {
     capability: 'subjects',
     path: '/app/materias',
-    label: 'Matérias',
+    label: 'Disciplinas',
     delivered: true,
   },
   {

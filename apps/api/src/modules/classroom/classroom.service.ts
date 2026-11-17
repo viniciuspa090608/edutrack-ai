@@ -135,7 +135,7 @@ export class ClassroomService {
       throw new HttpError(
         403,
         'MODULE_DISABLED',
-        'Ative tarefas ou matérias para importar.',
+        'Ative tarefas ou disciplinas para importar.',
       );
     const timeZone = (await this.progress.settings(userId)).timeZone;
     const id = await this.repository.allowed(

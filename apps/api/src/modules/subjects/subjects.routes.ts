@@ -28,7 +28,11 @@ export function subjectsRoutes(
   const id = (value: unknown) => {
     const result = subjectSchema.shape.id.safeParse(value);
     if (!result.success)
-      throw new HttpError(404, 'SUBJECT_NOT_FOUND', 'Matéria não encontrada.');
+      throw new HttpError(
+        404,
+        'SUBJECT_NOT_FOUND',
+        'Disciplina não encontrada.',
+      );
     return result.data;
   };
   const write = requireOrigin(webOrigins(env));

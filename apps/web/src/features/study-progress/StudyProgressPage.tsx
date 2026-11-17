@@ -32,6 +32,15 @@ const date = (value: string, timeZone: string) =>
   new Intl.DateTimeFormat('pt-BR', { timeZone, dateStyle: 'medium' }).format(
     new Date(value),
   );
+function activityInPeriod(data: StudyProgress) {
+  const start = new Intl.DateTimeFormat('sv-SE', {
+    timeZone: data.timeZone,
+    dateStyle: 'short',
+  }).format(new Date(data.trackingStartedAt));
+  const days = (Date.parse(data.today) - Date.parse(start)) / 86_400_000 + 1;
+  return days > 0 ? { days, percent: data.activeDays / days } : null;
+}
+
 const icons = {
   FIRST_DAY: Flag,
   THREE_DAY_STREAK: Flame,
@@ -68,6 +77,8 @@ export function StudyProgressPage() {
       : data.activeDays === 0
         ? 'Nenhuma atividade para imprimir.'
         : '';
+  const activity = data && activityInPeriod(data);
+  const earned = data?.achievements.filter((item) => item.earnedAt).length ?? 0;
   return (
     <section
       className="study-progress evolution-surface study-report"
@@ -143,25 +154,35 @@ export function StudyProgressPage() {
               </dd>
             </div>
           </dl>
-          <div className="evolution-card evolution-context">
-            <p>
-              Histórico rastreado desde{' '}
-              <time dateTime={data.trackingStartedAt}>
-                {date(data.trackingStartedAt, data.timeZone)}
-              </time>
-              . Atividades anteriores não contam para sequências ou conquistas.
-            </p>
-            <p>
-              A sequência atual continua se você estudou hoje ou ontem. Várias
-              atividades na mesma data contam como um dia ativo.
-            </p>
-          </div>
+          <section className="evolution-card report-print-only report-activity">
+            <div>
+              <h2>Atividade no período</h2>
+              <p>
+                {data.activeDays} dias ativos
+                {activity && ` de ${activity.days} dias rastreados`}
+              </p>
+            </div>
+            {activity && (
+              <meter
+                aria-label="Proporção de dias ativos"
+                value={activity.percent}
+              />
+            )}
+            <strong>
+              {activity
+                ? new Intl.NumberFormat('pt-BR', {
+                    style: 'percent',
+                    maximumFractionDigits: 1,
+                  }).format(activity.percent)
+                : 'Indisponível'}
+            </strong>
+          </section>
           {data.activeDays === 0 && (
             <ProgressEmpty title="Sua jornada começa agora">
               <span role="status">
                 Seu primeiro dia ativo ainda está por vir. Conclua uma tarefa,
                 um bloco Pomodoro de 25 minutos, uma avaliação de flashcard ou
-                um marco de matéria.
+                um marco de disciplina.
               </span>
             </ProgressEmpty>
           )}
@@ -169,7 +190,16 @@ export function StudyProgressPage() {
             <div className="evolution-section-heading">
               <div>
                 <p className="evolution-eyebrow">Marcos da sua jornada</p>
-                <h2 id="achievements-title">Conquistas</h2>
+                <h2 id="achievements-title">
+                  Conquistas
+                  <span className="report-print-only"> alcançadas</span>
+                </h2>
+                <p className="report-print-only">
+                  {earned}{' '}
+                  {earned === 1
+                    ? 'conquista registrada'
+                    : 'conquistas registradas'}
+                </p>
               </div>
               <span className="evolution-icon">
                 <Trophy aria-hidden="true" />
@@ -180,6 +210,11 @@ export function StudyProgressPage() {
                 Conheça os critérios abaixo e acompanhe seu progresso até cada
                 marco.
               </ProgressEmpty>
+            )}
+            {earned === 0 && (
+              <p className="report-print-only">
+                Nenhuma conquista registrada no período.
+              </p>
             )}
             <ul className="progress-achievements">
               {data.achievements.map((item) => {
@@ -238,13 +273,27 @@ export function StudyProgressPage() {
                 );
               })}
             </ul>
-            <p className="evolution-context">
+          </section>
+          <div className="evolution-card evolution-context report-tracking-notes">
+            <h2 className="report-print-only">Notas sobre os indicadores</h2>
+            <p>
+              Histórico rastreado desde{' '}
+              <time dateTime={data.trackingStartedAt}>
+                {date(data.trackingStartedAt, data.timeZone)}
+              </time>
+              . Atividades anteriores não contam para sequências ou conquistas.
+            </p>
+            <p>
+              A sequência atual continua se você estudou hoje ou ontem. Várias
+              atividades na mesma data contam como um dia ativo.
+            </p>
+            <p>
               Conquistas obtidas permanecem no histórico, mesmo ao excluir a
               origem ou desativar módulos. Criar conteúdo, revelar cartões e
               estudar partes de um bloco não geram um dia ativo. A IA é
               opcional.
             </p>
-          </section>
+          </div>
         </>
       )}
     </section>

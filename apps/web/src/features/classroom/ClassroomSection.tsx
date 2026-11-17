@@ -93,7 +93,7 @@ function SubjectDestination({
   }
   return (
     <div className="classroom-destination">
-      <Label htmlFor={id}>Matéria para {course.name}</Label>
+      <Label htmlFor={id}>Disciplina para {course.name}</Label>
       <Select
         value={
           (editing
@@ -121,7 +121,7 @@ function SubjectDestination({
         </SelectTrigger>
         <SelectContent position="popper">
           <SelectItem value="none">Escolher depois</SelectItem>
-          <SelectItem value="new">Criar nova matéria</SelectItem>
+          <SelectItem value="new">Criar nova disciplina</SelectItem>
           {subjects.map((subject) => (
             <SelectItem key={subject.id} value={subject.id}>
               {subject.name}
@@ -131,7 +131,7 @@ function SubjectDestination({
       </Select>
       {(editing || value.kind === 'new') && (
         <fieldset>
-          <legend>Revise os dados da matéria</legend>
+          <legend>Revise os dados da disciplina</legend>
           {(['name', 'objective', 'dueDate', 'weeklyHours'] as const).map(
             (field) => (
               <Label key={field}>
@@ -210,7 +210,7 @@ function SubjectDestination({
               setError('');
             }}
           >
-            Confirmar dados desta matéria
+            Confirmar dados desta disciplina
           </Button>
           {value.kind === 'new' && !editing && (
             <p role="status">Dados confirmados para importação.</p>
@@ -513,7 +513,7 @@ export function ClassroomSection({
               <div role="group" aria-label="Confirmar desconexão">
                 <p>
                   Interromper futuras importações e operações pendentes?
-                  Matérias, tarefas e notas já salvas serão preservadas.
+                  Disciplinas, tarefas e notas já salvas serão preservadas.
                 </p>
                 <Button
                   disabled={busy}
@@ -547,7 +547,7 @@ export function ClassroomSection({
                 <h3>Turmas selecionadas</h3>
                 {!prefs?.tasks && !prefs?.subjects && (
                   <p>
-                    Ative tarefas ou matérias nas preferências para importar.
+                    Ative tarefas ou disciplinas nas preferências para importar.
                   </p>
                 )}
                 {loading && (
@@ -627,7 +627,7 @@ export function ClassroomSection({
                                   }))
                                 }
                               />
-                              Confirmo a troca da matéria de destino, caso já
+                              Confirmo a troca da disciplina de destino, caso já
                               exista associação
                             </Label>
                             <Label>
@@ -647,7 +647,7 @@ export function ClassroomSection({
                                 }
                               />
                               Vincular também as tarefas já importadas desta
-                              turma à matéria escolhida
+                              turma à disciplina escolhida
                             </Label>
                           </>
                         )}
@@ -758,7 +758,7 @@ export function ClassroomSection({
                     <dt>
                       {
                         {
-                          subjects: 'Matérias',
+                          subjects: 'Disciplinas',
                           tasks: 'Tarefas',
                         }[entity as 'subjects' | 'tasks']
                       }

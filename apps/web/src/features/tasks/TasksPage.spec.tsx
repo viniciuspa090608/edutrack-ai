@@ -294,6 +294,8 @@ it('keeps combined filters when paging, resets to page one and clears empty resu
   await screen.findByRole('button', { name: /Ver detalhes/ });
   const interaction = userEvent.setup();
   await interaction.click(screen.getByText('Filtros', { exact: true }));
+  await interaction.type(screen.getByLabelText('Buscar por título'), 'Revisar');
+  expect(requests.at(-1)!.url.searchParams.has('title')).toBe(false);
   await selectOption(screen.getByLabelText('Filtrar por status'), 'PENDING');
   await selectOption(screen.getByLabelText('Filtrar por importância'), 'HIGH');
   fireEvent.change(screen.getByLabelText('Prazo de'), {
@@ -325,6 +327,7 @@ it('keeps combined filters when paging, resets to page one and clears empty resu
   const query = requests.filter((r) => r.url.pathname === '/tasks').at(-1)!.url
     .searchParams;
   expect(Object.fromEntries(query)).toMatchObject({
+    title: 'Revisar',
     status: 'PENDING',
     priority: 'HIGH',
     dueFrom: '2026-10-01',
@@ -343,6 +346,7 @@ it('keeps combined filters when paging, resets to page one and clears empty resu
   );
   await screen.findByRole('button', { name: /Ver detalhes/ });
   expect(requests.at(-1)!.url.searchParams.has('status')).toBe(false);
+  expect(requests.at(-1)!.url.searchParams.has('title')).toBe(false);
 });
 it('rejects an inverted calendar range and recovers from a list network error', async () => {
   failed = 'GET';
@@ -500,12 +504,12 @@ it('associates and clears an optional subject and omits its controls when disabl
   await interaction.click(screen.getByRole('button', { name: 'Criar tarefa' }));
   await waitFor(() =>
     expect(
-      (screen.getByLabelText('Matéria (opcional)') as HTMLButtonElement)
+      (screen.getByLabelText('Disciplina (opcional)') as HTMLButtonElement)
         .disabled,
     ).toBe(false),
   );
   await selectOption(
-    screen.getByLabelText('Matéria (opcional)'),
+    screen.getByLabelText('Disciplina (opcional)'),
     originalTask.id,
   );
   await interaction.type(screen.getByLabelText('Título'), 'Revisar');
@@ -521,11 +525,11 @@ it('associates and clears an optional subject and omits its controls when disabl
   );
   await waitFor(() =>
     expect(
-      (screen.getByLabelText('Matéria (opcional)') as HTMLButtonElement)
+      (screen.getByLabelText('Disciplina (opcional)') as HTMLButtonElement)
         .disabled,
     ).toBe(false),
   );
-  await selectOption(screen.getByLabelText('Matéria (opcional)'), '');
+  await selectOption(screen.getByLabelText('Disciplina (opcional)'), '');
   await interaction.click(
     screen.getByRole('button', { name: 'Salvar tarefa' }),
   );
@@ -537,7 +541,7 @@ it('associates and clears an optional subject and omits its controls when disabl
   view.unmount();
   render(<TasksPage subjectsEnabled={false} />);
   await interaction.click(screen.getByRole('button', { name: 'Criar tarefa' }));
-  expect(screen.queryByLabelText('Matéria (opcional)')).toBeNull();
+  expect(screen.queryByLabelText('Disciplina (opcional)')).toBeNull();
 });
 
 for (const theme of ['light', 'dark'] as const) {
@@ -631,7 +635,7 @@ it('omits manual status when editing a task with subtasks and subjects disabled'
   );
   const dialog = screen.getByRole('dialog');
   expect(within(dialog).queryByLabelText('Status')).toBeNull();
-  expect(within(dialog).queryByLabelText('Matéria (opcional)')).toBeNull();
+  expect(within(dialog).queryByLabelText('Disciplina (opcional)')).toBeNull();
   await interaction.clear(screen.getByLabelText('Título'));
   await interaction.type(screen.getByLabelText('Título'), 'Novo título');
   await interaction.click(

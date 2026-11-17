@@ -3,19 +3,22 @@ import {
   updateSubjectSchema,
   subjectSchema,
   subjectListSchema,
-  subjectPaginationSchema,
+  subjectFiltersSchema,
   createPlanItemSchema,
   updatePlanItemSchema,
   planOrderSchema,
 } from '@study-platform/contracts';
 import type { UpdateSubject } from '@study-platform/contracts';
 import { send } from '../auth/auth-api.js';
-export async function listSubjects(page = 1, pageSize = 20) {
-  const query = subjectPaginationSchema.parse({ page, pageSize });
+export async function listSubjects(page = 1, pageSize = 20, name?: string) {
+  const query = subjectFiltersSchema.parse({ page, pageSize, name });
+  const params = new URLSearchParams({
+    page: String(query.page),
+    pageSize: String(query.pageSize),
+  });
+  if (query.name) params.set('name', query.name);
   return subjectListSchema.parse(
-    await (
-      await send(`/subjects?page=${query.page}&pageSize=${query.pageSize}`)
-    ).json(),
+    await (await send(`/subjects?${params}`)).json(),
   );
 }
 export async function subjectDetail(id: string) {

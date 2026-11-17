@@ -51,6 +51,7 @@ const pageNumber = z
   .pipe(z.number().int().positive().max(Number.MAX_SAFE_INTEGER));
 export const taskFiltersSchema = z
   .object({
+    title: z.string().trim().max(160).optional(),
     subjectId: z.uuid().optional(),
     status: taskStatusSchema.optional(),
     priority: taskPrioritySchema.optional(),

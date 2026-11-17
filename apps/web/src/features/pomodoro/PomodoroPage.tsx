@@ -623,7 +623,7 @@ export function PomodoroPage({
             </div>
             {subjectsEnabled && (
               <SubjectSelect
-                label="Filtrar histórico por matéria"
+                label="Filtrar histórico por disciplina"
                 value={historySubject}
                 onChange={(value) => {
                   setHistorySubject(value);

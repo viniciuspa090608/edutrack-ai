@@ -222,7 +222,7 @@ export class FlashcardsRepository {
         throw new HttpError(
           404,
           'SUBJECT_NOT_FOUND',
-          'Matéria não encontrada.',
+          'Disciplina não encontrada.',
         );
       throw error;
     }

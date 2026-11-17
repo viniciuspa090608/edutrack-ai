@@ -51,7 +51,7 @@ function failure(cause: unknown) {
       REVISION_CONFLICT:
         'O roadmap mudou. Atualize a versão e prepare uma nova prévia.',
       AI_DISABLED: 'Ative a IA nas preferências.',
-      MODULE_DISABLED: 'Reative matérias nas preferências.',
+      MODULE_DISABLED: 'Reative disciplinas nas preferências.',
       AI_CREDENTIAL_REJECTED:
         'A chave pessoal foi recusada. Revise a configuração de IA na conta.',
       AI_LIMIT_REACHED:

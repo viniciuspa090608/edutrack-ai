@@ -80,11 +80,13 @@ O proprietário SHALL poder excluir uma tarefa após confirmação na interface.
 - **THEN** a tarefa permanece intacta.
 
 ### Requirement: Filtrar lista de tarefas
-A lista SHALL permitir filtros combináveis por status, importância e intervalo inclusivo de prazo (`de` e `até`), além de uma ação para limpar os filtros. Uma tarefa sem prazo SHALL ficar fora de um filtro de intervalo de prazo. Filtros inválidos SHALL ser rejeitados e não SHALL alterar dados.
+A lista SHALL permitir filtros combináveis por trecho do título, status, importância e intervalo inclusivo de prazo (`de` e `até`), além de uma ação para limpar os filtros. Uma tarefa sem prazo SHALL ficar fora de um filtro de intervalo de prazo. Filtros inválidos SHALL ser rejeitados e não SHALL alterar dados.
+
+O filtro de título SHALL ignorar maiúsculas e minúsculas e espaços externos. Um campo em branco SHALL equivaler à ausência desse critério. A busca SHALL abranger todas as tarefas do usuário antes da paginação.
 
 #### Scenario: Combinar filtros
 - **GIVEN** tarefas do usuário com status, importância e prazos diferentes
-- **WHEN** ele filtra por `IN_PROGRESS`, `HIGH` e um intervalo de datas
+- **WHEN** ele aplica um trecho do título, `IN_PROGRESS`, `HIGH` e um intervalo de datas
 - **THEN** a lista contém somente suas tarefas que satisfazem todos os critérios.
 
 #### Scenario: Nenhum resultado
@@ -97,6 +99,11 @@ A lista SHALL permitir filtros combináveis por status, importância e intervalo
 - **WHEN** o usuário aplica o intervalo
 - **THEN** ambas são incluídas se satisfizerem os demais critérios
 - **AND** tarefas sem prazo ficam fora do resultado.
+
+#### Scenario: Aplicar e limpar busca
+- **WHEN** a pessoa preenche o título e aciona Aplicar filtros
+- **THEN** a lista volta à primeira página dos resultados correspondentes
+- **AND** Limpar filtros restaura os critérios padrão e volta à primeira página.
 
 ### Requirement: Isolamento e autenticação em todas as operações
 Todas as rotas de tarefas SHALL exigir sessão válida. A API SHALL derivar o proprietário da sessão autenticada, filtrar por esse usuário em toda consulta e mutação e nunca aceitar um `userId` enviado pelo cliente como autorização. Um ID válido pertencente a outro usuário SHALL responder como não encontrado, sem revelar a existência da tarefa. A web SHALL proteger a página de tarefas e não exibir dados privados antes de confirmar a sessão.

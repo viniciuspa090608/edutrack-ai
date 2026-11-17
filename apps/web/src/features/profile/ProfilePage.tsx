@@ -192,7 +192,7 @@ export function ProfilePage({
     );
   const labels: Record<Capability, string> = {
     tasks: 'Tarefas',
-    subjects: 'Matérias',
+    subjects: 'Disciplinas',
     flashcards: 'Flashcards',
     pomodoro: 'Pomodoro',
     reports: 'Relatório',
@@ -466,9 +466,9 @@ export function ProfilePage({
               <CardContent>
                 <p>
                   Mantenha pelo menos um módulo de estudo ativo entre tarefas,
-                  matérias e flashcards. A IA não conta como módulo de estudo.{' '}
-                  Desativar um módulo preserva seus dados. A IA é opcional e não
-                  interfere no uso manual.
+                  disciplinas e flashcards. A IA não conta como módulo de
+                  estudo. Desativar um módulo preserva seus dados. A IA é
+                  opcional e não interfere no uso manual.
                 </p>
                 <div className="account-preferences-grid">
                   {(Object.keys(labels) as Capability[]).map((key) => (
@@ -488,7 +488,7 @@ export function ProfilePage({
                                   })
                                 )
                                   throw new Error(
-                                    'Mantenha pelo menos um módulo de estudo ativo: tarefas, matérias ou flashcards.',
+                                    'Mantenha pelo menos um módulo de estudo ativo: tarefas, disciplinas ou flashcards.',
                                   );
                                 const saved = await api.updatePreferences({
                                   [key]: enabled,
@@ -505,17 +505,11 @@ export function ProfilePage({
                         />
                         {labels[key]}
                       </Label>
-                      {key === 'ai' ? (
-                        <small>
-                          Complemento opcional para Flashcards e Matérias. O uso
-                          depende das preferências e da disponibilidade do
-                          serviço de IA. Os recursos manuais continuam
-                          disponíveis.
-                        </small>
-                      ) : key !== 'pomodoro' &&
-                        key !== 'reports' &&
-                        !moduleCatalog.find((m) => m.capability === key)
-                          ?.delivered ? (
+                      {key !== 'ai' &&
+                      key !== 'pomodoro' &&
+                      key !== 'reports' &&
+                      !moduleCatalog.find((m) => m.capability === key)
+                        ?.delivered ? (
                         <small>
                           Funcionalidade ainda não disponível. A preferência
                           será aplicada quando for entregue.

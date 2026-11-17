@@ -477,6 +477,7 @@ export function TasksPage({
   const [subjectName, setSubjectName] = useState('');
   const [filters, setFilters] = useState<TaskFilters>(initialFilters);
   const [draft, setDraft] = useState({
+    title: '',
     status: '',
     priority: '',
     dueFrom: '',
@@ -533,13 +534,14 @@ export function TasksPage({
           if (active) setSubjectName(value.name);
         })
         .catch(() => {
-          if (active) setSubjectName('Matéria indisponível');
+          if (active) setSubjectName('Disciplina indisponível');
         });
     return () => {
       active = false;
     };
   }, [subjectsEnabled, detail?.subjectId]);
   const filtered = !!(
+    filters.title ||
     filters.status ||
     filters.priority ||
     filters.dueFrom ||
@@ -676,6 +678,17 @@ export function TasksPage({
             <CardContent>
               <div className="task-filter-grid">
                 <div className="task-field">
+                  <Label htmlFor="filter-title">Buscar por título</Label>
+                  <Input
+                    id="filter-title"
+                    maxLength={160}
+                    value={draft.title}
+                    onChange={(event) =>
+                      setDraft({ ...draft, title: event.target.value })
+                    }
+                  />
+                </div>
+                <div className="task-field">
                   <Label htmlFor="filter-status">Filtrar por status</Label>
                   <Select
                     value={draft.status || '__edutrack_empty__'}
@@ -773,6 +786,7 @@ export function TasksPage({
                   type="button"
                   onClick={() => {
                     setDraft({
+                      title: '',
                       status: '',
                       priority: '',
                       dueFrom: '',
@@ -827,7 +841,7 @@ export function TasksPage({
             <CardHeader>
               <Button
                 variant="outline"
-                className="justify-self-start"
+                className="justify-self-end"
                 onClick={() => {
                   const opener = document.getElementById(
                     `task-detail-${detail.id}`,
@@ -857,11 +871,11 @@ export function TasksPage({
                 {subjectsEnabled && (
                   <>
                     <div>
-                      <dt>Matéria</dt>
+                      <dt>Disciplina</dt>
                       <dd>
                         {detail.subjectId
-                          ? subjectName || 'Carregando matéria…'
-                          : 'Sem matéria'}
+                          ? subjectName || 'Carregando disciplina…'
+                          : 'Sem disciplina'}
                       </dd>
                     </div>
                   </>

@@ -101,7 +101,7 @@ export class PomodoroService {
         throw new HttpError(
           400,
           'SUBJECT_MISMATCH',
-          'Escolha a matéria vinculada à tarefa.',
+          'Escolha a disciplina vinculada à tarefa.',
         );
     }
     try {

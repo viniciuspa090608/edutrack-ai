@@ -44,7 +44,11 @@ export class RoadmapsRepository {
       [userId, subjectId],
     );
     if (!rows.length)
-      throw new HttpError(404, 'SUBJECT_NOT_FOUND', 'Matéria não encontrada.');
+      throw new HttpError(
+        404,
+        'SUBJECT_NOT_FOUND',
+        'Disciplina não encontrada.',
+      );
   }
   private async detailIn(
     manager: EntityManager,

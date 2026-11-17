@@ -57,6 +57,31 @@ afterAll(async () => {
 });
 
 describe('study tasks HTTP on real MySQL', () => {
+  it('combines literal title search with filters before paginating own tasks', async () => {
+    const a = await account();
+    const b = await account();
+    const matching = { title: 'Revisar 50%_ hoje', priority: 'HIGH' };
+    for (const [owner, body] of [
+      [a, matching],
+      [a, { ...matching, title: 'Revisar 50XX hoje' }],
+      [a, { ...matching, priority: 'LOW' }],
+      [b, matching],
+    ] as const) {
+      expect((await write('post', '/tasks', owner.cookie, body)).status).toBe(
+        201,
+      );
+    }
+    const result = await read(
+      '/tasks?priority=HIGH&pageSize=1&title=%20REVISAR%2050%25_%20',
+      a.cookie,
+    );
+    expect(result.status).toBe(200);
+    expect(result.body).toMatchObject({
+      total: 1,
+      totalPages: 1,
+      items: [{ title: matching.title }],
+    });
+  });
   it('requires real sessions and protects writes with origin and module preferences', async () => {
     const a = await account();
     for (const method of ['get', 'post', 'patch', 'delete'] as const)

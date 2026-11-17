@@ -235,8 +235,8 @@ describe('profile page', () => {
       screen.queryByText(/Funcionalidade ainda não disponível/),
     ).toBeNull();
     expect(
-      screen.getByText(/Complemento opcional para Flashcards e Matérias/),
-    ).toBeTruthy();
+      screen.queryByText(/Complemento opcional para Flashcards/),
+    ).toBeNull();
     const interaction = userEvent.setup();
     await interaction.click(
       screen.getByRole('checkbox', { name: 'Recursos de IA' }),
@@ -335,8 +335,11 @@ describe('profile page', () => {
     expect(screen.queryByText('Nome salvo.')).toBeNull();
     expect(screen.getByRole('heading', { name: 'Ana' })).toBeTruthy();
     expect(
-      (screen.getByRole('checkbox', { name: 'Matérias' }) as HTMLButtonElement)
-        .disabled,
+      (
+        screen.getByRole('checkbox', {
+          name: 'Disciplinas',
+        }) as HTMLButtonElement
+      ).disabled,
     ).toBe(true);
     await act(async () => {
       release();
@@ -433,7 +436,12 @@ describe('profile page', () => {
     await open();
     expect(screen.getAllByText('ana@example.com')).not.toHaveLength(0);
     expect(screen.getByRole('img', { name: 'Avatar padrão' })).toBeTruthy();
-    for (const name of ['Tarefas', 'Matérias', 'Flashcards', 'Recursos de IA'])
+    for (const name of [
+      'Tarefas',
+      'Disciplinas',
+      'Flashcards',
+      'Recursos de IA',
+    ])
       expect(screen.getByRole('checkbox', { name })).toBeTruthy();
     expect(
       screen.queryByText(/Funcionalidade ainda não disponível/),
@@ -452,7 +460,7 @@ describe('profile page', () => {
     );
     expect(
       screen
-        .getByRole('checkbox', { name: 'Matérias' })
+        .getByRole('checkbox', { name: 'Disciplinas' })
         .getAttribute('aria-checked'),
     ).toBe('true');
     expect(requests.find((r) => r.method === 'PATCH')?.body).toEqual({
@@ -486,11 +494,13 @@ describe('profile page', () => {
       screen.getByRole('link', { name: 'Abrir conta de Joana' }).textContent,
     ).toBe('J');
     failed = '/profile/preferences';
-    await interaction.click(screen.getByRole('checkbox', { name: 'Matérias' }));
+    await interaction.click(
+      screen.getByRole('checkbox', { name: 'Disciplinas' }),
+    );
     await screen.findByRole('alert');
     expect(
       screen
-        .getByRole('checkbox', { name: 'Matérias' })
+        .getByRole('checkbox', { name: 'Disciplinas' })
         .getAttribute('aria-checked'),
     ).toBe('true');
   });

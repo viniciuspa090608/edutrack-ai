@@ -87,7 +87,7 @@ export function OnboardingGate({
               {
                 {
                   tasks: 'Tarefas',
-                  subjects: 'Matérias',
+                  subjects: 'Disciplinas',
                   flashcards: 'Flashcards',
                   ai: 'Recursos de IA',
                 }[key]

@@ -19,9 +19,9 @@ import '../../styles/subject-associations.css';
 export function SubjectSelect({
   value,
   onChange,
-  label = 'Matéria (opcional)',
+  label = 'Disciplina (opcional)',
   disabled = false,
-  emptyLabel = 'Sem matéria',
+  emptyLabel = 'Sem disciplina',
 }: {
   value: string;
   onChange: (value: string) => void;
@@ -65,7 +65,7 @@ export function SubjectSelect({
           <SelectContent position="popper">
             <SelectItem value="__edutrack_empty__">{emptyLabel}</SelectItem>
             {value && !result?.items.some((item) => item.id === value) && (
-              <SelectItem value={value}>Matéria selecionada</SelectItem>
+              <SelectItem value={value}>Disciplina selecionada</SelectItem>
             )}
             {result?.items.map((item) => (
               <SelectItem key={item.id} value={item.id}>
@@ -78,13 +78,13 @@ export function SubjectSelect({
       {!result && !error && (
         <div>
           <Skeleton aria-hidden="true" className="my-2 h-3 w-2/3" />
-          <p role="status">Carregando matérias…</p>
+          <p role="status">Carregando disciplinas…</p>
         </div>
       )}
       {error && (
         <Alert variant="destructive" role="alert">
           <AlertDescription>
-            Não foi possível carregar matérias.{' '}
+            Não foi possível carregar disciplinas.{' '}
             <Button
               variant="outline"
               type="button"
@@ -103,7 +103,7 @@ export function SubjectSelect({
             disabled={disabled || page === 1}
             onClick={() => setPage(page - 1)}
           >
-            Matérias anteriores
+            Disciplinas anteriores
           </Button>
           <Button
             variant="outline"
@@ -111,7 +111,7 @@ export function SubjectSelect({
             disabled={disabled || page >= result.totalPages}
             onClick={() => setPage(page + 1)}
           >
-            Mais matérias
+            Mais disciplinas
           </Button>
         </div>
       )}

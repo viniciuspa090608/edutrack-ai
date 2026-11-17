@@ -176,7 +176,7 @@ it('does not turn a null manual-plan progress into a zero progress bar', async (
     },
   });
   render(<DashboardPage displayName="Ana" />);
-  const section = await screen.findByRole('region', { name: 'Matérias' });
+  const section = await screen.findByRole('region', { name: 'Disciplinas' });
   expect(within(section).queryByRole('progressbar')).toBeNull();
   expect(within(section).getByText(/0 de 0 concluídos/)).toBeTruthy();
 });
@@ -246,7 +246,7 @@ it('omits disabled cards and refreshes visibility when preferences change in ano
     await screen.findByRole('link', { name: 'Reativar nas preferências' }),
   ).toBeTruthy();
   expect(screen.queryByRole('heading', { name: 'Tarefas' })).toBeNull();
-  expect(screen.queryByRole('link', { name: 'Abrir matérias' })).toBeNull();
+  expect(screen.queryByRole('link', { name: 'Abrir disciplinas' })).toBeNull();
   window.dispatchEvent(new Event('focus'));
   expect(await screen.findByRole('heading', { name: 'Tarefas' })).toBeTruthy();
   expect(screen.getByRole('link', { name: 'Abrir flashcards' })).toBeTruthy();
@@ -304,7 +304,9 @@ it('shows official task progress, local overdue label and a contextual safe subj
   expect(await screen.findByText('25% concluído')).toBeTruthy();
   expect(screen.getByText(/Atrasada/)).toBeTruthy();
   expect(
-    screen.getByRole('link', { name: 'Abrir matérias' }).getAttribute('href'),
+    screen
+      .getByRole('link', { name: 'Abrir disciplinas' })
+      .getAttribute('href'),
   ).toBe(`/app/materias?subject=${id}#roadmap-${id}`);
 });
 it('starts via the public command and reconciles conflicts or lost responses before navigating', async () => {
@@ -400,11 +402,11 @@ it('confirms subjects are empty rather than inferring from the missing highlight
     pageSize: 1,
   });
   render(<DashboardPage displayName="Ana" />);
-  expect(await screen.findByText('Nenhuma matéria cadastrada')).toBeTruthy();
+  expect(await screen.findByText('Nenhuma disciplina cadastrada')).toBeTruthy();
   expect(await screen.findByText('Nenhuma tarefa cadastrada')).toBeTruthy();
   expect(listSubjects).toHaveBeenCalledWith(1, 1);
   await userEvent.click(
-    screen.getByRole('button', { name: 'Adicionar matéria' }),
+    screen.getByRole('button', { name: 'Adicionar disciplina' }),
   );
   expect(window.location.pathname + window.location.search).toBe(
     '/app/materias?create=1',
@@ -420,11 +422,11 @@ it('does not claim an empty collection when subjects exist or the lookup fails',
     pageSize: 1,
   });
   const view = render(<DashboardPage displayName="Ana" />);
-  await screen.findByText(/Nenhuma matéria em destaque/);
-  expect(screen.queryByText('Nenhuma matéria cadastrada')).toBeNull();
+  await screen.findByText(/Nenhuma disciplina em destaque/);
+  expect(screen.queryByText('Nenhuma disciplina cadastrada')).toBeNull();
   view.unmount();
   vi.mocked(listSubjects).mockRejectedValue(new Error('offline'));
   render(<DashboardPage displayName="Ana" />);
-  await screen.findByRole('button', { name: 'Tentar consultar matérias' });
-  expect(screen.queryByText('Nenhuma matéria cadastrada')).toBeNull();
+  await screen.findByRole('button', { name: 'Tentar consultar disciplinas' });
+  expect(screen.queryByText('Nenhuma disciplina cadastrada')).toBeNull();
 });

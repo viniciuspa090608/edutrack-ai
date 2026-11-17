@@ -168,3 +168,10 @@ O card Flashcards SHALL manter o total de cartões pendentes e mostrar os nomes 
 
 - **WHEN** as prévias excedem a altura dos cards
 - **THEN** é possível rolar o conteúdo de Flashcards e Matérias com os links de rodapé visíveis, e Flashcards aplica desfoque nas bordas com conteúdo oculto.
+
+### Requirement: Centralização vertical da ação inicial de Pomodoro
+O card Pomodoro da Home SHALL centralizar verticalmente Iniciar Pomodoro no espaço disponível abaixo do texto introdutório.
+
+#### Scenario: Pomodoro disponível para iniciar
+- **WHEN** o card exibe a ação Iniciar Pomodoro
+- **THEN** o botão ocupa o centro vertical da sua área, com espaçamento que mantém o texto e a ação legíveis em telas estreitas.

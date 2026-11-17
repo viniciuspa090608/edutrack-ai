@@ -69,6 +69,7 @@ import {
   mutatePlan,
 } from './subjects-api.js';
 import '../../styles/subjects.css';
+import '../../styles/tasks.css';
 import { RoadmapsSection } from './RoadmapsSection.js';
 import { CollectionEmptyState } from '../../components/CollectionEmptyState.js';
 const levels = {
@@ -87,7 +88,7 @@ function failure(cause: unknown) {
     return 'Entre novamente para continuar.';
   }
   return cause instanceof AuthApiError && cause.code === 'MODULE_DISABLED'
-    ? 'Reative matérias nas preferências.'
+    ? 'Reative disciplinas nas preferências.'
     : 'Não foi possível concluir a ação. Tente novamente.';
 }
 function SubjectForm({
@@ -119,7 +120,7 @@ function SubjectForm({
   }, []);
   return (
     <FormModal
-      title={subject ? 'Editar matéria' : 'Nova matéria'}
+      title={subject ? 'Editar disciplina' : 'Nova disciplina'}
       dirty={
         JSON.stringify([
           name,
@@ -137,7 +138,7 @@ function SubjectForm({
         <Card asChild>
           <form
             className="subject-card subject-form"
-            aria-label={subject ? 'Editar matéria' : 'Criar matéria'}
+            aria-label={subject ? 'Editar disciplina' : 'Criar disciplina'}
             onSubmit={async (event) => {
               event.preventDefault();
               if (submitting.current) return;
@@ -186,7 +187,7 @@ function SubjectForm({
           >
             <CardHeader>
               <span className="subject-eyebrow">Seu planejamento</span>
-              <h2>{subject ? 'Editar matéria' : 'Nova matéria'}</h2>
+              <h2>{subject ? 'Editar disciplina' : 'Nova disciplina'}</h2>
               <p>Defina seu objetivo e o tempo disponível para estudar.</p>
             </CardHeader>
             <CardContent>
@@ -265,7 +266,7 @@ function SubjectForm({
                   />
                 </Label>
                 <div className="subject-actions subject-field-wide">
-                  <Button>{busy ? 'Salvando…' : 'Salvar matéria'}</Button>
+                  <Button>{busy ? 'Salvando…' : 'Salvar disciplina'}</Button>
                   <Button
                     variant="outline"
                     type="button"
@@ -558,6 +559,13 @@ export function SubjectsPage({
   aiEnabled?: boolean;
 }) {
   const [page, setPage] = useState(1);
+  const [draftName, setDraftName] = useState('');
+  const [name, setName] = useState('');
+  const clearFilters = () => {
+    setDraftName('');
+    setName('');
+    setPage(1);
+  };
   const [revision, setRevision] = useState(0);
   const [result, setResult] = useState<SubjectList | null>(null);
   const [detail, setDetail] = useState<StudySubject | null>(null);
@@ -592,7 +600,7 @@ export function SubjectsPage({
     setLoading(true);
     setError('');
     setResult(null);
-    void listSubjects(page)
+    void (name ? listSubjects(page, 20, name) : listSubjects(page))
       .then((value) => {
         if (active) setResult(value);
       })
@@ -605,14 +613,14 @@ export function SubjectsPage({
     return () => {
       active = false;
     };
-  }, [page, revision]);
+  }, [page, revision, name]);
   useEffect(() => {
     if (detail && !editor) heading.current?.focus();
   }, [detail?.id, !!editor]);
   const saved = (value: StudySubject) => {
     setDetail(value);
     setEditor(null);
-    setSuccess('Matéria salva.');
+    setSuccess('Disciplina salva.');
     setRevision(revision + 1);
   };
   useCreateIntent(!!result && !loading, () => {
@@ -631,13 +639,44 @@ export function SubjectsPage({
         <p>Organize objetivos e assuntos no seu ritmo.</p>
         <Button ref={newButton} onClick={createSubject}>
           <Plus aria-hidden="true" />
-          Criar matéria
+          Criar disciplina
         </Button>
       </div>
+      <details className="subject-card task-filters">
+        <summary className="task-filter-summary">Filtros</summary>
+        <form
+          aria-label="Filtrar disciplinas"
+          onSubmit={(event) => {
+            event.preventDefault();
+            setName(draftName.trim());
+            setPage(1);
+          }}
+        >
+          <CardContent>
+            <div className="task-filter-grid">
+              <div className="task-field">
+                <Label htmlFor="filter-subject-name">Buscar por nome</Label>
+                <Input
+                  id="filter-subject-name"
+                  maxLength={160}
+                  value={draftName}
+                  onChange={(event) => setDraftName(event.target.value)}
+                />
+              </div>
+            </div>
+            <div className="task-actions">
+              <Button type="submit">Aplicar filtros</Button>
+              <Button type="button" variant="outline" onClick={clearFilters}>
+                Limpar filtros
+              </Button>
+            </div>
+          </CardContent>
+        </form>
+      </details>
       {loading && (
         <div>
           <Skeleton aria-hidden="true" className="my-2 h-3 w-2/3" />
-          <p role="status">Carregando matérias…</p>
+          <p role="status">Carregando disciplinas…</p>
         </div>
       )}
       {busy && (
@@ -669,200 +708,214 @@ export function SubjectsPage({
         />
       )}
       {detail && (
-        <Card asChild>
-          <section className="subject-card subject-detail">
-            <CardHeader>
-              <Button
-                variant="outline"
-                className="justify-self-start"
-                disabled={busy}
-                onClick={() => {
-                  if (
-                    new URLSearchParams(window.location.search).has(
-                      'subject',
-                    ) &&
-                    !detailOpenedFromList.current
-                  ) {
-                    const returnTo = window.history.state?.detailOrigin;
-                    navigate(returnTo === '/app' ? returnTo : '/app/materias');
-                    return;
-                  }
-                  const opener = document.getElementById(
-                    `subject-detail-${detail.id}`,
-                  );
-                  setDetail(null);
-                  setDeleting(false);
-                  (opener ?? newButton.current)?.focus();
-                }}
-              >
-                ← Voltar
-              </Button>
-              <span className="subject-eyebrow">Sua matéria</span>
-              <h2 ref={heading} tabIndex={-1}>
-                {detail.name}
-              </h2>
-            </CardHeader>
-            <CardContent>
-              <p className="subject-objective">{detail.objective}</p>
-              <ClassroomProvenance
-                key={`source-${detail.id}`}
-                id={detail.id}
-                module="subjects"
-              />
-              <dl className="subject-metadata">
-                <div>
-                  <dt>Nível</dt>
-                  <dd>{levels[detail.currentLevel]}</dd>
-                </div>
-                <div>
-                  <dt>Prazo</dt>
-                  <dd>{detail.dueDate}</dd>
-                </div>
-                <div>
-                  <dt>Horas semanais</dt>
-                  <dd>{detail.weeklyHours}</dd>
-                </div>
-              </dl>
-              <section className="subject-known">
-                <h3>Assuntos conhecidos</h3>
-                {detail.knownTopics.length ? (
-                  <ul>
-                    {detail.knownTopics.map((topic) => (
-                      <li key={topic}>{topic}</li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p>Nenhum assunto conhecido informado.</p>
-                )}
-              </section>
-              <div className="subject-actions">
+        <>
+          <Card asChild>
+            <section className="subject-card subject-detail">
+              <CardHeader>
                 <Button
                   variant="outline"
+                  className="justify-self-end"
                   disabled={busy}
                   onClick={() => {
-                    setSuccess('');
-                    setEditor({ subject: detail });
+                    if (
+                      new URLSearchParams(window.location.search).has(
+                        'subject',
+                      ) &&
+                      !detailOpenedFromList.current
+                    ) {
+                      const returnTo = window.history.state?.detailOrigin;
+                      navigate(
+                        returnTo === '/app' ? returnTo : '/app/materias',
+                      );
+                      return;
+                    }
+                    const opener = document.getElementById(
+                      `subject-detail-${detail.id}`,
+                    );
+                    setDetail(null);
+                    setDeleting(false);
+                    (opener ?? newButton.current)?.focus();
                   }}
                 >
-                  <Pencil aria-hidden="true" />
-                  Editar matéria
+                  ← Voltar
                 </Button>
-                <Button
-                  variant="outline"
-                  className="subject-danger"
-                  disabled={busy}
-                  onClick={() => {
-                    setSuccess('');
-                    setDeleting(true);
-                  }}
-                >
-                  <Trash2 aria-hidden="true" />
-                  Excluir matéria
-                </Button>
-              </div>
-              {deleting && (
-                <AlertDialog
-                  open
-                  onOpenChange={(open) => {
-                    if (!open && !busy) setDeleting(false);
-                  }}
-                >
-                  <AlertDialogContent
-                    className="subject-dialog"
-                    onEscapeKeyDown={(event) => {
-                      event.preventDefault();
-                      if (!busy) setDeleting(false);
-                    }}
-                    onCloseAutoFocus={(event) => {
-                      event.preventDefault();
-                      newButton.current?.focus();
+                <span className="subject-eyebrow">Sua disciplina</span>
+                <h2 ref={heading} tabIndex={-1}>
+                  {detail.name}
+                </h2>
+              </CardHeader>
+              <CardContent>
+                <p className="subject-objective">{detail.objective}</p>
+                <ClassroomProvenance
+                  key={`source-${detail.id}`}
+                  id={detail.id}
+                  module="subjects"
+                />
+                <dl className="subject-metadata">
+                  <div>
+                    <dt>Nível</dt>
+                    <dd>{levels[detail.currentLevel]}</dd>
+                  </div>
+                  <div>
+                    <dt>Prazo</dt>
+                    <dd>{detail.dueDate}</dd>
+                  </div>
+                  <div>
+                    <dt>Horas semanais</dt>
+                    <dd>{detail.weeklyHours}</dd>
+                  </div>
+                </dl>
+                <section className="subject-known">
+                  <h3>Assuntos conhecidos</h3>
+                  {detail.knownTopics.length ? (
+                    <ul>
+                      {detail.knownTopics.map((topic) => (
+                        <li key={topic}>{topic}</li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p>Nenhum assunto conhecido informado.</p>
+                  )}
+                </section>
+                <div className="subject-actions">
+                  <Button
+                    variant="outline"
+                    disabled={busy}
+                    onClick={() => {
+                      setSuccess('');
+                      setEditor({ subject: detail });
                     }}
                   >
-                    <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
-                    <div role="group" aria-label="Confirmar exclusão">
-                      {error && (
-                        <Alert variant="destructive">
-                          <AlertDescription>{error}</AlertDescription>
-                        </Alert>
-                      )}
-                      <AlertDialogDescription asChild>
-                        <p>
-                          Excluir {detail.name} e seu plano? Tarefas e sessões
-                          serão preservadas.
-                        </p>
-                      </AlertDialogDescription>
-                      <Button
-                        variant="outline"
-                        autoFocus
-                        disabled={busy}
-                        onClick={() => setDeleting(false)}
-                      >
-                        Cancelar exclusão
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        disabled={busy}
-                        onClick={async () => {
-                          setBusy(true);
-                          setError('');
-                          setSuccess('');
-                          try {
-                            await deleteSubject(detail.id);
-                            setDetail(null);
-                            setDeleting(false);
-                            setPage(1);
-                            setRevision(revision + 1);
-                            setSuccess('Matéria excluída.');
-                            newButton.current?.focus();
-                          } catch (cause) {
-                            setError(failure(cause));
-                          } finally {
-                            setBusy(false);
-                          }
-                        }}
-                      >
-                        Confirmar exclusão
-                      </Button>
-                    </div>
-                  </AlertDialogContent>
-                </AlertDialog>
-              )}
-              {!editor && (
-                <>
-                  <RoadmapsSection
-                    key={`roadmaps-${detail.id}`}
-                    subject={detail}
-                    aiEnabled={aiEnabled}
-                  />
-                  <PlanEditor
-                    key={detail.id}
-                    subject={detail}
-                    onActionStart={() => setSuccess('')}
-                    onChanged={(value) => {
-                      setDetail(value);
-                      setSuccess('Plano salvo.');
-                      setRevision(revision + 1);
+                    <Pencil aria-hidden="true" />
+                    Editar disciplina
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="subject-danger"
+                    disabled={busy}
+                    onClick={() => {
+                      setSuccess('');
+                      setDeleting(true);
                     }}
-                  />
-                  <LinkedRecords
-                    subjectId={detail.id}
-                    tasksEnabled={tasksEnabled}
-                  />
-                </>
-              )}
-            </CardContent>
-          </section>
-        </Card>
+                  >
+                    <Trash2 aria-hidden="true" />
+                    Excluir disciplina
+                  </Button>
+                </div>
+                {deleting && (
+                  <AlertDialog
+                    open
+                    onOpenChange={(open) => {
+                      if (!open && !busy) setDeleting(false);
+                    }}
+                  >
+                    <AlertDialogContent
+                      className="subject-dialog"
+                      onEscapeKeyDown={(event) => {
+                        event.preventDefault();
+                        if (!busy) setDeleting(false);
+                      }}
+                      onCloseAutoFocus={(event) => {
+                        event.preventDefault();
+                        newButton.current?.focus();
+                      }}
+                    >
+                      <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+                      <div role="group" aria-label="Confirmar exclusão">
+                        {error && (
+                          <Alert variant="destructive">
+                            <AlertDescription>{error}</AlertDescription>
+                          </Alert>
+                        )}
+                        <AlertDialogDescription asChild>
+                          <p>
+                            Excluir {detail.name} e seu plano? Tarefas e sessões
+                            serão preservadas.
+                          </p>
+                        </AlertDialogDescription>
+                        <Button
+                          variant="outline"
+                          autoFocus
+                          disabled={busy}
+                          onClick={() => setDeleting(false)}
+                        >
+                          Cancelar exclusão
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          disabled={busy}
+                          onClick={async () => {
+                            setBusy(true);
+                            setError('');
+                            setSuccess('');
+                            try {
+                              await deleteSubject(detail.id);
+                              setDetail(null);
+                              setDeleting(false);
+                              setPage(1);
+                              setRevision(revision + 1);
+                              setSuccess('Disciplina excluída.');
+                              newButton.current?.focus();
+                            } catch (cause) {
+                              setError(failure(cause));
+                            } finally {
+                              setBusy(false);
+                            }
+                          }}
+                        >
+                          Confirmar exclusão
+                        </Button>
+                      </div>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
+              </CardContent>
+            </section>
+          </Card>
+          {!editor && (
+            <>
+              <RoadmapsSection
+                key={`roadmaps-${detail.id}`}
+                subject={detail}
+                aiEnabled={aiEnabled}
+              />
+              <PlanEditor
+                key={detail.id}
+                subject={detail}
+                onActionStart={() => setSuccess('')}
+                onChanged={(value) => {
+                  setDetail(value);
+                  setSuccess('Plano salvo.');
+                  setRevision(revision + 1);
+                }}
+              />
+              <LinkedRecords
+                subjectId={detail.id}
+                tasksEnabled={tasksEnabled}
+              />
+            </>
+          )}
+        </>
       )}
       {result && (
-        <section className="subjects-collection" aria-label="Lista de matérias">
+        <section
+          className="subjects-collection"
+          aria-label="Lista de disciplinas"
+        >
           {!result.items.length ? (
-            !loading && !error && result.total === 0 ? (
+            name ? (
+              <div role="status">
+                <p>Nenhuma disciplina corresponde aos filtros.</p>
+                <Button variant="outline" onClick={clearFilters}>
+                  Limpar filtros
+                </Button>
+              </div>
+            ) : !loading && !error && result.total === 0 ? (
               <CollectionEmptyState
                 icon={<BookOpen />}
-                title="Nenhuma matéria ainda"
-                description="Adicione sua primeira matéria para começar a organizar seus estudos."
-                actionLabel="Adicionar matéria"
+                title="Nenhuma disciplina ainda"
+                description="Adicione sua primeira disciplina para começar a organizar seus estudos."
+                actionLabel="Adicionar disciplina"
                 onAction={createSubject}
               />
             ) : null
@@ -923,7 +976,7 @@ export function SubjectsPage({
             </ul>
           )}
           {result.totalPages > 1 && (
-            <Pagination aria-label="Páginas de matérias">
+            <Pagination aria-label="Páginas de disciplinas">
               <PaginationContent className="flex-wrap">
                 <PaginationItem>
                   <PaginationButton

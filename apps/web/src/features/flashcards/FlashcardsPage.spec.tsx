@@ -100,7 +100,7 @@ beforeEach(() => {
       };
       const subject = {
         id: id2,
-        name: 'Matéria própria',
+        name: 'Disciplina própria',
         currentLevel: 'BEGINNER',
         objective: 'Aprender',
         dueDate: '2026-10-01',
@@ -351,7 +351,7 @@ it('creates without subjects, retains deck form on error, and omits preserved as
     [...calls].reverse().find((call) => call.method === 'PATCH')?.body,
   ).not.toHaveProperty('subjectId');
   await interaction.click(
-    screen.getByRole('button', { name: 'Remover vínculo com matéria' }),
+    screen.getByRole('button', { name: 'Remover vínculo com disciplina' }),
   );
   await interaction.click(
     screen.getByRole('button', { name: 'Salvar baralho' }),
@@ -446,7 +446,7 @@ it('associates and removes an optional own subject and shows it after page reloa
   expect(decks[0]?.subjectId).toBe(id2);
   unmount();
   render(<FlashcardsPage subjectsEnabled />);
-  await screen.findByText('Matéria própria');
+  await screen.findByText('Disciplina própria');
   await openDeck();
   await interaction.click(
     screen.getByRole('button', { name: 'Editar Álgebra' }),
@@ -470,7 +470,7 @@ it('filters baralhos and opens the aggregate study overview for a subject', asyn
   ];
   render(<FlashcardsPage subjectsEnabled />);
   await screen.findByRole('button', { name: 'Sem vínculo' });
-  const filter = screen.getByRole('combobox', { name: 'Matéria' });
+  const filter = screen.getByRole('combobox', { name: 'Disciplina' });
   await waitFor(() =>
     expect((filter as HTMLButtonElement).disabled).toBe(false),
   );
@@ -479,9 +479,9 @@ it('filters baralhos and opens the aggregate study overview for a subject', asyn
     expect(screen.queryByRole('button', { name: 'Sem vínculo' })).toBeNull(),
   );
   await userEvent.click(
-    screen.getByRole('button', { name: 'Ver estudo desta matéria' }),
+    screen.getByRole('button', { name: 'Ver estudo desta disciplina' }),
   );
-  await screen.findByRole('heading', { name: 'Matéria própria' });
+  await screen.findByRole('heading', { name: 'Disciplina própria' });
   await screen.findByRole('button', { name: 'Estudar agora' });
   expect(
     screen.getByRole('region', { name: 'Baralhos vinculados' }),

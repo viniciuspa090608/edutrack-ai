@@ -292,6 +292,10 @@ export class TasksRepository {
         .getRepository(taskEntity)
         .createQueryBuilder('task')
         .where('task.userId = :userId', { userId });
+      if (filters.title)
+        query.andWhere('LOCATE(LOWER(:title), LOWER(task.title)) > 0', {
+          title: filters.title,
+        });
       if (filters.subjectId)
         query.andWhere('task.subjectId = :subjectId', {
           subjectId: filters.subjectId,

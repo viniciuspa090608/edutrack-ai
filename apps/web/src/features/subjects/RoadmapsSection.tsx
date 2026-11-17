@@ -64,7 +64,7 @@ function failure(cause: unknown) {
     }
     const errors: Record<string, string> = {
       AI_DISABLED: 'Ative a IA nas preferências para continuar.',
-      MODULE_DISABLED: 'Reative matérias nas preferências.',
+      MODULE_DISABLED: 'Reative disciplinas nas preferências.',
       AI_CREDENTIAL_REJECTED:
         'A chave pessoal foi recusada. Revise a configuração de IA na conta.',
       AI_LIMIT_REACHED:
@@ -159,8 +159,8 @@ function ParametersForm({
       <h4>Parâmetros da geração</h4>
       <p>Destino: {subject.name}</p>
       <p>
-        O nome da matéria e estes parâmetros serão enviados ao provedor de IA.
-        Revise antes de gerar.
+        O nome da disciplina e estes parâmetros serão enviados ao provedor de
+        IA. Revise antes de gerar.
       </p>
       <FieldSet disabled={busy}>
         <Label>

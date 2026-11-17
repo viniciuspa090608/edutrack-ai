@@ -17,7 +17,7 @@ export class AuthApiError extends Error {
         : code === 'INVALID_CODE'
           ? 'Código inválido ou expirado. Solicite outro se necessário.'
           : code === 'LAST_MODULE_REQUIRED'
-            ? 'Mantenha pelo menos um módulo de estudo ativo: tarefas, matérias ou flashcards.'
+            ? 'Mantenha pelo menos um módulo de estudo ativo: tarefas, disciplinas ou flashcards.'
             : code === 'INVALID_RESET_GRANT'
               ? 'O prazo da redefinição terminou. Solicite outro código.'
               : code === 'IDENTITY_PROOF_REQUIRED'

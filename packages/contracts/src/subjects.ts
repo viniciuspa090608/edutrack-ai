@@ -94,6 +94,10 @@ export const subjectListSchema = z
 export type StudySubject = z.infer<typeof subjectSchema>;
 export type CreateSubject = z.infer<typeof createSubjectSchema>;
 export type UpdateSubject = z.infer<typeof updateSubjectSchema>;
+export const subjectFiltersSchema = subjectPaginationSchema.extend({
+  name: z.string().trim().max(160).optional(),
+});
+export type SubjectFilters = z.infer<typeof subjectFiltersSchema>;
 export type SubjectPagination = z.infer<typeof subjectPaginationSchema>;
 export type SubjectList = z.infer<typeof subjectListSchema>;
 export type PlanItem = z.infer<typeof planItemSchema>;

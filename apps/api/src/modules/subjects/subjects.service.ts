@@ -4,6 +4,7 @@ import {
   subjectPaginationSchema,
   subjectSchema,
   subjectListSchema,
+  subjectFiltersSchema,
   createPlanItemSchema,
   updatePlanItemSchema,
   planOrderSchema,
@@ -24,7 +25,7 @@ import { HttpError } from '../../shared/http-error.js';
 function parse<T>(schema: z.ZodType<T>, input: unknown): T {
   const result = schema.safeParse(input);
   if (!result.success)
-    throw new HttpError(400, 'INVALID_INPUT', 'Dados de matéria inválidos.');
+    throw new HttpError(400, 'INVALID_INPUT', 'Dados de disciplina inválidos.');
   return result.data;
 }
 export class SubjectsService {
@@ -219,12 +220,13 @@ export class SubjectsService {
     return subjectSchema.parse(await this.repository.detail(userId, id));
   }
   async list(userId: string, input: unknown) {
-    const pagination = parse(subjectPaginationSchema, input);
-    const result = await this.repository.list(userId, pagination);
+    const { page, pageSize, name } = parse(subjectFiltersSchema, input);
+    const result = await this.repository.list(userId, { page, pageSize, name });
     return subjectListSchema.parse({
       ...result,
-      ...pagination,
-      totalPages: Math.ceil(result.total / pagination.pageSize),
+      page,
+      pageSize,
+      totalPages: Math.ceil(result.total / pageSize),
     });
   }
   async update(userId: string, id: string, input: unknown) {

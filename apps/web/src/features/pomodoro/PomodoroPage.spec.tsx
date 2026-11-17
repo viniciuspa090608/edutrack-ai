@@ -274,11 +274,11 @@ it('selects a subject without a task, filters history and hides selectors when d
   const view = render(<PomodoroPage tasksEnabled={false} subjectsEnabled />);
   await waitFor(() =>
     expect(
-      (screen.getByLabelText('Matéria (opcional)') as HTMLButtonElement)
+      (screen.getByLabelText('Disciplina (opcional)') as HTMLButtonElement)
         .disabled,
     ).toBe(false),
   );
-  await selectOption(screen.getByLabelText('Matéria (opcional)'), row.id);
+  await selectOption(screen.getByLabelText('Disciplina (opcional)'), row.id);
   await interaction.click(
     screen.getByRole('button', { name: 'Iniciar sessão' }),
   );
@@ -286,7 +286,7 @@ it('selects a subject without a task, filters history and hides selectors when d
     expect(api.startPomodoro).toHaveBeenCalledWith(undefined, row.id),
   );
   await selectOption(
-    screen.getByLabelText('Filtrar histórico por matéria'),
+    screen.getByLabelText('Filtrar histórico por disciplina'),
     row.id,
   );
   await waitFor(() =>
@@ -294,7 +294,9 @@ it('selects a subject without a task, filters history and hides selectors when d
   );
   view.unmount();
   render(<PomodoroPage tasksEnabled={false} subjectsEnabled={false} />);
-  expect(screen.queryByLabelText('Filtrar histórico por matéria')).toBeNull();
+  expect(
+    screen.queryByLabelText('Filtrar histórico por disciplina'),
+  ).toBeNull();
 });
 
 it('updates the clock from elapsed time, freezes on pause and waits at the block boundary', async () => {

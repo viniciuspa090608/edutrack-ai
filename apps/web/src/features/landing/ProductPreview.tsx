@@ -108,7 +108,7 @@ export function DashboardPreview() {
 
 export function RoadmapPreview() {
   return (
-    <ProductPreview title="Exemplo de roadmap de uma matéria">
+    <ProductPreview title="Exemplo de roadmap de uma disciplina">
       <div className="preview-heading">
         <span>Arquitetura de Computadores</span>
         <span className="preview-chip">Roadmap</span>

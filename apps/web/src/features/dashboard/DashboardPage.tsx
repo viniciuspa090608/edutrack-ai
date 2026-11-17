@@ -412,18 +412,20 @@ export function DashboardPage({ displayName }: { displayName: string }) {
                   ) : (
                     <>
                       <p>Comece um bloco de foco de 25 minutos.</p>
-                      <Button
-                        disabled={starting}
-                        onClick={() => {
-                          void begin();
-                        }}
-                      >
-                        {starting
-                          ? 'Consultando sessão…'
-                          : uncertain
-                            ? 'Consultar sessão e iniciar'
-                            : 'Iniciar Pomodoro'}
-                      </Button>
+                      <div className="flex flex-1 items-center">
+                        <Button
+                          disabled={starting}
+                          onClick={() => {
+                            void begin();
+                          }}
+                        >
+                          {starting
+                            ? 'Consultando sessão…'
+                            : uncertain
+                              ? 'Consultar sessão e iniciar'
+                              : 'Iniciar Pomodoro'}
+                        </Button>
+                      </div>
                     </>
                   )}
                   {startError && (
@@ -512,12 +514,15 @@ export function DashboardPage({ displayName }: { displayName: string }) {
             )}
             {card(
               'subjects',
-              'Matérias',
+              'Disciplinas',
               subject
                 ? `/app/materias?subject=${encodeURIComponent(subject.id)}${subject.roadmapId ? `#roadmap-${encodeURIComponent(subject.roadmapId)}` : ''}`
                 : '/app/materias',
               subject ? (
-                <DashboardPreviewList label="Matéria em destaque" blur={false}>
+                <DashboardPreviewList
+                  label="Disciplina em destaque"
+                  blur={false}
+                >
                   <li>
                     <h3>{subject.name}</h3>
                     <p>
@@ -550,25 +555,25 @@ export function DashboardPage({ displayName }: { displayName: string }) {
               ) : subjectsEmpty ? (
                 <CollectionEmptyState
                   icon={<BookOpen />}
-                  title="Nenhuma matéria cadastrada"
-                  description="Crie uma matéria e organize seu plano de estudo, com ou sem IA."
-                  actionLabel="Adicionar matéria"
+                  title="Nenhuma disciplina cadastrada"
+                  description="Crie uma disciplina e organize seu plano de estudo, com ou sem IA."
+                  actionLabel="Adicionar disciplina"
                   onAction={() => navigate('/app/materias?create=1')}
                 />
               ) : subjectsError ? (
                 <div role="alert">
-                  <p>Não foi possível consultar suas matérias.</p>
+                  <p>Não foi possível consultar suas disciplinas.</p>
                   <Button
                     onClick={() => setSubjectsRetry((value) => value + 1)}
                   >
-                    Tentar consultar matérias
+                    Tentar consultar disciplinas
                   </Button>
                 </div>
               ) : (
                 <p>
                   {subjectsEmpty === null
-                    ? 'Consultando matérias…'
-                    : 'Nenhuma matéria em destaque. Abra suas matérias para continuar estudando.'}
+                    ? 'Consultando disciplinas…'
+                    : 'Nenhuma disciplina em destaque. Abra suas disciplinas para continuar estudando.'}
                 </p>
               ),
             )}

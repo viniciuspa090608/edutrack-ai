@@ -3,7 +3,7 @@ import type { DataSource, EntityManager } from 'typeorm';
 import type {
   CreateSubject,
   UpdateSubject,
-  SubjectPagination,
+  SubjectFilters,
   StudySubject,
   UpdatePlanItem,
 } from '@study-platform/contracts';
@@ -46,7 +46,7 @@ interface ItemRecord {
   updated_at: Date;
 }
 const missing = () =>
-  new HttpError(404, 'SUBJECT_NOT_FOUND', 'Matéria não encontrada.');
+  new HttpError(404, 'SUBJECT_NOT_FOUND', 'Disciplina não encontrada.');
 export class SubjectsRepository {
   async classroomSource(userId: string, id: string) {
     const rows = await this.source.query<
@@ -134,7 +134,7 @@ export class SubjectsRepository {
         importResult(
           null,
           'ignored',
-          'Matéria excluída localmente. Restaure explicitamente.',
+          'Disciplina excluída localmente. Restaure explicitamente.',
         ),
       );
     let subjectId = origin?.local_id;
@@ -144,7 +144,7 @@ export class SubjectsRepository {
         importResult(
           null,
           'ignored',
-          'Selecione ou preencha uma matéria para esta turma.',
+          'Selecione ou preencha uma disciplina para esta turma.',
         ),
       );
     if (
@@ -157,7 +157,7 @@ export class SubjectsRepository {
         importResult(
           subjectId,
           'error',
-          'Confirme a mudança de matéria de destino.',
+          'Confirme a mudança de disciplina de destino.',
         ),
       );
     const associated =
@@ -173,7 +173,7 @@ export class SubjectsRepository {
     if (!subjectId) {
       if (destination.kind !== 'new')
         return finish(
-          importResult(null, 'error', 'Preencha os dados da matéria.'),
+          importResult(null, 'error', 'Preencha os dados da disciplina.'),
         );
       subjectId = randomUUID();
       const data = destination.subject;
@@ -332,15 +332,19 @@ export class SubjectsRepository {
       this.detailIn(manager, userId, id),
     );
   }
-  async list(userId: string, { page, pageSize }: SubjectPagination) {
+  async list(userId: string, { page, pageSize, name }: SubjectFilters) {
     return this.source.transaction(async (manager) => {
+      const where = name
+        ? 'user_id=? AND LOCATE(LOWER(?), LOWER(name)) > 0'
+        : 'user_id=?';
+      const parameters = name ? [userId, name] : [userId];
       const rows = await manager.query<{ id: string }[]>(
-        'SELECT id FROM study_subjects WHERE user_id=? ORDER BY created_at DESC,id DESC LIMIT ? OFFSET ?',
-        [userId, pageSize, (page - 1) * pageSize],
+        `SELECT id FROM study_subjects WHERE ${where} ORDER BY created_at DESC,id DESC LIMIT ? OFFSET ?`,
+        [...parameters, pageSize, (page - 1) * pageSize],
       );
       const counts = await manager.query<{ total: number }[]>(
-        'SELECT COUNT(*) AS total FROM study_subjects WHERE user_id=?',
-        [userId],
+        `SELECT COUNT(*) AS total FROM study_subjects WHERE ${where}`,
+        parameters,
       );
       const items: StudySubject[] = [];
       for (const row of rows)

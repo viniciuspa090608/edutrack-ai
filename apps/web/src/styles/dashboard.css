@@ -389,6 +389,13 @@
   mask-image: linear-gradient(transparent, black);
 }
 
+.dashboard-card-pomodoro > [data-slot='card-content'],
+.dashboard-card-pomodoro .dashboard-card-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
 .dashboard-card-heading {
   min-width: 0;
   overflow-wrap: anywhere;

@@ -220,8 +220,8 @@ export function PublicLanding() {
               <em>Encontre seu ritmo.</em>
             </h1>
             <p>
-              Reúna tarefas, matérias, sessões de foco e revisões em um só lugar
-              para acompanhar sua evolução.
+              Reúna tarefas, disciplinas, sessões de foco e revisões em um só
+              lugar para acompanhar sua evolução.
             </p>
             <div className="landing-actions">
               <CreateAccount />
@@ -258,8 +258,8 @@ export function PublicLanding() {
                 {
                   title: 'Organize',
                   icon: <Route aria-hidden="true" />,
-                  text: 'Planeje tarefas, matérias e rotinas de acordo com sua disponibilidade. Divida seu plano em passos claros.',
-                  note: 'Tarefas, matérias e roadmaps',
+                  text: 'Planeje tarefas, disciplinas e rotinas de acordo com sua disponibilidade. Divida seu plano em passos claros.',
+                  note: 'Tarefas, disciplinas e roadmaps',
                 },
                 {
                   title: 'Estude',
@@ -311,13 +311,14 @@ export function PublicLanding() {
             title="Planejamento e roadmaps por etapas"
             points={[
               'Tarefas com prazos, subtarefas e progresso',
-              'Matérias com planos e roadmaps editáveis',
+              'Disciplinas com planos e roadmaps editáveis',
               'Rotinas de estudo recorrentes',
             ]}
             preview={<RoadmapPreview />}
           >
             Organize o próximo passo sem perder a visão do todo. Reúna suas
-            matérias, divida conteúdos em etapas e acompanhe o que já concluiu.
+            disciplinas, divida conteúdos em etapas e acompanhe o que já
+            concluiu.
           </FeatureSection>
           <FeatureSection
             index="02"
@@ -454,12 +455,12 @@ export function PublicLanding() {
               <div>
                 <h3>Módulos configuráveis</h3>
                 <p>
-                  Ative tarefas, matérias e flashcards conforme sua rotina.
+                  Ative tarefas, disciplinas e flashcards conforme sua rotina.
                   Mantenha ao menos um módulo de estudo ativo; a IA é opcional.
                 </p>
               </div>
               <div className="landing-module-chips">
-                {['Tarefas', 'Matérias', 'Flashcards', 'IA opcional'].map(
+                {['Tarefas', 'Disciplinas', 'Flashcards', 'IA opcional'].map(
                   (label) => (
                     <Badge key={label} variant="secondary">
                       {label}

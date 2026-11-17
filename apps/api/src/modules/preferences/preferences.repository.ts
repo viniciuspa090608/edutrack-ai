@@ -66,7 +66,7 @@ export class PreferencesRepository {
         throw new HttpError(
           409,
           'LAST_MODULE_REQUIRED',
-          'Mantenha pelo menos um módulo de estudo ativo: tarefas, matérias ou flashcards.',
+          'Mantenha pelo menos um módulo de estudo ativo: tarefas, disciplinas ou flashcards.',
         );
       await manager.query(
         `UPDATE user_preferences SET ${keys.map((k) => `${columns[k]} = ?`).join(', ')} WHERE user_id = ?`,

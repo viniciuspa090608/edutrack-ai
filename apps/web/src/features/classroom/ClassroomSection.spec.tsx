@@ -158,7 +158,7 @@ it('selects a course by keyboard and imports independent tasks explicitly', asyn
   const checkbox = await screen.findByRole('checkbox', { name: 'Matemática' });
   checkbox.focus();
   await user.keyboard(' ');
-  expect(screen.queryByText('Matéria para Matemática')).toBeNull();
+  expect(screen.queryByText('Disciplina para Matemática')).toBeNull();
   await user.click(screen.getByRole('button', { name: 'Importar seleção' }));
   await waitFor(() =>
     expect(

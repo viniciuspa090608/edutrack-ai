@@ -256,7 +256,7 @@ export function FlashcardsPage({
       if (token === request.current) setSubjectStudy(subject);
     } catch {
       if (token === request.current)
-        setError('Não foi possível abrir a matéria.');
+        setError('Não foi possível abrir a disciplina.');
     } finally {
       if (token === request.current) setBusy(false);
     }
@@ -314,7 +314,7 @@ export function FlashcardsPage({
         <>
           <Button
             variant="outline"
-            className="justify-self-start"
+            className="justify-self-end"
             onClick={() => {
               request.current++;
               setBusy(false);
@@ -390,8 +390,8 @@ export function FlashcardsPage({
             <div className="deck-filter">
               <SubjectSelect
                 value={filter}
-                label="Matéria"
-                emptyLabel="Todas as matérias"
+                label="Disciplina"
+                emptyLabel="Todas as disciplinas"
                 disabled={busy}
                 onChange={(value) => {
                   setSubjectFilter(value);
@@ -405,7 +405,7 @@ export function FlashcardsPage({
                   id="study-subject"
                   onClick={() => void openSubject(filter)}
                 >
-                  Ver estudo desta matéria
+                  Ver estudo desta disciplina
                 </Button>
               )}
             </div>
@@ -524,7 +524,7 @@ export function FlashcardsPage({
             </div>
           ) : !decks.items.length ? (
             filter ? (
-              <p>Nenhum baralho vinculado a esta matéria.</p>
+              <p>Nenhum baralho vinculado a esta disciplina.</p>
             ) : decks.total === 0 ? (
               <CollectionEmptyState
                 icon={<Layers />}

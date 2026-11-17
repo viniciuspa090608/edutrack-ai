@@ -68,7 +68,7 @@ export function AuthLayout({
                 com mais clareza.
               </h2>
               <p>
-                Reúna tarefas, matérias e momentos de foco em um espaço feito
+                Reúna tarefas, disciplinas e momentos de foco em um espaço feito
                 para sua rotina.
               </p>
               <div className="auth-feature">
@@ -89,7 +89,7 @@ export function AuthLayout({
                 <Layers aria-hidden="true" />
                 <div>
                   <strong>Revise o que aprendeu</strong>
-                  <p>Estude com matérias e flashcards.</p>
+                  <p>Estude com disciplinas e flashcards.</p>
                 </div>
               </div>
             </>

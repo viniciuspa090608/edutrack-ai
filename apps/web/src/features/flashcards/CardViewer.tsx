@@ -26,7 +26,7 @@ export function CardViewer({
           <Button
             type="button"
             variant="outline"
-            className="justify-self-start"
+            className="justify-self-end"
             onClick={onClose}
           >
             ← Voltar

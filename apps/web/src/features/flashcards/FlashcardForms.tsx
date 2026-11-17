@@ -149,7 +149,7 @@ export function DeckForm({
                   <p>
                     O vínculo existente será preservado.{' '}
                     <Button type="button" onClick={() => setSubjectId('')}>
-                      Remover vínculo com matéria
+                      Remover vínculo com disciplina
                     </Button>
                     {!subjectId && (
                       <span> Vínculo será removido ao salvar.</span>

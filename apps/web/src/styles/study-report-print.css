@@ -22,6 +22,7 @@
 }
 
 .report-print-reason:empty,
+.report-print-only,
 .report-print-metadata {
   display: none;
 }
@@ -33,7 +34,19 @@
 @media print {
   @page study-report {
     size: A4 portrait;
-    margin: 14mm;
+    margin: 10mm 12mm 12mm;
+
+    @bottom-left {
+      content: 'EduTrack / Relatório de estudos';
+      font: 8pt sans-serif;
+      color: #42556e;
+    }
+
+    @bottom-right {
+      content: counter(page) ' / ' counter(pages);
+      font: 8pt sans-serif;
+      color: #42556e;
+    }
   }
 
   html:has(.study-report),
@@ -80,8 +93,8 @@
 
   .study-report.evolution-surface {
     --background: #fff;
-    --foreground: #161616;
-    --muted-foreground: #333;
+    --foreground: #192b43;
+    --muted-foreground: #42556e;
     --border: #aaa;
     --primary: #222;
     --success: #333;
@@ -95,17 +108,31 @@
     page: study-report;
   }
 
-  .study-report .evolution-title-row h1 {
-    font-size: 21pt;
-    margin-block: 0 2mm;
+  .study-report .evolution-title-row {
+    display: none;
+  }
+
+  .study-report .report-print-only {
+    display: revert;
   }
 
   .study-report .report-print-metadata p {
-    margin-block: 1mm;
+    margin-block: 0.7mm;
+    line-height: 1.25;
   }
 
   .study-report .report-print-metadata {
     display: block;
+    position: relative;
+  }
+
+  .study-report .report-print-month {
+    position: absolute;
+    inset: 0 0 auto auto;
+    border: 1px solid #70819a;
+    border-radius: 20mm;
+    padding: 1mm 3mm;
+    text-transform: uppercase;
   }
 
   .study-report
@@ -124,26 +151,150 @@
       .evolution-context,
       .evolution-header
     ) {
-    margin-block-end: 3mm;
+    margin-block-end: 2mm;
     box-shadow: none;
     background: white;
   }
 
   .study-report :is(.evolution-card, .evolution-empty) {
-    padding: 3mm;
-    border-color: #aaa;
+    padding: 2mm 2.5mm;
+    border-color: #b9c6d7;
   }
 
   .study-report :is(.evolution-metrics, .progress-achievements) {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 3mm;
-    margin-block: 0 3mm;
+    gap: 2mm;
+    margin-block: 0 2mm;
   }
 
   .study-report
     :is(.evolution-metrics, .progress-achievements)
     > .evolution-card {
     margin-block-end: 0;
+  }
+
+  .study-report .evolution-header {
+    padding: 3mm 5mm;
+    border: 0;
+    background: #152841;
+    color: white;
+    print-color-adjust: exact;
+  }
+
+  .study-report .report-print-metadata p {
+    color: inherit;
+  }
+
+  .study-report .report-print-brand {
+    display: flex;
+    align-items: center;
+    gap: 2mm;
+    font-size: 14pt;
+    font-weight: 700;
+  }
+
+  .study-report .report-print-title {
+    font-size: 24pt;
+    font-weight: 700;
+  }
+
+  .study-report .progress-achievements {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .study-report .progress-achievements {
+    counter-reset: achievement;
+  }
+
+  .study-report .evolution-section-heading {
+    margin-bottom: 2mm;
+  }
+
+  .study-report .achievement-earned {
+    counter-increment: achievement;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+  }
+
+  .study-report .achievement-earned::before {
+    content: counter(achievement, decimal-leading-zero);
+    color: #294e9b;
+    font-weight: 700;
+  }
+
+  .study-report .achievement-earned .achievement-heading {
+    display: contents;
+  }
+
+  .study-report .achievement-earned .achievement-heading .evolution-icon,
+  .study-report .achievement-earned [data-slot='progress'] {
+    display: none;
+  }
+
+  .study-report .achievement-earned .achievement-status {
+    grid-area: 1 / 3;
+    color: #116b56;
+    border: 0;
+    background: #e4f4ef;
+    print-color-adjust: exact;
+  }
+
+  .study-report .achievement-earned h3 {
+    grid-area: 1 / 2;
+    font-weight: 700;
+  }
+
+  .study-report
+    .achievement-earned
+    :is(.achievement-criterion, .achievement-footer) {
+    grid-column: 1 / -1;
+  }
+
+  .study-report .achievement-earned .achievement-footer {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  .study-report [aria-labelledby='achievements-title'] > .evolution-empty,
+  .study-report .achievement-card:not(.achievement-earned) {
+    display: none;
+  }
+
+  .study-report .report-activity {
+    display: grid;
+    grid-template-columns: 1fr minmax(25mm, 35%) auto;
+    align-items: center;
+    gap: 3mm;
+  }
+
+  .study-report .report-activity meter {
+    width: 100%;
+    print-color-adjust: exact;
+  }
+
+  .study-report .report-activity meter::-webkit-meter-optimum-value {
+    background: #168569;
+  }
+
+  .study-report .report-activity strong {
+    font-size: 17pt;
+    color: #116b56;
+  }
+
+  .study-report .report-tracking-notes {
+    background: #edf2f8;
+    padding: 2mm;
+    break-inside: avoid;
+    print-color-adjust: exact;
+  }
+
+  .study-report .report-tracking-notes p {
+    margin: 0.7mm 0;
+    font-size: 8.5pt;
+    line-height: 1.25;
   }
 
   .study-report .evolution-icon {
@@ -161,11 +312,11 @@
   }
 
   .study-report :is(.achievement-card, .achievement-footer) {
-    gap: 2mm;
+    gap: 1mm;
   }
 
   .study-report .achievement-footer {
-    padding-top: 2mm;
+    padding-top: 1mm;
   }
 
   .study-report .analytics-charts {
