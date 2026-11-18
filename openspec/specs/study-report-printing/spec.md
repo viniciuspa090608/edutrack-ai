@@ -7,33 +7,42 @@ Permitir que estudantes imprimam ou salvem em PDF os dados que consultam nos rel
 ## Requirements
 
 ### Requirement: Imprimir a aba de relatório atual
-
-O sistema SHALL oferecer a ação Imprimir relatório ao lado do título em Progresso e Estatísticas, com acesso por teclado e sem rolagem horizontal a partir de 320 px.
+O sistema SHALL oferecer Imprimir relatório ao lado do título em Progresso e Estatísticas, com teclado e layout desde 320 px. Ambas as ações SHALL preparar o mesmo documento unificado para a mesma conta, consulta e dados, independentemente da aba aberta, com todo o conteúdo de Progresso primeiro e Estatísticas depois. SHALL carregar as duas fontes antes de permitir impressão e abrir a prévia do navegador para imprimir ou salvar em PDF.
 
 #### Scenario: Relatório disponível
-
-- **WHEN** o estudante ativa Imprimir relatório após carregar atividades
-- **THEN** o navegador abre a prévia de impressão e permite selecionar a impressora ou salvar em PDF
+- **WHEN** a pessoa imprime por Progresso ou Estatísticas usando a mesma consulta aplicada
+- **THEN** recebe conteúdo equivalente e na mesma ordem, com Progresso e conquistas antes das estatísticas, diferenças apenas no instante de geração.
 
 #### Scenario: Relatório indisponível
+- **WHEN** uma fonte necessária está carregando ou falhou, ou ambas confirmam ausência de atividade
+- **THEN** a impressão unificada permanece desabilitada com motivo acessível e erros permitem nova tentativa sem gerar documento incompleto.
 
-- **WHEN** a aba está carregando, apresenta erro ou não tem atividade
-- **THEN** a ação fica desabilitada e a página informa o motivo
+#### Scenario: Atividade em somente uma fonte
+- **WHEN** as duas fontes carregaram e somente uma contém atividade
+- **THEN** o relatório pode ser impresso com os dados disponíveis e indicação explícita de ausência de atividade na outra seção.
+
+#### Scenario: Consulta comum entre abas
+- **WHEN** a pessoa aplica filtros válidos em Estatísticas e alterna para Progresso
+- **THEN** ambos os botões usam a última consulta aplicada na sessão autenticada; antes de aplicar critérios usam a consulta padrão existente de Estatísticas, sem aplicar rascunhos.
 
 ### Requirement: Formato e dados do relatório impresso
-
-O documento SHALL usar A4 com cabeçalho azul escuro do EduTrack e corpo claro com texto escuro. O cabeçalho SHALL identificar o relatório, a aba, o período analisado e a data e hora de geração. O rodapé SHALL informar o fuso e a paginação. O documento SHALL ocultar navegação, botões e filtros, manter cartões, linhas e títulos junto ao conteúdo sempre que possível e permitir que o conteúdo ocupe várias páginas sem cortes.
+O documento SHALL usar A4 e a composição visual do modelo fornecido como referência de hierarquia, cards, seções numeradas, tabelas, gráficos e rodapé, adaptada às cores do tema claro do EduTrack e ao favicon oficial como logo, mesmo com a interface em tema escuro. SHALL identificar relatório unificado, períodos distintos de histórico e estatísticas, instante de geração, fuso e paginação contínua. SHALL ocultar navegação, ações e filtros e permitir múltiplas páginas sem cortes; não SHALL fixar três páginas nem reproduzir valores de exemplo ou ilustrações como dados reais.
 
 #### Scenario: Imprimir Progresso
-- **WHEN** o estudante imprime Progresso
-- **THEN** o documento mostra sequência atual, maior sequência e dias ativos em três cartões de destaque e resume a atividade com barra, total de dias ativos, dias rastreados no período e percentual quando calculável
-- **AND** lista as conquistas obtidas em duas colunas, com total, descrição, data, progresso registrado e notas de interpretação dos indicadores
-- **AND** todos os valores correspondem ao histórico rastreado da pessoa.
+- **WHEN** a pessoa gera o documento unificado
+- **THEN** a primeira seção mostra sequência atual, maior sequência e dias ativos, resumo de atividade com dias ativos, rastreados e percentual quando calculável
+- **AND** apresenta conquistas obtidas em duas colunas com total, descrição, data, progresso e notas de interpretação antes da seção Estatísticas
+- **AND** todos os valores correspondem ao histórico autenticado.
 
 #### Scenario: Imprimir Estatísticas
-- **WHEN** o estudante imprime Estatísticas com uma consulta aplicada
-- **THEN** o documento usa o cabeçalho, corpo e rodapé do relatório e contém os resumos, gráficos legíveis em escala de cinza e a tabela diária dos módulos habilitados da consulta autenticada.
+- **WHEN** o documento é preparado com uma consulta aplicada
+- **THEN** após Progresso aparecem período, comparação, resumos, gráficos e tabela diária dos módulos habilitados, preservando unidades, lacunas, fim exclusivo, cobertura e período parcial
+- **AND** gráficos continuam legíveis em escala de cinza e não calculável permanece distinto de zero.
+
+#### Scenario: Referência e tema
+- **WHEN** a pessoa imprime com a interface escura
+- **THEN** o PDF usa a paleta clara oficial e o favicon, conserva a hierarquia visual do modelo e mantém Progresso antes de Estatísticas mesmo que o exemplo tenha outra ordem.
 
 #### Scenario: Conteúdo em várias páginas
-- **WHEN** os dados não cabem em uma folha
-- **THEN** a prévia e o PDF mantêm o conteúdo legível, com numeração coerente e títulos junto aos respectivos blocos sempre que possível.
+- **WHEN** conquistas ou séries extensas excedem uma folha
+- **THEN** todo o conteúdo permanece legível, com cabeçalhos de tabelas repetidos, títulos junto aos blocos quando possível e paginação contínua sem áreas roláveis que ocultem dados.

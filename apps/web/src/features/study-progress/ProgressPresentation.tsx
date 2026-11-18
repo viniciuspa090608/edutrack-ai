@@ -1,5 +1,5 @@
-import { useEffect, useId, useRef, type ReactNode } from 'react';
-import { Button } from '@study-platform/ui/components/ui/button';
+import type { ReactNode } from 'react';
+import { UnifiedReportPrint } from './UnifiedReportPrint.js';
 import { Skeleton } from '@study-platform/ui/components/ui/skeleton';
 import { ChartNoAxesCombined, Trophy } from 'lucide-react';
 import '../../styles/progress-presentation.css';
@@ -10,111 +10,18 @@ export function ProgressHeader({
   description,
   current,
   titleId,
-  printUnavailable,
-  printPeriod,
-  timeZone,
 }: {
   title: string;
   description: string;
   current: 'progress' | 'analytics';
   titleId: string;
-  printUnavailable: string;
-  printPeriod?: string | undefined;
-  timeZone?: string | undefined;
 }) {
-  const reasonId = useId();
-  const generatedAt = useRef<HTMLTimeElement>(null);
-  const generatedMonth = useRef<HTMLSpanElement>(null);
-
-  useEffect(() => {
-    if (printUnavailable) return;
-    const timestamp = generatedAt.current;
-    const report = timestamp?.closest('.study-report');
-    const details = report?.querySelector<HTMLDetailsElement>(
-      '.analytics-daily-details',
-    );
-    let restoreCollapsed = false;
-    const prepare = () => {
-      if (!timestamp || !report || report.hasAttribute('data-printing')) return;
-      const now = new Date();
-      timestamp.dateTime = now.toISOString();
-      timestamp.textContent = now.toLocaleString('pt-BR', {
-        dateStyle: 'short',
-        timeStyle: 'short',
-        timeZone,
-      });
-      if (generatedMonth.current) {
-        generatedMonth.current.textContent = now.toLocaleDateString('pt-BR', {
-          month: 'long',
-          year: 'numeric',
-          timeZone,
-        });
-      }
-      report.setAttribute('data-printing', '');
-      if (details && !details.open) {
-        restoreCollapsed = true;
-        details.open = true;
-      }
-    };
-    const restore = () => {
-      if (details && restoreCollapsed) details.open = false;
-      restoreCollapsed = false;
-      report?.removeAttribute('data-printing');
-    };
-    window.addEventListener('beforeprint', prepare);
-    window.addEventListener('afterprint', restore);
-    return () => {
-      window.removeEventListener('beforeprint', prepare);
-      window.removeEventListener('afterprint', restore);
-      restore();
-    };
-  }, [printUnavailable, printPeriod, timeZone]);
-
   return (
     <header className="evolution-header">
-      {timeZone && (
-        <style media="print">
-          {`@page study-report { @bottom-center {
-            content: ${JSON.stringify(`Horário: ${timeZone}`)};
-            font: 8pt sans-serif;
-            color: #42556e;
-          } }`}
-        </style>
-      )}
       <p className="evolution-eyebrow">Sua jornada de estudos</p>
       <div className="evolution-title-row">
         <h1 id={titleId}>{title}</h1>
-        <Button
-          type="button"
-          className="report-print-button"
-          disabled={Boolean(printUnavailable)}
-          aria-describedby={printUnavailable ? reasonId : undefined}
-          onClick={() => window.print()}
-        >
-          Imprimir relatório
-        </Button>
-      </div>
-      <p
-        id={reasonId}
-        className="report-print-reason evolution-muted"
-        role="status"
-      >
-        {printUnavailable}
-      </p>
-      <div className="report-print-metadata">
-        <p className="report-print-brand">
-          <ChartNoAxesCombined aria-hidden="true" /> EduTrack
-        </p>
-        <p>
-          Relatórios / {current === 'progress' ? 'Progresso' : 'Estatísticas'}
-        </p>
-        <span ref={generatedMonth} className="report-print-month" />
-        <p className="report-print-title">Relatório de estudos</p>
-        <p>{description}</p>
-        {printPeriod && <p>Período: {printPeriod}</p>}
-        <p>
-          Gerado em <time ref={generatedAt} />
-        </p>
+        <UnifiedReportPrint />
       </div>
       <p className="evolution-muted">{description}</p>
       <nav className="evolution-navigation" aria-label="Abas de Relatório">

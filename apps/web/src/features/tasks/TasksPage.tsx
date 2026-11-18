@@ -497,6 +497,13 @@ export function TasksPage({
   const completionPending = useRef(false);
   const [completionError, setCompletionError] = useState('');
   const [deleting, setDeleting] = useState<StudyTask | null>(null);
+  const detailRequest = useRef(0);
+  useEffect(
+    () => () => {
+      detailRequest.current += 1;
+    },
+    [],
+  );
   const newButton = useRef<HTMLButtonElement>(null);
   const detailHeading = useRef<HTMLHeadingElement>(null);
   const onSubtasksChanged = useCallback((value: StudyTask) => {
@@ -648,166 +655,172 @@ export function TasksPage({
           destructive={false}
         />
       )}
-      <Card asChild>
-        <details className="task-card task-filters">
-          <summary className="task-filter-summary">Filtros</summary>
-          <form
-            aria-label="Filtrar tarefas"
-            onSubmit={(event) => {
-              event.preventDefault();
-              const parsed = taskFiltersSchema.safeParse(
-                Object.fromEntries(
-                  Object.entries({
-                    ...draft,
-                    page: 1,
-                    pageSize: filters.pageSize,
-                  }).filter(([, value]) => value !== ''),
-                ),
-              );
-              if (!parsed.success) {
-                setFilterError(
-                  'Informe filtros válidos e um prazo final igual ou posterior ao inicial.',
+      {!detail && (
+        <Card asChild>
+          <details className="task-card task-filters">
+            <summary className="task-filter-summary">Filtros</summary>
+            <form
+              aria-label="Filtrar tarefas"
+              onSubmit={(event) => {
+                event.preventDefault();
+                const parsed = taskFiltersSchema.safeParse(
+                  Object.fromEntries(
+                    Object.entries({
+                      ...draft,
+                      page: 1,
+                      pageSize: filters.pageSize,
+                    }).filter(([, value]) => value !== ''),
+                  ),
                 );
-                return;
-              }
-              setFilterError('');
-              setFilters(parsed.data);
-              setSuccess('');
-            }}
-          >
-            <CardContent>
-              <div className="task-filter-grid">
-                <div className="task-field">
-                  <Label htmlFor="filter-title">Buscar por título</Label>
-                  <Input
-                    id="filter-title"
-                    maxLength={160}
-                    value={draft.title}
-                    onChange={(event) =>
-                      setDraft({ ...draft, title: event.target.value })
-                    }
-                  />
-                </div>
-                <div className="task-field">
-                  <Label htmlFor="filter-status">Filtrar por status</Label>
-                  <Select
-                    value={draft.status || '__edutrack_empty__'}
-                    onValueChange={(selected) =>
-                      setDraft({
-                        ...draft,
-                        status:
-                          selected === '__edutrack_empty__' ? '' : selected,
-                      })
-                    }
-                  >
-                    <SelectTrigger
-                      id="filter-status"
-                      className="w-full min-w-0"
+                if (!parsed.success) {
+                  setFilterError(
+                    'Informe filtros válidos e um prazo final igual ou posterior ao inicial.',
+                  );
+                  return;
+                }
+                setFilterError('');
+                setFilters(parsed.data);
+                setSuccess('');
+              }}
+            >
+              <CardContent>
+                <div className="task-filter-grid">
+                  <div className="task-field">
+                    <Label htmlFor="filter-status">Filtrar por status</Label>
+                    <Select
+                      value={draft.status || '__edutrack_empty__'}
+                      onValueChange={(selected) =>
+                        setDraft({
+                          ...draft,
+                          status:
+                            selected === '__edutrack_empty__' ? '' : selected,
+                        })
+                      }
                     >
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent position="popper">
-                      <SelectItem value="__edutrack_empty__">
-                        Todos os status
-                      </SelectItem>
-                      {Object.entries(statuses).map(([v, label]) => (
-                        <SelectItem key={v} value={v}>
-                          {label}
+                      <SelectTrigger
+                        id="filter-status"
+                        className="w-full min-w-0"
+                      >
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent position="popper">
+                        <SelectItem value="__edutrack_empty__">
+                          Todos os status
                         </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="task-field">
-                  <Label htmlFor="filter-priority">
-                    Filtrar por importância
-                  </Label>
-                  <Select
-                    value={draft.priority || '__edutrack_empty__'}
-                    onValueChange={(selected) =>
-                      setDraft({
-                        ...draft,
-                        priority:
-                          selected === '__edutrack_empty__' ? '' : selected,
-                      })
-                    }
-                  >
-                    <SelectTrigger
-                      id="filter-priority"
-                      className="w-full min-w-0"
+                        {Object.entries(statuses).map(([v, label]) => (
+                          <SelectItem key={v} value={v}>
+                            {label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="task-field">
+                    <Label htmlFor="filter-priority">
+                      Filtrar por importância
+                    </Label>
+                    <Select
+                      value={draft.priority || '__edutrack_empty__'}
+                      onValueChange={(selected) =>
+                        setDraft({
+                          ...draft,
+                          priority:
+                            selected === '__edutrack_empty__' ? '' : selected,
+                        })
+                      }
                     >
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent position="popper">
-                      <SelectItem value="__edutrack_empty__">
-                        Todas as importâncias
-                      </SelectItem>
-                      {Object.entries(priorities).map(([v, label]) => (
-                        <SelectItem key={v} value={v}>
-                          {label}
+                      <SelectTrigger
+                        id="filter-priority"
+                        className="w-full min-w-0"
+                      >
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent position="popper">
+                        <SelectItem value="__edutrack_empty__">
+                          Todas as importâncias
                         </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                        {Object.entries(priorities).map(([v, label]) => (
+                          <SelectItem key={v} value={v}>
+                            {label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="task-field">
+                    <Label htmlFor="filter-from">Prazo de</Label>
+                    <Input
+                      id="filter-from"
+                      type="date"
+                      min="1000-01-01"
+                      max="9999-12-31"
+                      value={draft.dueFrom}
+                      aria-describedby={
+                        filterError ? 'filter-error' : undefined
+                      }
+                      onChange={(e) =>
+                        setDraft({ ...draft, dueFrom: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div className="task-field">
+                    <Label htmlFor="filter-to">Prazo até</Label>
+                    <Input
+                      id="filter-to"
+                      type="date"
+                      min="1000-01-01"
+                      max="9999-12-31"
+                      value={draft.dueTo}
+                      aria-describedby={
+                        filterError ? 'filter-error' : undefined
+                      }
+                      onChange={(e) =>
+                        setDraft({ ...draft, dueTo: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div className="task-field task-filter-search">
+                    <Label htmlFor="filter-title">Buscar por título</Label>
+                    <Input
+                      id="filter-title"
+                      maxLength={160}
+                      value={draft.title}
+                      onChange={(event) =>
+                        setDraft({ ...draft, title: event.target.value })
+                      }
+                    />
+                  </div>
+                  <div className="task-actions task-filter-actions">
+                    <Button type="submit">Aplicar filtros</Button>
+                    <Button
+                      variant="outline"
+                      type="button"
+                      onClick={() => {
+                        setDraft({
+                          title: '',
+                          status: '',
+                          priority: '',
+                          dueFrom: '',
+                          dueTo: '',
+                        });
+                        setFilters({ ...initialFilters });
+                        setFilterError('');
+                      }}
+                    >
+                      Limpar filtros
+                    </Button>
+                  </div>
                 </div>
-                <div className="task-field">
-                  <Label htmlFor="filter-from">Prazo de</Label>
-                  <Input
-                    id="filter-from"
-                    type="date"
-                    min="1000-01-01"
-                    max="9999-12-31"
-                    value={draft.dueFrom}
-                    aria-describedby={filterError ? 'filter-error' : undefined}
-                    onChange={(e) =>
-                      setDraft({ ...draft, dueFrom: e.target.value })
-                    }
-                  />
-                </div>
-                <div className="task-field">
-                  <Label htmlFor="filter-to">Prazo até</Label>
-                  <Input
-                    id="filter-to"
-                    type="date"
-                    min="1000-01-01"
-                    max="9999-12-31"
-                    value={draft.dueTo}
-                    aria-describedby={filterError ? 'filter-error' : undefined}
-                    onChange={(e) =>
-                      setDraft({ ...draft, dueTo: e.target.value })
-                    }
-                  />
-                </div>
-              </div>
-              <div className="task-actions">
-                <Button type="submit">Aplicar filtros</Button>
-                <Button
-                  variant="outline"
-                  type="button"
-                  onClick={() => {
-                    setDraft({
-                      title: '',
-                      status: '',
-                      priority: '',
-                      dueFrom: '',
-                      dueTo: '',
-                    });
-                    setFilters({ ...initialFilters });
-                    setFilterError('');
-                  }}
-                >
-                  Limpar filtros
-                </Button>
-              </div>
-              {filterError && (
-                <Alert variant="destructive" id="filter-error" role="alert">
-                  <AlertDescription>{filterError}</AlertDescription>
-                </Alert>
-              )}
-            </CardContent>
-          </form>
-        </details>
-      </Card>
+                {filterError && (
+                  <Alert variant="destructive" id="filter-error" role="alert">
+                    <AlertDescription>{filterError}</AlertDescription>
+                  </Alert>
+                )}
+              </CardContent>
+            </form>
+          </details>
+        </Card>
+      )}
       {loading && (
         <div className="task-loading">
           <Skeleton aria-hidden="true" className="h-5 w-2/3" />
@@ -838,16 +851,18 @@ export function TasksPage({
             className="task-card task-detail"
             aria-labelledby="task-detail-heading"
           >
-            <CardHeader>
+            <CardHeader className="detail-title-row">
               <Button
                 variant="outline"
                 className="justify-self-end"
                 onClick={() => {
-                  const opener = document.getElementById(
-                    `task-detail-${detail.id}`,
-                  );
+                  const openerId = `task-detail-${detail.id}`;
                   setDetail(null);
-                  (opener ?? newButton.current)?.focus();
+                  requestAnimationFrame(() =>
+                    (
+                      document.getElementById(openerId) ?? newButton.current
+                    )?.focus(),
+                  );
                 }}
               >
                 ← Voltar
@@ -935,7 +950,7 @@ export function TasksPage({
           </section>
         </Card>
       )}
-      {result && (
+      {result && !detail && (
         <section className="tasks-results" aria-label="Lista de tarefas">
           <div className="tasks-results-heading">
             <h2>{filtered ? 'Resultados dos filtros' : 'Suas tarefas'}</h2>
@@ -1000,13 +1015,16 @@ export function TasksPage({
                     id={`task-detail-${task.id}`}
                     className="task-detail-link"
                     onClick={async () => {
+                      const token = ++detailRequest.current;
                       setDetailLoading(true);
                       setSuccess('');
                       setError('');
                       setDetail(null);
                       setEditor(null);
                       try {
-                        setDetail(await taskDetail(task.id));
+                        const selected = await taskDetail(task.id);
+                        if (token === detailRequest.current)
+                          setDetail(selected);
                       } catch (cause) {
                         setError(failure(cause));
                       } finally {

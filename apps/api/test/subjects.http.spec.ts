@@ -1,7 +1,8 @@
+import { SubjectsRepository } from '../src/modules/subjects/subjects.repository.js';
 import { randomBytes, randomUUID } from 'node:crypto';
 import pino from 'pino';
 import request from 'supertest';
-import { beforeAll, afterAll, expect, it } from 'vitest';
+import { beforeAll, afterAll, expect, it, vi } from 'vitest';
 import { createApp } from '../src/app.js';
 import { loadEnv } from '../src/config/env.js';
 import { createDataSource } from '../src/database/data-source.js';
@@ -505,4 +506,121 @@ it('keeps a running subject-only session usable after deletion and preserves its
     activeSeconds: 1500,
     completedBlocks: 1,
   });
+});
+
+it('returns batched own progress with manual, roadmap, zero and unavailable values', async () => {
+  const owner = await account();
+  const other = await account();
+  const create = async (cookie: string, name: string) =>
+    (await write('post', '/subjects', cookie, { ...input, name })).body
+      .id as string;
+  const manual = await create(owner.cookie, 'Progresso manual');
+  const roadmap = await create(owner.cookie, 'Progresso roadmap');
+  const empty = await create(owner.cookie, 'Progresso vazio');
+  const zero = await create(owner.cookie, 'Progresso zero');
+  await create(other.cookie, 'Progresso alheio');
+  const step = await write(
+    'post',
+    `/subjects/${manual}/plan-items`,
+    owner.cookie,
+    { title: 'Etapa A' },
+  );
+  await write('post', `/subjects/${manual}/plan-items`, owner.cookie, {
+    title: 'Etapa B',
+  });
+  await write('post', `/subjects/${zero}/plan-items`, owner.cookie, {
+    title: 'Pendente',
+  });
+  const itemId = step.body.planItems[0].id as string;
+  await write(
+    'patch',
+    `/subjects/${manual}/plan-items/${itemId}`,
+    owner.cookie,
+    { status: 'COMPLETED' },
+  );
+  const roadmapId = randomUUID();
+  const blockId = randomUUID();
+  await source.query(
+    'INSERT INTO subject_roadmaps (id,subject_id,title,description) VALUES (?,?,?,?)',
+    [roadmapId, roadmap, 'Plano oficial', ''],
+  );
+  await source.query(
+    'INSERT INTO subject_roadmap_blocks (id,roadmap_id,title,description,position) VALUES (?,?,?,?,0)',
+    [blockId, roadmapId, 'Bloco', ''],
+  );
+  await source.query(
+    'INSERT INTO subject_roadmap_steps (id,block_id,title,description,position,completed) VALUES (?,?,?,?,0,true),(?,?,?,?,1,false)',
+    [randomUUID(), blockId, 'Feito', '', randomUUID(), blockId, 'Pendente', ''],
+  );
+  const result = await read(
+    '/subjects?name=Progresso&pageSize=100',
+    owner.cookie,
+  );
+  expect(result.status).toBe(200);
+  expect(result.body.total).toBe(4);
+  const summaries = new Map<
+    string,
+    {
+      source: string;
+      total: number;
+      completed: number;
+      progressPercent: number | null;
+    }
+  >(
+    result.body.items.map((item: { id: string; studySummary: unknown }) => [
+      item.id,
+      item.studySummary,
+    ]),
+  );
+  expect(summaries.get(manual)).toEqual({
+    source: 'manual',
+    total: 2,
+    completed: 1,
+    progressPercent: 50,
+  });
+  expect(summaries.get(roadmap)).toEqual({
+    source: 'roadmap',
+    total: 2,
+    completed: 1,
+    progressPercent: 50,
+  });
+  expect(summaries.get(empty)?.progressPercent).toBeNull();
+  expect(summaries.get(zero)?.progressPercent).toBe(0);
+  const page = await read(
+    '/subjects?name=Progresso&pageSize=1&page=2',
+    owner.cookie,
+  );
+  expect(page.body.items).toHaveLength(1);
+  expect(page.body.total).toBe(4);
+  expect(page.body.items[0].studySummary).toBeTruthy();
+  expect((await read(`/subjects/${manual}`, other.cookie)).status).toBe(404);
+  await write(
+    'patch',
+    `/subjects/${manual}/plan-items/${itemId}`,
+    owner.cookie,
+    { status: 'PENDING' },
+  );
+  const updated = await read('/subjects?name=Progresso%20manual', owner.cookie);
+  expect(updated.body.items[0].studySummary.progressPercent).toBe(0);
+});
+
+it('keeps the list query count constant when the page contains more disciplines', async () => {
+  const owner = await account();
+  for (let index = 0; index < 4; index++)
+    await write('post', '/subjects', owner.cookie, {
+      ...input,
+      name: `Lote ${index}`,
+    });
+  const logger = vi.spyOn(source.logger, 'logQuery');
+  const repo = new SubjectsRepository(source);
+  try {
+    await repo.list(owner.id, { page: 1, pageSize: 1 });
+    const single = logger.mock.calls.length;
+    logger.mockClear();
+    const page = await repo.list(owner.id, { page: 1, pageSize: 4 });
+    expect(page.items).toHaveLength(4);
+    expect(logger.mock.calls.length).toBe(single);
+  } finally {
+    logger.mockRestore();
+  }
 });

@@ -86,6 +86,12 @@ beforeEach(() => {
             {
               id: originalTask.id,
               name: 'Matemática',
+              studySummary: {
+                source: 'manual',
+                total: 0,
+                completed: 0,
+                progressPercent: null,
+              },
               currentLevel: 'BEGINNER',
               objective: 'Aprender',
               dueDate: '2026-10-01',
@@ -119,8 +125,18 @@ beforeEach(() => {
         });
       }
       if (method === 'GET' && url.pathname.endsWith('/subtasks'))
-        return Response.json({ items: [], task: items[0] });
-      if (method === 'GET') return Response.json(items[0]);
+        return Response.json({
+          items: [],
+          task:
+            items.find(
+              (item) => url.pathname === `/tasks/${item.id}/subtasks`,
+            ) ?? items[0],
+        });
+      if (method === 'GET')
+        return Response.json(
+          items.find((item) => url.pathname === `/tasks/${item.id}`) ??
+            items[0],
+        );
       if (method === 'POST' && url.pathname.endsWith('/complete-subtasks')) {
         const task = {
           ...items[0]!,
@@ -400,9 +416,9 @@ it('creates using keyboard/defaults, validates whitespace and retains input afte
   failed = '';
   await interaction.keyboard('{Enter}');
   await screen.findByText('Tarefa salva.');
-  await screen.findByRole('button', {
-    name: 'Ver detalhes de Revisar álgebra',
-  });
+  await screen.findByRole('heading', { name: 'Revisar álgebra' });
+  expect(screen.queryByRole('form', { name: 'Filtrar tarefas' })).toBeNull();
+  expect(screen.queryByRole('region', { name: 'Lista de tarefas' })).toBeNull();
   expect(screen.queryByRole('button', { name: 'Adicionar tarefa' })).toBeNull();
   expect(requests.filter((r) => r.method === 'POST').at(-1)!.body).toEqual({
     title: 'Revisar álgebra',
@@ -664,4 +680,40 @@ it('consumes the dashboard create intent once and preserves other URL state', as
   render(<TasksPage />);
   await screen.findByText(/Nenhuma tarefa ainda/);
   expect(screen.queryByRole('dialog')).toBeNull();
+});
+
+it('isolates the selected task and restores filters and focus on return', async () => {
+  items = [
+    originalTask,
+    {
+      ...originalTask,
+      id: '00000000-0000-4000-8000-000000000002',
+      title: 'Outra tarefa',
+      description: 'Dados da outra tarefa',
+    },
+  ];
+  render(<TasksPage />);
+  const user = userEvent.setup();
+  const opener = await screen.findByRole('button', {
+    name: 'Ver detalhes de Revisar álgebra',
+  });
+  await user.click(screen.getByText('Filtros', { exact: true }));
+  await user.type(screen.getByLabelText('Buscar por título'), 'Revisar');
+  await user.click(opener);
+  await screen.findByRole('region', { name: 'Revisar álgebra' });
+  expect(screen.queryByText('Outra tarefa')).toBeNull();
+  expect(screen.queryByLabelText('Buscar por título')).toBeNull();
+  await user.click(screen.getByRole('button', { name: '← Voltar' }));
+  await waitFor(() =>
+    expect(document.activeElement?.id).toBe(`task-detail-${originalTask.id}`),
+  );
+  expect(
+    (screen.getByLabelText('Buscar por título') as HTMLInputElement).value,
+  ).toBe('Revisar');
+  await user.click(
+    screen.getByRole('button', { name: 'Ver detalhes de Outra tarefa' }),
+  );
+  await screen.findByRole('region', { name: 'Outra tarefa' });
+  expect(screen.getByText('Dados da outra tarefa')).toBeTruthy();
+  expect(screen.queryByText('Capítulo 1')).toBeNull();
 });

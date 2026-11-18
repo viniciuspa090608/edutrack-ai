@@ -82,9 +82,20 @@ export const subjectSchema = createSubjectSchema
     planItems: z.array(planItemSchema),
   })
   .strict();
+export const subjectStudySummarySchema = z
+  .object({
+    source: z.enum(['roadmap', 'manual']),
+    total: z.number().int().nonnegative(),
+    completed: z.number().int().nonnegative(),
+    progressPercent: z.number().min(0).max(100).nullable(),
+  })
+  .strict();
+export type SubjectStudySummary = z.infer<typeof subjectStudySummarySchema>;
 export const subjectListSchema = z
   .object({
-    items: z.array(subjectSchema),
+    items: z.array(
+      subjectSchema.extend({ studySummary: subjectStudySummarySchema }),
+    ),
     page: z.number().int().positive(),
     pageSize: z.number().int().min(1).max(100),
     total: z.number().int().nonnegative(),

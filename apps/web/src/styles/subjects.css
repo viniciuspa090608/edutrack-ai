@@ -504,3 +504,22 @@
   align-items: center;
   justify-content: center;
 }
+
+.subjects-page .subject-filters [data-slot='card-content'] {
+  display: flex;
+  align-items: end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.subject-filters .task-filter-grid {
+  flex: 1 1 320px;
+  display: block;
+}
+.subject-filters .task-actions {
+  flex: 0 0 auto;
+  margin: 0;
+}
+.subject-study-progress {
+  font-weight: 600;
+  color: var(--foreground);
+}

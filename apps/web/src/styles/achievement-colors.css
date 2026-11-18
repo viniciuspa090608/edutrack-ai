@@ -1,0 +1,87 @@
+.achievement-code-FIRST_DAY {
+  --achievement-color: #087f5b;
+}
+.dark .achievement-code-FIRST_DAY {
+  --achievement-color: #6ee7b7;
+}
+.achievement-code-THREE_DAY_STREAK {
+  --achievement-color: #b45309;
+}
+.dark .achievement-code-THREE_DAY_STREAK {
+  --achievement-color: #fbbf24;
+}
+.achievement-code-SEVEN_DAY_STREAK {
+  --achievement-color: #7e22ce;
+}
+.dark .achievement-code-SEVEN_DAY_STREAK {
+  --achievement-color: #d8b4fe;
+}
+.achievement-code-TEN_TASKS {
+  --achievement-color: #1d4ed8;
+}
+.dark .achievement-code-TEN_TASKS {
+  --achievement-color: #93c5fd;
+}
+.achievement-code-FIVE_POMODORO_BLOCKS {
+  --achievement-color: #be123c;
+}
+.dark .achievement-code-FIVE_POMODORO_BLOCKS {
+  --achievement-color: #fda4af;
+}
+.achievement-code-TWENTY_REVIEWS {
+  --achievement-color: #0e7490;
+}
+.dark .achievement-code-TWENTY_REVIEWS {
+  --achievement-color: #67e8f9;
+}
+.achievement-code-FIVE_SUBJECT_MILESTONES {
+  --achievement-color: #a21caf;
+}
+.dark .achievement-code-FIVE_SUBJECT_MILESTONES {
+  --achievement-color: #f0abfc;
+}
+.achievement-card .evolution-icon,
+.dashboard-achievement {
+  color: var(--achievement-color);
+}
+.achievement-card {
+  border-color: var(--achievement-color);
+}
+.achievement-card [data-slot='progress-indicator'] {
+  background: var(--achievement-color);
+}
+.dashboard-achievements {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: start;
+  gap: 4px;
+  max-height: 100px;
+  overflow-y: auto;
+  min-height: 0;
+  margin-top: 12px;
+}
+.dashboard-achievement {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  min-height: 44px;
+  border: 1px solid currentColor;
+  border-radius: 10px;
+  flex: 0 0 auto;
+  background: var(--card);
+  position: relative;
+}
+.dashboard-achievement-name {
+  display: none;
+}
+.dashboard-achievement:focus .dashboard-achievement-name {
+  display: block;
+  font-size: 10px;
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+.dashboard-achievement:focus {
+  width: 100px;
+  outline: 2px solid currentColor;
+  outline-offset: 1px;
+}

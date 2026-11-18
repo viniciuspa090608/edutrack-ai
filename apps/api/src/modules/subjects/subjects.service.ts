@@ -1,3 +1,4 @@
+import { subjectProgress } from './subject-progress.js';
 import {
   createSubjectSchema,
   updateSubjectSchema,
@@ -71,12 +72,9 @@ export class SubjectsService {
       name: subject.name,
       dueDate: subject.dueDate,
       hasPending,
-      source: roadmap ? 'roadmap' : 'manual',
       roadmapId: roadmap?.id ?? null,
       title: roadmap?.title ?? 'Plano manual',
-      total,
-      completed,
-      progressPercent: total ? (completed / total) * 100 : null,
+      ...subjectProgress(roadmap ? 'roadmap' : 'manual', total, completed),
     });
   }
   constructor(

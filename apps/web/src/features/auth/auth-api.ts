@@ -1,3 +1,4 @@
+import { setReportOwner } from '../study-progress/report-query.js';
 import {
   meResponseSchema,
   pendingVerificationSchema,
@@ -67,6 +68,7 @@ export async function send(
       (window.location.pathname.startsWith('/app') ||
         window.location.pathname === '/conta')
     ) {
+      setReportOwner(null);
       window.dispatchEvent(new Event('edutrack:session-expired'));
     }
     throw new AuthApiError(response.status, code, retryAfter);
@@ -83,7 +85,11 @@ async function postJson(path: string, body: object): Promise<Response> {
 }
 
 export async function currentUser(): Promise<AuthUser> {
-  return meResponseSchema.parse(await (await send('/auth/me')).json()).user;
+  const user = meResponseSchema.parse(
+    await (await send('/auth/me')).json(),
+  ).user;
+  setReportOwner(user.id);
+  return user;
 }
 
 export async function localAccess(
@@ -141,6 +147,7 @@ export async function logout(): Promise<void> {
     headers: { 'Content-Type': 'application/json' },
     body: '{}',
   });
+  setReportOwner(null);
 }
 
 export async function startGoogleLink(): Promise<string> {

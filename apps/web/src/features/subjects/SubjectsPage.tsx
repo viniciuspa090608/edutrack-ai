@@ -551,6 +551,18 @@ function LinkedRecords({
     </section>
   );
 }
+function studyProgressText(percent: number | null) {
+  if (percent === null) return 'Progresso não calculável';
+  const rounded = Math.round(percent * 10) / 10;
+  const label =
+    percent > 0 && rounded === 0
+      ? 'mais de 0%'
+      : percent < 100 && rounded === 100
+        ? 'menos de 100%'
+        : `${rounded.toLocaleString('pt-BR')}%`;
+  return `Progresso: ${label}`;
+}
+
 export function SubjectsPage({
   tasksEnabled = false,
   aiEnabled = false,
@@ -578,6 +590,13 @@ export function SubjectsPage({
   const [success, setSuccess] = useTransientMessage();
   const [deleting, setDeleting] = useState(false);
   const detailOpenedFromList = useRef(false);
+  const selectionRequest = useRef(0);
+  useEffect(
+    () => () => {
+      selectionRequest.current += 1;
+    },
+    [],
+  );
   const newButton = useRef<HTMLButtonElement>(null);
   const heading = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
@@ -642,37 +661,39 @@ export function SubjectsPage({
           Criar disciplina
         </Button>
       </div>
-      <details className="subject-card task-filters">
-        <summary className="task-filter-summary">Filtros</summary>
-        <form
-          aria-label="Filtrar disciplinas"
-          onSubmit={(event) => {
-            event.preventDefault();
-            setName(draftName.trim());
-            setPage(1);
-          }}
-        >
-          <CardContent>
-            <div className="task-filter-grid">
-              <div className="task-field">
-                <Label htmlFor="filter-subject-name">Buscar por nome</Label>
-                <Input
-                  id="filter-subject-name"
-                  maxLength={160}
-                  value={draftName}
-                  onChange={(event) => setDraftName(event.target.value)}
-                />
+      {!detail && (
+        <details className="subject-card task-filters subject-filters">
+          <summary className="task-filter-summary">Filtros</summary>
+          <form
+            aria-label="Filtrar disciplinas"
+            onSubmit={(event) => {
+              event.preventDefault();
+              setName(draftName.trim());
+              setPage(1);
+            }}
+          >
+            <CardContent>
+              <div className="task-filter-grid">
+                <div className="task-field">
+                  <Label htmlFor="filter-subject-name">Buscar por nome</Label>
+                  <Input
+                    id="filter-subject-name"
+                    maxLength={160}
+                    value={draftName}
+                    onChange={(event) => setDraftName(event.target.value)}
+                  />
+                </div>
               </div>
-            </div>
-            <div className="task-actions">
-              <Button type="submit">Aplicar filtros</Button>
-              <Button type="button" variant="outline" onClick={clearFilters}>
-                Limpar filtros
-              </Button>
-            </div>
-          </CardContent>
-        </form>
-      </details>
+              <div className="task-actions">
+                <Button type="submit">Aplicar filtros</Button>
+                <Button type="button" variant="outline" onClick={clearFilters}>
+                  Limpar filtros
+                </Button>
+              </div>
+            </CardContent>
+          </form>
+        </details>
+      )}
       {loading && (
         <div>
           <Skeleton aria-hidden="true" className="my-2 h-3 w-2/3" />
@@ -711,7 +732,7 @@ export function SubjectsPage({
         <>
           <Card asChild>
             <section className="subject-card subject-detail">
-              <CardHeader>
+              <CardHeader className="detail-title-row">
                 <Button
                   variant="outline"
                   className="justify-self-end"
@@ -729,12 +750,14 @@ export function SubjectsPage({
                       );
                       return;
                     }
-                    const opener = document.getElementById(
-                      `subject-detail-${detail.id}`,
-                    );
+                    const openerId = `subject-detail-${detail.id}`;
                     setDetail(null);
                     setDeleting(false);
-                    (opener ?? newButton.current)?.focus();
+                    requestAnimationFrame(() =>
+                      (
+                        document.getElementById(openerId) ?? newButton.current
+                      )?.focus(),
+                    );
                   }}
                 >
                   ← Voltar
@@ -890,6 +913,7 @@ export function SubjectsPage({
                 }}
               />
               <LinkedRecords
+                key={`linked-${detail.id}`}
                 subjectId={detail.id}
                 tasksEnabled={tasksEnabled}
               />
@@ -897,7 +921,7 @@ export function SubjectsPage({
           )}
         </>
       )}
-      {result && (
+      {result && !detail && (
         <section
           className="subjects-collection"
           aria-label="Lista de disciplinas"
@@ -945,10 +969,19 @@ export function SubjectsPage({
                           Prazo: {subject.dueDate}
                         </span>
                       </div>
+                      <p
+                        className="subject-study-progress"
+                        aria-label={`Progresso de ${subject.name}`}
+                      >
+                        {studyProgressText(
+                          subject.studySummary.progressPercent,
+                        )}
+                      </p>
                       <Button
                         id={`subject-detail-${subject.id}`}
                         disabled={busy}
                         onClick={async () => {
+                          const token = ++selectionRequest.current;
                           setBusy(true);
                           setError('');
                           setSuccess('');
@@ -957,6 +990,7 @@ export function SubjectsPage({
                           setDeleting(false);
                           try {
                             const selected = await subjectDetail(subject.id);
+                            if (token !== selectionRequest.current) return;
                             detailOpenedFromList.current = true;
                             setDetail(selected);
                           } catch (cause) {

@@ -1,3 +1,4 @@
+vi.mock('./UnifiedReportPrint.js', () => ({ UnifiedReportPrint: () => null }));
 import {
   cleanup,
   render,
@@ -159,31 +160,17 @@ const data = {
 it('shows loading, failure with keyboard retry, empty history and all seven criteria', async () => {
   vi.mocked(studyProgress).mockImplementationOnce(() => new Promise(() => {}));
   const first = render(<StudyProgressPage />);
-  const printButton = () =>
-    screen.getByRole<HTMLButtonElement>('button', {
-      name: 'Imprimir relatório',
-    });
   expect(screen.getByText('Carregando progresso…')).toBeTruthy();
-  expect(
-    screen.getByText('Aguarde o carregamento para imprimir.'),
-  ).toBeTruthy();
-  expect(printButton().disabled).toBe(true);
   first.unmount();
   vi.mocked(studyProgress)
     .mockRejectedValueOnce(new Error('offline'))
     .mockResolvedValueOnce(data);
   render(<StudyProgressPage />);
   expect(await screen.findByRole('alert')).toBeTruthy();
-  expect(
-    screen.getByText('Relatório indisponível por erro no carregamento.'),
-  ).toBeTruthy();
-  expect(printButton().disabled).toBe(true);
   const user = userEvent.setup();
   screen.getByRole('button', { name: 'Tentar novamente' }).focus();
   await user.keyboard('{Enter}');
   expect(await screen.findByText(/Seu primeiro dia ativo/)).toBeTruthy();
-  expect(screen.getByText('Nenhuma atividade para imprimir.')).toBeTruthy();
-  expect(printButton().disabled).toBe(true);
   expect(screen.getAllByRole('progressbar')).toHaveLength(7);
   expect(screen.getByText(/Atividades anteriores não contam/)).toBeTruthy();
 });
@@ -205,20 +192,6 @@ it('keeps earned achievements visible with dates and accessible progress', async
   expect(
     screen.getByRole('progressbar', { name: 'Progresso: 1 de 1' }),
   ).toBeTruthy();
-  const print = vi.spyOn(window, 'print').mockImplementation(() => {
-    window.dispatchEvent(new Event('beforeprint'));
-  });
-  try {
-    screen.getByRole('button', { name: 'Imprimir relatório' }).focus();
-    await userEvent.keyboard(' ');
-    expect(print).toHaveBeenCalledOnce();
-    expect(screen.getByText(/Histórico rastreado de .* a /)).toBeTruthy();
-    expect(
-      document.querySelector('.report-print-metadata time')?.textContent,
-    ).toBeTruthy();
-  } finally {
-    print.mockRestore();
-  }
 });
 it('never saves the browser suggestion automatically and persists an explicit keyboard submission', async () => {
   vi.mocked(studyTimeZone).mockResolvedValue(settings);

@@ -120,7 +120,22 @@ beforeEach(() => {
           ? items.filter((item) => item.name.includes(name))
           : items;
         return Response.json({
-          items: matching,
+          items: matching.map((item) => ({
+            ...item,
+            studySummary: {
+              source: 'manual',
+              total: item.planItems.length,
+              completed: item.planItems.filter(
+                (step) => step.status === 'COMPLETED',
+              ).length,
+              progressPercent: item.planItems.length
+                ? (item.planItems.filter((step) => step.status === 'COMPLETED')
+                    .length /
+                    item.planItems.length) *
+                  100
+                : null,
+            },
+          })),
           total: listTotal ?? matching.length,
           page: 1,
           pageSize: Number(url.searchParams.get('pageSize') ?? 20),
@@ -290,7 +305,13 @@ it('creates from keyboard, retains form on failure and distinguishes loading, em
   within(form).getByRole('button', { name: 'Salvar disciplina' }).focus();
   await interaction.keyboard('{Enter}');
   await screen.findByText('Disciplina salva.');
-  await screen.findByRole('button', { name: 'Ver Álgebra' });
+  await screen.findByRole('heading', { name: 'Álgebra' });
+  expect(
+    screen.queryByRole('form', { name: 'Filtrar disciplinas' }),
+  ).toBeNull();
+  expect(
+    screen.queryByRole('region', { name: 'Lista de disciplinas' }),
+  ).toBeNull();
   expect(
     screen.queryByRole('button', { name: 'Adicionar disciplina' }),
   ).toBeNull();
@@ -350,7 +371,7 @@ it('persists manual order and status by keyboard with AI disabled, edits and con
     screen.getByRole('button', { name: 'Salvar disciplina' }),
   );
   await waitFor(() =>
-    expect(screen.getAllByText('Novo objetivo')).toHaveLength(2),
+    expect(screen.getAllByText('Novo objetivo')).toHaveLength(1),
   );
   await interaction.click(
     screen.getByRole('button', { name: 'Excluir disciplina' }),
@@ -433,4 +454,35 @@ it('opens dashboard creation once without discarding unrelated query parameters'
   render(<SubjectsPage />);
   await screen.findByRole('button', { name: 'Criar disciplina' });
   expect(screen.queryByRole('dialog')).toBeNull();
+});
+
+it('shows only the selected discipline and restores its search and opener', async () => {
+  items = [
+    base,
+    {
+      ...base,
+      id: '00000000-0000-4000-8000-000000000002',
+      name: 'Outra disciplina',
+      objective: 'Objetivo da outra',
+    },
+  ];
+  render(<SubjectsPage />);
+  const user = userEvent.setup();
+  const opener = await screen.findByRole('button', { name: 'Ver Álgebra' });
+  await user.click(screen.getByText('Filtros', { exact: true }));
+  await user.type(screen.getByLabelText('Buscar por nome'), 'Álgebra');
+  await user.click(opener);
+  await screen.findByRole('region', { name: 'Plano manual' });
+  expect(
+    screen.queryByRole('button', { name: 'Ver Outra disciplina' }),
+  ).toBeNull();
+  expect(screen.queryByLabelText('Buscar por nome')).toBeNull();
+  expect(screen.getAllByText('Aprender')).toHaveLength(1);
+  await user.click(screen.getByRole('button', { name: '← Voltar' }));
+  await waitFor(() =>
+    expect(document.activeElement?.id).toBe(`subject-detail-${base.id}`),
+  );
+  expect(
+    (screen.getByLabelText('Buscar por nome') as HTMLInputElement).value,
+  ).toBe('Álgebra');
 });

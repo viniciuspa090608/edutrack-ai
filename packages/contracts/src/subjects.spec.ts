@@ -5,6 +5,7 @@ import {
   createPlanItemSchema,
   planOrderSchema,
   subjectPaginationSchema,
+  subjectStudySummarySchema,
 } from './subjects.js';
 import { createTaskSchema, updateTaskSchema } from './tasks.js';
 import { startPomodoroSchema } from './pomodoro.js';
@@ -80,4 +81,44 @@ it('validates plans, pagination and explicit absence of optional associations', 
     );
     expect(startPomodoroSchema.safeParse({ subjectId }).success).toBe(false);
   }
+});
+
+it('validates official summary values without extending subject write inputs', () => {
+  for (const source of ['manual', 'roadmap'] as const) {
+    expect(
+      subjectStudySummarySchema.parse({
+        source,
+        total: 0,
+        completed: 0,
+        progressPercent: null,
+      }).progressPercent,
+    ).toBeNull();
+    expect(
+      subjectStudySummarySchema.parse({
+        source,
+        total: 4,
+        completed: 1,
+        progressPercent: 25,
+      }).progressPercent,
+    ).toBe(25);
+  }
+  expect(
+    subjectStudySummarySchema.safeParse({
+      source: 'manual',
+      total: 1,
+      completed: 0,
+      progressPercent: -1,
+    }).success,
+  ).toBe(false);
+  expect(
+    createSubjectSchema.safeParse({
+      ...input,
+      studySummary: {
+        source: 'manual',
+        total: 0,
+        completed: 0,
+        progressPercent: null,
+      },
+    }).success,
+  ).toBe(false);
 });

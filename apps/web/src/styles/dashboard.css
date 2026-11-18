@@ -425,7 +425,7 @@
     .dashboard-without-flashcards,
     .dashboard-without-pomodoro
   ) {
-    grid-template-rows: minmax(16.5rem, auto) 14.5rem auto auto;
+    grid-template-rows: minmax(13.5rem, auto) 17.5rem auto auto;
   }
   .dashboard-grid:not(.dashboard-without-tasks, .dashboard-without-flashcards)
     .dashboard-card
@@ -524,4 +524,36 @@
     .dashboard-module-link {
     margin-top: auto;
   }
+}
+
+.dashboard-card-subjects .dashboard-task-scroll {
+  min-height: 0;
+}
+.dashboard-card-subjects .dashboard-task-list {
+  display: block;
+  margin: 0;
+  padding: 4px;
+  max-block-size: 8rem;
+  overflow-y: auto;
+}
+.dashboard-card-subjects .dashboard-task-list > li {
+  min-width: 0;
+}
+.dashboard-card-pomodoro .dashboard-pomodoro-start {
+  margin-top: 12px;
+}
+.dashboard-card-pomodoro .dashboard-pomodoro-clock {
+  margin-block: 4px;
+  line-height: 1.1;
+}
+
+.dashboard-card-pomodoro {
+  gap: 8px;
+  padding-block: 20px;
+}
+.dashboard-card-flashcards .dashboard-task-list {
+  gap: 8px;
+}
+.dashboard-card-flashcards .dashboard-task-list > li {
+  padding: 12px 14px;
 }

@@ -1,3 +1,4 @@
+import { subjectProgress } from './subject-progress.js';
 import { randomUUID } from 'node:crypto';
 import type { DataSource, EntityManager } from 'typeorm';
 import type {
@@ -346,9 +347,73 @@ export class SubjectsRepository {
         `SELECT COUNT(*) AS total FROM study_subjects WHERE ${where}`,
         parameters,
       );
-      const items: StudySubject[] = [];
-      for (const row of rows)
-        items.push(await this.detailIn(manager, userId, row.id));
+      const ids = rows.map((row) => row.id);
+      if (!ids.length) return { items: [], total: Number(counts[0]!.total) };
+      const placeholders = ids.map(() => '?').join(',');
+      const subjects = await manager.query<SubjectRecord[]>(
+        `SELECT * FROM study_subjects WHERE user_id=? AND id IN (${placeholders})`,
+        [userId, ...ids],
+      );
+      const topics = await manager.query<
+        Array<{ subject_id: string; name: string }>
+      >(
+        `SELECT k.* FROM subject_known_topics k JOIN study_subjects s ON s.id=k.subject_id WHERE s.user_id=? AND s.id IN (${placeholders}) ORDER BY k.position,k.id`,
+        [userId, ...ids],
+      );
+      const plans = await manager.query<ItemRecord[]>(
+        `SELECT p.* FROM subject_plan_items p JOIN study_subjects s ON s.id=p.subject_id WHERE s.user_id=? AND s.id IN (${placeholders}) ORDER BY p.position,p.id`,
+        [userId, ...ids],
+      );
+      const roadmaps = await manager.query<
+        Array<{ subject_id: string; total: string; completed: string }>
+      >(
+        `SELECT r.subject_id,COUNT(p.id) AS total,COALESCE(SUM(p.completed),0) AS completed
+         FROM subject_roadmaps r JOIN study_subjects s ON s.id=r.subject_id
+         LEFT JOIN subject_roadmap_blocks b ON b.roadmap_id=r.id
+         LEFT JOIN subject_roadmap_steps p ON p.block_id=b.id
+         WHERE s.user_id=? AND s.id IN (${placeholders})
+         AND NOT EXISTS (SELECT 1 FROM subject_roadmaps newer WHERE newer.subject_id=r.subject_id AND (newer.created_at>r.created_at OR (newer.created_at=r.created_at AND newer.id>r.id)))
+         GROUP BY r.id,r.subject_id`,
+        [userId, ...ids],
+      );
+      const items = ids.map((id) => {
+        const row = subjects.find((subject) => subject.id === id)!;
+        const planItems = plans
+          .filter((item) => item.subject_id === id)
+          .map((item) => ({
+            id: item.id,
+            subjectId: id,
+            title: item.title,
+            status: item.status,
+            position: item.position,
+            createdAt: item.created_at.toISOString(),
+            updatedAt: item.updated_at.toISOString(),
+          }));
+        const roadmap = roadmaps.find((item) => item.subject_id === id);
+        const total = roadmap ? Number(roadmap.total) : planItems.length;
+        const completed = roadmap
+          ? Number(roadmap.completed)
+          : planItems.filter((item) => item.status === 'COMPLETED').length;
+        return {
+          id,
+          name: row.name,
+          currentLevel: row.current_level,
+          objective: row.objective,
+          dueDate: row.due_date,
+          weeklyHours: Number(row.weekly_hours),
+          createdAt: row.created_at.toISOString(),
+          updatedAt: row.updated_at.toISOString(),
+          knownTopics: topics
+            .filter((topic) => topic.subject_id === id)
+            .map((topic) => topic.name),
+          planItems,
+          studySummary: subjectProgress(
+            roadmap ? 'roadmap' : 'manual',
+            total,
+            completed,
+          ),
+        };
+      });
       return { items, total: Number(counts[0]!.total) };
     });
   }

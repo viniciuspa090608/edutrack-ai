@@ -406,3 +406,127 @@
     white-space: normal;
   }
 }
+
+.unified-print-action {
+  max-width: 45%;
+}
+.unified-print-action .report-print-button {
+  max-width: 100%;
+}
+.unified-print-action .report-print-reason {
+  font-size: 0.8rem;
+}
+@media print {
+  body:has(.unified-study-report) > :not(.unified-study-report) {
+    display: none !important;
+  }
+  body > .unified-study-report {
+    display: block !important;
+  }
+  .unified-study-report {
+    --primary: #023e8a;
+    --foreground: #212529;
+    --muted-foreground: #495057;
+    --card: #fff;
+    --border: #ced4da;
+    --success: #087f5b;
+    --chart-1: #023e8a;
+    print-color-adjust: exact;
+  }
+  .unified-study-report .unified-report-header {
+    background: #caf0f8;
+    border-top: 2mm solid #023e8a;
+    border-radius: 4mm;
+    padding: 5mm;
+    margin-bottom: 5mm;
+    color: #212529;
+    break-inside: avoid;
+  }
+  .unified-report-header h1 {
+    font-size: 28pt;
+    margin: 4mm 0;
+  }
+  .unified-report-brand {
+    display: flex;
+    align-items: center;
+    gap: 2mm;
+  }
+  .unified-report-brand span {
+    margin-left: auto;
+    font-size: 8pt;
+    text-transform: uppercase;
+  }
+  .unified-section-title {
+    font-size: 17pt;
+    color: #023e8a;
+    border-bottom: 1px solid #ced4da;
+    padding-bottom: 2mm;
+  }
+  .unified-report-analytics {
+    break-before: page;
+  }
+  .unified-study-report .analytics-period-context p:first-child {
+    display: block !important;
+  }
+  .unified-study-report .analytics-daily-details {
+    display: block;
+  }
+  .unified-study-report .analytics-daily-details::details-content {
+    content-visibility: visible;
+    display: block;
+  }
+  .unified-study-report :is(.analytics-chart-scroll, .analytics-daily-scroll) {
+    max-height: none;
+    height: auto;
+    overflow: visible;
+  }
+  .unified-study-report .analytics-daily-scroll table {
+    width: 100%;
+    min-width: 0;
+  }
+  .unified-study-report .evolution-card {
+    border-radius: 3mm;
+  }
+  .unified-study-report .analytics-bar {
+    background: #023e8a;
+  }
+}
+
+@media print {
+  .unified-study-report .analytics-daily-details {
+    break-inside: avoid;
+  }
+  .unified-study-report [aria-labelledby='analytics-series-title'] > p {
+    break-after: avoid;
+  }
+  .unified-study-report .analytics-charts {
+    break-before: avoid;
+  }
+  .unified-study-report .achievement-code-FIRST_DAY {
+    --achievement-color: #087f5b;
+  }
+  .unified-study-report .achievement-code-THREE_DAY_STREAK {
+    --achievement-color: #b45309;
+  }
+  .unified-study-report .achievement-code-SEVEN_DAY_STREAK {
+    --achievement-color: #7e22ce;
+  }
+  .unified-study-report .achievement-code-TEN_TASKS {
+    --achievement-color: #1d4ed8;
+  }
+  .unified-study-report .achievement-code-FIVE_POMODORO_BLOCKS {
+    --achievement-color: #be123c;
+  }
+  .unified-study-report .achievement-code-TWENTY_REVIEWS {
+    --achievement-color: #0e7490;
+  }
+  .unified-study-report .achievement-code-FIVE_SUBJECT_MILESTONES {
+    --achievement-color: #a21caf;
+  }
+}
+
+@media print {
+  .unified-study-report section[aria-labelledby='analytics-series-title'] {
+    break-before: page;
+  }
+}

@@ -1,3 +1,5 @@
+import { achievementIcons } from '../study-progress/achievement-presentation.js';
+import '../../styles/achievement-colors.css';
 import { CollectionEmptyState } from '../../components/CollectionEmptyState.js';
 import { DashboardPomodoro } from './DashboardPomodoro.js';
 import { listSubjects } from '../subjects/subjects-api.js';
@@ -412,7 +414,7 @@ export function DashboardPage({ displayName }: { displayName: string }) {
                   ) : (
                     <>
                       <p>Comece um bloco de foco de 25 minutos.</p>
-                      <div className="flex flex-1 items-center">
+                      <div className="dashboard-pomodoro-start">
                         <Button
                           disabled={starting}
                           onClick={() => {
@@ -606,43 +608,75 @@ export function DashboardPage({ displayName }: { displayName: string }) {
               'streak',
               'Progresso',
               '/app/progresso',
-              <div className="dashboard-streak-lines">
-                {streak?.activeDays === 0 ? (
-                  <h3>Nenhuma atividade registrada</h3>
-                ) : (
-                  <>
+              <>
+                <div className="dashboard-streak-lines">
+                  {streak?.activeDays === 0 ? (
+                    <h3>Nenhuma atividade registrada</h3>
+                  ) : (
+                    <>
+                      <p>
+                        Sequência atual:{' '}
+                        <strong>{streak?.currentStreak} dias</strong>.
+                      </p>
+                      <p>
+                        Recorde: <strong>{streak?.longestStreak} dias</strong>.
+                      </p>
+                    </>
+                  )}
+                  {streak?.trackingStartedAt && (
                     <p>
-                      Sequência atual:{' '}
-                      <strong>{streak?.currentStreak} dias</strong>.
+                      Histórico desde{' '}
+                      {streak.trackingStartedAt
+                        .slice(0, 10)
+                        .split('-')
+                        .reverse()
+                        .join('/')}
                     </p>
+                  )}
+                  {streak && streak.activeDays > 0 && (
                     <p>
-                      Recorde: <strong>{streak?.longestStreak} dias</strong>.
+                      <strong>{streak.activeDays} dias ativos</strong> no
+                      histórico rastreado.
                     </p>
-                  </>
-                )}
-                {streak?.trackingStartedAt && (
-                  <p>
-                    Histórico desde{' '}
-                    {streak.trackingStartedAt
-                      .slice(0, 10)
-                      .split('-')
-                      .reverse()
-                      .join('/')}
-                  </p>
-                )}
-                {streak && streak.activeDays > 0 && (
-                  <p>
-                    <strong>{streak.activeDays} dias ativos</strong> no
-                    histórico rastreado.
-                  </p>
-                )}
-                {streak?.activeDays === 0 && (
-                  <p>
-                    Conclua uma atividade de estudo para registrar seu primeiro
-                    dia ativo.
-                  </p>
-                )}
-              </div>,
+                  )}
+                  {streak?.activeDays === 0 && (
+                    <p>
+                      Conclua uma atividade de estudo para registrar seu
+                      primeiro dia ativo.
+                    </p>
+                  )}
+                </div>
+                <div
+                  className="dashboard-achievements"
+                  role="region"
+                  aria-label="Conquistas obtidas"
+                  tabIndex={0}
+                >
+                  {streak?.achievements
+                    .filter((item) => item.earnedAt)
+                    .map((item) => {
+                      const Icon = achievementIcons[item.code];
+                      return (
+                        <span
+                          key={item.code}
+                          className={`dashboard-achievement achievement-code-${item.code}`}
+                          tabIndex={0}
+                          aria-label={item.name}
+                          title={item.name}
+                        >
+                          <Icon aria-hidden="true" />
+                          <span className="dashboard-achievement-name">
+                            {item.name}
+                          </span>
+                        </span>
+                      );
+                    })}
+                  {streak &&
+                    !streak.achievements.some((item) => item.earnedAt) && (
+                      <p>Nenhuma conquista obtida ainda.</p>
+                    )}
+                </div>
+              </>,
             )}
             {card(
               'week',

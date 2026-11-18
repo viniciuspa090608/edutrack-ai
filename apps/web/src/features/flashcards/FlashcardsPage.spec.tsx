@@ -109,7 +109,18 @@ beforeEach(() => {
         planItems: [],
         ...stamps,
       };
-      if (path === '/subjects') return list([subject]);
+      if (path === '/subjects')
+        return list([
+          {
+            ...subject,
+            studySummary: {
+              source: 'manual',
+              total: 0,
+              completed: 0,
+              progressPercent: null,
+            },
+          },
+        ]);
       if (path === `/subjects/${id2}`) return Response.json(subject);
       if (path === '/flashcard-decks/reviews/pending') {
         const subjectId = url.searchParams.get('subjectId');

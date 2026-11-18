@@ -255,6 +255,12 @@ it('selects a subject without a task, filters history and hides selectors when d
       {
         id: row.id,
         name: 'Matemática',
+        studySummary: {
+          source: 'manual',
+          total: 0,
+          completed: 0,
+          progressPercent: null,
+        },
         currentLevel: 'BEGINNER',
         objective: 'Aprender',
         dueDate: '2026-10-01',
