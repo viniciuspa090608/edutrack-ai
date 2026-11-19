@@ -190,16 +190,16 @@ it('selects pending subjects by deadline/update/ID and falls back to most recent
   const lower = [first.id, second.id].sort()[0];
   let section = (await dashboard(a.cookie)).subjects!;
   if (section.state === 'error') throw new Error('subjects unavailable');
-  expect(section.data!.id).toBe(lower);
-  expect(section.data!.source).toBe('manual');
-  expect(section.data!.progressPercent).toBe(0);
+  expect(section.data!.items[0]!.id).toBe(lower);
+  expect(section.data!.items[0]!.source).toBe('manual');
+  expect(section.data!.items[0]!.progressPercent).toBe(0);
   await source.query(
     "UPDATE study_subjects SET updated_at='2026-10-02' WHERE id=?",
     [second.id],
   );
   section = (await dashboard(a.cookie)).subjects!;
   if (section.state === 'error') throw new Error('subjects unavailable');
-  expect(section.data!.id).toBe(second.id);
+  expect(section.data!.items[0]!.id).toBe(lower);
   const roadmap = await write(
     'post',
     `/subjects/${second.id}/roadmaps`,
@@ -228,7 +228,9 @@ it('selects pending subjects by deadline/update/ID and falls back to most recent
   );
   section = (await dashboard(a.cookie)).subjects!;
   if (section.state === 'error') throw new Error('subjects unavailable');
-  expect(section.data).toMatchObject({
+  expect(
+    section.data.items.find((item) => item.id === second.id),
+  ).toMatchObject({
     id: second.id,
     roadmapId: roadmap.body.id,
     total: 2,
@@ -249,7 +251,10 @@ it('selects pending subjects by deadline/update/ID and falls back to most recent
   );
   section = (await dashboard(a.cookie)).subjects!;
   if (section.state === 'error') throw new Error('subjects unavailable');
-  expect(section.data).toMatchObject({ id: later.id, hasPending: false });
+  expect(section.data.items[0]).toMatchObject({
+    id: later.id,
+    hasPending: false,
+  });
 });
 it('omits and never calls disabled producers, restores preserved summaries and works without AI/all optional modules', async () => {
   const a = await account();
@@ -392,4 +397,49 @@ it('reuses the public start conflict and returns one open session after concurre
       )
     ).length,
   ).toBe(1);
+});
+it('paginates every owned subject with official summaries, no omissions and strict gates', async () => {
+  const a = await account(),
+    b = await account();
+  const ids: string[] = [];
+  for (let index = 0; index < 12; index++)
+    ids.push((await subject(a.cookie, `Disciplina ${index}`, '2026-12-01')).id);
+  await subject(b.cookie, 'Privada', '2020-01-01');
+  await write('post', `/subjects/${ids[0]}/plan-items`, a.cookie, {
+    title: 'Pendente',
+  });
+  const first = (await dashboard(a.cookie)).subjects!;
+  if (first.state === 'error') throw new Error('subjects unavailable');
+  expect(first.data).toMatchObject({
+    total: 12,
+    page: 1,
+    pageSize: 10,
+    totalPages: 2,
+  });
+  expect(first.data.items).toHaveLength(10);
+  expect(first.data.items[0]).toMatchObject({
+    id: ids[0],
+    hasPending: true,
+    source: 'manual',
+    total: 1,
+    completed: 0,
+    progressPercent: 0,
+  });
+  const second = await read('/subjects/dashboard?page=2', a.cookie);
+  expect(second.status).toBe(200);
+  const combined = [...first.data.items, ...second.body.items];
+  expect(new Set(combined.map((item) => item.id))).toEqual(new Set(ids));
+  expect(
+    combined
+      .filter((item) => item.total === 0)
+      .every((item) => item.progressPercent === null),
+  ).toBe(true);
+  for (const query of ['page=0', 'page=1.5', 'userId=' + b.id])
+    expect((await read('/subjects/dashboard?' + query, a.cookie)).status).toBe(
+      400,
+    );
+  expect((await read('/subjects/dashboard', '')).status).toBe(401);
+  await new PreferencesService(source).update(a.id, { subjects: false });
+  expect((await read('/subjects/dashboard?page=2', a.cookie)).status).toBe(403);
+  expect((await dashboard(a.cookie)).subjects).toBeUndefined();
 });

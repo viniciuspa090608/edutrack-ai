@@ -1,3 +1,4 @@
+import { Progress } from '@study-platform/ui/components/ui/progress';
 import { useTransientMessage } from '../../components/useTransientMessage.js';
 import { useCreateIntent } from '../../app/useCreateIntent.js';
 import {
@@ -969,6 +970,12 @@ export function SubjectsPage({
                           Prazo: {subject.dueDate}
                         </span>
                       </div>
+                      {subject.studySummary.progressPercent !== null && (
+                        <Progress
+                          value={subject.studySummary.progressPercent}
+                          aria-label={`Progresso de ${subject.name}`}
+                        />
+                      )}
                       <p
                         className="subject-study-progress"
                         aria-label={`Progresso de ${subject.name}`}

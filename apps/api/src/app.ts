@@ -285,7 +285,7 @@ export function createApp({
       '/routines',
       routinesRoutes(
         service,
-        new RoutinesService(new RoutinesRepository(source)),
+        new RoutinesService(new RoutinesRepository(source), prefs),
         env,
       ),
     );

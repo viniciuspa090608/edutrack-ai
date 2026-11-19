@@ -40,6 +40,7 @@ const empty: Dashboard = {
     flashcards: true,
     pomodoro: true,
     reports: true,
+    routines: true,
     ai: false,
   },
   tasks: {
@@ -50,7 +51,10 @@ const empty: Dashboard = {
       withoutDeadline: 0,
     },
   },
-  subjects: { state: 'empty', data: null },
+  subjects: {
+    state: 'empty',
+    data: { items: [], total: 0, page: 1, pageSize: 10, totalPages: 0 },
+  },
   flashcards: { state: 'empty', data: { pending: 0, decks: [] } },
   pomodoro: { state: 'empty', data: { session: null, completedSessions: 0 } },
   streak: {
@@ -162,16 +166,24 @@ it('does not turn a null manual-plan progress into a zero progress bar', async (
     subjects: {
       state: 'ready',
       data: {
-        id: session.id,
-        name: 'Plano manual',
-        dueDate: '2026-12-01',
-        hasPending: false,
-        source: 'manual',
-        roadmapId: null,
-        title: 'Plano',
-        total: 0,
-        completed: 0,
-        progressPercent: null,
+        items: [
+          {
+            id: session.id,
+            name: 'Plano manual',
+            dueDate: '2026-12-01',
+            hasPending: false,
+            source: 'manual',
+            roadmapId: null,
+            title: 'Plano',
+            total: 0,
+            completed: 0,
+            progressPercent: null,
+          },
+        ],
+        total: 1,
+        page: 1,
+        pageSize: 10,
+        totalPages: 1,
       },
     },
   });
@@ -232,6 +244,7 @@ it('omits disabled cards and refreshes visibility when preferences change in ano
       flashcards: false,
       pomodoro: true,
       reports: true,
+      routines: true,
       ai: false,
     },
   };
@@ -258,16 +271,24 @@ it('shows official task progress, local overdue label and a contextual safe subj
     subjects: {
       state: 'ready',
       data: {
-        id,
-        name: 'Matemática',
-        dueDate: '2026-12-01',
-        hasPending: true,
-        source: 'roadmap',
-        roadmapId: id,
-        title: 'Base',
-        completed: 1,
-        total: 2,
-        progressPercent: 50,
+        items: [
+          {
+            id,
+            name: 'Matemática',
+            dueDate: '2026-12-01',
+            hasPending: true,
+            source: 'roadmap',
+            roadmapId: id,
+            title: 'Base',
+            completed: 1,
+            total: 2,
+            progressPercent: 50,
+          },
+        ],
+        total: 1,
+        page: 1,
+        pageSize: 10,
+        totalPages: 1,
       },
     },
     tasks: {
@@ -304,9 +325,7 @@ it('shows official task progress, local overdue label and a contextual safe subj
   expect(await screen.findByText('25% concluído')).toBeTruthy();
   expect(screen.getByText(/Atrasada/)).toBeTruthy();
   expect(
-    screen
-      .getByRole('link', { name: 'Abrir disciplinas' })
-      .getAttribute('href'),
+    screen.getByRole('link', { name: 'Matemática' }).getAttribute('href'),
   ).toBe(`/app/materias?subject=${id}#roadmap-${id}`);
 });
 it('starts via the public command and reconciles conflicts or lost responses before navigating', async () => {
@@ -404,7 +423,7 @@ it('confirms subjects are empty rather than inferring from the missing highlight
   render(<DashboardPage displayName="Ana" />);
   expect(await screen.findByText('Nenhuma disciplina cadastrada')).toBeTruthy();
   expect(await screen.findByText('Nenhuma tarefa cadastrada')).toBeTruthy();
-  expect(listSubjects).toHaveBeenCalledWith(1, 1);
+  expect(listSubjects).not.toHaveBeenCalled();
   await userEvent.click(
     screen.getByRole('button', { name: 'Adicionar disciplina' }),
   );
@@ -412,21 +431,12 @@ it('confirms subjects are empty rather than inferring from the missing highlight
     '/app/materias?create=1',
   );
 });
-it('does not claim an empty collection when subjects exist or the lookup fails', async () => {
-  vi.mocked(dashboard).mockResolvedValue(empty);
-  vi.mocked(listSubjects).mockResolvedValue({
-    items: [],
-    total: 1,
-    totalPages: 1,
-    page: 1,
-    pageSize: 1,
+it('does not claim an empty collection when its summary fails', async () => {
+  vi.mocked(dashboard).mockResolvedValue({
+    ...empty,
+    subjects: { state: 'error', message: 'Disciplinas indisponíveis' },
   });
-  const view = render(<DashboardPage displayName="Ana" />);
-  await screen.findByText(/Nenhuma disciplina em destaque/);
-  expect(screen.queryByText('Nenhuma disciplina cadastrada')).toBeNull();
-  view.unmount();
-  vi.mocked(listSubjects).mockRejectedValue(new Error('offline'));
   render(<DashboardPage displayName="Ana" />);
-  await screen.findByRole('button', { name: 'Tentar consultar disciplinas' });
+  expect(await screen.findByText('Disciplinas indisponíveis')).toBeTruthy();
   expect(screen.queryByText('Nenhuma disciplina cadastrada')).toBeNull();
 });

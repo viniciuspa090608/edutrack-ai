@@ -248,7 +248,18 @@ export function PrivatePage({
             ) : page === 'estatisticas' ? (
               <AnalyticsPage />
             ) : page === 'rotinas' ? (
-              <RoutinesPage />
+              !prefs ? (
+                <p role="status">Verificando preferências…</p>
+              ) : prefs.routines ? (
+                <RoutinesPage />
+              ) : (
+                <p>
+                  Rotinas desativadas.{' '}
+                  <a href="/conta#account-preferences">
+                    Reativar nas preferências
+                  </a>
+                </p>
+              )
             ) : page === 'pomodoro' ? (
               prefs?.pomodoro === false ? (
                 <p>

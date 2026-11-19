@@ -6,6 +6,7 @@ import {
   routinePaginationSchema,
   routineScheduleSchema,
 } from '@study-platform/contracts';
+import type { PreferencesService } from '../preferences/preferences.service.js';
 import { HttpError } from '../../shared/http-error.js';
 import { RoutinesRepository } from './routines.repository.js';
 function dto(row: Awaited<ReturnType<RoutinesRepository['find']>>) {
@@ -19,8 +20,12 @@ function dto(row: Awaited<ReturnType<RoutinesRepository['find']>>) {
   });
 }
 export class RoutinesService {
-  constructor(private readonly repository: RoutinesRepository) {}
-  create(userId: string, input: unknown) {
+  constructor(
+    private readonly repository: RoutinesRepository,
+    private readonly prefs: Pick<PreferencesService, 'requireEnabled'>,
+  ) {}
+  async create(userId: string, input: unknown) {
+    await this.prefs.requireEnabled(userId, 'routines');
     return this.repository.transaction(async (manager) => {
       const parsed = createRoutineSchema.safeParse(input);
       if (!parsed.success)
@@ -32,12 +37,14 @@ export class RoutinesService {
       return dto(await this.repository.create(manager, userId, parsed.data));
     });
   }
-  detail(userId: string, id: string) {
+  async detail(userId: string, id: string) {
+    await this.prefs.requireEnabled(userId, 'routines');
     return this.repository.transaction(async (manager) =>
       dto(await this.repository.find(manager, userId, id)),
     );
   }
-  update(userId: string, id: string, input: unknown) {
+  async update(userId: string, id: string, input: unknown) {
+    await this.prefs.requireEnabled(userId, 'routines');
     return this.repository.transaction(async (manager) => {
       await this.repository.find(manager, userId, id, true);
       const parsed = updateRoutineSchema.safeParse(input);
@@ -52,7 +59,8 @@ export class RoutinesService {
       );
     });
   }
-  list(userId: string, input: unknown) {
+  async list(userId: string, input: unknown) {
+    await this.prefs.requireEnabled(userId, 'routines');
     const parsed = routinePaginationSchema.safeParse(input);
     if (!parsed.success)
       throw new HttpError(400, 'INVALID_INPUT', 'Paginação inválida.');
@@ -70,12 +78,14 @@ export class RoutinesService {
       });
     });
   }
-  delete(userId: string, id: string) {
+  async delete(userId: string, id: string) {
+    await this.prefs.requireEnabled(userId, 'routines');
     return this.repository.transaction((manager) =>
       this.repository.delete(manager, userId, id),
     );
   }
-  schedule(userId: string) {
+  async schedule(userId: string) {
+    await this.prefs.requireEnabled(userId, 'routines');
     return this.repository.transaction(async (manager) =>
       routineScheduleSchema.parse({
         items: await this.repository.schedule(manager, userId),

@@ -14,6 +14,7 @@ it('bounds a slow producer and keeps independent sections without consulting dis
         ai: false,
         pomodoro: true,
         reports: true,
+        routines: true,
       }),
     },
     tasks: { dashboardSummary: () => new Promise(() => {}) },

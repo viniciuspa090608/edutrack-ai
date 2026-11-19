@@ -30,17 +30,29 @@ Com tarefas habilitadas, o dashboard SHALL mostrar até cinco tarefas próprias 
 - **THEN** o cartão explica que não há próximas tarefas com prazo e oferece acesso a tarefas.
 
 ### Requirement: Destacar automaticamente matéria e roadmap
-Com matérias habilitadas, o dashboard SHALL destacar uma matéria própria. Entre matérias com item de plano manual ou passo de roadmap pendente, SHALL escolher a de prazo mais próximo, inclusive vencido; empate SHALL ter ordem estável. Se a escolhida tiver roadmap ativo, SHALL mostrar o resumo e progresso fornecidos pelo módulo de roadmaps; caso contrário SHALL mostrar seu plano manual. Se nenhuma matéria tiver estudo pendente, SHALL destacar a matéria própria mais recentemente atualizada, identificando que não há pendências. Um link SHALL abrir a matéria ou roadmap correspondente.
+Com disciplinas habilitadas, o dashboard SHALL apresentar uma coleção paginada que permita acessar todas as disciplinas próprias dentro do card. Disciplinas com estudo pendente SHALL aparecer primeiro por prazo crescente, inclusive vencido; as demais SHALL seguir atualização decrescente, com desempate estável por identificador. Cada item SHALL mostrar resumo e progresso oficiais de seu roadmap ativo ou, na ausência dele, plano manual, indicar pendência e permitir abrir a disciplina ou roadmap correspondente. Nenhuma disciplina SHALL ser excluída por estar concluída ou sem plano. A API SHALL filtrar pelo usuário autenticado e omitir os dados quando o módulo estiver desativado.
 
 #### Scenario: Duas matérias pendentes
 - **GIVEN** duas matérias próprias com estudo pendente e prazos diferentes
 - **WHEN** o dashboard é aberto
-- **THEN** destaca a de prazo mais próximo e permite abrir seu estudo.
+- **THEN** ambas ficam acessíveis e a de prazo mais próximo aparece primeiro.
 
 #### Scenario: Matéria sem roadmap
-- **GIVEN** uma matéria destacada sem roadmap ativo e com plano manual
+- **GIVEN** uma disciplina sem roadmap ativo e com plano manual
 - **WHEN** o dashboard é aberto
-- **THEN** mostra o resumo do plano manual sem exigir IA.
+- **THEN** mostra seu plano manual sem exigir IA.
+
+#### Scenario: Mais de uma página
+- **WHEN** existem mais disciplinas que o tamanho de uma página
+- **THEN** todas podem ser alcançadas no card, inclusive concluídas e sem plano, com links corretos e sem duplicação.
+
+#### Scenario: Falha na próxima página
+- **WHEN** carregar mais disciplinas falha
+- **THEN** os itens confirmados permanecem e há nova tentativa, sem representar erro como vazio.
+
+#### Scenario: Atualização e isolamento
+- **WHEN** a Home é consultada novamente após cadastrar ou alterar disciplinas
+- **THEN** reflete os dados atuais da conta autenticada, sem dados de outras contas ou módulos desativados.
 
 ### Requirement: Resumir Pomodoro e oferecer ação segura
 O dashboard SHALL mostrar o número de sessões Pomodoro concluídas fornecido pelo módulo e um botão para iniciar foco quando não houver sessão aberta. Se já houver sessão aberta, SHALL oferecer retomada da sessão existente em vez de iniciar outra. A ação SHALL usar as regras e respostas do módulo Pomodoro, sem alterar contagem de tempo ou blocos no dashboard.

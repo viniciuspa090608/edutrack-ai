@@ -11,6 +11,7 @@ const modulePreferencesSchema = z
     ai: z.boolean(),
     pomodoro: z.boolean().default(true),
     reports: z.boolean().default(true),
+    routines: z.boolean().default(true),
   })
   .strict();
 const count = z.number().int().nonnegative();
@@ -37,6 +38,21 @@ export const dashboardSubjectSchema = z
     progressPercent: z.number().min(0).max(100).nullable(),
   })
   .strict();
+export const dashboardSubjectsQuerySchema = z
+  .object({
+    page: z.coerce.number().int().min(1).max(100000).default(1),
+  })
+  .strict();
+export const dashboardSubjectsSchema = z
+  .object({
+    items: z.array(dashboardSubjectSchema).max(10),
+    page: z.number().int().positive(),
+    pageSize: z.literal(10),
+    total: z.number().int().nonnegative(),
+    totalPages: z.number().int().nonnegative(),
+  })
+  .strict();
+export type DashboardSubjects = z.infer<typeof dashboardSubjectsSchema>;
 export const dashboardPomodoroSchema = z
   .object({
     session: pomodoroSessionSchema.nullable(),
@@ -58,9 +74,7 @@ export const dashboardSchema = z
     timeZone: studyTimeZoneSchema.nullable(),
     preferences: modulePreferencesSchema,
     tasks: dashboardSectionSchema(dashboardTasksSchema).optional(),
-    subjects: dashboardSectionSchema(
-      dashboardSubjectSchema.nullable(),
-    ).optional(),
+    subjects: dashboardSectionSchema(dashboardSubjectsSchema).optional(),
     flashcards: dashboardSectionSchema(
       z
         .object({

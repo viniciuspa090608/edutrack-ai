@@ -58,6 +58,7 @@ beforeEach(() => {
     flashcards: true,
     pomodoro: true,
     reports: true,
+    routines: true,
     ai: false,
   };
   failed = '';
@@ -391,6 +392,7 @@ describe('profile page', () => {
       ai: true,
       pomodoro: true,
       reports: true,
+      routines: true,
     };
     await open();
     await userEvent
@@ -711,4 +713,25 @@ describe('profile page', () => {
     expect(canUseAI({ ...prefs, ai: true }, 'tasks', true)).toBe(true);
     expect(canUseAI({ ...prefs, ai: true }, 'subjects', true)).toBe(false);
   });
+});
+it('places the guidance below Conta and persists routine changes in sidebar order', async () => {
+  await open();
+  const heading = screen.getByRole('heading', { name: 'Conta' });
+  const guidance = screen.getByText(
+    'As alterações são salvas em cada seção. Suas preferências não removem seus dados de estudo.',
+  );
+  expect(heading.parentElement?.contains(guidance)).toBe(true);
+  const controls = screen.getAllByRole('checkbox');
+  expect(controls.map((item) => item.textContent)).toHaveLength(7);
+  const routine = screen.getByRole('checkbox', {
+    name: 'Rotinas',
+  });
+  expect(routine.getAttribute('aria-checked')).toBe('true');
+  await userEvent.click(routine);
+  await waitFor(() => expect(prefs.routines).toBe(false));
+  expect(
+    screen
+      .getByRole('checkbox', { name: 'Rotinas' })
+      .getAttribute('aria-checked'),
+  ).toBe('false');
 });

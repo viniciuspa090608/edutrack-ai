@@ -1,4 +1,5 @@
 import {
+  dashboardSubjectsSchema,
   createSubjectSchema,
   updateSubjectSchema,
   subjectSchema,
@@ -67,5 +68,11 @@ export async function mutatePlan(
     await (
       await write(`/subjects/${id}/plan-items${path}`, method, body)
     ).json(),
+  );
+}
+
+export async function dashboardSubjects(page: number) {
+  return dashboardSubjectsSchema.parse(
+    await (await send('/subjects/dashboard?page=' + page)).json(),
   );
 }

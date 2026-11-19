@@ -136,6 +136,7 @@ describe('own profile and module preferences on MySQL', () => {
       ai: true,
       pomodoro: true,
       reports: true,
+      routines: true,
     });
     expect(
       (
@@ -311,6 +312,7 @@ describe('own profile and module preferences on MySQL', () => {
       ai: false,
       pomodoro: true,
       reports: true,
+      routines: true,
     };
     expect(await prefs.read(a.id)).toEqual(initial);
     const before = await users.userById(a.id);
@@ -378,6 +380,7 @@ describe('own profile and module preferences on MySQL', () => {
     expect(await prefs.read(b.id)).toMatchObject({
       pomodoro: true,
       reports: true,
+      routines: true,
     });
     expect(
       (await patch('/preferences', cookie, { pomodoro: true })).status,

@@ -98,6 +98,7 @@ it('renders authenticated routines independently of tasks preferences', async ()
     flashcards: false,
     pomodoro: true,
     reports: true,
+    routines: true,
     ai: false,
   });
   render(<App />);
@@ -246,4 +247,33 @@ it('shows loading and recoverable errors without falsely confirming saves', asyn
   ).toBe(true);
   resolve(row);
   await screen.findByText('Rotina salva.');
+});
+it('blocks direct routine routes and removes their navigation until reactivation', async () => {
+  window.history.replaceState({}, '', '/app/rotinas');
+  const prefs = {
+    tasks: true,
+    subjects: true,
+    flashcards: true,
+    ai: false,
+    pomodoro: true,
+    reports: true,
+    routines: false,
+  };
+  vi.mocked(preferences).mockResolvedValue(prefs);
+  vi.mocked(currentUser).mockResolvedValue({
+    id: row.id,
+    email: 'ana@example.test',
+    displayName: 'Ana',
+    googleLinked: false,
+  });
+  render(<App />);
+  expect(await screen.findByText(/Rotinas desativadas/)).toBeTruthy();
+  expect(api.listRoutines).not.toHaveBeenCalled();
+  expect(screen.queryByRole('link', { name: 'Rotinas' })).toBeNull();
+  vi.mocked(preferences).mockResolvedValue({ ...prefs, routines: true });
+  window.dispatchEvent(new Event('edutrack:preferences'));
+  expect(
+    await screen.findByRole('heading', { name: 'Rotinas de estudo' }),
+  ).toBeTruthy();
+  expect(api.listRoutines).toHaveBeenCalled();
 });

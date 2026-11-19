@@ -153,7 +153,10 @@ it('creates, lists, partially edits and replaces slots while keeping saved wall 
 });
 it('rejects invalid and overlapping slots in service and HTTP without changing anything', async () => {
   const a = await account();
-  const service = new RoutinesService(new RoutinesRepository(source));
+  const service = new RoutinesService(
+    new RoutinesRepository(source),
+    new PreferencesService(source),
+  );
   const row = await service.create(a.id, input);
   for (const payload of [
     { name: '', slots: [slot] },
@@ -181,7 +184,10 @@ it('rejects invalid and overlapping slots in service and HTTP without changing a
 });
 it('rolls back name, zone and full slot replacement after a database failure', async () => {
   const a = await account();
-  const service = new RoutinesService(new RoutinesRepository(source));
+  const service = new RoutinesService(
+    new RoutinesRepository(source),
+    new PreferencesService(source),
+  );
   const row = await service.create(a.id, input);
   await source.query(
     "CREATE TRIGGER routine_test_failure BEFORE INSERT ON study_routine_slots FOR EACH ROW BEGIN IF NEW.start_time = '13:00' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'test failure'; END IF; END",
@@ -270,4 +276,54 @@ it('works with other modules disabled and writes no tasks or Pomodoro records', 
     expect(
       await source.query(`SELECT id FROM ${table} WHERE user_id=?`, [a.id]),
     ).toEqual([]);
+});
+it('persists the routine preference across sessions, blocks every operation and restores intact data', async () => {
+  const a = await account(),
+    b = await account(),
+    prefs = new PreferencesService(source);
+  expect((await prefs.read(a.id)).routines).toBe(true);
+  const created = await write('post', '/routines', a.cookie, input);
+  expect(created.status).toBe(201);
+  const path = '/routines/' + created.body.id;
+  await prefs.update(a.id, { routines: false });
+  const cookie = `edutrack_session=${await new SessionRepository(source).create(a.id)}`;
+  expect((await prefs.read(a.id)).routines).toBe(false);
+  expect((await prefs.read(b.id)).routines).toBe(true);
+  for (const uri of ['/routines', '/routines/schedule', path])
+    expect((await read(uri, cookie)).body.error.code).toBe('MODULE_DISABLED');
+  for (const [method, uri] of [
+    ['post', '/routines'],
+    ['patch', path],
+    ['delete', path],
+  ] as const)
+    expect((await write(method, uri, cookie, input)).status).toBe(403);
+  const service = new RoutinesService(new RoutinesRepository(source), prefs);
+  await expect(service.schedule(a.id)).rejects.toMatchObject({
+    code: 'MODULE_DISABLED',
+  });
+  expect(
+    await source.query('SELECT id FROM study_routines WHERE user_id=?', [a.id]),
+  ).toHaveLength(1);
+  await prefs.update(a.id, {
+    routines: true,
+    subjects: false,
+    flashcards: false,
+  });
+  await expect(prefs.update(a.id, { tasks: false })).rejects.toMatchObject({
+    code: 'LAST_MODULE_REQUIRED',
+  });
+  expect((await read(path, cookie)).body).toEqual(created.body);
+});
+
+it('backfills existing accounts with routines enabled and reverses only the preference', async () => {
+  const a = await account();
+  const row = await write('post', '/routines', a.cookie, input);
+  await source.undoLastMigration();
+  expect((await read('/routines', a.cookie)).status).toBe(500);
+  await source.runMigrations();
+  expect((await new PreferencesService(source).read(a.id)).routines).toBe(true);
+  expect((await read('/routines/' + row.body.id, a.cookie)).body).toEqual(
+    row.body,
+  );
+  expect(await source.runMigrations()).toEqual([]);
 });

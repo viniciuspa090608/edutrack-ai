@@ -113,6 +113,7 @@ const preferencesObjectSchema = z
     ai: z.boolean(),
     pomodoro: z.boolean(),
     reports: z.boolean(),
+    routines: z.boolean(),
   })
   .strict();
 export function hasEnabledStudyModule(value: {
@@ -126,6 +127,7 @@ export const preferencesSchema = preferencesObjectSchema
   .extend({
     pomodoro: z.boolean().default(true),
     reports: z.boolean().default(true),
+    routines: z.boolean().default(true),
   })
   .refine(
     hasEnabledStudyModule,

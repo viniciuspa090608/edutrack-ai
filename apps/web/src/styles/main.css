@@ -145,3 +145,10 @@ a[data-slot='button'],
     scrollbar-color: var(--border) transparent;
   }
 }
+@media (prefers-reduced-motion: reduce) {
+  .subjects-module [data-slot='progress-indicator'],
+  .dashboard-subject-scroll [data-slot='progress-indicator'],
+  .achievement-card [data-slot='progress-indicator'] {
+    transition: none;
+  }
+}

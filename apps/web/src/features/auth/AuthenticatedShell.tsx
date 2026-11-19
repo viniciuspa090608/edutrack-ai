@@ -1,3 +1,4 @@
+import { preferenceOrder, preferencePaths } from '../profile/module-catalog.js';
 import { navigatePrivateLink } from '../../app/private-navigation.js';
 import {
   useEffect,
@@ -149,17 +150,12 @@ export function AuthenticatedShell({
     ({ path }) =>
       (desktop || path !== '/conta#account-ai') &&
       (path !== '/app/pomodoro' || prefs?.pomodoro !== false) &&
+      (path !== '/app/rotinas' || prefs?.routines === true) &&
       (path !== '/app/progresso' || prefs?.reports !== false),
   );
   const desktopOrder = [
     '/app',
-    '/app/materias',
-    '/app/tarefas',
-    '/app/flashcards',
-    '/app/rotinas',
-    '/app/pomodoro',
-    '/app/progresso',
-    '/conta#account-ai',
+    ...preferenceOrder.map((key) => preferencePaths[key]),
     '/conta',
   ];
   const desktopDestinations = [...primary, ...secondary].sort(

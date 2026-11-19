@@ -7,7 +7,18 @@ import {
   routinePaginationSchema,
 } from '@study-platform/contracts';
 import type { UpdateRoutine } from '@study-platform/contracts';
-import { send } from '../auth/auth-api.js';
+import { AuthApiError, send as authenticatedSend } from '../auth/auth-api.js';
+
+async function send(path: string, options?: RequestInit) {
+  try {
+    return await authenticatedSend(path, options);
+  } catch (cause) {
+    if (cause instanceof AuthApiError && cause.code === 'MODULE_DISABLED') {
+      window.dispatchEvent(new Event('edutrack:preferences'));
+    }
+    throw cause;
+  }
+}
 export async function listRoutines(page = 1) {
   const query = routinePaginationSchema.parse({ page });
   return routineListSchema.parse(

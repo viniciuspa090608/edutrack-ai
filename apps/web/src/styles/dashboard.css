@@ -557,3 +557,69 @@
 .dashboard-card-flashcards .dashboard-task-list > li {
   padding: 12px 14px;
 }
+
+.dashboard-subject-scroll {
+  max-block-size: 10.5rem;
+  overflow-y: auto;
+  min-height: 0;
+  padding: 2px;
+  scrollbar-width: thin;
+}
+.dashboard-subject-list {
+  display: grid;
+  gap: 8px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.dashboard-subject-list > li {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 6px 12px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.dashboard-subject-list h3 {
+  font-size: 1rem;
+  margin: 0;
+}
+.dashboard-subject-list h3 a {
+  color: inherit;
+}
+.dashboard-card-subjects .dashboard-subject-list p {
+  font-size: 0.85rem;
+  line-height: 1.35;
+  margin: 2px 0;
+}
+.dashboard-subject-scroll > button {
+  margin-top: 8px;
+}
+.dashboard-card-subjects > [data-slot='card-content'] {
+  gap: 8px;
+}
+.dashboard-card-subjects .dashboard-card-body {
+  min-height: 0;
+}
+.dashboard-card-subjects .dashboard-module-link {
+  padding-top: 10px;
+}
+@media (min-width: 1000px) {
+  .dashboard-grid:has(.dashboard-card-streak)
+    .dashboard-card-subjects:not(.dashboard-card-empty) {
+    contain: size;
+    min-height: 0;
+  }
+  .dashboard-card-subjects:not(.dashboard-card-empty)
+    > [data-slot='card-content'],
+  .dashboard-card-subjects:not(.dashboard-card-empty) .dashboard-card-body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .dashboard-card-subjects:not(.dashboard-card-empty)
+    .dashboard-subject-scroll {
+    flex: 1;
+    max-block-size: none;
+  }
+}

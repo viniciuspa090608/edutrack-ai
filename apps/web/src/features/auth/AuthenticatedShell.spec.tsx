@@ -35,6 +35,7 @@ const prefs: ModulePreferences = {
   flashcards: true,
   pomodoro: true,
   reports: true,
+  routines: true,
   ai: false,
 };
 let media: MediaQueryList;
@@ -118,11 +119,11 @@ function openShell(
 }
 const paths = [
   '/app',
-  '/app/materias',
   '/app/tarefas',
+  '/app/materias',
   '/app/flashcards',
-  '/app/rotinas',
   '/app/pomodoro',
+  '/app/rotinas',
   '/app/progresso',
   '/conta#account-ai',
   '/conta',

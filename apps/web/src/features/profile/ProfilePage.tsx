@@ -1,3 +1,4 @@
+import { preferenceOrder, preferenceLabels } from './module-catalog.js';
 import { useTransientMessage } from '../../components/useTransientMessage.js';
 import { useAccountSections, accountSections } from './useAccountSections.js';
 import { AISettingsSection } from './AISettingsSection.js';
@@ -47,11 +48,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import type {
-  Capability,
-  ModulePreferences,
-  UserProfile,
-} from '@study-platform/contracts';
+import type { ModulePreferences, UserProfile } from '@study-platform/contracts';
 import {
   displayNameSchema,
   passwordChangeSchema,
@@ -190,14 +187,7 @@ export function ProfilePage({
         )}
       </section>
     );
-  const labels: Record<Capability, string> = {
-    tasks: 'Tarefas',
-    subjects: 'Disciplinas',
-    flashcards: 'Flashcards',
-    pomodoro: 'Pomodoro',
-    reports: 'Relatório',
-    ai: 'Recursos de IA',
-  };
+  const labels = preferenceLabels;
   const wait = Math.max(0, Math.ceil((waitUntil - now) / 1000));
   return (
     <div className="account-area">
@@ -205,6 +195,10 @@ export function ProfilePage({
         <div>
           <p className="account-eyebrow">PERFIL & AJUSTES</p>
           <h1>Conta</h1>
+          <p className="account-heading-help">
+            As alterações são salvas em cada seção. Suas preferências não
+            removem seus dados de estudo.
+          </p>
         </div>
         <a className="account-back" href="/app">
           Voltar ao início <ChevronRight aria-hidden="true" />
@@ -250,10 +244,6 @@ export function ProfilePage({
               </a>
             ))}
           </nav>
-          <p className="account-sidebar-help">
-            As alterações são salvas em cada seção. Suas preferências não
-            removem seus dados de estudo.
-          </p>
         </aside>
         <div className="account-sections">
           <div
@@ -471,7 +461,7 @@ export function ProfilePage({
                   opcional e não interfere no uso manual.
                 </p>
                 <div className="account-preferences-grid">
-                  {(Object.keys(labels) as Capability[]).map((key) => (
+                  {preferenceOrder.map((key) => (
                     <div className="account-preference" key={key}>
                       <Label>
                         <Checkbox
@@ -507,6 +497,7 @@ export function ProfilePage({
                       </Label>
                       {key !== 'ai' &&
                       key !== 'pomodoro' &&
+                      key !== 'routines' &&
                       key !== 'reports' &&
                       !moduleCatalog.find((m) => m.capability === key)
                         ?.delivered ? (

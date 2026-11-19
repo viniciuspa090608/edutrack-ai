@@ -76,7 +76,7 @@ export class DashboardService {
         preferences.subjects
           ? this.section(
               () => this.sources.subjects.dashboardSummary(userId),
-              (data) => data === null,
+              (data) => data.total === 0,
             )
           : undefined,
         preferences.flashcards

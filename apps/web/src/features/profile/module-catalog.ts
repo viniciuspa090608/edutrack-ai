@@ -42,3 +42,31 @@ export function canUseAI(
 ): boolean {
   return delivered && prefs[module] && prefs.ai;
 }
+
+export const preferenceOrder: readonly Capability[] = [
+  'tasks',
+  'subjects',
+  'flashcards',
+  'pomodoro',
+  'routines',
+  'reports',
+  'ai',
+];
+export const preferenceLabels: Record<Capability, string> = {
+  tasks: 'Tarefas',
+  subjects: 'Disciplinas',
+  flashcards: 'Flashcards',
+  pomodoro: 'Pomodoro',
+  routines: 'Rotinas',
+  reports: 'Relatório',
+  ai: 'Recursos de IA',
+};
+export const preferencePaths: Record<Capability, string> = {
+  tasks: '/app/tarefas',
+  subjects: '/app/materias',
+  flashcards: '/app/flashcards',
+  pomodoro: '/app/pomodoro',
+  routines: '/app/rotinas',
+  reports: '/app/progresso',
+  ai: '/conta#account-ai',
+};

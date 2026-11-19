@@ -2,7 +2,7 @@ import { achievementIcons } from '../study-progress/achievement-presentation.js'
 import '../../styles/achievement-colors.css';
 import { CollectionEmptyState } from '../../components/CollectionEmptyState.js';
 import { DashboardPomodoro } from './DashboardPomodoro.js';
-import { listSubjects } from '../subjects/subjects-api.js';
+import { DashboardSubjects } from './DashboardSubjects.js';
 import {
   CardHeader,
   Card,
@@ -109,9 +109,6 @@ function DashboardPreviewList({
 }
 
 export function DashboardPage({ displayName }: { displayName: string }) {
-  const [subjectsEmpty, setSubjectsEmpty] = useState<boolean | null>(null);
-  const [subjectsError, setSubjectsError] = useState(false);
-  const [subjectsRetry, setSubjectsRetry] = useState(0);
   const [data, setData] = useState<Dashboard | null>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
@@ -168,27 +165,6 @@ export function DashboardPage({ displayName }: { displayName: string }) {
       document.removeEventListener('visibilitychange', visible);
     };
   }, [load]);
-  useEffect(() => {
-    let active = true;
-    setSubjectsEmpty(null);
-    setSubjectsError(false);
-    if (
-      !data?.subjects ||
-      data.subjects.state === 'error' ||
-      data.subjects.data
-    )
-      return;
-    void listSubjects(1, 1)
-      .then((value) => {
-        if (active) setSubjectsEmpty(value.total === 0);
-      })
-      .catch(() => {
-        if (active) setSubjectsError(true);
-      });
-    return () => {
-      active = false;
-    };
-  }, [data?.subjects, subjectsRetry]);
   async function begin() {
     if (starting) return;
     setStarting(true);
@@ -236,7 +212,7 @@ export function DashboardPage({ displayName }: { displayName: string }) {
     return (
       <Card asChild>
         <section
-          className={`dashboard-card dashboard-card-${key}${(key === 'tasks' && tasksEmpty) || (key === 'subjects' && subjectsEmpty) ? ' dashboard-card-empty' : ''}`}
+          className={`dashboard-card dashboard-card-${key}${(key === 'tasks' && tasksEmpty) || (key === 'subjects' && subjects?.total === 0) ? ' dashboard-card-empty' : ''}`}
           aria-labelledby={`dashboard-${key}`}
         >
           <CardHeader>
@@ -286,7 +262,7 @@ export function DashboardPage({ displayName }: { displayName: string }) {
     );
   }
   const tasks = data?.tasks?.state !== 'error' ? data?.tasks?.data : undefined;
-  const subject =
+  const subjects =
     data?.subjects?.state !== 'error' ? data?.subjects?.data : undefined;
   const pomo =
     data?.pomodoro.state !== 'error' ? data?.pomodoro.data : undefined;
@@ -517,67 +493,8 @@ export function DashboardPage({ displayName }: { displayName: string }) {
             {card(
               'subjects',
               'Disciplinas',
-              subject
-                ? `/app/materias?subject=${encodeURIComponent(subject.id)}${subject.roadmapId ? `#roadmap-${encodeURIComponent(subject.roadmapId)}` : ''}`
-                : '/app/materias',
-              subject ? (
-                <DashboardPreviewList
-                  label="Disciplina em destaque"
-                  blur={false}
-                >
-                  <li>
-                    <h3>{subject.name}</h3>
-                    <p>
-                      Prazo: {subject.dueDate}.{' '}
-                      {subject.hasPending
-                        ? 'Há estudo pendente.'
-                        : 'Sem pendências de estudo.'}
-                    </p>
-                    <p>
-                      {subject.title} ·{' '}
-                      {subject.source === 'roadmap'
-                        ? 'Roadmap'
-                        : 'Plano manual'}
-                    </p>
-                    <p>
-                      {subject.completed} de {subject.total} concluídos
-                      {subject.progressPercent !== null
-                        ? ` · ${subject.progressPercent.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`
-                        : ''}
-                      .
-                    </p>
-                    {subject.progressPercent !== null && (
-                      <Progress
-                        value={subject.progressPercent}
-                        aria-label={`Progresso de ${subject.name}`}
-                      />
-                    )}
-                  </li>
-                </DashboardPreviewList>
-              ) : subjectsEmpty ? (
-                <CollectionEmptyState
-                  icon={<BookOpen />}
-                  title="Nenhuma disciplina cadastrada"
-                  description="Crie uma disciplina e organize seu plano de estudo, com ou sem IA."
-                  actionLabel="Adicionar disciplina"
-                  onAction={() => navigate('/app/materias?create=1')}
-                />
-              ) : subjectsError ? (
-                <div role="alert">
-                  <p>Não foi possível consultar suas disciplinas.</p>
-                  <Button
-                    onClick={() => setSubjectsRetry((value) => value + 1)}
-                  >
-                    Tentar consultar disciplinas
-                  </Button>
-                </div>
-              ) : (
-                <p>
-                  {subjectsEmpty === null
-                    ? 'Consultando disciplinas…'
-                    : 'Nenhuma disciplina em destaque. Abra suas disciplinas para continuar estudando.'}
-                </p>
-              ),
+              '/app/materias',
+              subjects && <DashboardSubjects initial={subjects} />,
             )}
             {card(
               'flashcards',

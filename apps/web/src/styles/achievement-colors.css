@@ -85,3 +85,13 @@
   outline: 2px solid currentColor;
   outline-offset: 1px;
 }
+
+.evolution-card.achievement-card {
+  border-color: var(--achievement-color);
+}
+.evolution-card.achievement-card .evolution-icon {
+  color: var(--achievement-color);
+}
+.evolution-card.achievement-card [data-slot='progress-indicator'] {
+  background: var(--achievement-color);
+}

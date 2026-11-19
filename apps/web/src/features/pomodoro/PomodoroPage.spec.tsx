@@ -102,6 +102,7 @@ it('renders authenticated Pomodoro independently of disabled tasks', async () =>
     flashcards: false,
     pomodoro: true,
     reports: true,
+    routines: true,
     ai: false,
   });
   render(<App />);

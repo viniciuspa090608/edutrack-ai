@@ -10,6 +10,7 @@ const prefs = {
   flashcards: true,
   pomodoro: true,
   reports: true,
+  routines: true,
   ai: false,
 };
 const connection = {

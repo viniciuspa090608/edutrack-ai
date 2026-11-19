@@ -266,20 +266,48 @@ export class SubjectsRepository {
     );
     return finish(result);
   }
-  dashboardCandidate(userId: string) {
+  dashboardSummaries(userId: string, page: number) {
     return this.source.transaction(async (manager) => {
-      const rows = await manager.query<
-        Array<{ id: string; has_pending: number }>
-      >(
-        `SELECT s.id,
-        (EXISTS(SELECT 1 FROM subject_plan_items i WHERE i.subject_id=s.id AND i.status<>'COMPLETED') OR EXISTS(SELECT 1 FROM subject_roadmap_steps p JOIN subject_roadmap_blocks b ON b.id=p.block_id JOIN subject_roadmaps r ON r.id=b.roadmap_id WHERE r.subject_id=s.id AND p.completed=false)) AS has_pending
-        FROM study_subjects s WHERE s.user_id=? ORDER BY has_pending DESC, CASE WHEN has_pending THEN s.due_date END ASC,s.updated_at DESC,s.id ASC LIMIT 1`,
+      const counts = await manager.query<Array<{ total: string }>>(
+        'SELECT COUNT(*) AS total FROM study_subjects WHERE user_id=?',
         [userId],
       );
-      const candidate = rows[0];
-      if (!candidate) return null;
-      const subject = await this.detailIn(manager, userId, candidate.id);
-      return { subject, hasPending: Boolean(candidate.has_pending) };
+      const rows = await manager.query<
+        Array<{
+          id: string;
+          name: string;
+          due_date: string;
+          has_pending: number;
+          roadmap_id: string | null;
+          title: string | null;
+          total: string;
+          completed: string;
+        }>
+      >(
+        `SELECT s.id,s.name,s.due_date,r.id AS roadmap_id,r.title,
+        (EXISTS(SELECT 1 FROM subject_plan_items i WHERE i.subject_id=s.id AND i.status<>'COMPLETED') OR EXISTS(SELECT 1 FROM subject_roadmap_steps p JOIN subject_roadmap_blocks b ON b.id=p.block_id JOIN subject_roadmaps rm ON rm.id=b.roadmap_id WHERE rm.subject_id=s.id AND p.completed=false)) AS has_pending,
+        CASE WHEN r.id IS NOT NULL THEN (SELECT COUNT(*) FROM subject_roadmap_steps p JOIN subject_roadmap_blocks b ON b.id=p.block_id WHERE b.roadmap_id=r.id) ELSE (SELECT COUNT(*) FROM subject_plan_items i WHERE i.subject_id=s.id) END AS total,
+        CASE WHEN r.id IS NOT NULL THEN (SELECT COUNT(*) FROM subject_roadmap_steps p JOIN subject_roadmap_blocks b ON b.id=p.block_id WHERE b.roadmap_id=r.id AND p.completed=true) ELSE (SELECT COUNT(*) FROM subject_plan_items i WHERE i.subject_id=s.id AND i.status='COMPLETED') END AS completed
+        FROM study_subjects s LEFT JOIN subject_roadmaps r ON r.id=(SELECT latest.id FROM subject_roadmaps latest WHERE latest.subject_id=s.id ORDER BY latest.created_at DESC,latest.id DESC LIMIT 1)
+        WHERE s.user_id=? ORDER BY has_pending DESC,CASE WHEN has_pending THEN s.due_date END ASC,CASE WHEN NOT has_pending THEN s.updated_at END DESC,s.id ASC LIMIT 10 OFFSET ?`,
+        [userId, (page - 1) * 10],
+      );
+      return {
+        items: rows.map((row) => ({
+          id: row.id,
+          name: row.name,
+          dueDate: row.due_date,
+          hasPending: Boolean(row.has_pending),
+          roadmapId: row.roadmap_id,
+          title: row.title ?? 'Plano manual',
+          ...subjectProgress(
+            row.roadmap_id ? 'roadmap' : 'manual',
+            Number(row.total),
+            Number(row.completed),
+          ),
+        })),
+        total: Number(counts[0]!.total),
+      };
     });
   }
   private async owned(

@@ -117,3 +117,9 @@ Cada conquista do catálogo SHALL possuir uma cor de destaque diferente das dema
 #### Scenario: Alternância de tema
 - **WHEN** alterna entre claro e escuro ou recebe o catálogo em outra ordem
 - **THEN** as cores continuam associadas às mesmas conquistas com contraste legível e estados identificáveis sem depender da cor.
+
+Borda, ícone e preenchimento da barra de cada card em Progresso SHALL aplicar a cor da medalha correspondente no Dashboard: primeiro dia verde, três dias âmbar, sete dias lilás, dez tarefas azul, cinco blocos Pomodoro rosa, vinte revisões ciano e cinco marcos de disciplinas magenta, com ajustes de contraste por tema.
+
+#### Scenario: Paleta no mural
+- **WHEN** o catálogo aparece após acesso direto ou recarga
+- **THEN** os cards usam efetivamente as cores das medalhas na borda, ícone e barra, preservando estados textuais e legibilidade.

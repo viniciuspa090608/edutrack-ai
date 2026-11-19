@@ -36,6 +36,9 @@ export function subjectsRoutes(
     return result.data;
   };
   const write = requireOrigin(webOrigins(env));
+  router.get('/dashboard', async (req, res) => {
+    res.json(await service.dashboardSummary(owner(res), req.query));
+  });
   router.get('/:id/roadmaps/:roadmapId/revisions', async (req, res) => {
     res.json(
       await service.roadmapHistory(

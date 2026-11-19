@@ -143,6 +143,12 @@ Cada card da listagem SHALL mostrar o percentual oficial dos estudos da discipli
 - **WHEN** a disciplina não possui itens na fonte oficial de progresso
 - **THEN** seu card indica progresso não calculável sem inventar percentual.
 
+Cada card SHALL acrescentar ao percentual textual uma barra proporcional com nome associado à disciplina, mínimo 0, máximo 100 e valor oficial acessível. Progresso não calculável SHALL NOT ser representado como barra determinada em zero. SHALL preservar contraste em ambos os temas e a fonte oficial de cálculo.
+
+#### Scenario: Extremos e progresso parcial
+- **WHEN** disciplinas retornam 0%, 75% e 100%
+- **THEN** suas barras aparecem vazia, em três quartos e completa com os respectivos textos e sem depender somente de cor.
+
 ### Requirement: Detalhes exclusivos da disciplina selecionada
 Ao abrir detalhes, a interface SHALL mostrar somente a disciplina selecionada e seus roadmaps, plano e registros vinculados, ocultando filtros, listagem geral e paginação da coleção. Voltar SHALL ficar à direita na mesma linha do nome da disciplina quando houver espaço, com quebra acessível em telas estreitas. Retornar SHALL restaurar critérios, página e foco de origem quando ainda disponível, preservando links diretos e âncoras existentes.
 

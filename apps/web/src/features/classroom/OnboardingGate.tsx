@@ -25,6 +25,7 @@ export function OnboardingGate({
       subjects: true,
       flashcards: true,
       ai: false,
+      routines: true,
     }),
     [busy, setBusy] = useState(false),
     [error, setError] = useState('');
@@ -34,8 +35,8 @@ export function OnboardingGate({
   }, [step]);
   useEffect(() => {
     if (prefs) {
-      const { tasks, subjects, flashcards, ai } = prefs;
-      setDraft({ tasks, subjects, flashcards, ai });
+      const { tasks, subjects, flashcards, ai, routines } = prefs;
+      setDraft({ tasks, subjects, flashcards, ai, routines });
     }
   }, [prefs]);
   async function advance(next: 'classroom' | 'completed') {
@@ -75,25 +76,28 @@ export function OnboardingGate({
             Mantenha pelo menos um módulo de estudo. IA é opcional e não inicia
             geração automaticamente.
           </p>
-          {(['tasks', 'subjects', 'flashcards', 'ai'] as const).map((key) => (
-            <Label key={key}>
-              <Checkbox
-                checked={draft[key]}
-                disabled={busy}
-                onCheckedChange={(checked) =>
-                  setDraft({ ...draft, [key]: checked === true })
-                }
-              />
-              {
+          {(['tasks', 'subjects', 'flashcards', 'routines', 'ai'] as const).map(
+            (key) => (
+              <Label key={key}>
+                <Checkbox
+                  checked={draft[key]}
+                  disabled={busy}
+                  onCheckedChange={(checked) =>
+                    setDraft({ ...draft, [key]: checked === true })
+                  }
+                />
                 {
-                  tasks: 'Tarefas',
-                  subjects: 'Disciplinas',
-                  flashcards: 'Flashcards',
-                  ai: 'Recursos de IA',
-                }[key]
-              }
-            </Label>
-          ))}
+                  {
+                    tasks: 'Tarefas',
+                    subjects: 'Disciplinas',
+                    flashcards: 'Flashcards',
+                    ai: 'Recursos de IA',
+                    routines: 'Rotinas',
+                  }[key]
+                }
+              </Label>
+            ),
+          )}
           <Button
             disabled={
               busy || (!draft.tasks && !draft.subjects && !draft.flashcards)

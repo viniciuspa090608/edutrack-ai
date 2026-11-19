@@ -1,3 +1,4 @@
+import '../../styles/achievement-colors.css';
 import { achievementIcons } from './achievement-presentation.js';
 import {
   AlertDescription,

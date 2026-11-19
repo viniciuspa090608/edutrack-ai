@@ -1,4 +1,3 @@
-import { subjectProgress } from './subject-progress.js';
 import {
   createSubjectSchema,
   updateSubjectSchema,
@@ -15,7 +14,8 @@ import {
   updateRoadmapSchema,
   stepProgressSchema,
   revisionListSchema,
-  dashboardSubjectSchema,
+  dashboardSubjectsSchema,
+  dashboardSubjectsQuerySchema,
 } from '@study-platform/contracts';
 import type { z } from 'zod';
 import type { EntityManager } from 'typeorm';
@@ -52,29 +52,15 @@ export class SubjectsService {
       classroomSubjectImportSchema.parse(input),
     );
   }
-  async dashboardSummary(userId: string) {
+  async dashboardSummary(userId: string, input: unknown = {}) {
     await this.prefs.requireEnabled(userId, 'subjects');
-    const candidate = await this.repository.dashboardCandidate(userId);
-    if (!candidate) return null;
-    const { subject, hasPending } = candidate;
-    const roadmaps = await this.listRoadmaps(userId, subject.id, {
-      page: 1,
-      pageSize: 1,
-    });
-    const roadmap = roadmaps.items[0];
-    const steps = roadmap?.blocks.flatMap((block) => block.steps);
-    const total = steps?.length ?? subject.planItems.length;
-    const completed = steps
-      ? steps.filter((step) => step.completed).length
-      : subject.planItems.filter((item) => item.status === 'COMPLETED').length;
-    return dashboardSubjectSchema.parse({
-      id: subject.id,
-      name: subject.name,
-      dueDate: subject.dueDate,
-      hasPending,
-      roadmapId: roadmap?.id ?? null,
-      title: roadmap?.title ?? 'Plano manual',
-      ...subjectProgress(roadmap ? 'roadmap' : 'manual', total, completed),
+    const { page } = parse(dashboardSubjectsQuerySchema, input);
+    const result = await this.repository.dashboardSummaries(userId, page);
+    return dashboardSubjectsSchema.parse({
+      ...result,
+      page,
+      pageSize: 10,
+      totalPages: Math.ceil(result.total / 10),
     });
   }
   constructor(

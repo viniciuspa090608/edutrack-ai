@@ -9,6 +9,7 @@ const columns = {
   ai: 'ai_enabled',
   pomodoro: 'pomodoro_enabled',
   reports: 'reports_visible',
+  routines: 'routines_enabled',
 } as const;
 export class PreferencesRepository {
   constructor(private readonly source: DataSource) {}

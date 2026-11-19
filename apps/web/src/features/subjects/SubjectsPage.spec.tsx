@@ -486,3 +486,43 @@ it('shows only the selected discipline and restores its search and opener', asyn
     (screen.getByLabelText('Buscar por nome') as HTMLInputElement).value,
   ).toBe('Álgebra');
 });
+it.each([null, 0, 0.00001, 75, 99.99999, 100])(
+  'shows an official progress bar only when calculable (%s)',
+  async (percent) => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      Response.json({
+        items: [
+          {
+            ...base,
+            studySummary: {
+              source: 'manual',
+              total: percent === null ? 0 : 10000000,
+              completed: percent === null ? 0 : percent * 100000,
+              progressPercent: percent,
+            },
+          },
+        ],
+        page: 1,
+        pageSize: 20,
+        total: 1,
+        totalPages: 1,
+      }),
+    );
+    render(<SubjectsPage />);
+    await screen.findByRole('heading', { name: 'Álgebra' });
+    if (percent === null) {
+      expect(screen.queryByRole('progressbar')).toBeNull();
+      expect(screen.getByText('Progresso não calculável')).toBeTruthy();
+    } else {
+      expect(
+        screen
+          .getByRole('progressbar', { name: 'Progresso de Álgebra' })
+          .getAttribute('aria-valuenow'),
+      ).toBe(String(percent));
+      if (percent > 0 && percent < 0.05)
+        expect(screen.getByText('Progresso: mais de 0%')).toBeTruthy();
+      if (percent < 100 && percent > 99.95)
+        expect(screen.getByText('Progresso: menos de 100%')).toBeTruthy();
+    }
+  },
+);
