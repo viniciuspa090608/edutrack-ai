@@ -231,3 +231,192 @@ it('rejects decoded reflection even with JSON-escaped credentials and before spe
   ).rejects.toHaveProperty('code', 'AI_INVALID_RESPONSE');
   expect(reserve).toHaveBeenCalledTimes(1);
 });
+it.each([502, 503, 504])(
+  'retries transient assistant HTTP %i with a fresh quota reservation and the same snapshot',
+  async (status) => {
+    const snapshot = {
+      provider: 'gemini' as const,
+      model: aiModels.gemini[0],
+      credential: canary,
+      shared: true,
+    };
+    const resolve = vi.fn(async () => snapshot);
+    const release = vi.fn(async () => {});
+    const reserve = vi.fn(async () => release);
+    const boundary = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(new Response(null, { status }))
+      .mockResolvedValueOnce(
+        Response.json(providerEnvelope('gemini', flashcardFixture)),
+      );
+    const transport = new StructuredProvider(
+      { ...env, AI_TIMEOUT_MS: 3000, AI_ASSISTANT_RETRY_DELAY_MS: 100 },
+      boundary,
+    );
+    const routed = new RoutedStructuredProvider(
+      { resolve },
+      { reserve },
+      transport,
+    );
+    const onCall = vi.fn();
+    await expect(
+      routed.structured(
+        'account',
+        {},
+        flashcardAIOutputSchema,
+        'study_assistant',
+        'Gerar',
+        new Set(['gemini:' + snapshot.model]),
+        onCall,
+      ),
+    ).resolves.toEqual(flashcardFixture);
+    expect(resolve).toHaveBeenCalledTimes(1);
+    expect(reserve).toHaveBeenCalledTimes(2);
+    expect(reserve).toHaveBeenNthCalledWith(2, 'account', true, true);
+    expect(release).toHaveBeenCalledTimes(2);
+    expect(onCall).toHaveBeenCalledTimes(2);
+    expect(boundary.mock.calls[0]![0]).toBe(boundary.mock.calls[1]![0]);
+    expect(boundary.mock.calls[0]![1]!.body).toBe(
+      boundary.mock.calls[1]![1]!.body,
+    );
+    expect(
+      JSON.parse(String(boundary.mock.calls[0]![1]!.body)).generationConfig
+        .thinkingConfig,
+    ).toEqual({ thinkingLevel: 'LOW' });
+  },
+);
+
+it.each([400, 401, 403, 429, 500])(
+  'does not retry assistant HTTP %i or switch provider',
+  async (status) => {
+    const boundary = vi.fn<typeof fetch>(
+      async () => new Response(null, { status }),
+    );
+    const reserve = vi.fn(async () => async () => {});
+    const routed = new RoutedStructuredProvider(
+      {
+        resolve: async () => ({
+          provider: 'gemini',
+          model: aiModels.gemini[0],
+          credential: canary,
+          shared: false,
+        }),
+      },
+      { reserve },
+      new StructuredProvider(env, boundary),
+    );
+    await expect(
+      routed.structured(
+        'account',
+        {},
+        flashcardAIOutputSchema,
+        'study_assistant',
+        'Gerar',
+        new Set(['gemini:' + aiModels.gemini[0]]),
+      ),
+    ).rejects.toHaveProperty('code', expect.stringMatching(/^AI_/));
+    expect(boundary).toHaveBeenCalledTimes(1);
+    expect(reserve).toHaveBeenCalledTimes(1);
+  },
+);
+
+it('stops retries at the configured bound and respects Retry-After and the total deadline', async () => {
+  for (const headers of [{}, { 'retry-after': '120' }]) {
+    const boundary = vi.fn<typeof fetch>(
+      async () => new Response(null, { status: 503, headers }),
+    );
+    const release = vi.fn(async () => {});
+    const routed = new RoutedStructuredProvider(
+      {
+        resolve: async () => ({
+          provider: 'gemini',
+          model: aiModels.gemini[0],
+          credential: canary,
+          shared: true,
+        }),
+      },
+      { reserve: async () => release },
+      new StructuredProvider(
+        { ...env, AI_TIMEOUT_MS: 3000, AI_ASSISTANT_RETRY_DELAY_MS: 100 },
+        boundary,
+      ),
+    );
+    await expect(
+      routed.structured(
+        'account',
+        {},
+        flashcardAIOutputSchema,
+        'study_assistant',
+        'Gerar',
+        new Set(['gemini:' + aiModels.gemini[0]]),
+      ),
+    ).rejects.toHaveProperty('code', 'AI_UNAVAILABLE');
+    expect(boundary).toHaveBeenCalledTimes('retry-after' in headers ? 1 : 2);
+    expect(release).toHaveBeenCalledTimes(boundary.mock.calls.length);
+  }
+  const boundary = vi.fn<typeof fetch>(
+    async () => new Response(null, { status: 503 }),
+  );
+  const routed = new RoutedStructuredProvider(
+    {
+      resolve: async () => ({
+        provider: 'gemini',
+        model: aiModels.gemini[0],
+        credential: canary,
+        shared: true,
+      }),
+    },
+    { reserve: async () => async () => {} },
+    new StructuredProvider(env, boundary),
+  );
+  await expect(
+    routed.structured(
+      'account',
+      {},
+      flashcardAIOutputSchema,
+      'study_assistant',
+      'Gerar',
+      new Set(['gemini:' + aiModels.gemini[0]]),
+    ),
+  ).rejects.toHaveProperty('code', 'AI_UNAVAILABLE');
+  expect(boundary).toHaveBeenCalledTimes(1);
+});
+
+it('does not send a retry when the next quota reservation is rejected', async () => {
+  const boundary = vi.fn<typeof fetch>(
+    async () => new Response(null, { status: 503 }),
+  );
+  const release = vi.fn(async () => {});
+  const reserve = vi
+    .fn()
+    .mockResolvedValueOnce(release)
+    .mockRejectedValueOnce(new Error('QUOTA_BLOCKED'));
+  const routed = new RoutedStructuredProvider(
+    {
+      resolve: async () => ({
+        provider: 'gemini',
+        model: aiModels.gemini[0],
+        credential: canary,
+        shared: true,
+      }),
+    },
+    { reserve },
+    new StructuredProvider(
+      { ...env, AI_TIMEOUT_MS: 3000, AI_ASSISTANT_RETRY_DELAY_MS: 100 },
+      boundary,
+    ),
+  );
+  await expect(
+    routed.structured(
+      'account',
+      {},
+      flashcardAIOutputSchema,
+      'study_assistant',
+      'Gerar',
+      new Set(['gemini:' + aiModels.gemini[0]]),
+    ),
+  ).rejects.toThrow('QUOTA_BLOCKED');
+  expect(boundary).toHaveBeenCalledTimes(1);
+  expect(reserve).toHaveBeenCalledTimes(2);
+  expect(release).toHaveBeenCalledTimes(1);
+});

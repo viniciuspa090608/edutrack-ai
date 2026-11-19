@@ -1,0 +1,63 @@
+.assistant-page {
+  max-width: 72rem;
+  margin-inline: auto;
+}
+
+.assistant-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+}
+
+@media (min-width: 1024px) {
+  .assistant-layout {
+    grid-template-columns: minmax(0, 15rem) minmax(0, 1fr);
+  }
+}
+
+.assistant-page ul,
+.assistant-messages {
+  list-style: none;
+  padding: 0;
+}
+
+.assistant-chat,
+.assistant-messages li {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.assistant-messages > li {
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  margin-block: 0.5rem;
+}
+
+.assistant-messages p {
+  white-space: pre-wrap;
+}
+
+.assistant-page button {
+  max-width: 100%;
+  height: auto;
+  min-height: 2.25rem;
+  white-space: normal;
+}
+
+.assistant-suggestions,
+.assistant-chat form {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.assistant-chat textarea {
+  width: 100%;
+  max-width: 100%;
+  resize: vertical;
+  padding: 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: var(--background);
+  color: var(--foreground);
+}

@@ -2,6 +2,7 @@ import type { Server } from 'node:http';
 import { createApp } from './app.js';
 import { loadEnv } from './config/env.js';
 import { createDataSource } from './database/data-source.js';
+import { cleanupAssistant } from './database/cleanup-assistant.js';
 import { logger } from './shared/logger.js';
 import { ImportRepository } from './modules/flashcards/import.repository.js';
 
@@ -44,18 +45,43 @@ async function main(): Promise<void> {
     void cleanup();
   }, 60_000);
   importCleanup.unref();
+  let assistantCleanup: Promise<void> | undefined;
+  const cleanAssistant = () => {
+    if (assistantCleanup) return;
+    const started = performance.now();
+    assistantCleanup = cleanupAssistant(source)
+      .then((counts) => {
+        logger.info({
+          event: 'assistant.cleanup',
+          ...counts,
+          durationMs: Math.round(performance.now() - started),
+        });
+      })
+      .catch(() => {
+        logger.error({ event: 'assistant.cleanup_failed' });
+      })
+      .finally(() => {
+        assistantCleanup = undefined;
+      });
+  };
+  cleanAssistant();
+  const assistantCleanupTimer = setInterval(cleanAssistant, 60 * 60_000);
+  assistantCleanupTimer.unref();
 
   const close = () => {
     clearInterval(importCleanup);
+    clearInterval(assistantCleanupTimer);
     server.close(() => {
-      source.destroy().then(
-        () => {
-          process.exitCode = 0;
-        },
-        () => {
-          process.exitCode = 1;
-        },
-      );
+      Promise.resolve(assistantCleanup)
+        .then(() => source.destroy())
+        .then(
+          () => {
+            process.exitCode = 0;
+          },
+          () => {
+            process.exitCode = 1;
+          },
+        );
     });
   };
 

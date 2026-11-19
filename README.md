@@ -451,3 +451,17 @@ Desconectar remove tokens locais imediatamente, interrompe confirmações penden
 Verificação automatizada usa banco MySQL temporário real e simula somente a fronteira HTTP Google. A homologação real exige consentimento com uma conta autorizada, turma selecionada, atividade com/sem prazo, reimportação e revogação. `redirect_uri_mismatch` se resolve cadastrando o callback exato; `access_denied` pode exigir revisão do consentimento/usuários de teste ou administrador institucional. Registre essas evidências antes de concluir o apply; fixtures não substituem a homologação externa.
 
 Referências oficiais: [OAuth web](https://developers.google.com/identity/protocols/oauth2/web-server), [escopos Classroom](https://developers.google.com/workspace/classroom/guides/auth), [permissões de atividades](https://developers.google.com/workspace/classroom/guides/manage-coursework).
+
+## Piloto do Assistente IA
+
+Aplique as migrations antes de iniciar a API e configure o fallback da SPA para `/app/assistente-ia`. A API executa a limpeza na inicialização e a cada hora, inclusive com o piloto fechado. Verifique `assistant.cleanup` no início e após reiniciar a API. O comando pós-build `pnpm --filter @study-platform/api assistant:cleanup` permite uma execução sob demanda.
+
+Com o piloto fechado, valide os provedores com dados sintéticos. Configure `AI_ASSISTANT_MODELS` com pares `provedor:modelo` do catálogo separados por vírgulas. Inclua somente os pares aprovados no smoke. Configure `AI_ASSISTANT_USER_DAILY_LIMIT` e `AI_ASSISTANT_GLOBAL_DAILY_LIMIT` abaixo dos tetos gerais. Defina `AI_ASSISTANT_GLOBAL_MAX_CONCURRENCY` abaixo do máximo global quando houver mais de um slot. Defina `AI_ASSISTANT_ENABLED=true` depois de verificar a limpeza e os tetos. A aba exige também a preferência de IA da conta.
+
+Agregue os eventos `assistant_attempt` por período para acompanhar latência, chamadas externas e erros de cota. Acompanhe `retainedMessages` e `oldestExpiredMs` nos eventos de limpeza. Antes de ampliar acesso, registre volume, concorrência, latência e folga para roadmaps e flashcards. Para fechar o piloto, desative `AI_ASSISTANT_ENABLED`. A limpeza continua até expirar o histórico vigente.
+
+### Resiliência do Assistente IA
+
+O chat Gemini usa raciocínio LOW. AI_ASSISTANT_MAX_RETRIES permite de 0 a 2 repetições (padrão 1) apenas para HTTP 502/503/504. AI_ASSISTANT_RETRY_DELAY_MS define a base do backoff exponencial com jitter (100–5000 ms, padrão 1000). Retry-After é respeitado; esperas acima de 10 segundos ou sem prazo restante encerram a tentativa. O timeout total AI_TIMEOUT_MS inclui as repetições e a espera. Cada chamada externa reserva e consome sua própria cota; um teto diário de 2 permite no máximo duas chamadas, inclusive repetições. Chaves recusadas, 429, falhas de transporte, timeout e respostas inválidas não são repetidos.
+
+O catálogo também oferece gemini-3.5-flash-lite como alternativa explícita ao gemini-3.8-flash. Para mudar o padrão da plataforma, ajuste GEMINI_MODEL e inclua o par em AI_ASSISTANT_MODELS após homologar. Contas em modo pessoal continuam usando sua própria configuração. Não há fallback automático de modelo, provedor ou credencial. Referências: [raciocínio](https://aistudio.google.com/docs/thinking), [Flash-Lite](https://aistudio.google.com/docs/models/gemini-3.5-flash-lite) e [falhas transitórias](https://aistudio.google.com/docs/troubleshooting).

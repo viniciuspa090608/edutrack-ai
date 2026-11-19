@@ -114,6 +114,7 @@ function DestinationLink({
 export function AuthenticatedShell({
   user,
   prefs,
+  assistantEnabled = false,
   busy,
   onLogout,
   confirmedAvatar,
@@ -123,6 +124,7 @@ export function AuthenticatedShell({
 }: {
   user: AuthUser;
   prefs: ModulePreferences | null;
+  assistantEnabled?: boolean;
   busy: boolean;
   onLogout: () => void;
   confirmedAvatar: ConfirmedAvatar | null;
@@ -153,15 +155,22 @@ export function AuthenticatedShell({
       (path !== '/app/rotinas' || prefs?.routines === true) &&
       (path !== '/app/progresso' || prefs?.reports !== false),
   );
+  const destinations = assistantEnabled
+    ? [
+        { path: '/app/assistente-ia', label: 'Assistente IA', icon: Layers },
+        ...secondary,
+      ]
+    : secondary;
   const desktopOrder = [
     '/app',
     ...preferenceOrder.map((key) => preferencePaths[key]),
+    '/app/assistente-ia',
     '/conta',
   ];
-  const desktopDestinations = [...primary, ...secondary].sort(
+  const desktopDestinations = [...primary, ...destinations].sort(
     (a, b) => desktopOrder.indexOf(a.path) - desktopOrder.indexOf(b.path),
   );
-  const moreActive = secondary.some((item) =>
+  const moreActive = destinations.some((item) =>
     activeDestination(item, pathname, true),
   );
   useEffect(() => {
@@ -311,7 +320,7 @@ export function AuthenticatedShell({
               className="shell-more-destinations"
               aria-label="Outros destinos"
             >
-              {secondary.map((item) => (
+              {destinations.map((item) => (
                 <DestinationLink
                   key={item.path}
                   item={item}

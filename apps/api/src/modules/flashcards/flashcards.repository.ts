@@ -66,6 +66,35 @@ export class FlashcardsRepository {
   }
 
   constructor(private readonly source: DataSource) {}
+  findDecksByName(userId: string, name: string) {
+    return this.source.query<Array<{ id: string; name: string }>>(
+      'SELECT id, name FROM flashcard_decks WHERE user_id = ? AND name = ? LIMIT 2',
+      [userId, name],
+    );
+  }
+  async createCardsIn(
+    manager: EntityManager,
+    userId: string,
+    deckId: string,
+    cards: GeneratedCard[],
+  ) {
+    await this.deck(manager, userId, deckId, true);
+    await manager.query(
+      `INSERT INTO flashcards (id,deck_id,front,back) VALUES ${cards.map(() => '(?,?,?,?)').join(',')}`,
+      cards.flatMap((card) => [card.id, deckId, card.front, card.back]),
+    );
+    await initializeCardReviews(
+      manager,
+      userId,
+      cards.map((card) => card.id),
+    );
+    return Promise.all(
+      cards.map((card) => this.card(manager, userId, deckId, card.id)),
+    );
+  }
+  async requireDeckIn(manager: EntityManager, userId: string, deckId: string) {
+    await this.deck(manager, userId, deckId, true);
+  }
   confirmGenerated(
     userId: string,
     deckId: string,

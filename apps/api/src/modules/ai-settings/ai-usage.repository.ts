@@ -4,7 +4,11 @@ import type { ApiEnv } from '../../config/env.js';
 import { HttpError } from '../../shared/http-error.js';
 
 export interface AIUsage {
-  reserve(userId: string, shared: boolean): Promise<() => Promise<void>>;
+  reserve(
+    userId: string,
+    shared: boolean,
+    assistant?: boolean,
+  ): Promise<() => Promise<void>>;
 }
 export class AIUsageRepository implements AIUsage {
   constructor(
@@ -12,7 +16,7 @@ export class AIUsageRepository implements AIUsage {
     private readonly env: ApiEnv,
     private readonly now: () => Date = () => new Date(),
   ) {}
-  async reserve(userId: string, shared: boolean) {
+  async reserve(userId: string, shared: boolean, assistant = false) {
     const id = randomUUID();
     await this.source.transaction(async (manager) => {
       // One short lock orders global and account reservations across every API process.
@@ -24,8 +28,8 @@ export class AIUsageRepository implements AIUsage {
         now,
       ]);
       const leases = await manager.query<
-        Array<{ user_id: string; shared: number }>
-      >('SELECT user_id, shared FROM ai_usage_leases');
+        Array<{ user_id: string; shared: number; assistant: number }>
+      >('SELECT user_id, shared, assistant FROM ai_usage_leases');
       const counters: Array<[string, string, number]> = [
         [
           `user:${userId}`,
@@ -53,6 +57,22 @@ export class AIUsageRepository implements AIUsage {
           'Limite de IA atingido. Aguarde e tente novamente mais tarde.',
           60,
         );
+      if (shared && assistant) {
+        const day = `day:${now.toISOString().slice(0, 10)}`;
+        counters.push(
+          [
+            `chat:user:${userId}`,
+            day,
+            this.env.AI_ASSISTANT_USER_DAILY_LIMIT ?? 0,
+          ],
+          ['chat:global', day, this.env.AI_ASSISTANT_GLOBAL_DAILY_LIMIT ?? 0],
+        );
+        const maximum = this.env.AI_ASSISTANT_GLOBAL_MAX_CONCURRENCY ?? 0;
+        if (
+          leases.filter((row) => row.shared && row.assistant).length >= maximum
+        )
+          throw limited();
+      }
       if (
         leases.filter((row) => row.user_id === userId).length >=
           this.env.AI_USER_MAX_CONCURRENCY ||
@@ -74,12 +94,13 @@ export class AIUsageRepository implements AIUsage {
           [scope, window],
         );
       await manager.query(
-        'INSERT INTO ai_usage_leases (id, user_id, shared, expires_at) VALUES (?, ?, ?, ?)',
+        'INSERT INTO ai_usage_leases (id, user_id, shared, expires_at, assistant) VALUES (?, ?, ?, ?, ?)',
         [
           id,
           userId,
           shared,
           new Date(now.getTime() + this.env.AI_TIMEOUT_MS + 10000),
+          assistant,
         ],
       );
       // Windows are only needed until the next UTC day. Keep bounded operational data.

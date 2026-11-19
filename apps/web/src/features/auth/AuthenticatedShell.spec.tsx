@@ -100,11 +100,13 @@ function openShell(
   preferences: ModulePreferences | null = prefs,
   busy = false,
   onLogout = vi.fn(),
+  assistantEnabled = false,
 ) {
   return render(
     <AuthenticatedShell
       user={user}
       prefs={preferences}
+      assistantEnabled={assistantEnabled}
       busy={busy}
       onLogout={onLogout}
       confirmedAvatar={null}
@@ -129,6 +131,30 @@ const paths = [
   '/conta',
 ];
 describe('authenticated navigation', () => {
+  it('preserves module order and AI settings while offering the eligible assistant on desktop and mobile', async () => {
+    window.history.replaceState({}, '', '/app/assistente-ia');
+    openShell({ ...prefs, ai: true }, false, vi.fn(), true);
+    expect(
+      within(screen.getByRole('navigation', { name: 'Área pessoal' }))
+        .getAllByRole('link')
+        .map((link) => link.getAttribute('href')),
+    ).toEqual([...paths.slice(0, -1), '/app/assistente-ia', '/conta']);
+    expect(
+      screen
+        .getByRole('link', { name: 'Assistente IA' })
+        .getAttribute('aria-current'),
+    ).toBe('page');
+    resize(false);
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Mais, contém a página atual' }),
+    );
+    const dialog = within(screen.getByRole('dialog'));
+    expect(
+      dialog.getByRole('link', { name: 'Assistente IA' }).getAttribute('href'),
+    ).toBe('/app/assistente-ia');
+    expect(dialog.queryByRole('link', { name: 'IA' })).toBeNull();
+  });
+
   it.each([0, 1, 2, 3, 4, 5, 6, 7])(
     'preserves fixed destinations and filters enabled modules (mask %i)',
     async (mask) => {

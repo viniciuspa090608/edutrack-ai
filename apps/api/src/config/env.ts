@@ -1,4 +1,4 @@
-import { isAIModel } from '@study-platform/contracts';
+import { aiProviderSchema, isAIModel } from '@study-platform/contracts';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'node:url';
 import { z } from 'zod';
@@ -101,6 +101,62 @@ const envSchema = z
       .positive()
       .max(1000000)
       .default(5),
+    AI_ASSISTANT_ENABLED: z.enum(['true', 'false']).default('false'),
+    AI_ASSISTANT_MODELS: z
+      .string()
+      .default('')
+      .transform((value) =>
+        value
+          .split(',')
+          .map((model) => model.trim())
+          .filter(Boolean),
+      ),
+    AI_ASSISTANT_USER_DAILY_LIMIT: z.coerce
+      .number()
+      .int()
+      .positive()
+      .optional(),
+    AI_ASSISTANT_GLOBAL_DAILY_LIMIT: z.coerce
+      .number()
+      .int()
+      .positive()
+      .optional(),
+    AI_ASSISTANT_GLOBAL_MAX_CONCURRENCY: z.coerce
+      .number()
+      .int()
+      .positive()
+      .optional(),
+    AI_ASSISTANT_MESSAGE_CHARS: z.coerce
+      .number()
+      .int()
+      .min(1)
+      .max(8000)
+      .default(2000),
+    AI_ASSISTANT_CONTEXT_MESSAGES: z.coerce
+      .number()
+      .int()
+      .min(1)
+      .max(30)
+      .default(8),
+    AI_ASSISTANT_CONTEXT_CHARS: z.coerce
+      .number()
+      .int()
+      .min(1)
+      .max(64000)
+      .default(8000),
+    AI_ASSISTANT_RESPONSE_CHARS: z.coerce
+      .number()
+      .int()
+      .min(1)
+      .max(16000)
+      .default(4000),
+    AI_ASSISTANT_MAX_RETRIES: z.coerce.number().int().min(0).max(2).default(1),
+    AI_ASSISTANT_RETRY_DELAY_MS: z.coerce
+      .number()
+      .int()
+      .min(100)
+      .max(5000)
+      .default(1000),
     AI_TIMEOUT_MS: z.coerce.number().int().min(100).max(120000).default(30000),
     AI_MAX_RESPONSE_BYTES: z.coerce
       .number()
@@ -114,6 +170,49 @@ const envSchema = z
     message: 'must differ from DB_NAME',
   })
   .superRefine((value, context) => {
+    if (
+      (value.AI_ASSISTANT_ENABLED === 'true' &&
+        !value.AI_ASSISTANT_MODELS.length) ||
+      value.AI_ASSISTANT_MODELS.some((entry) => {
+        const [provider, model, extra] = entry.split(':');
+        const parsed = aiProviderSchema.safeParse(provider);
+        return (
+          !parsed.success ||
+          !model ||
+          extra !== undefined ||
+          !isAIModel(parsed.data, model)
+        );
+      })
+    )
+      context.addIssue({
+        code: 'custom',
+        path: ['AI_ASSISTANT_MODELS'],
+        message: 'Configure catalog provider:model pairs',
+      });
+    const assistantLimits = [
+      ['AI_ASSISTANT_USER_DAILY_LIMIT', value.AI_DEFAULT_USER_DAILY_LIMIT - 1],
+      [
+        'AI_ASSISTANT_GLOBAL_DAILY_LIMIT',
+        value.AI_DEFAULT_GLOBAL_DAILY_LIMIT - 1,
+      ],
+      [
+        'AI_ASSISTANT_GLOBAL_MAX_CONCURRENCY',
+        Math.max(1, value.AI_DEFAULT_GLOBAL_MAX_CONCURRENCY - 1),
+      ],
+    ] as const;
+    for (const [key, maximum] of assistantLimits) {
+      const limit = value[key];
+      if (
+        limit === undefined
+          ? value.AI_ASSISTANT_ENABLED === 'true'
+          : limit > maximum
+      )
+        context.addIssue({
+          code: 'custom',
+          path: [key],
+          message: 'Configure a chat limit that preserves shared capacity',
+        });
+    }
     if (
       value.CLASSROOM_ENCRYPTION_KEY &&
       [

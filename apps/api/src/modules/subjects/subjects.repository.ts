@@ -107,6 +107,12 @@ export class SubjectsRepository {
   constructor(private readonly source: DataSource) {
     this.roadmaps = new RoadmapsRepository(source);
   }
+  findByName(userId: string, name: string) {
+    return this.source.query<Array<{ id: string; name: string }>>(
+      'SELECT id, name FROM study_subjects WHERE user_id = ? AND name = ? LIMIT 2',
+      [userId, name],
+    );
+  }
   async importClassroom(
     manager: EntityManager,
     userId: string,
@@ -462,23 +468,26 @@ export class SubjectsRepository {
       );
   }
   create(userId: string, input: CreateSubject) {
-    return this.source.transaction(async (manager) => {
-      const id = randomUUID();
-      await manager.query(
-        'INSERT INTO study_subjects (id,user_id,name,current_level,objective,due_date,weekly_hours) VALUES (?,?,?,?,?,?,?)',
-        [
-          id,
-          userId,
-          input.name,
-          input.currentLevel,
-          input.objective,
-          input.dueDate,
-          input.weeklyHours,
-        ],
-      );
-      await this.replaceTopics(manager, userId, id, input.knownTopics);
-      return this.detailIn(manager, userId, id);
-    });
+    return this.source.transaction((manager) =>
+      this.createIn(manager, userId, input),
+    );
+  }
+  async createIn(manager: EntityManager, userId: string, input: CreateSubject) {
+    const id = randomUUID();
+    await manager.query(
+      'INSERT INTO study_subjects (id,user_id,name,current_level,objective,due_date,weekly_hours) VALUES (?,?,?,?,?,?,?)',
+      [
+        id,
+        userId,
+        input.name,
+        input.currentLevel,
+        input.objective,
+        input.dueDate,
+        input.weeklyHours,
+      ],
+    );
+    await this.replaceTopics(manager, userId, id, input.knownTopics);
+    return this.detailIn(manager, userId, id);
   }
   update(userId: string, id: string, input: UpdateSubject) {
     return this.locked(userId, id, async (manager) => {

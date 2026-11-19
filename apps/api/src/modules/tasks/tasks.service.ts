@@ -119,6 +119,16 @@ export class TasksService {
   async detail(userId: string, id: string) {
     return dto(await this.repository.find(userId, id));
   }
+  async createIn(manager: EntityManager, userId: string, input: unknown) {
+    const task = createTaskSchema.parse(input);
+    if (task.subjectId)
+      await this.subjects.requireOwnedForImport(
+        manager,
+        userId,
+        task.subjectId,
+      );
+    return dto(await this.repository.createIn(manager, userId, task));
+  }
   async list(userId: string, input: unknown) {
     const parsed = taskFiltersSchema.safeParse(input);
     if (!parsed.success)

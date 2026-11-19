@@ -9,7 +9,7 @@ export const aiProviderSchema = z.enum([
 ]);
 export type AIProvider = z.infer<typeof aiProviderSchema>;
 export const aiModels = {
-  gemini: ['gemini-3.8-flash'],
+  gemini: ['gemini-3.8-flash', 'gemini-3.5-flash-lite'],
   claude: ['claude-sonnet-4-6'],
   openai: ['gpt-4.1-mini', 'gpt-4.1'],
   deepseek: ['deepseek-flash', 'deepseek-v4-pro'],

@@ -16,7 +16,7 @@ O shell SHALL apresentar logo/logotipo com destino `/app` à esquerda e controle
 
 ### Requirement: Sidebar desktop com destinos reais
 
-A partir de 1024 px, o shell SHALL apresentar sidebar com ícone, rótulo, estado ativo, hover e foco. Os destinos visíveis SHALL seguir a ordem Início, Matérias, Tarefas, Flashcards, Rotinas, Pomodoro, Relatório, IA e Conta, respeitando as preferências de módulos e de visibilidade. IA SHALL abrir a seção de inteligência artificial da Conta. Sair SHALL ocupar região separada inferior. A navegação SHALL permitir scroll interno em pouca altura sem tornar Sair inalcançável.
+A partir de 1024 px, o shell SHALL apresentar sidebar com ícone, rótulo, estado ativo, hover e foco. Os destinos visíveis SHALL seguir a ordem Início, Matérias, Tarefas, Flashcards, Rotinas, Pomodoro, Relatório, IA, Assistente IA para contas elegíveis no piloto e Conta, respeitando as preferências de módulos e de visibilidade. IA SHALL abrir a seção de inteligência artificial da Conta. Sair SHALL ocupar região separada inferior. A navegação SHALL permitir scroll interno em pouca altura sem tornar Sair inalcançável.
 
 #### Scenario: Desktop com pouca altura
 - **WHEN** todos os módulos estão habilitados em viewport desktop de pouca altura
@@ -24,7 +24,7 @@ A partir de 1024 px, o shell SHALL apresentar sidebar com ícone, rótulo, estad
 
 ### Requirement: Barra inferior mobile e menu Mais
 
-Abaixo de 1024 px, o shell SHALL substituir a sidebar por barra inferior com Início, Tarefas, Matérias, Flashcards e Mais, removendo e redistribuindo os itens de módulos desativados sem espaços vazios. Mais SHALL agrupar somente Pomodoro, Rotinas, Relatório, Conta e Sair. SHALL ter abertura/fechamento acessíveis, Escape, gestão de foco e retorno ao acionador ao fechar sem navegar; ao selecionar destino, o foco SHALL seguir para o conteúdo correspondente; SHALL fechar ou deixar de existir ao passar para desktop, sem overlay ou bloqueio de scroll residual.
+Abaixo de 1024 px, o shell SHALL substituir a sidebar por barra inferior com Início, Tarefas, Matérias, Flashcards e Mais, removendo e redistribuindo os itens de módulos desativados sem espaços vazios. Mais SHALL agrupar somente Pomodoro, Rotinas, Relatório, Conta, Sair e Assistente IA para contas elegíveis no piloto. SHALL ter abertura/fechamento acessíveis, Escape, gestão de foco e retorno ao acionador ao fechar sem navegar; ao selecionar destino, o foco SHALL seguir para o conteúdo correspondente; SHALL fechar ou deixar de existir ao passar para desktop, sem overlay ou bloqueio de scroll residual.
 
 #### Scenario: Módulos parcialmente habilitados
 - **WHEN** somente Matérias está habilitado
@@ -33,6 +33,12 @@ Abaixo de 1024 px, o shell SHALL substituir a sidebar por barra inferior com In�
 #### Scenario: Menu aberto e mudança de largura
 - **WHEN** a pessoa abre Mais por teclado e muda a viewport para desktop
 - **THEN** o menu mobile deixa de capturar foco e scroll, e a navegação desktop permanece operável.
+
+#### Scenario: Assistente IA na navegação privada
+
+- **WHEN** uma conta elegível com IA habilitada abre o shell
+- **THEN** Assistente IA aparece na sidebar desktop e no menu Mais em mobile, com estado ativo e foco coerentes com a navegação existente.
+- **AND** quando a conta deixa de ser elegível ou desativa IA, o link desaparece e o acesso direto fica protegido.
 
 ### Requirement: Destino ativo e compatibilidade de navegação
 

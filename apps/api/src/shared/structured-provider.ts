@@ -15,6 +15,8 @@ export interface AccountStructuredProvider {
     schema: z.ZodType,
     name: string,
     instructions: string,
+    assistantModels?: ReadonlySet<string>,
+    onCall?: () => void,
   ): Promise<unknown>;
 }
 const invalid = () =>
@@ -25,6 +27,11 @@ const invalid = () =>
   );
 const unavailable = () =>
   new HttpError(503, 'AI_UNAVAILABLE', 'A geração por IA está indisponível.');
+class TransientProviderError extends HttpError {
+  constructor(readonly retryAfterMs: number) {
+    super(503, 'AI_UNAVAILABLE', 'A geração por IA está indisponível.');
+  }
+}
 
 /** Simplify only the upstream grammar. The original Zod schema remains mandatory locally. */
 export function claudeSchema(value: unknown): unknown {
@@ -78,6 +85,9 @@ function protocol(
         systemInstruction: { parts: [{ text: system }] },
         contents: [{ role: 'user', parts: [{ text: JSON.stringify(input) }] }],
         generationConfig: {
+          ...(name === 'study_assistant'
+            ? { thinkingConfig: { thinkingLevel: 'LOW' } }
+            : {}),
           maxOutputTokens: 16000,
           responseMimeType: 'application/json',
           responseJsonSchema: jsonSchema,
@@ -234,6 +244,13 @@ function containsSecret(value: unknown, secrets: string[]): boolean {
 }
 
 export class StructuredProvider {
+  assistantRetryPolicy() {
+    return {
+      retries: this.env.AI_ASSISTANT_MAX_RETRIES,
+      delayMs: this.env.AI_ASSISTANT_RETRY_DELAY_MS,
+      timeoutMs: this.env.AI_TIMEOUT_MS,
+    };
+  }
   constructor(
     private readonly env: ApiEnv,
     private readonly request: typeof fetch = fetch,
@@ -264,6 +281,7 @@ export class StructuredProvider {
     schema: z.ZodType,
     name: string,
     instructions: string,
+    timeoutMs = this.env.AI_TIMEOUT_MS,
   ): Promise<unknown> {
     const { config, secrets } = this.validate(
       snapshot,
@@ -284,7 +302,7 @@ export class StructuredProvider {
             'A IA demorou para responder. Tente novamente.',
           ),
         );
-      }, this.env.AI_TIMEOUT_MS);
+      }, timeoutMs);
     });
     const run = async () => {
       const response = await this.request(config.url, {
@@ -295,8 +313,17 @@ export class StructuredProvider {
         body: JSON.stringify(config.body),
       });
       if (!response.ok) {
+        const retryAfter = response.headers.get('retry-after');
+        const seconds = retryAfter === null ? NaN : Number(retryAfter);
+        const retryAfterMs = Number.isFinite(seconds)
+          ? Math.max(0, seconds * 1000)
+          : retryAfter
+            ? Math.max(0, Date.parse(retryAfter) - Date.now()) || 0
+            : 0;
         controller.abort();
         await response.body?.cancel().catch(() => undefined);
+        if ([502, 503, 504].includes(response.status))
+          throw new TransientProviderError(retryAfterMs);
         if (!snapshot.shared && [401, 403].includes(response.status))
           throw new HttpError(
             422,
@@ -371,21 +398,65 @@ export class RoutedStructuredProvider implements AccountStructuredProvider {
     schema: z.ZodType,
     name: string,
     instructions: string,
+    assistantModels?: ReadonlySet<string>,
+    onCall?: () => void,
   ) {
     const snapshot = await this.resolver.resolve(userId);
+    if (
+      assistantModels &&
+      !assistantModels.has(`${snapshot.provider}:${snapshot.model}`)
+    )
+      throw new HttpError(
+        422,
+        'AI_ASSISTANT_INCOMPATIBLE',
+        'O provedor e modelo configurados ainda não estão disponíveis no Assistente IA. Revise sua configuração em Conta.',
+      );
     // Check local errors before reserving quota.
     this.transport.validate(snapshot, input, schema, name, instructions);
-    const release = await this.usage.reserve(userId, snapshot.shared);
-    try {
-      return await this.transport.structured(
-        snapshot,
-        input,
-        schema,
-        name,
-        instructions,
+    const policy = this.transport.assistantRetryPolicy();
+    const deadline = performance.now() + policy.timeoutMs;
+    const retries = assistantModels ? policy.retries : 0;
+    for (let attempt = 0; ; attempt++) {
+      const release = await this.usage.reserve(
+        userId,
+        snapshot.shared,
+        assistantModels !== undefined,
       );
-    } finally {
-      await release();
+      let retryDelay: number;
+      try {
+        const remaining = deadline - performance.now();
+        if (remaining <= 0)
+          throw new HttpError(
+            504,
+            'AI_TIMEOUT',
+            'A IA demorou para responder. Tente novamente.',
+          );
+        onCall?.();
+        return await this.transport.structured(
+          snapshot,
+          input,
+          schema,
+          name,
+          instructions,
+          remaining,
+        );
+      } catch (error) {
+        if (!(error instanceof TransientProviderError) || attempt >= retries)
+          throw error;
+        retryDelay = Math.max(
+          error.retryAfterMs,
+          policy.delayMs * 2 ** attempt + Math.random() * policy.delayMs * 0.25,
+        );
+        // Never extend a turn's deadline or sleep beyond a bounded backoff.
+        if (
+          retryDelay > 10000 ||
+          retryDelay + 100 >= deadline - performance.now()
+        )
+          throw error;
+      } finally {
+        await release();
+      }
+      await new Promise((resolve) => setTimeout(resolve, retryDelay));
     }
   }
 }
