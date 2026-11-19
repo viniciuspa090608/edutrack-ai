@@ -208,6 +208,7 @@ export function ProfilePage({
         <aside
           className="account-sidebar"
           aria-label="Resumo e navegação da conta"
+          tabIndex={0}
         >
           <Card className="account-summary">
             <div className="account-summary-cover" aria-hidden="true" />

@@ -121,13 +121,12 @@ function openShell(
 }
 const paths = [
   '/app',
-  '/app/tarefas',
   '/app/materias',
+  '/app/tarefas',
   '/app/flashcards',
   '/app/pomodoro',
   '/app/rotinas',
   '/app/progresso',
-  '/conta#account-ai',
   '/conta',
 ];
 describe('authenticated navigation', () => {
@@ -141,7 +140,7 @@ describe('authenticated navigation', () => {
     ).toEqual([...paths.slice(0, -1), '/app/assistente-ia', '/conta']);
     expect(
       screen
-        .getByRole('link', { name: 'Assistente IA' })
+        .getByRole('link', { name: 'Assistente de IA' })
         .getAttribute('aria-current'),
     ).toBe('page');
     resize(false);
@@ -150,7 +149,9 @@ describe('authenticated navigation', () => {
     );
     const dialog = within(screen.getByRole('dialog'));
     expect(
-      dialog.getByRole('link', { name: 'Assistente IA' }).getAttribute('href'),
+      dialog
+        .getByRole('link', { name: 'Assistente de IA' })
+        .getAttribute('href'),
     ).toBe('/app/assistente-ia');
     expect(dialog.queryByRole('link', { name: 'IA' })).toBeNull();
   });
@@ -187,7 +188,7 @@ describe('authenticated navigation', () => {
           .getAllByRole('link')
           .map((x) => x.getAttribute('href')),
       ).toEqual(
-        ['/app', '/app/tarefas', '/app/materias', '/app/flashcards'].filter(
+        ['/app', '/app/materias', '/app/tarefas', '/app/flashcards'].filter(
           (path) => expected.includes(path),
         ),
       );

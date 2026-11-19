@@ -65,21 +65,9 @@ const secondaryDestinations: Destination[] = [
     label: 'Relatório',
     icon: ChartNoAxesCombined,
   },
-  { path: '/conta#account-ai', label: 'IA', icon: Sparkles },
   { path: '/conta', label: 'Conta', icon: UserRound },
 ];
-function activeDestination(
-  item: Destination,
-  pathname: string,
-  mobile = false,
-) {
-  if (
-    !mobile &&
-    pathname === '/conta' &&
-    window.location.hash === '#account-ai'
-  ) {
-    return item.path === '/conta#account-ai';
-  }
+function activeDestination(item: Destination, pathname: string) {
   return (
     item.path === pathname ||
     (item.path === '/app/progresso' && pathname === '/app/estatisticas') ||
@@ -100,9 +88,7 @@ function DestinationLink({
     <a
       className="shell-nav-link"
       href={item.path}
-      aria-current={
-        activeDestination(item, pathname, close) ? 'page' : undefined
-      }
+      aria-current={activeDestination(item, pathname) ? 'page' : undefined}
     >
       <Icon aria-hidden="true" />
       <span>{item.label}</span>
@@ -150,15 +136,19 @@ export function AuthenticatedShell({
   ];
   const secondary = secondaryDestinations.filter(
     ({ path }) =>
-      (desktop || path !== '/conta#account-ai') &&
       (path !== '/app/pomodoro' || prefs?.pomodoro !== false) &&
       (path !== '/app/rotinas' || prefs?.routines === true) &&
       (path !== '/app/progresso' || prefs?.reports !== false),
   );
   const destinations = assistantEnabled
     ? [
-        { path: '/app/assistente-ia', label: 'Assistente IA', icon: Layers },
-        ...secondary,
+        ...secondary.slice(0, -1),
+        {
+          path: '/app/assistente-ia',
+          label: 'Assistente de IA',
+          icon: Sparkles,
+        },
+        ...secondary.slice(-1),
       ]
     : secondary;
   const desktopOrder = [
@@ -171,7 +161,7 @@ export function AuthenticatedShell({
     (a, b) => desktopOrder.indexOf(a.path) - desktopOrder.indexOf(b.path),
   );
   const moreActive = destinations.some((item) =>
-    activeDestination(item, pathname, true),
+    activeDestination(item, pathname),
   );
   useEffect(() => {
     if (desktop) setMoreOpen(false);

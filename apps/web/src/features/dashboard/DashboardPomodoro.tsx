@@ -4,7 +4,13 @@ import { Button } from '@study-platform/ui/components/ui/button';
 import { currentPomodoro } from '../pomodoro/pomodoro-api.js';
 import { formatPomodoro, projectPomodoro } from '../pomodoro/pomodoro-clock.js';
 
-export function DashboardPomodoro({ initial }: { initial: PomodoroSession }) {
+export function DashboardPomodoro({
+  initial,
+  onAvailability,
+}: {
+  initial: PomodoroSession;
+  onAvailability?: (value: 'open' | 'start' | 'syncing') => void;
+}) {
   const [session, setSession] = useState<PomodoroSession | null>(initial);
   const [tick, setTick] = useState(0);
   const [error, setError] = useState(false);
@@ -64,6 +70,15 @@ export function DashboardPomodoro({ initial }: { initial: PomodoroSession }) {
     return () => window.clearInterval(timer);
   }, [session, error]);
   const { remaining, boundary } = projectPomodoro(session, tick);
+  const availability =
+    error || boundary
+      ? 'syncing'
+      : !session || remaining === 0
+        ? 'start'
+        : 'open';
+  useEffect(() => {
+    onAvailability?.(availability);
+  }, [availability, onAvailability]);
   useEffect(() => {
     if (boundary) void reconcile();
   }, [boundary, reconcile]);

@@ -372,6 +372,28 @@ it('offers resume for an existing session without issuing a start command', asyn
   expect(screen.queryByRole('button', { name: 'Iniciar Pomodoro' })).toBeNull();
   expect(startPomodoro).not.toHaveBeenCalled();
 });
+it('offers Iniciar pomodoro for confirmed zero without creating a second session', async () => {
+  const between = {
+    ...session,
+    state: 'BETWEEN_BLOCKS' as const,
+    remainingSeconds: 0,
+  };
+  vi.mocked(dashboard).mockResolvedValue({
+    ...empty,
+    pomodoro: {
+      state: 'ready',
+      data: { session: between, completedSessions: 2 },
+    },
+  });
+  vi.mocked(currentPomodoro).mockResolvedValue(between);
+  render(<DashboardPage displayName="Ana" />);
+  expect(
+    await screen.findByRole('link', { name: 'Iniciar pomodoro' }),
+  ).toBeTruthy();
+  expect(screen.queryByRole('link', { name: 'Abrir pomodoro' })).toBeNull();
+  expect(screen.getByRole('timer').textContent).toBe('00:00');
+  expect(startPomodoro).not.toHaveBeenCalled();
+});
 it('starts a new Pomodoro once and navigates to its public page', async () => {
   vi.mocked(dashboard).mockResolvedValue(empty);
   vi.mocked(startPomodoro).mockResolvedValue(session);

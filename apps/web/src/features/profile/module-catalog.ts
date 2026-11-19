@@ -7,15 +7,15 @@ export const moduleCatalog: ReadonlyArray<{
   delivered: boolean;
 }> = [
   {
-    capability: 'tasks',
-    path: '/app/tarefas',
-    label: 'Tarefas',
-    delivered: true,
-  },
-  {
     capability: 'subjects',
     path: '/app/materias',
     label: 'Disciplinas',
+    delivered: true,
+  },
+  {
+    capability: 'tasks',
+    path: '/app/tarefas',
+    label: 'Tarefas',
     delivered: true,
   },
   {
@@ -44,8 +44,8 @@ export function canUseAI(
 }
 
 export const preferenceOrder: readonly Capability[] = [
-  'tasks',
   'subjects',
+  'tasks',
   'flashcards',
   'pomodoro',
   'routines',

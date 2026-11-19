@@ -248,8 +248,8 @@ describe('profile page', () => {
     );
     await waitFor(() => expect(prefs.ai).toBe(false));
     expect(availableModules(prefs).map((item) => item.capability)).toEqual([
-      'tasks',
       'subjects',
+      'tasks',
       'flashcards',
     ]);
   });

@@ -6,6 +6,18 @@ import type {
   ModulePreferences,
 } from '@study-platform/contracts';
 import { Button } from '@study-platform/ui/components/ui/button';
+import {
+  ArrowUpRight,
+  BookOpen,
+  CalendarDays,
+  History,
+  Info,
+  Layers,
+  MessageSquare,
+  Plus,
+  Send,
+  Sparkles,
+} from 'lucide-react';
 import { AuthApiError } from '../auth/auth-api.js';
 import {
   assistantConversations,
@@ -138,13 +150,31 @@ export function AssistantPage({
   const [error, setError] = useState('');
   const [failed, setFailed] = useState<Submission>();
   const [busy, setBusy] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const composer = useRef<HTMLTextAreaElement>(null);
   const suggestions = [
-    prefs.tasks && 'Quais tarefas vencem nesta semana?',
-    prefs.subjects && 'Quais são as minhas matérias?',
-    prefs.flashcards &&
-      'Crie cinco flashcards sobre SQL no meu baralho de Banco de Dados.',
-  ].filter((value): value is string => Boolean(value));
+    {
+      enabled: prefs.tasks,
+      text: 'Quais tarefas vencem nesta semana?',
+      category: 'Prazos',
+      description: 'Consulte suas próximas entregas e organize a semana.',
+      icon: CalendarDays,
+    },
+    {
+      enabled: prefs.subjects,
+      text: 'Quais são as minhas matérias?',
+      category: 'Disciplinas',
+      description: 'Explore as disciplinas que fazem parte dos seus estudos.',
+      icon: BookOpen,
+    },
+    {
+      enabled: prefs.flashcards,
+      text: 'Crie cinco flashcards sobre SQL no meu baralho de Banco de Dados.',
+      category: 'Flashcards',
+      description: 'Prepare cartões de estudo e revise antes de salvar.',
+      icon: Layers,
+    },
+  ].filter((suggestion) => suggestion.enabled);
 
   async function loadConversations(cursor?: AssistantConversations['cursor']) {
     const result = await assistantConversations(cursor);
@@ -223,148 +253,211 @@ export function AssistantPage({
   }
   return (
     <section className="assistant-page">
-      <h1>Assistente IA</h1>
-      <p>
-        Sua mensagem, um trecho recente da conversa e os dados de estudo
-        necessários podem ser enviados ao provedor configurado na sua conta. O
-        histórico fica disponível por 30 dias por mensagem.
-      </p>
+      <header className="assistant-header">
+        <div>
+          <span className="assistant-brand-icon">
+            <Sparkles aria-hidden="true" />
+          </span>
+          <h1>Assistente de IA</h1>
+        </div>
+        <Button
+          disabled={busy}
+          variant="outline"
+          onClick={() => {
+            setId(undefined);
+            setMessages(empty);
+            setFailed(undefined);
+            setError('');
+            setText('');
+            setHistoryOpen(false);
+            composer.current?.focus();
+          }}
+        >
+          <Plus aria-hidden="true" />
+          Nova conversa
+        </Button>
+      </header>
       <div className="assistant-layout">
-        <aside aria-label="Conversas recentes">
+        <div className="assistant-history">
           <Button
-            disabled={busy}
+            className="assistant-history-toggle"
             variant="outline"
-            onClick={() => {
-              setId(undefined);
-              setMessages(empty);
-              setFailed(undefined);
-              setError('');
-              setText('');
-              composer.current?.focus();
-            }}
+            aria-expanded={historyOpen}
+            aria-controls="assistant-history"
+            onClick={() => setHistoryOpen(!historyOpen)}
           >
-            Nova conversa
+            <History aria-hidden="true" />
+            Histórico de conversas
           </Button>
-          <ul>
-            {conversations.items.map((conversation) => (
-              <li key={conversation.id}>
-                <Button
-                  variant="ghost"
-                  disabled={busy}
-                  aria-pressed={conversation.id === id}
-                  onClick={() =>
-                    void run('Carregando mensagens…', async () => {
-                      setMessages(await assistantMessages(conversation.id));
-                      setId(conversation.id);
-                      setFailed(undefined);
-                    })
-                  }
-                >
-                  Conversa de{' '}
-                  {new Intl.DateTimeFormat('pt-BR', {
-                    dateStyle: 'short',
-                    timeStyle: 'short',
-                  }).format(new Date(conversation.updatedAt))}
-                </Button>
-              </li>
-            ))}
-          </ul>
-          {conversations.cursor && (
-            <Button
-              variant="outline"
-              disabled={busy}
-              onClick={() =>
-                void run('Carregando conversas…', () =>
-                  loadConversations(conversations.cursor),
-                )
-              }
-            >
-              Mais conversas
-            </Button>
-          )}
-        </aside>
-        <div className="assistant-chat">
-          {messages.cursor && id && (
-            <Button
-              variant="outline"
-              disabled={busy}
-              onClick={() =>
-                void run('Carregando mensagens…', async () => {
-                  const older = await assistantMessages(id, messages.cursor);
-                  setMessages({
-                    ...older,
-                    items: [...messages.items, ...older.items],
-                  });
-                })
-              }
-            >
-              Mensagens anteriores
-            </Button>
-          )}
-          {messages.items.length === 0 && (
-            <div>
-              <p>Como posso ajudar nos seus estudos?</p>
-              <div className="assistant-suggestions">
-                {suggestions.map((suggestion) => (
+          <aside
+            id="assistant-history"
+            data-open={historyOpen}
+            aria-label="Conversas recentes"
+          >
+            <h2>
+              Histórico <span>30 dias por mensagem</span>
+            </h2>
+            {!conversations.items.length && !status && !error && (
+              <p>Nenhuma conversa recente.</p>
+            )}
+            <ul>
+              {conversations.items.map((conversation) => (
+                <li key={conversation.id}>
                   <Button
-                    key={suggestion}
-                    variant="outline"
+                    variant="ghost"
                     disabled={busy}
-                    onClick={() => {
-                      setText(suggestion.slice(0, messageLimit));
-                      composer.current?.focus();
-                    }}
-                  >
-                    {suggestion}
-                  </Button>
-                ))}
-              </div>
-            </div>
-          )}
-          <ol className="assistant-messages" aria-label="Mensagens">
-            {[...messages.items].reverse().map((message) => (
-              <li key={message.id}>
-                <strong>
-                  {message.role === 'user' ? 'Você' : 'Assistente IA'}
-                </strong>
-                <p>{message.text}</p>
-                {message.retryable && id && (
-                  <Button
-                    variant="outline"
-                    disabled={busy}
+                    aria-pressed={conversation.id === id}
                     onClick={() =>
-                      void submit({
-                        conversationId: id,
-                        messageId: message.id,
-                        attemptId: crypto.randomUUID(),
-                        text: message.text,
+                      void run('Carregando mensagens…', async () => {
+                        setMessages(await assistantMessages(conversation.id));
+                        setId(conversation.id);
+                        setFailed(undefined);
+                        setHistoryOpen(false);
+                        composer.current?.focus();
                       })
                     }
                   >
-                    Tentar responder novamente
+                    <MessageSquare aria-hidden="true" />
+                    <span>
+                      Conversa de{' '}
+                      {new Intl.DateTimeFormat('pt-BR', {
+                        dateStyle: 'short',
+                        timeStyle: 'short',
+                      }).format(new Date(conversation.updatedAt))}
+                    </span>
                   </Button>
-                )}
-                {message.preview && (
-                  <section aria-label="Prévia de criação">
-                    <p>
-                      <strong>Destino</strong> {message.preview.destination}
-                    </p>
-                    <ActionContent action={message.preview.action} />
-                    {message.preview.confirmed ? (
-                      <p>Criação confirmada.</p>
-                    ) : (
-                      <Button
-                        disabled={busy}
-                        onClick={() => void confirm(message.preview!)}
-                      >
-                        Confirmar criação
-                      </Button>
-                    )}
-                  </section>
-                )}
-              </li>
-            ))}
-          </ol>
+                </li>
+              ))}
+            </ul>
+            {conversations.cursor && (
+              <Button
+                variant="outline"
+                disabled={busy}
+                onClick={() =>
+                  void run('Carregando conversas…', () =>
+                    loadConversations(conversations.cursor),
+                  )
+                }
+              >
+                Mais conversas
+              </Button>
+            )}
+          </aside>
+        </div>
+        <div className="assistant-chat">
+          <p className="assistant-privacy">
+            <Info aria-hidden="true" />
+            <span>
+              Sua mensagem, um trecho recente da conversa e os dados de estudo
+              necessários podem ser enviados ao provedor configurado na sua
+              conta. O histórico fica disponível por 30 dias por mensagem.
+            </span>
+          </p>
+          <div
+            className="assistant-transcript"
+            role="region"
+            tabIndex={0}
+            aria-label="Conteúdo da conversa"
+          >
+            {messages.cursor && id && (
+              <Button
+                variant="outline"
+                disabled={busy}
+                onClick={() =>
+                  void run('Carregando mensagens…', async () => {
+                    const older = await assistantMessages(id, messages.cursor);
+                    setMessages({
+                      ...older,
+                      items: [...messages.items, ...older.items],
+                    });
+                  })
+                }
+              >
+                Mensagens anteriores
+              </Button>
+            )}
+            {messages.items.length === 0 && (
+              <div className="assistant-welcome">
+                <span className="assistant-welcome-icon">
+                  <BookOpen aria-hidden="true" />
+                </span>
+                <h2>Como posso ajudar nos seus estudos hoje?</h2>
+                <p>
+                  Organize seus prazos, explore suas disciplinas e prepare
+                  flashcards.
+                </p>
+                <div className="assistant-suggestions">
+                  {suggestions.map((suggestion) => (
+                    <Button
+                      key={suggestion.category}
+                      className="assistant-suggestion"
+                      aria-label={suggestion.text}
+                      variant="outline"
+                      disabled={busy}
+                      onClick={() => {
+                        setText(suggestion.text.slice(0, messageLimit));
+                        composer.current?.focus();
+                      }}
+                    >
+                      <span className="assistant-suggestion-category">
+                        <suggestion.icon aria-hidden="true" />
+                        {suggestion.category}
+                        <ArrowUpRight aria-hidden="true" />
+                      </span>
+                      <strong>{suggestion.text}</strong>
+                      <span className="assistant-suggestion-description">
+                        {suggestion.description}
+                      </span>
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
+            <ol className="assistant-messages" aria-label="Mensagens">
+              {[...messages.items].reverse().map((message) => (
+                <li key={message.id}>
+                  <strong>
+                    {message.role === 'user' ? 'Você' : 'Assistente IA'}
+                  </strong>
+                  <p>{message.text}</p>
+                  {message.retryable && id && (
+                    <Button
+                      variant="outline"
+                      disabled={busy}
+                      onClick={() =>
+                        void submit({
+                          conversationId: id,
+                          messageId: message.id,
+                          attemptId: crypto.randomUUID(),
+                          text: message.text,
+                        })
+                      }
+                    >
+                      Tentar responder novamente
+                    </Button>
+                  )}
+                  {message.preview && (
+                    <section aria-label="Prévia de criação">
+                      <p>
+                        <strong>Destino</strong> {message.preview.destination}
+                      </p>
+                      <ActionContent action={message.preview.action} />
+                      {message.preview.confirmed ? (
+                        <p>Criação confirmada.</p>
+                      ) : (
+                        <Button
+                          disabled={busy}
+                          onClick={() => void confirm(message.preview!)}
+                        >
+                          Confirmar criação
+                        </Button>
+                      )}
+                    </section>
+                  )}
+                </li>
+              ))}
+            </ol>
+          </div>
           <p role="status">{status}</p>
           {error && <p role="alert">{error}</p>}
           {failed &&
@@ -379,18 +472,37 @@ export function AssistantPage({
                 Tentar envio novamente
               </Button>
             )}
-          <form onSubmit={sendMessage}>
+          <form className="assistant-composer" onSubmit={sendMessage}>
             <label htmlFor="assistant-message">Mensagem</label>
+            <span
+              className="assistant-keyboard-hint"
+              id="assistant-keyboard-hint"
+            >
+              Enter para enviar · Shift+Enter para nova linha
+            </span>
             <textarea
               id="assistant-message"
               ref={composer}
-              rows={3}
+              rows={2}
               maxLength={messageLimit}
               value={text}
+              placeholder="Pergunte sobre suas disciplinas, tarefas ou flashcards…"
+              aria-describedby="assistant-keyboard-hint"
+              onKeyDown={(event) => {
+                if (
+                  event.key === 'Enter' &&
+                  !event.shiftKey &&
+                  !event.nativeEvent.isComposing &&
+                  event.keyCode !== 229
+                ) {
+                  event.preventDefault();
+                  event.currentTarget.form?.requestSubmit();
+                }
+              }}
               onChange={(event) => setText(event.target.value)}
             />
             <Button type="submit" disabled={busy || !text.trim()}>
-              Enviar
+              Enviar <Send aria-hidden="true" />
             </Button>
           </form>
         </div>

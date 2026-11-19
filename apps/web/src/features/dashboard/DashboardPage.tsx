@@ -113,6 +113,9 @@ export function DashboardPage({ displayName }: { displayName: string }) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [starting, setStarting] = useState(false);
+  const [pomodoroAvailability, setPomodoroAvailability] = useState<
+    'open' | 'start' | 'syncing'
+  >('open');
   const [startError, setStartError] = useState('');
   const [uncertain, setUncertain] = useState(false);
   const version = useRef(0);
@@ -205,6 +208,7 @@ export function DashboardPage({ displayName }: { displayName: string }) {
     href: string,
     content: ReactNode,
     summary?: ReactNode,
+    action?: ReactNode,
   ) {
     const section = data?.[key];
     if (!section) return null;
@@ -252,10 +256,12 @@ export function DashboardPage({ displayName }: { displayName: string }) {
                 content
               )}
             </div>
-            <a className="dashboard-module-link" href={href}>
-              Abrir {title.toLowerCase()}{' '}
-              <ArrowUpRight size={16} aria-hidden="true" />
-            </a>
+            {action ?? (
+              <a className="dashboard-module-link" href={href}>
+                Abrir {title.toLowerCase()}{' '}
+                <ArrowUpRight size={16} aria-hidden="true" />
+              </a>
+            )}
           </CardContent>
         </section>
       </Card>
@@ -386,7 +392,10 @@ export function DashboardPage({ displayName }: { displayName: string }) {
                 '/app/pomodoro',
                 <>
                   {pomo?.session ? (
-                    <DashboardPomodoro initial={pomo.session} />
+                    <DashboardPomodoro
+                      initial={pomo.session}
+                      onAvailability={setPomodoroAvailability}
+                    />
                   ) : (
                     <>
                       <p>Comece um bloco de foco de 25 minutos.</p>
@@ -413,6 +422,18 @@ export function DashboardPage({ displayName }: { displayName: string }) {
                   )}
                 </>,
                 pomo && <>{pomo.completedSessions} sessões concluídas.</>,
+                pomo?.session ? (
+                  pomodoroAvailability === 'syncing' ? (
+                    <p role="status">Sincronizando Pomodoro…</p>
+                  ) : (
+                    <a className="dashboard-module-link" href="/app/pomodoro">
+                      {pomodoroAvailability === 'start'
+                        ? 'Iniciar pomodoro'
+                        : 'Abrir pomodoro'}
+                      <ArrowUpRight size={16} aria-hidden="true" />
+                    </a>
+                  )
+                ) : undefined,
               )}
             {card(
               'tasks',
