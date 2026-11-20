@@ -433,7 +433,16 @@ No projeto Google Cloud do cliente OAuth existente:
 
 1. Habilite **Google Classroom API** na biblioteca de APIs.
 2. Em **Google Auth Platform → Clientes**, abra o cliente web correspondente ao `GOOGLE_CLIENT_ID` e adicione `${API_PUBLIC_ORIGIN}/integrations/google-classroom/callback` aos URIs de redirecionamento autorizados. Preserve o callback de login existente. O caminho e a porta devem coincidir exatamente.
-3. No ambiente local padrão, o callback é `http://localhost:3001/integrations/google-classroom/callback`. A homologação isolada desta mudança usa `http://localhost:3002/integrations/google-classroom/callback`, com web em `http://localhost:5174`.
+3. Mantenha estes três URIs locais autorizados no mesmo cliente OAuth, sem barra final:
+
+   ```text
+   http://localhost:3001/auth/google/callback
+   http://localhost:3001/integrations/google-classroom/callback
+   http://localhost:3002/integrations/google-classroom/callback
+   ```
+
+   No desenvolvimento padrão, mantenha `API_PORT=3001` e `API_PUBLIC_ORIGIN=http://localhost:3001`. A homologação isolada de Classroom usa `API_PORT=3002`, `API_PUBLIC_ORIGIN=http://localhost:3002` e web em `http://localhost:5174`. Os callbacks são derivados dessa origem; não troque `localhost` por `127.0.0.1` nem escolha outra porta automaticamente. O login Google real usa a porta 3001: esta lista não autoriza `/auth/google/callback` na porta 3002. Em produção, use a origem HTTPS pública e seus próprios URIs autorizados.
+
 4. Configure o público e os usuários de teste na tela de consentimento quando o aplicativo estiver em teste. Contas institucionais podem exigir autorização do administrador; adicionar um usuário de teste não contorna políticas do domínio.
 5. Solicite somente `classroom.courses.readonly` e `classroom.coursework.me.readonly` na importação. Atividades como professor podem exigir `classroom.coursework.students.readonly`, oferecido separadamente. Não são lidas submissões, notas escolares nem listas de participantes.
 6. Materiais e Drive não são solicitados. A importação preserva links de anexos, sem baixar ou processar arquivos. Revise as exigências Google para os escopos Classroom antes de produção.

@@ -28,6 +28,10 @@
 
 ## Arquitetura da plataforma
 
+- Preserve as URLs OAuth locais autorizadas: `http://localhost:3001/auth/google/callback`, `http://localhost:3001/integrations/google-classroom/callback` e `http://localhost:3002/integrations/google-classroom/callback`.
+- No desenvolvimento padrão, mantenha `API_PORT=3001` e `API_PUBLIC_ORIGIN=http://localhost:3001`. A porta 3002 é exclusiva da homologação isolada de Classroom; configure porta e origem juntas nesse ambiente. Não altere automaticamente a porta nem use `127.0.0.1` nos callbacks. Login Google real usa a porta 3001; não há callback de login autorizado na porta 3002 nesta convenção.
+- Em produção, preserve callbacks HTTPS derivados de `API_PUBLIC_ORIGIN`, cadastrados no cliente OAuth correspondente; as URLs localhost são exclusivas do ambiente local.
+
 - O monorepo usa pnpm workspaces e TypeScript estrito. `apps/web` contém a interface React; `apps/api`, a API Express; `packages/contracts`, schemas e tipos públicos; `packages/ui`, componentes visuais compartilhados; `packages/config`, configurações de ferramentas.
 - Pacotes compartilhados não importam código de `apps/*`. `packages/contracts` não depende de React, Express ou TypeORM. A web não acessa entidades nem repositórios da API.
 - Na API, controllers tratam HTTP, services contêm regras de negócio e repositories persistem dados. Um módulo não acessa repositories internos de outro módulo; integre por contratos públicos ou eventos internos quando houver um caso concreto. Schemas validam entrada externa.
