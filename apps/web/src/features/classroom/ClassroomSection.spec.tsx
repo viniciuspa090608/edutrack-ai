@@ -68,6 +68,7 @@ const result = {
   totalItems: 1,
 };
 let latest: typeof result | null = null;
+let subjectPages = false;
 let pages = false,
   pageFailure = false,
   repeatToken = false;
@@ -76,6 +77,7 @@ beforeEach(() => {
   disconnected = false;
   offline = false;
   latest = null;
+  subjectPages = false;
   pages = false;
   pageFailure = false;
   repeatToken = false;
@@ -91,6 +93,10 @@ beforeEach(() => {
       calls.push({ path, method, body });
       if (offline && path.endsWith('/connection'))
         throw new Error('Conexão indisponível.');
+      if (path.endsWith('/connection') && method === 'DELETE') {
+        disconnected = true;
+        return Response.json({ revocationConfirmed: true });
+      }
       if (path.endsWith('/connection'))
         return Response.json({
           ...connection,
@@ -131,13 +137,48 @@ beforeEach(() => {
         });
       if (path.endsWith('/operations')) return Response.json(latest);
       if (path === '/subjects')
-        return Response.json({
-          items: [],
-          page: 1,
-          pageSize: 100,
-          total: 0,
-          totalPages: 0,
-        });
+        return Response.json(
+          subjectPages
+            ? {
+                items: [
+                  {
+                    id:
+                      new URL(url).searchParams.get('page') === '2'
+                        ? '00000000-0000-4000-8000-000000000010'
+                        : '00000000-0000-4000-8000-000000000011',
+                    name:
+                      new URL(url).searchParams.get('page') === '2'
+                        ? 'Disciplina da segunda página'
+                        : 'Disciplina da primeira página',
+                    currentLevel: 'INTERMEDIATE',
+                    objective: 'Objetivo próprio',
+                    dueDate: '2027-01-20',
+                    weeklyHours: 2,
+                    knownTopics: [],
+                    planItems: [],
+                    createdAt: '2026-11-02T12:00:00Z',
+                    updatedAt: '2026-11-02T12:00:00Z',
+                    studySummary: {
+                      source: 'manual',
+                      total: 0,
+                      completed: 0,
+                      progressPercent: null,
+                    },
+                  },
+                ],
+                page: Number(new URL(url).searchParams.get('page')),
+                pageSize: 100,
+                total: 2,
+                totalPages: 2,
+              }
+            : {
+                items: [],
+                page: 1,
+                pageSize: 100,
+                total: 0,
+                totalPages: 0,
+              },
+        );
       if (path.endsWith('/imports')) return Response.json(result);
       if (path.endsWith('/retry')) return Response.json(result);
       if (path.endsWith('/profile/preferences')) return Response.json(body);
@@ -217,9 +258,7 @@ it('shows partial results and retries without hiding the failed content', async 
   expect(await screen.findByText('Atividade inacessível')).toBeTruthy();
   expect(screen.getByText(/Acesso negado pelo Google/)).toBeTruthy();
   await user.click(screen.getByRole('button', { name: 'Fechar' }));
-  await user.click(
-    screen.getByRole('button', { name: 'Tentar novamente os itens pendentes' }),
-  );
+  await user.click(screen.getByRole('button', { name: 'Tentar novamente' }));
   expect(
     calls.some(
       (call) => call.path.endsWith('/retry') && call.method === 'POST',
@@ -314,7 +353,7 @@ it('exige destino ou confirmação explícita de somente tarefas', async () => {
   expect(calls.some((call) => call.path.endsWith('/imports'))).toBe(false);
   await user.click(
     screen.getByRole('checkbox', {
-      name: 'Importar somente tarefas de Matemática',
+      name: 'Importar somente tarefas',
     }),
   );
   await user.click(screen.getByRole('button', { name: 'Importar seleção' }));
@@ -335,4 +374,117 @@ it('mantém foco no modal, fecha com Escape e retorna ao acionador', async () =>
   await user.keyboard('{Escape}');
   expect(screen.queryByRole('dialog')).toBeNull();
   expect(document.activeElement).toBe(trigger);
+});
+
+it('opens a new subject draft with defaults and requires explicit confirmation', async () => {
+  const user = userEvent.setup();
+  render(<ClassroomSection prefs={{ ...prefs, subjects: true }} />);
+  await user.click(await screen.findByRole('checkbox', { name: 'Matemática' }));
+  expect(screen.getByLabelText('Objetivo').getAttribute('value')).toBe(
+    'Estudar e me aprimorar em Matemática',
+  );
+  expect(screen.getByText('Intermediário')).toBeTruthy();
+  await user.click(
+    screen.getByRole('button', { name: 'Confirmar dados desta disciplina' }),
+  );
+  await user.click(screen.getByRole('button', { name: 'Importar seleção' }));
+  await screen.findByText('Parcialmente concluída');
+  expect(calls.find((call) => call.method === 'PUT')?.body).toMatchObject({
+    courses: [
+      {
+        destination: {
+          kind: 'new',
+          subject: {
+            name: 'Matemática',
+            currentLevel: 'INTERMEDIATE',
+            weeklyHours: 1,
+          },
+        },
+      },
+    ],
+  });
+});
+it('hides stale import information when disconnected after a partial result', async () => {
+  latest = result;
+  disconnected = true;
+  render(<ClassroomSection prefs={prefs} />);
+  await screen.findByRole('button', { name: 'Conectar Google Classroom' });
+  expect(screen.queryByText('Parcialmente concluída')).toBeNull();
+  expect(screen.queryByText('student@example.test')).toBeNull();
+  expect(screen.queryByRole('button', { name: 'Mais detalhes' })).toBeNull();
+  expect(calls.some((call) => call.path.endsWith('/operations'))).toBe(false);
+});
+
+it('offers owned subjects from all pages in the existing destination Select', async () => {
+  subjectPages = true;
+  const user = userEvent.setup();
+  render(<ClassroomSection prefs={{ ...prefs, subjects: true }} />);
+  await user.click(await screen.findByRole('checkbox', { name: 'Matemática' }));
+  await user.click(
+    screen.getByRole('combobox', { name: 'Disciplina de destino' }),
+  );
+  await user.click(
+    screen.getByRole('option', { name: 'Usar disciplina existente' }),
+  );
+  await user.click(
+    screen.getByRole('combobox', { name: 'Disciplina cadastrada' }),
+  );
+  await user.click(
+    screen.getByRole('option', { name: 'Disciplina da segunda página' }),
+  );
+  await user.click(screen.getByRole('button', { name: 'Importar seleção' }));
+  await screen.findByText('Parcialmente concluída');
+  expect(calls.find((call) => call.method === 'PUT')?.body).toMatchObject({
+    courses: [
+      {
+        destination: {
+          kind: 'existing',
+          subjectId: '00000000-0000-4000-8000-000000000010',
+        },
+      },
+    ],
+  });
+});
+it('disconnects after a result and removes import controls and identity', async () => {
+  latest = result;
+  const user = userEvent.setup();
+  render(<ClassroomSection prefs={prefs} />);
+  await screen.findByRole('button', { name: 'Mais detalhes' });
+  await user.click(screen.getByRole('button', { name: 'Desconectar' }));
+  await user.click(
+    screen.getByRole('button', { name: 'Confirmar desconexão' }),
+  );
+  await screen.findByRole('button', { name: 'Conectar Google Classroom' });
+  expect(screen.queryByText('student@example.test')).toBeNull();
+  expect(screen.queryByRole('button', { name: 'Mais detalhes' })).toBeNull();
+  expect(screen.queryByText('Parcialmente concluída')).toBeNull();
+});
+
+it('ignores an import response arriving after disconnect', async () => {
+  const original = fetch;
+  let release!: (response: Response) => void;
+  const delayed = new Promise<Response>((resolve) => {
+    release = resolve;
+  });
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((url: string, options?: RequestInit) =>
+      new URL(url).pathname.endsWith('/operations')
+        ? delayed
+        : original(url, options),
+    ),
+  );
+  const user = userEvent.setup();
+  render(<ClassroomSection prefs={prefs} />);
+  await user.click(await screen.findByRole('button', { name: 'Desconectar' }));
+  await user.click(
+    screen.getByRole('button', { name: 'Confirmar desconexão' }),
+  );
+  await screen.findByRole('button', { name: 'Conectar Google Classroom' });
+  release(Response.json(result));
+  await waitFor(() =>
+    expect(screen.queryByText('Parcialmente concluída')).toBeNull(),
+  );
+  expect(screen.queryByRole('button', { name: 'Mais detalhes' })).toBeNull();
+  expect(screen.queryByText('student@example.test')).toBeNull();
 });

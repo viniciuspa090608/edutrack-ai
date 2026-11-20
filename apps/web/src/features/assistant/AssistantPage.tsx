@@ -526,8 +526,13 @@ export function AssistantPage({
               }}
               onChange={(event) => setText(event.target.value)}
             />
-            <Button type="submit" disabled={busy || !text.trim()}>
-              Enviar <Send aria-hidden="true" />
+            <Button
+              type="submit"
+              aria-label="Enviar mensagem"
+              title="Enviar mensagem"
+              disabled={busy || !text.trim()}
+            >
+              <Send aria-hidden="true" />
             </Button>
           </form>
         </div>

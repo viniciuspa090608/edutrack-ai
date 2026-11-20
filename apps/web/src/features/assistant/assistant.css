@@ -461,3 +461,50 @@
     min-height: 44px;
   }
 }
+
+.assistant-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 48rem;
+  margin-inline: auto;
+}
+.assistant-messages > li {
+  width: fit-content;
+  max-width: 100%;
+  padding: 12px 16px;
+  margin: 0;
+  align-self: flex-start;
+}
+.assistant-messages > li[data-author='user'] {
+  align-self: flex-end;
+}
+.assistant-messages > li > p {
+  margin-block: 6px 0;
+}
+.assistant-messages > li > strong {
+  font-size: 0.8rem;
+}
+.assistant-composer {
+  position: relative;
+  gap: 8px;
+}
+.assistant-composer textarea {
+  padding-right: 64px;
+  min-height: 80px;
+}
+.assistant-composer > button {
+  position: absolute;
+  grid-column: auto;
+  grid-row: auto;
+  min-width: 44px;
+  max-width: 44px;
+  right: 22px;
+  bottom: 22px;
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+  border-radius: 50%;
+}

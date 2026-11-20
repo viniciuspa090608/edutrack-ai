@@ -205,3 +205,28 @@
   max-width: 100%;
   white-space: normal;
 }
+
+.classroom-destination .classroom-subject-fields {
+  grid-template-columns: minmax(0, 1fr);
+}
+.classroom-subject-fields > label {
+  display: grid;
+  align-content: start;
+  min-width: 0;
+}
+.classroom-subject-fields [data-field='name'],
+.classroom-field-wide {
+  grid-column: 1 / -1;
+}
+@media (min-width: 640px) {
+  .classroom-destination .classroom-subject-fields {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  }
+}
+.classroom-result > .classroom-actions {
+  align-items: center;
+}
+.classroom-result > .classroom-actions > button {
+  width: auto;
+  flex: 0 1 auto;
+}

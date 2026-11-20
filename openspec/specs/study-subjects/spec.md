@@ -7,19 +7,27 @@ Permitir que cada usuário mantenha suas matérias e organize uma sequência pr�
 ## Requirements
 
 ### Requirement: Cadastrar e consultar matérias próprias
-A EduTrack SHALL permitir criar e consultar matérias do usuário autenticado com nome, nível atual, objetivo, prazo, horas disponíveis por semana e lista de assuntos já conhecidos. Nome aparado de 1–120 caracteres, objetivo aparado de 1–1000 caracteres, nível `BEGINNER | INTERMEDIATE | ADVANCED`, prazo válido `YYYY-MM-DD` e horas semanais maiores que zero e até 168 SHALL ser obrigatórios; assuntos conhecidos SHALL poder ser uma lista vazia de nomes aparados e não vazios, sem duplicatas na mesma matéria. A lista de matérias SHALL ser paginada e ordenada de forma estável.
+A EduTrack SHALL permitir criar e consultar matérias próprias com nome, nível atual, objetivo, prazo, horas semanais e assuntos conhecidos. Somente nome aparado de 1–120 caracteres, nível `BEGINNER | INTERMEDIATE | ADVANCED` e prazo válido `YYYY-MM-DD` SHALL exigir preenchimento na criação. Objetivo omitido ou em branco SHALL resultar em "Estudar e me aprimorar em ${nomeDisciplina}", usando o nome final aparado; horas omitidas SHALL receber 1 e assuntos omitidos SHALL receber lista vazia. Objetivo personalizado SHALL ter 1–1000 caracteres aparados; horas informadas SHALL ser positivas, até 168, em intervalos de meia hora; assuntos SHALL ser aparados, não vazios, sem duplicatas e respeitar os limites existentes. A lista SHALL permanecer paginada e ordenada de forma estável. Formulários de nova disciplina SHALL sugerir nível intermediário e prazo de seis meses de calendário a partir da data local de criação do rascunho, limitando o dia ao último válido do mês de destino. Sugestões SHALL ser editáveis e SHALL NOT substituir valores personalizados ou dados persistidos.
 
 #### Scenario: Criar matéria sem assuntos conhecidos
-- **WHEN** um usuário autenticado envia os campos obrigatórios válidos e lista de assuntos vazia
-- **THEN** a matéria aparece na sua lista e no detalhe com os valores informados.
+- **WHEN** a pessoa envia nome, nível e prazo válidos sem objetivo, horas ou assuntos
+- **THEN** a matéria aparece na lista e detalhe com objetivo padrão, 1 hora semanal e assuntos vazios.
 
 #### Scenario: Dados inválidos
-- **WHEN** o usuário envia nível desconhecido, prazo inválido, horas fora do intervalo, texto acima do limite ou assunto vazio ou duplicado
+- **WHEN** a pessoa envia nível desconhecido, prazo inválido, horas informadas inválidas, texto acima do limite ou assunto vazio ou duplicado
 - **THEN** a criação é rejeitada sem matéria parcial.
 
 #### Scenario: Lista vazia
 - **WHEN** um usuário sem matérias abre a página
 - **THEN** vê um estado vazio com ação para cadastrar a primeira matéria.
+
+#### Scenario: Prazo de seis meses e objetivo dinâmico
+- **WHEN** a pessoa abre um rascunho em 31 de agosto de 2026 e informa Matemática como nome
+- **THEN** o prazo sugerido é 28 de fevereiro de 2027, o nível é intermediário e o objetivo padrão é "Estudar e me aprimorar em Matemática".
+
+#### Scenario: Personalização e edição preservadas
+- **WHEN** a pessoa personaliza objetivo, nível ou prazo e depois altera o nome ou reabre uma disciplina salva
+- **THEN** os valores personalizados ou persistidos permanecem, sem reaplicar padrões; somente objetivo ainda automático acompanha o nome do rascunho.
 
 ### Requirement: Editar e excluir matéria
 O proprietário SHALL poder alterar os campos da matéria e a lista de assuntos conhecidos; campos não enviados SHALL permanecer iguais. A exclusão SHALL exigir confirmação na interface e remover a matéria e seus itens de plano manual. Uma exclusão cancelada SHALL preservar os dados. Falhas SHALL ser exibidas sem alegar sucesso.
@@ -102,15 +110,23 @@ A página de matérias SHALL distinguir carregamento, erro, vazio e sucesso; ofe
 - **THEN** a nova ordem é salva e os controles permanecem identificáveis e acessíveis.
 
 ### Requirement: Associação de turmas a matérias válidas
-Com matérias habilitado, cada turma selecionada SHALL poder ser associada explicitamente a uma matéria própria existente ou a uma nova matéria. Para nova matéria, o sistema SHALL sugerir nome com base na turma e solicitar revisão e preenchimento dos campos obrigatórios ausentes, mantendo as validações manuais de nível, objetivo, prazo, horas e assuntos conhecidos; SHALL NOT inventar compromissos ou relaxar o cadastro manual. A matéria SHALL mostrar proveniência e link da turma. Associação já confirmada SHALL ser reutilizada sem nova matéria em reimportações e exigir confirmação para mudança de destino. Falta de dados obrigatórios SHALL ser sinalizada por turma sem bloquear outras turmas válidas nem conclusão do onboarding.
+Com matérias habilitado, cada turma selecionada SHALL poder ser associada a uma matéria própria existente ou a uma nova. Turmas sem vínculo ou destino previamente escolhido SHALL iniciar com Criar nova disciplina selecionado e rascunho com nome da turma, nível intermediário, prazo de seis meses e objetivo padrão da criação manual. Campos complementares SHALL ser opcionais conforme o cadastro manual; o usuário SHALL revisar e confirmar antes da importação explícita. A opção Usar disciplina existente SHALL oferecer Select de disciplinas cadastradas pelo usuário, incluindo acesso além da primeira página; carregamento, erro e ausência SHALL ser distintos. A matéria SHALL mostrar proveniência e link da turma. Associação confirmada SHALL ser reutilizada sem nova matéria em reimportações e exigir confirmação para mudança de destino. Falta de dados obrigatórios SHALL ser sinalizada por turma sem bloquear outras turmas válidas nem conclusão do onboarding.
 
 #### Scenario: Turma sem planejamento pessoal
-- **WHEN** o usuário escolhe criar matéria a partir de turma sem prazo ou horas semanais
-- **THEN** a interface pede os dados ausentes antes de criar a matéria e permite ignorar essa turma.
+- **WHEN** a pessoa seleciona uma turma nova sem prazo ou horas remotos
+- **THEN** vê criar nova disciplina com os padrões preenchidos e pode confirmar sem preencher objetivo, horas ou assuntos.
 
 #### Scenario: Associar matéria existente
-- **WHEN** a pessoa escolhe uma matéria própria como destino de uma turma
-- **THEN** o vínculo é salvo sem substituir seu planejamento pessoal ou gerar outra matéria.
+- **WHEN** a pessoa escolhe uma disciplina própria pelo Select como destino
+- **THEN** o vínculo é salvo sem substituir seu planejamento pessoal ou gerar outra disciplina.
+
+#### Scenario: Reimportação e isolamento
+- **WHEN** uma turma já vinculada é reimportada ou um destino de outra conta é enviado
+- **THEN** o vínculo próprio é reutilizado sem duplicação e destino alheio é rejeitado sem expor dados.
+
+#### Scenario: Select indisponível
+- **WHEN** a consulta de disciplinas carrega, falha ou confirma ausência
+- **THEN** a interface distingue cada estado, permite tentar novamente em falha e mantém criar nova disciplina disponível.
 
 ### Requirement: Resumo de progresso por disciplina na listagem
 A consulta paginada de disciplinas SHALL fornecer progresso individual oficial para cada disciplina própria retornada, com origem, total de itens, concluídos e percentual nulo quando o total for zero. SHALL usar a mesma seleção de fonte do resumo oficial: roadmap ativo escolhido pelo módulo quando existente, senão plano manual; percentual SHALL corresponder a concluídos dividido pelo total vezes cem. SHALL preservar filtros, ordenação, paginação, preferências e isolamento por usuário, sem contabilizar itens de outras disciplinas ou contas.

@@ -18,7 +18,7 @@ import {
   SelectContent,
   SelectItem,
 } from '@study-platform/ui/components/ui/select';
-import { useCallback, useEffect, useId, useState } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 
 import {
   classroomAuthorizationSchema,
@@ -29,6 +29,8 @@ import {
   classroomOperationResultSchema,
   classroomConflictSchema,
   createSubjectSchema,
+  newSubjectDefaults,
+  defaultSubjectObjective,
 } from '@study-platform/contracts';
 import type {
   ClassroomConnection,
@@ -71,85 +73,147 @@ function SubjectDestination({
   course,
   value,
   subjects,
+  subjectsLoading,
+  subjectsError,
   onChange,
 }: {
   course: ClassroomCourse;
   value: ClassroomSelection['courses'][number]['destination'];
   subjects: StudySubject[];
+  subjectsLoading: boolean;
+  subjectsError: boolean;
   onChange: (
     value: ClassroomSelection['courses'][number]['destination'],
   ) => void;
 }) {
   const id = useId();
-  const [draft, setDraft] = useState({
-    name: value.kind === 'new' ? value.subject.name : course.name,
-    currentLevel:
-      value.kind === 'new' ? value.subject.currentLevel : 'BEGINNER',
-    objective: value.kind === 'new' ? value.subject.objective : '',
-    dueDate: value.kind === 'new' ? value.subject.dueDate : '',
-    weeklyHours: value.kind === 'new' ? String(value.subject.weeklyHours) : '',
-    knownTopics:
-      value.kind === 'new' ? value.subject.knownTopics.join('\n') : '',
+  const [draft, setDraft] = useState(() => {
+    const subject =
+      value.kind === 'new' ? value.subject : newSubjectDefaults(course.name);
+    return {
+      ...subject,
+      weeklyHours: String(subject.weeklyHours),
+      knownTopics: subject.knownTopics.join('\n'),
+    };
   });
-  const [editing, setEditing] = useState(false),
-    [error, setError] = useState('');
+  const [mode, setMode] = useState(
+    value.kind === 'existing' ? 'existing' : 'new',
+  );
+  const [editing, setEditing] = useState(value.kind !== 'new');
+  const [automaticObjective, setAutomaticObjective] = useState(
+    value.kind !== 'new',
+  );
+  const [error, setError] = useState('');
   function editDraft(field: keyof typeof draft, text: string) {
     setEditing(true);
     onChange({ kind: 'none' });
-    setDraft((current) => ({ ...current, [field]: text }));
+    if (field === 'objective') setAutomaticObjective(false);
+    setDraft((current) => ({
+      ...current,
+      [field]: text,
+      ...(field === 'name' && automaticObjective
+        ? { objective: defaultSubjectObjective(text) }
+        : {}),
+    }));
   }
   return (
     <div className="classroom-destination">
-      <Label htmlFor={id}>Disciplina para {course.name}</Label>
+      <Label htmlFor={id}>Disciplina de destino</Label>
       <Select
-        value={
-          (editing
-            ? 'new'
-            : value.kind === 'existing'
-              ? value.subjectId
-              : value.kind === 'new'
-                ? 'new'
-                : 'none') || '__edutrack_empty__'
-        }
-        onValueChange={(selected) => {
-          const key = selected === '__edutrack_empty__' ? '' : selected;
-          setEditing(key === 'new');
-          if (key === 'new') onChange({ kind: 'none' });
-          if (key !== 'new')
-            onChange(
-              key === 'none'
-                ? { kind: 'none' }
-                : { kind: 'existing', subjectId: key },
-            );
+        value={mode}
+        onValueChange={(key) => {
+          setMode(key);
+          setEditing(true);
+          onChange({ kind: 'none' });
         }}
       >
         <SelectTrigger id={id} className="w-full min-w-0">
           <SelectValue />
         </SelectTrigger>
         <SelectContent position="popper">
-          <SelectItem value="none">Escolher depois</SelectItem>
           <SelectItem value="new">Criar nova disciplina</SelectItem>
-          {subjects.map((subject) => (
-            <SelectItem key={subject.id} value={subject.id}>
-              {subject.name}
-            </SelectItem>
-          ))}
+          <SelectItem value="existing">Usar disciplina existente</SelectItem>
+          <SelectItem value="none">Escolher depois</SelectItem>
         </SelectContent>
       </Select>
-      {(editing || value.kind === 'new') && (
-        <fieldset>
+      {mode === 'existing' && (
+        <>
+          <Label htmlFor={id + '-existing'}>Disciplina cadastrada</Label>
+          <Select
+            disabled={subjectsLoading || subjectsError}
+            value={
+              value.kind === 'existing' ? value.subjectId : '__edutrack_empty__'
+            }
+            onValueChange={(subjectId) =>
+              onChange({ kind: 'existing', subjectId })
+            }
+          >
+            <SelectTrigger id={id + '-existing'} className="w-full min-w-0">
+              <SelectValue placeholder="Selecione uma disciplina" />
+            </SelectTrigger>
+            <SelectContent position="popper">
+              <SelectItem value="__edutrack_empty__" disabled>
+                Selecione uma disciplina
+              </SelectItem>
+              {subjects.map((subject) => (
+                <SelectItem key={subject.id} value={subject.id}>
+                  {subject.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {subjectsLoading && <p role="status">Carregando disciplinas…</p>}
+          {subjectsError && (
+            <p>
+              Não foi possível carregar as disciplinas. Use Tentar novamente
+              para recarregar.
+            </p>
+          )}
+          {!subjectsLoading && !subjectsError && !subjects.length && (
+            <p>
+              Nenhuma disciplina cadastrada disponível. Você pode criar uma
+              nova.
+            </p>
+          )}
+        </>
+      )}
+      {mode === 'new' && (
+        <fieldset className="classroom-subject-fields">
           <legend>Revise os dados da disciplina</legend>
-          {(['name', 'objective', 'dueDate', 'weeklyHours'] as const).map(
-            (field) => (
-              <Label key={field}>
+          {(
+            [
+              'name',
+              'objective',
+              'currentLevel',
+              'dueDate',
+              'weeklyHours',
+            ] as const
+          ).map((field) => (
+            <Label key={field} data-field={field}>
+              {
                 {
-                  {
-                    name: 'Nome',
-                    objective: 'Objetivo',
-                    dueDate: 'Prazo de estudo',
-                    weeklyHours: 'Horas semanais',
-                  }[field]
-                }
+                  name: 'Nome',
+                  objective: 'Objetivo',
+                  currentLevel: 'Nível',
+                  dueDate: 'Prazo de estudo',
+                  weeklyHours: 'Horas semanais',
+                }[field]
+              }
+              {field === 'currentLevel' ? (
+                <Select
+                  value={draft.currentLevel}
+                  onValueChange={(value) => editDraft(field, value)}
+                >
+                  <SelectTrigger className="w-full min-w-0">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent position="popper">
+                    <SelectItem value="BEGINNER">Iniciante</SelectItem>
+                    <SelectItem value="INTERMEDIATE">Intermediário</SelectItem>
+                    <SelectItem value="ADVANCED">Avançado</SelectItem>
+                  </SelectContent>
+                </Select>
+              ) : (
                 <Input
                   type={
                     field === 'dueDate'
@@ -158,37 +222,24 @@ function SubjectDestination({
                         ? 'number'
                         : 'text'
                   }
+                  required={field === 'name' || field === 'dueDate'}
+                  maxLength={
+                    field === 'name'
+                      ? 120
+                      : field === 'objective'
+                        ? 1000
+                        : undefined
+                  }
                   min={field === 'weeklyHours' ? 0.5 : undefined}
                   max={field === 'weeklyHours' ? 168 : undefined}
                   step={field === 'weeklyHours' ? 0.5 : undefined}
                   value={draft[field]}
                   onChange={(event) => editDraft(field, event.target.value)}
                 />
-              </Label>
-            ),
-          )}
-          <Label>
-            Nível
-            <Select
-              value={draft.currentLevel || '__edutrack_empty__'}
-              onValueChange={(selected) =>
-                editDraft(
-                  'currentLevel',
-                  selected === '__edutrack_empty__' ? '' : selected,
-                )
-              }
-            >
-              <SelectTrigger className="w-full min-w-0">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent position="popper">
-                <SelectItem value="BEGINNER">Iniciante</SelectItem>
-                <SelectItem value="INTERMEDIATE">Intermediário</SelectItem>
-                <SelectItem value="ADVANCED">Avançado</SelectItem>
-              </SelectContent>
-            </Select>
-          </Label>
-          <Label>
+              )}
+            </Label>
+          ))}
+          <Label className="classroom-field-wide">
             Assuntos conhecidos, um por linha
             <Textarea
               value={draft.knownTopics}
@@ -196,11 +247,14 @@ function SubjectDestination({
             />
           </Label>
           <Button
+            className="classroom-field-wide"
             type="button"
             onClick={() => {
               const parsed = createSubjectSchema.safeParse({
                 ...draft,
-                weeklyHours: Number(draft.weeklyHours),
+                weeklyHours: draft.weeklyHours.trim()
+                  ? Number(draft.weeklyHours)
+                  : undefined,
                 knownTopics: draft.knownTopics
                   .split('\n')
                   .map((value) => value.trim())
@@ -208,7 +262,7 @@ function SubjectDestination({
               });
               if (!parsed.success) {
                 setError(
-                  'Preencha nome, objetivo, nível, prazo e horas semanais válidos.',
+                  'Revise nome, nível e prazo e os campos opcionais informados.',
                 );
                 return;
               }
@@ -220,14 +274,21 @@ function SubjectDestination({
             Confirmar dados desta disciplina
           </Button>
           {value.kind === 'new' && !editing && (
-            <p role="status">Dados confirmados para importação.</p>
+            <p className="classroom-field-wide" role="status">
+              Dados confirmados para importação.
+            </p>
           )}
-          {error && <p role="alert">{error}</p>}
+          {error && (
+            <p className="classroom-field-wide" role="alert">
+              {error}
+            </p>
+          )}
         </fieldset>
       )}
     </div>
   );
 }
+
 function ConflictReview({
   entity,
   localId,
@@ -323,22 +384,39 @@ export function ClassroomSection({
   const [showSelection, setShowSelection] = useState(false);
   const [tasksOnly, setTasksOnly] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const generation = useRef(0);
+  const connectButton = useRef<HTMLButtonElement>(null);
   const load = useCallback(async () => {
+    const current = ++generation.current;
     setLoading(true);
     try {
       const status = classroomConnectionSchema.parse(
         await request(`${base}/connection`),
       );
+      if (current !== generation.current) return;
       setConnection(status);
+      if (status.state !== 'connected') {
+        setResult(null);
+        setCourses([]);
+        setSubjects([]);
+        setSelection({ courses: [] });
+        setTasksOnly([]);
+        setShowSelection(false);
+        return;
+      }
       const latest = await request(`${base}/operations`);
+      if (current !== generation.current) return;
       setResult(latest ? classroomOperationResultSchema.parse(latest) : null);
       if (status.state === 'connected') {
-        setSelection(
-          classroomSelectionSchema.parse(await request(`${base}/selection`)),
+        const saved = classroomSelectionSchema.parse(
+          await request(`${base}/selection`),
         );
+        if (current !== generation.current) return;
+        setSelection(saved);
         const page = classroomCoursesSchema.parse(
           await request(`${base}/courses`),
         );
+        if (current !== generation.current) return;
         setCourses(page.items);
         setNextToken(page.nextPageToken);
       }
@@ -351,10 +429,11 @@ export function ClassroomSection({
           if (page >= data.totalPages) break;
           page++;
         }
+        if (current !== generation.current) return;
         setSubjects(all);
       }
     } finally {
-      setLoading(false);
+      if (current === generation.current) setLoading(false);
     }
   }, [prefs?.subjects]);
   useEffect(() => {
@@ -367,12 +446,13 @@ export function ClassroomSection({
     if (result && !active) setShowSelection(false);
   }, [result?.operation.id, result?.operation.state, active]);
   useEffect(() => {
-    if (!active || !result) return;
+    if (!active || !result || connection?.state !== 'connected') return;
+    const current = generation.current;
     let mounted = true;
     const timer = setInterval(() => {
       void request(`${base}/operations/${result.operation.id}`)
         .then((value) => {
-          if (mounted) {
+          if (mounted && current === generation.current) {
             const data = classroomOperationResultSchema.parse(value);
             setResult(data);
             if (!['queued', 'running'].includes(data.operation.state))
@@ -380,14 +460,15 @@ export function ClassroomSection({
           }
         })
         .catch((cause) => {
-          if (mounted) setError(classroomError(cause));
+          if (mounted && current === generation.current)
+            setError(classroomError(cause));
         });
     }, 2000);
     return () => {
       mounted = false;
       clearInterval(timer);
     };
-  }, [active, result?.operation.id, load]);
+  }, [active, result?.operation.id, load, connection?.state]);
   async function act(work: () => Promise<void>) {
     if (busy) return;
     setBusy(true);
@@ -531,11 +612,17 @@ export function ClassroomSection({
             Conecte para importar suas turmas e atividades. Seus fluxos manuais
             continuam disponíveis.
           </p>
-          {connection?.account && <p>{connection.account.email}</p>}
+          {connection?.state === 'connected' && connection.account && (
+            <p>{connection.account.email}</p>
+          )}
         </div>
         {connection?.available && (
           <div className="classroom-connection-row">
-            <Button disabled={busy || active} onClick={() => connect('import')}>
+            <Button
+              ref={connectButton}
+              disabled={busy || active}
+              onClick={() => connect('import')}
+            >
               {connection.state === 'disconnected'
                 ? 'Conectar Google Classroom'
                 : 'Reconectar conta'}
@@ -590,7 +677,23 @@ export function ClassroomSection({
                       const value = classroomRevocationSchema.parse(
                         await request(`${base}/connection`, 'DELETE'),
                       );
+                      ++generation.current;
+                      setResult(null);
+                      setCourses([]);
+                      setSubjects([]);
+                      setSelection({ courses: [] });
+                      setTasksOnly([]);
+                      setConnection((previous) =>
+                        previous
+                          ? {
+                              ...previous,
+                              state: 'disconnected',
+                              account: null,
+                            }
+                          : previous,
+                      );
                       setConfirmDisconnect(false);
+                      connectButton.current?.focus();
                       await load();
                       setMessage(
                         value.revocationConfirmed
@@ -694,6 +797,8 @@ export function ClassroomSection({
                                 course={course}
                                 value={selected.destination}
                                 subjects={subjects}
+                                subjectsLoading={loading}
+                                subjectsError={!!error}
                                 onChange={(destination) =>
                                   replace(course.id, destination)
                                 }
@@ -719,7 +824,7 @@ export function ClassroomSection({
                                           )
                                         }
                                       />
-                                      Importar somente tarefas de {course.name}
+                                      Importar somente tarefas
                                     </Label>
                                   )}
                                 </div>
@@ -847,7 +952,7 @@ export function ClassroomSection({
               )}
           </>
         )}
-        {result && (
+        {connection?.state === 'connected' && result && (
           <section
             className="classroom-result"
             aria-labelledby="classroom-result"
@@ -917,112 +1022,113 @@ export function ClassroomSection({
             {result.totalItems === 0 && !active && (
               <p>Nenhum conteúdo encontrado para processar.</p>
             )}
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button variant="outline">Mais detalhes</Button>
-              </DialogTrigger>
-              <DialogContent className="classroom-details">
-                <DialogTitle>Detalhes da importação</DialogTitle>
-                <DialogDescription>
-                  Confira os resultados por disciplina e tarefa. Itens ignorados
-                  não foram importados; erros podem ser tentados novamente.
-                </DialogDescription>
-                <p role="status">
-                  Página {result.page} de{' '}
-                  {Math.max(1, Math.ceil(result.totalItems / 20))} ·{' '}
-                  {result.totalItems} itens no total
-                </p>
-                {(['subject', 'task', 'course'] as const)
-                  .filter(
-                    (entity) =>
-                      entity !== 'course' ||
-                      result.items.some((item) => item.entity === 'course'),
-                  )
-                  .map((entity) => (
-                    <section key={entity}>
-                      <h3>
-                        {
-                          {
-                            subject: 'Disciplinas',
-                            task: 'Tarefas',
-                            course: 'Turmas com pendências',
-                          }[entity]
-                        }
-                      </h3>
-                      {!result.items.some((item) => item.entity === entity) && (
-                        <p>Nenhum item nesta página.</p>
-                      )}
-                      <ul>
-                        {result.items
-                          .filter((item) => item.entity === entity)
-                          .map((item) => (
-                            <li key={item.id}>
-                              <strong>{item.title}</strong>{' '}
-                              <span
-                                className="classroom-badge"
-                                data-outcome={item.outcome}
-                              >
-                                {outcomeLabels[item.outcome]}
-                              </span>
-                              {item.reason && <p>{item.reason}</p>}
-                              {item.conflictId && item.localId && (
-                                <ConflictReview
-                                  entity={item.entity}
-                                  localId={item.localId}
-                                  conflictId={item.conflictId}
-                                  onResolved={() =>
-                                    setMessage(
-                                      'Conflito resolvido. Sua decisão foi salva.',
-                                    )
-                                  }
-                                />
-                              )}
-                            </li>
-                          ))}
-                      </ul>
-                    </section>
-                  ))}
-                <div className="classroom-actions">
-                  {result.page > 1 && (
-                    <Button
-                      variant="outline"
-                      onClick={() =>
-                        void act(async () =>
-                          setResult(
-                            classroomOperationResultSchema.parse(
-                              await request(
-                                `${base}/operations/${result.operation.id}?page=${result.page - 1}`,
-                              ),
-                            ),
-                          ),
-                        )
-                      }
-                    >
-                      Resultados anteriores
-                    </Button>
-                  )}
-                  {result.page * 20 < result.totalItems && (
-                    <Button
-                      variant="outline"
-                      onClick={() =>
-                        void act(async () =>
-                          setResult(
-                            classroomOperationResultSchema.parse(
-                              await request(
-                                `${base}/operations/${result.operation.id}?page=${result.page + 1}`,
-                              ),
-                            ),
-                          ),
-                        )
-                      }
-                    >
-                      Mais resultados
-                    </Button>
-                  )}
-                </div>
-              </DialogContent>
-            </Dialog>
             <div className="classroom-actions">
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="outline">Mais detalhes</Button>
+                </DialogTrigger>
+                <DialogContent className="classroom-details">
+                  <DialogTitle>Detalhes da importação</DialogTitle>
+                  <DialogDescription>
+                    Confira os resultados por disciplina e tarefa. Itens
+                    ignorados não foram importados; erros podem ser tentados
+                    novamente.
+                  </DialogDescription>
+                  <p role="status">
+                    Página {result.page} de{' '}
+                    {Math.max(1, Math.ceil(result.totalItems / 20))} ·{' '}
+                    {result.totalItems} itens no total
+                  </p>
+                  {(['subject', 'task', 'course'] as const)
+                    .filter(
+                      (entity) =>
+                        entity !== 'course' ||
+                        result.items.some((item) => item.entity === 'course'),
+                    )
+                    .map((entity) => (
+                      <section key={entity}>
+                        <h3>
+                          {
+                            {
+                              subject: 'Disciplinas',
+                              task: 'Tarefas',
+                              course: 'Turmas com pendências',
+                            }[entity]
+                          }
+                        </h3>
+                        {!result.items.some(
+                          (item) => item.entity === entity,
+                        ) && <p>Nenhum item nesta página.</p>}
+                        <ul>
+                          {result.items
+                            .filter((item) => item.entity === entity)
+                            .map((item) => (
+                              <li key={item.id}>
+                                <strong>{item.title}</strong>{' '}
+                                <span
+                                  className="classroom-badge"
+                                  data-outcome={item.outcome}
+                                >
+                                  {outcomeLabels[item.outcome]}
+                                </span>
+                                {item.reason && <p>{item.reason}</p>}
+                                {item.conflictId && item.localId && (
+                                  <ConflictReview
+                                    entity={item.entity}
+                                    localId={item.localId}
+                                    conflictId={item.conflictId}
+                                    onResolved={() =>
+                                      setMessage(
+                                        'Conflito resolvido. Sua decisão foi salva.',
+                                      )
+                                    }
+                                  />
+                                )}
+                              </li>
+                            ))}
+                        </ul>
+                      </section>
+                    ))}
+                  <div className="classroom-actions">
+                    {result.page > 1 && (
+                      <Button
+                        variant="outline"
+                        onClick={() =>
+                          void act(async () =>
+                            setResult(
+                              classroomOperationResultSchema.parse(
+                                await request(
+                                  `${base}/operations/${result.operation.id}?page=${result.page - 1}`,
+                                ),
+                              ),
+                            ),
+                          )
+                        }
+                      >
+                        Resultados anteriores
+                      </Button>
+                    )}
+                    {result.page * 20 < result.totalItems && (
+                      <Button
+                        variant="outline"
+                        onClick={() =>
+                          void act(async () =>
+                            setResult(
+                              classroomOperationResultSchema.parse(
+                                await request(
+                                  `${base}/operations/${result.operation.id}?page=${result.page + 1}`,
+                                ),
+                              ),
+                            ),
+                          )
+                        }
+                      >
+                        Mais resultados
+                      </Button>
+                    )}
+                  </div>
+                </DialogContent>
+              </Dialog>
               {['partial', 'failed'].includes(result.operation.state) && (
                 <Button
                   disabled={busy}
@@ -1040,7 +1146,7 @@ export function ClassroomSection({
                     )
                   }
                 >
-                  Tentar novamente os itens pendentes
+                  Tentar novamente
                 </Button>
               )}
             </div>

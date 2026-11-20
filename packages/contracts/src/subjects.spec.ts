@@ -1,6 +1,13 @@
 import { expect, it } from 'vitest';
+import { z } from 'zod';
+import {
+  assistantProviderActionSchema,
+  assistantActionSchema,
+} from './ai-assistant.js';
 import {
   createSubjectSchema,
+  newSubjectDefaults,
+  subjectSchema,
   updateSubjectSchema,
   createPlanItemSchema,
   planOrderSchema,
@@ -26,7 +33,6 @@ it('validates levels, calendar dates, limits, half hours and ordered known topic
   for (const fields of [
     { name: '' },
     { name: 'a'.repeat(121) },
-    { objective: '' },
     { objective: 'a'.repeat(1001) },
     { currentLevel: 'EXPERT' },
     { dueDate: '2025-02-29' },
@@ -121,4 +127,59 @@ it('validates official summary values without extending subject write inputs', (
       },
     }).success,
   ).toBe(false);
+});
+
+it('normalizes minimal creation without adding defaults to patches or responses', () => {
+  expect(
+    createSubjectSchema.parse({
+      name: ' Álgebra ',
+      currentLevel: 'INTERMEDIATE',
+      dueDate: '2027-05-20',
+    }),
+  ).toEqual({
+    name: 'Álgebra',
+    currentLevel: 'INTERMEDIATE',
+    dueDate: '2027-05-20',
+    objective: 'Estudar e me aprimorar em Álgebra',
+    weeklyHours: 1,
+    knownTopics: [],
+  });
+  expect(
+    createSubjectSchema.parse({ ...input, objective: '  ' }).objective,
+  ).toBe('Estudar e me aprimorar em Álgebra');
+  expect(updateSubjectSchema.parse({ name: 'Novo' })).toEqual({ name: 'Novo' });
+  expect(updateSubjectSchema.safeParse({ objective: '' }).success).toBe(false);
+  expect(subjectSchema.safeParse({ name: 'Incompleto' }).success).toBe(false);
+});
+it('suggests six calendar months with end-of-month clamping', () => {
+  expect(newSubjectDefaults('Teste', new Date(2026, 7, 31))).toMatchObject({
+    dueDate: '2027-02-28',
+    currentLevel: 'INTERMEDIATE',
+  });
+  expect(newSubjectDefaults('Teste', new Date(2023, 7, 31)).dueDate).toBe(
+    '2024-02-29',
+  );
+  expect(newSubjectDefaults('Teste', new Date(2026, 10, 20)).dueDate).toBe(
+    '2027-05-20',
+  );
+});
+
+it('keeps upstream assistant JSON schema representable while normalizing subject previews', () => {
+  expect(() => z.toJSONSchema(assistantProviderActionSchema)).not.toThrow();
+  expect(
+    assistantActionSchema.parse({
+      kind: 'subject',
+      subject: {
+        name: 'Física',
+        currentLevel: 'INTERMEDIATE',
+        dueDate: '2027-05-20',
+      },
+    }),
+  ).toMatchObject({
+    subject: {
+      objective: 'Estudar e me aprimorar em Física',
+      weeklyHours: 1,
+      knownTopics: [],
+    },
+  });
 });

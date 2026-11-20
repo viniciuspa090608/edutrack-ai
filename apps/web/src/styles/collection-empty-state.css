@@ -66,3 +66,41 @@
     width: 100%;
   }
 }
+
+.authenticated-shell
+  .private-content:has(.subjects-collection > .collection-empty-state),
+.authenticated-shell
+  .private-content:has(
+    .flashcards-page > .deck-list > .collection-empty-state
+  ) {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(
+    100dvh - var(--shell-header-height) - var(--shell-bottom-height) - 48px
+  );
+  height: auto;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+.private-route-content:has(
+  .flashcards-page > .deck-list > .collection-empty-state
+),
+.private-route-content
+  > section:has(.flashcards-page > .deck-list > .collection-empty-state),
+.flashcards-page:has(> .deck-list > .collection-empty-state),
+.flashcards-page > .deck-list:has(> .collection-empty-state),
+.flashcards-page > .deck-list > .collection-empty-state {
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
+}
+.flashcards-page > .deck-list > .collection-empty-state {
+  justify-content: center;
+  align-items: center;
+}
+.subjects-page:has(.subjects-collection > .collection-empty-state)
+  > :not(.subjects-collection),
+.flashcards-page:has(> .deck-list > .collection-empty-state)
+  > :not(.deck-list) {
+  flex-shrink: 0;
+}

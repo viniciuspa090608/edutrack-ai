@@ -52,6 +52,9 @@ import {
 import { useEffect, useRef, useState } from 'react';
 import {
   createSubjectSchema,
+  updateSubjectSchema,
+  newSubjectDefaults,
+  defaultSubjectObjective,
   createPlanItemSchema,
 } from '@study-platform/contracts';
 import type {
@@ -101,12 +104,16 @@ function SubjectForm({
   onSaved: (subject: StudySubject) => void;
   onCancel: () => void;
 }) {
+  const [defaults] = useState(() => newSubjectDefaults());
+  const [automaticObjective, setAutomaticObjective] = useState(!subject);
   const [name, setName] = useState(subject?.name ?? '');
   const [currentLevel, setLevel] = useState(
-    subject?.currentLevel ?? 'BEGINNER',
+    subject?.currentLevel ?? defaults.currentLevel,
   );
-  const [objective, setObjective] = useState(subject?.objective ?? '');
-  const [dueDate, setDate] = useState(subject?.dueDate ?? '');
+  const [objective, setObjective] = useState(
+    subject?.objective ?? defaults.objective,
+  );
+  const [dueDate, setDate] = useState(subject?.dueDate ?? defaults.dueDate);
   const [hours, setHours] = useState(String(subject?.weeklyHours ?? 1));
   const [topics, setTopics] = useState(subject?.knownTopics.join('\n') ?? '');
   const [busy, setBusy] = useState(false);
@@ -143,12 +150,14 @@ function SubjectForm({
             onSubmit={async (event) => {
               event.preventDefault();
               if (submitting.current) return;
-              const parsed = createSubjectSchema.safeParse({
+              const parsed = (
+                subject ? updateSubjectSchema : createSubjectSchema
+              ).safeParse({
                 name,
                 currentLevel,
                 objective,
                 dueDate,
-                weeklyHours: Number(hours),
+                weeklyHours: hours.trim() ? Number(hours) : undefined,
                 knownTopics: topics === '' ? [] : topics.split('\n'),
               });
               if (!parsed.success) {
@@ -200,7 +209,13 @@ function SubjectForm({
                     required
                     maxLength={120}
                     value={name}
-                    onChange={(event) => setName(event.target.value)}
+                    onChange={(event) => {
+                      setName(event.target.value);
+                      if (automaticObjective)
+                        setObjective(
+                          defaultSubjectObjective(event.target.value),
+                        );
+                    }}
                   />
                 </Label>
                 <Label>
@@ -230,10 +245,12 @@ function SubjectForm({
                 <Label className="subject-field-wide">
                   Objetivo
                   <Textarea
-                    required
                     maxLength={1000}
                     value={objective}
-                    onChange={(event) => setObjective(event.target.value)}
+                    onChange={(event) => {
+                      setAutomaticObjective(false);
+                      setObjective(event.target.value);
+                    }}
                   />
                 </Label>
                 <Label>
@@ -250,7 +267,6 @@ function SubjectForm({
                 <Label>
                   Horas por semana
                   <Input
-                    required
                     type="number"
                     min="0.5"
                     max="168"

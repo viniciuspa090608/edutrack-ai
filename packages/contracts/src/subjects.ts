@@ -32,8 +32,38 @@ const fields = {
       'Não repita assuntos.',
     ),
 };
-export const createSubjectSchema = z.object(fields).strict();
-export const updateSubjectSchema = createSubjectSchema
+export function defaultSubjectObjective(name: string) {
+  return `Estudar e me aprimorar em ${name.trim()}`;
+}
+export function newSubjectDefaults(name = '', today = new Date()) {
+  const target = new Date(today.getFullYear(), today.getMonth() + 7, 0);
+  target.setDate(Math.min(today.getDate(), target.getDate()));
+  const dueDate = `${target.getFullYear()}-${String(target.getMonth() + 1).padStart(2, '0')}-${String(target.getDate()).padStart(2, '0')}`;
+  return {
+    name,
+    currentLevel: 'INTERMEDIATE' as const,
+    objective: defaultSubjectObjective(name),
+    dueDate,
+    weeklyHours: 1,
+    knownTopics: [] as string[],
+  };
+}
+const subjectFieldsSchema = z.object(fields).strict();
+export const subjectCreationFieldsSchema = z
+  .object({
+    ...fields,
+    objective: z.string().trim().max(1000).default(''),
+    weeklyHours: fields.weeklyHours.default(1),
+    knownTopics: fields.knownTopics.default([]),
+  })
+  .strict();
+export const createSubjectSchema = subjectCreationFieldsSchema.transform(
+  (input) => ({
+    ...input,
+    objective: input.objective || defaultSubjectObjective(input.name),
+  }),
+);
+export const updateSubjectSchema = subjectFieldsSchema
   .partial()
   .refine(
     (input) => Object.values(input).some((value) => value !== undefined),
@@ -74,7 +104,7 @@ export const planItemSchema = z
     updatedAt: z.iso.datetime(),
   })
   .strict();
-export const subjectSchema = createSubjectSchema
+export const subjectSchema = subjectFieldsSchema
   .extend({
     id: z.uuid(),
     createdAt: z.iso.datetime(),

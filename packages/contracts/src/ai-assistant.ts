@@ -1,6 +1,9 @@
 import { z } from 'zod';
 import { createCardSchema } from './flashcards.js';
-import { createSubjectSchema } from './subjects.js';
+import {
+  createSubjectSchema,
+  subjectCreationFieldsSchema,
+} from './subjects.js';
 import { createTaskSchema } from './tasks.js';
 
 export const assistantPageSchema = z
@@ -29,9 +32,12 @@ export const assistantConfirmSchema = z
   })
   .strict();
 
-export const assistantActionSchema = z.discriminatedUnion('kind', [
+export const assistantProviderActionSchema = z.discriminatedUnion('kind', [
   z
-    .object({ kind: z.literal('subject'), subject: createSubjectSchema })
+    .object({
+      kind: z.literal('subject'),
+      subject: subjectCreationFieldsSchema,
+    })
     .strict(),
   z.object({ kind: z.literal('task'), task: createTaskSchema }).strict(),
   z
@@ -42,6 +48,13 @@ export const assistantActionSchema = z.discriminatedUnion('kind', [
     })
     .strict(),
 ]);
+
+export const assistantActionSchema = assistantProviderActionSchema.transform(
+  (action) =>
+    action.kind === 'subject'
+      ? { ...action, subject: createSubjectSchema.parse(action.subject) }
+      : action,
+);
 
 export type AssistantAction = z.infer<typeof assistantActionSchema>;
 

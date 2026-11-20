@@ -624,3 +624,33 @@ it('keeps the list query count constant when the page contains more disciplines'
     logger.mockRestore();
   }
 });
+
+it('persists minimal subject creation defaults and preserves them in partial edits', async () => {
+  const owner = await account();
+  const response = await write('post', '/subjects', owner.cookie, {
+    name: ' Nova ',
+    currentLevel: 'INTERMEDIATE',
+    dueDate: '2027-05-20',
+  });
+  expect(response.status).toBe(201);
+  expect(response.body).toMatchObject({
+    name: 'Nova',
+    objective: 'Estudar e me aprimorar em Nova',
+    weeklyHours: 1,
+    knownTopics: [],
+  });
+  const edited = await write(
+    'patch',
+    `/subjects/${response.body.id}`,
+    owner.cookie,
+    { name: 'Renomeada' },
+  );
+  expect(edited.status).toBe(200);
+  expect(
+    (await read(`/subjects/${response.body.id}`, owner.cookie)).body,
+  ).toMatchObject({
+    name: 'Renomeada',
+    objective: 'Estudar e me aprimorar em Nova',
+    weeklyHours: 1,
+  });
+});

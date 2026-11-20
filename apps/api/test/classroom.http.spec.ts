@@ -908,3 +908,38 @@ it('explains missing destinations and oversized descriptions then recovers witho
     remoteDescription = undefined;
   }
 });
+
+it('imports minimal new subject defaults once and reuses the confirmed destination', async () => {
+  const user = await account();
+  await runtime.service.select(user.id, {
+    courses: [
+      {
+        courseId: course.id,
+        destination: {
+          kind: 'new',
+          subject: {
+            name: course.name,
+            currentLevel: 'INTERMEDIATE',
+            dueDate: '2027-05-20',
+          },
+        },
+      },
+    ],
+  });
+  for (let attempt = 0; attempt < 2; attempt++) {
+    await runtime.service.start(user.id, 'import', {
+      requestId: randomUUID(),
+      courseIds: [course.id],
+    });
+    await runtime.service.runOnce();
+  }
+  const result = await subjects.list(user.id, {});
+  expect(result.total).toBe(1);
+  expect(result.items[0]).toMatchObject({
+    name: course.name,
+    currentLevel: 'INTERMEDIATE',
+    objective: 'Estudar e me aprimorar em Matemática',
+    weeklyHours: 1,
+    knownTopics: [],
+  });
+});

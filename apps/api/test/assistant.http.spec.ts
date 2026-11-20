@@ -325,13 +325,18 @@ it('confirma matérias e flashcards em lote e revalida preferências antes da es
     subject: {
       name: 'SQL',
       currentLevel: 'BEGINNER',
-      objective: 'Aprender SQL',
       dueDate: '2026-12-30',
-      weeklyHours: 2,
-      knownTopics: ['SELECT'],
     },
   });
   await post(owner.cookie, '/assistant/confirmations', matter).expect(200);
+  expect(
+    (await read(owner.cookie, '/subjects').expect(200)).body.items[0],
+  ).toMatchObject({
+    name: 'SQL',
+    objective: 'Estudar e me aprimorar em SQL',
+    weeklyHours: 1,
+    knownTopics: [],
+  });
   const deck = await post(owner.cookie, '/flashcard-decks', {
     name: 'Banco de Dados',
   }).expect(201);
