@@ -123,3 +123,85 @@
 .classroom-section .classroom-title-row + p {
   margin-block: 0;
 }
+
+.classroom-result,
+.classroom-result dl {
+  display: grid;
+  gap: 1rem;
+}
+.classroom-result dt,
+.classroom-details h3 {
+  font-weight: 650;
+  margin-bottom: 0.5rem;
+}
+.classroom-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.classroom-badge {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  padding: 0.2rem 0.65rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted-foreground);
+  background: var(--muted);
+}
+.classroom-badge:is([data-outcome='added'], [data-outcome='completed']) {
+  color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 12%, var(--background));
+}
+.classroom-badge:is([data-outcome='updated'], [data-outcome='running']) {
+  color: var(--primary);
+}
+.classroom-badge:is(
+  [data-outcome='ignored'],
+  [data-outcome='conflict'],
+  [data-outcome='partial']
+) {
+  color: var(--foreground);
+  background: color-mix(in srgb, #d99b20 20%, var(--background));
+}
+.classroom-badge:is([data-outcome='error'], [data-outcome='failed']) {
+  color: var(--destructive);
+  background: color-mix(in srgb, var(--destructive) 12%, var(--background));
+}
+.classroom-details {
+  max-height: 85dvh;
+  overflow-y: auto;
+  overflow-wrap: anywhere;
+}
+.classroom-details li {
+  padding-block: 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+.classroom-details li p {
+  color: var(--muted-foreground);
+  margin-top: 0.5rem;
+}
+.classroom-section button[data-slot='checkbox'] {
+  width: 1rem;
+  height: 1rem;
+  min-height: 1rem;
+  flex-shrink: 0;
+  border-radius: 0.25rem;
+}
+.classroom-courses legend label {
+  min-height: 44px;
+}
+.classroom-details {
+  width: min(48rem, calc(100vw - 2rem));
+  max-width: calc(100vw - 2rem);
+}
+.classroom-details h3 {
+  margin-top: 0.5rem;
+}
+.classroom-details button:not([data-slot='checkbox']) {
+  min-height: 44px;
+  height: auto;
+  max-width: 100%;
+  white-space: normal;
+}

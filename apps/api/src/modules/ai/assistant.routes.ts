@@ -82,6 +82,8 @@ export function assistantRoutes(
       paginate(
         rows.map((row) => ({
           id: row.id,
+          title: row.title,
+          createdAt: row.created_at.toISOString(),
           updatedAt: row.updated_at.toISOString(),
         })),
         page.limit,

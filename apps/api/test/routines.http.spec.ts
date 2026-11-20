@@ -318,7 +318,15 @@ it('persists the routine preference across sessions, blocks every operation and 
 it('backfills existing accounts with routines enabled and reverses only the preference', async () => {
   const a = await account();
   const row = await write('post', '/routines', a.cookie, input);
-  await source.undoLastMigration();
+  const applied = await source.query<Array<{ name: string }>>(
+    'SELECT name FROM migrations ORDER BY id DESC',
+  );
+  const preferenceIndex = applied.findIndex(
+    ({ name }) => name === 'AddRoutinePreference20261118000000',
+  );
+  expect(preferenceIndex).toBeGreaterThanOrEqual(0);
+  for (let index = 0; index <= preferenceIndex; index++)
+    await source.undoLastMigration();
   expect((await read('/routines', a.cookie)).status).toBe(500);
   await source.runMigrations();
   expect((await new PreferencesService(source).read(a.id)).routines).toBe(true);

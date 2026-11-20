@@ -56,8 +56,15 @@ export class AssistantHistory {
   ) {}
 
   async conversations(userId: string, page: Page) {
-    return this.source.query<Array<{ id: string; updated_at: Date }>>(
-      `SELECT c.id, c.updated_at FROM assistant_conversations c
+    return this.source.query<
+      Array<{ id: string; title: string; created_at: Date; updated_at: Date }>
+    >(
+      `SELECT c.id, c.created_at, c.updated_at,
+       COALESCE((SELECT m.body FROM assistant_messages m
+         WHERE m.user_id = c.user_id AND m.conversation_id = c.id
+           AND m.role = 'user' AND m.expires_at > ?
+         ORDER BY m.created_at, m.id LIMIT 1), 'Nova conversa') AS title
+       FROM assistant_conversations c
        WHERE c.user_id = ? AND EXISTS (
          SELECT 1 FROM assistant_messages m WHERE m.user_id = c.user_id
            AND m.conversation_id = c.id AND m.expires_at > ?
@@ -65,6 +72,7 @@ export class AssistantHistory {
        ${page.cursor ? 'AND (c.updated_at, c.id) < (?, ?)' : ''}
        ORDER BY c.updated_at DESC, c.id DESC LIMIT ?`,
       [
+        this.now(),
         userId,
         this.now(),
         ...(page.cursor ? [new Date(page.cursor.at), page.cursor.id] : []),
@@ -169,8 +177,8 @@ export class AssistantHistory {
       } else {
         if (!input.conversationId)
           await manager.query(
-            'INSERT INTO assistant_conversations (user_id, id, updated_at) VALUES (?, ?, ?)',
-            [userId, conversationId, now],
+            'INSERT INTO assistant_conversations (user_id, id, created_at, updated_at) VALUES (?, ?, ?, ?)',
+            [userId, conversationId, now, now],
           );
         await manager.query(
           `INSERT INTO assistant_messages

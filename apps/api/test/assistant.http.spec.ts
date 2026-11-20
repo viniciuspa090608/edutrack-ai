@@ -1,3 +1,4 @@
+import { AddAssistantConversationCreatedAt20261120000000 } from '../src/database/migrations/20261120000000-AddAssistantConversationCreatedAt.js';
 import { randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, expect, it, vi } from 'vitest';
 import pino from 'pino';
@@ -622,3 +623,94 @@ it.each([1, 2])(
     expect(leases).toHaveLength(0);
   },
 );
+
+it('deriva títulos de mensagens vigentes isoladas e preserva paginação e data de criação', async () => {
+  const owner = await account(),
+    other = await account();
+  const fixed = new Date();
+  now = fixed;
+  const history = new AssistantHistory(source, env.AI_TIMEOUT_MS, () => fixed);
+  const first = await history.begin(owner.id, submission('Primeiro assunto'));
+  const second = await history.begin(owner.id, submission('Outro assunto'));
+  await history.begin(other.id, submission('Título privado'));
+  let rows = await history.conversations(owner.id, { limit: 1 });
+  expect(rows).toHaveLength(2);
+  expect(rows.map((row) => row.title)).not.toContain('Título privado');
+  const last = rows[0]!;
+  const next = await history.conversations(owner.id, {
+    limit: 1,
+    cursor: { at: last.updated_at.toISOString(), id: last.id },
+  });
+  expect(next.map((row) => row.id)).toEqual([rows[1]!.id]);
+  await source.query(
+    'UPDATE assistant_messages SET created_at=? WHERE user_id=? AND conversation_id=?',
+    [new Date(fixed.getTime() - 10000), owner.id, first.conversationId],
+  );
+  await history.begin(owner.id, {
+    ...submission('Próximo assunto'),
+    conversationId: first.conversationId,
+  });
+  rows = await history.conversations(owner.id, { limit: 20 });
+  expect(rows.find((row) => row.id === first.conversationId)?.title).toBe(
+    'Primeiro assunto',
+  );
+  await source.query(
+    'UPDATE assistant_messages SET expires_at=? WHERE user_id=? AND conversation_id=? AND body=?',
+    [
+      new Date(fixed.getTime() - 1),
+      owner.id,
+      first.conversationId,
+      'Primeiro assunto',
+    ],
+  );
+  expect(
+    (await history.conversations(owner.id, { limit: 20 })).find(
+      (row) => row.id === first.conversationId,
+    )?.title,
+  ).toBe('Próximo assunto');
+  await source.query(
+    "UPDATE assistant_messages SET role='assistant' WHERE user_id=? AND conversation_id=?",
+    [owner.id, second.conversationId],
+  );
+  expect(
+    (await history.conversations(owner.id, { limit: 20 })).find(
+      (row) => row.id === second.conversationId,
+    )?.title,
+  ).toBe('Nova conversa');
+  const response = await read(owner.cookie, '/assistant/conversations');
+  expect(response.status).toBe(200);
+  expect(response.body.items).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        title: 'Próximo assunto',
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+      }),
+    ]),
+  );
+});
+
+it('preenche data legada e reverte somente a coluna adicional', async () => {
+  const owner = await account();
+  const history = new AssistantHistory(source, env.AI_TIMEOUT_MS);
+  const opened = await history.begin(owner.id, submission('Conversa legada'));
+  const migration = new AddAssistantConversationCreatedAt20261120000000();
+  const runner = source.createQueryRunner();
+  try {
+    await migration.down(runner);
+    await migration.up(runner);
+    const [row] = await source.query<Array<{ created_at: Date }>>(
+      'SELECT created_at FROM assistant_conversations WHERE user_id=? AND id=?',
+      [owner.id, opened.conversationId],
+    );
+    const [message] = await history.messages(owner.id, opened.conversationId, {
+      limit: 20,
+    });
+    expect(row!.created_at.toISOString()).toBe(
+      message!.created_at.toISOString(),
+    );
+    expect(message!.body).toBe('Conversa legada');
+  } finally {
+    await runner.release();
+  }
+});

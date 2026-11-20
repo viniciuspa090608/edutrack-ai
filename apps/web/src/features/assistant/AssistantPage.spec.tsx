@@ -25,6 +25,8 @@ const createdAt = '2026-11-15T23:00:00.000Z';
 const conversation = {
   id: '00000000-0000-4000-8000-000000000001',
   updatedAt: createdAt,
+  createdAt,
+  title: 'Revisar minha semana',
 };
 const empty = { items: [], cursor: null };
 
@@ -100,7 +102,9 @@ it('retoma uma conversa e mantém a chave da prévia após falha de rede', async
     .mockResolvedValueOnce();
   const user = userEvent.setup();
   render(<AssistantPage prefs={prefs} messageLimit={2000} />);
-  await user.click(await screen.findByRole('button', { name: /Conversa de/ }));
+  await user.click(
+    await screen.findByRole('button', { name: /Revisar minha semana/ }),
+  );
   expect(await screen.findByText('Revisar SQL')).toBeTruthy();
   await user.click(screen.getByRole('button', { name: 'Confirmar criação' }));
   expect(await screen.findByRole('alert')).toBeTruthy();
@@ -177,7 +181,9 @@ it('pagina o histórico e mensagens e mantém o retry vinculado à mensagem orig
     at: createdAt,
     id: conversation.id,
   });
-  await user.click(screen.getByRole('button', { name: /Conversa de/ }));
+  await user.click(
+    screen.getByRole('button', { name: /Revisar minha semana/ }),
+  );
   await user.click(
     await screen.findByRole('button', { name: 'Mensagens anteriores' }),
   );
@@ -196,4 +202,47 @@ it('pagina o histórico e mensagens e mantém o retry vinculado à mensagem orig
       text: original.text,
     }),
   );
+});
+
+it('mostra título real, data secundária e autoria sem depender de cor', async () => {
+  vi.mocked(api.assistantConversations).mockResolvedValue({
+    items: [conversation],
+    cursor: null,
+  });
+  vi.mocked(api.assistantMessages).mockResolvedValue({
+    items: [
+      {
+        id: '00000000-0000-4000-8000-000000000009',
+        role: 'assistant',
+        text: 'Vamos revisar.',
+        createdAt,
+        retryable: false,
+        preview: null,
+      },
+      {
+        id: '00000000-0000-4000-8000-000000000008',
+        role: 'user',
+        text: 'Minha pergunta.',
+        createdAt,
+        retryable: false,
+        preview: null,
+      },
+    ],
+    cursor: null,
+  });
+  const user = userEvent.setup();
+  const { container } = render(
+    <AssistantPage prefs={prefs} messageLimit={2000} />,
+  );
+  await user.click(
+    await screen.findByRole('button', { name: /Revisar minha semana/ }),
+  );
+  expect(screen.getByTitle('Revisar minha semana')).toBeTruthy();
+  expect(container.querySelector('time')?.dateTime).toBe(createdAt);
+  expect(
+    container.querySelector('[data-author="assistant"]')?.textContent,
+  ).toContain('Assistente IA');
+  expect(
+    container.querySelector('[data-author="user"]')?.textContent,
+  ).toContain('Você');
 });

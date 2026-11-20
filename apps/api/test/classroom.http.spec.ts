@@ -54,6 +54,8 @@ const subjectInput = {
   knownTopics: [],
 };
 let remoteTitle = 'Primeira atividade';
+let remoteDescription: string | undefined;
+let remoteState = 'ACTIVE';
 const transport = vi.fn<typeof fetch>(async (url) => {
   const path = new URL(String(url)).pathname;
   if (path.endsWith('/courseWork'))
@@ -62,6 +64,7 @@ const transport = vi.fn<typeof fetch>(async (url) => {
         {
           id: 'work1',
           title: remoteTitle,
+          description: remoteDescription,
           alternateLink: 'https://classroom.google.com/c/1/a/1',
           dueDate: { year: 2026, month: 11, day: 2 },
           dueTime: { hours: 1 },
@@ -74,14 +77,17 @@ const transport = vi.fn<typeof fetch>(async (url) => {
     return Response.json({
       id: course.id,
       name: course.name,
-      courseState: 'ACTIVE',
+      courseState: remoteState,
       alternateLink: course.link,
     });
   if (path.endsWith('/courses/denied'))
     return new Response(null, { status: 403 });
   if (path.endsWith('/courses'))
     return Response.json({
-      courses: [{ id: course.id, name: course.name, courseState: 'ACTIVE' }],
+      courses: [
+        { id: course.id, name: course.name, courseState: 'ACTIVE' },
+        { id: 'archived', name: 'Turma arquivada', courseState: 'ARCHIVED' },
+      ],
     });
   return new Response(null, { status: 404 });
 });
@@ -792,4 +798,113 @@ it('never requests obsolete file grants when reconnecting a pre-release connecti
   expect(scopes).toContain(classroomScopes.teacherCoursework);
   expect(scopes).not.toContain('drive');
   expect(scopes).not.toContain('courseworkmaterials');
+});
+
+it('lists only active courses and rejects a course archived before selection or processing', async () => {
+  const user = await account();
+  await prefs.update(user.id, { subjects: false });
+  transport.mockClear();
+  expect(
+    (await runtime.service.courses(user.id)).items.map((item) => item.id),
+  ).toEqual([course.id]);
+  expect(
+    transport.mock.calls.some(
+      ([url]) =>
+        new URL(String(url)).searchParams.get('courseStates') === 'ACTIVE',
+    ),
+  ).toBe(true);
+  await runtime.service.select(user.id, {
+    courses: [{ courseId: course.id, destination: { kind: 'none' } }],
+  });
+  const job = await runtime.service.start(user.id, 'import', {
+    requestId: randomUUID(),
+    courseIds: [course.id],
+  });
+  remoteState = 'ARCHIVED';
+  try {
+    await expect(
+      runtime.service.select(user.id, {
+        courses: [{ courseId: course.id, destination: { kind: 'none' } }],
+      }),
+    ).rejects.toMatchObject({ code: 'CLASSROOM_COURSE_INACTIVE' });
+    await runtime.service.runOnce();
+    const result = await runtime.service.operations.result(
+      user.id,
+      job.operation.id,
+      1,
+      20,
+    );
+    expect(result.operation.state).toBe('failed');
+    expect(result.items[0]).toMatchObject({
+      entity: 'course',
+      outcome: 'error',
+      reason: expect.stringContaining('não está ativa'),
+    });
+    expect((await tasks.list(user.id, {})).total).toBe(0);
+  } finally {
+    remoteState = 'ACTIVE';
+  }
+});
+
+it('explains missing destinations and oversized descriptions then recovers without duplicates', async () => {
+  const user = await account();
+  await runtime.service.select(user.id, {
+    courses: [{ courseId: course.id, destination: { kind: 'none' } }],
+  });
+  remoteDescription = 'a'.repeat(2001);
+  try {
+    const job = await runtime.service.start(user.id, 'import', {
+      requestId: randomUUID(),
+      courseIds: [course.id],
+    });
+    await runtime.service.runOnce();
+    let result = await runtime.service.operations.result(
+      user.id,
+      job.operation.id,
+      1,
+      20,
+    );
+    expect(result.items).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          entity: 'subject',
+          outcome: 'ignored',
+          reason: expect.stringContaining('disciplina'),
+        }),
+        expect.objectContaining({
+          entity: 'task',
+          outcome: 'error',
+          reason: expect.stringContaining('Revise o conteúdo'),
+        }),
+      ]),
+    );
+    remoteDescription = 'Conteúdo revisado';
+    await runtime.service.retry(user.id, job.operation.id);
+    await runtime.service.runOnce();
+    expect((await tasks.list(user.id, {})).total).toBe(1);
+    await runtime.service.select(user.id, {
+      courses: [
+        {
+          courseId: course.id,
+          destination: { kind: 'new', subject: subjectInput },
+        },
+      ],
+    });
+    const next = await runtime.service.start(user.id, 'import', {
+      requestId: randomUUID(),
+      courseIds: [course.id],
+    });
+    await runtime.service.runOnce();
+    result = await runtime.service.operations.result(
+      user.id,
+      next.operation.id,
+      1,
+      20,
+    );
+    expect(result.operation.counts.subjects.added).toBe(1);
+    expect(result.operation.counts.tasks.unchanged).toBe(1);
+    expect((await tasks.list(user.id, {})).total).toBe(1);
+  } finally {
+    remoteDescription = undefined;
+  }
 });

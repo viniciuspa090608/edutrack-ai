@@ -152,6 +152,24 @@ export function AssistantPage({
   const [busy, setBusy] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const composer = useRef<HTMLTextAreaElement>(null);
+  useEffect(() => {
+    const viewport = window.visualViewport;
+    const resize = () =>
+      document.documentElement.style.setProperty(
+        '--assistant-viewport-height',
+        `${viewport?.height ?? window.innerHeight}px`,
+      );
+    resize();
+    viewport?.addEventListener('resize', resize);
+    window.addEventListener('resize', resize);
+    return () => {
+      viewport?.removeEventListener('resize', resize);
+      window.removeEventListener('resize', resize);
+      document.documentElement.style.removeProperty(
+        '--assistant-viewport-height',
+      );
+    };
+  }, []);
   const suggestions = [
     {
       enabled: prefs.tasks,
@@ -318,12 +336,19 @@ export function AssistantPage({
                     }
                   >
                     <MessageSquare aria-hidden="true" />
-                    <span>
-                      Conversa de{' '}
-                      {new Intl.DateTimeFormat('pt-BR', {
-                        dateStyle: 'short',
-                        timeStyle: 'short',
-                      }).format(new Date(conversation.updatedAt))}
+                    <span className="assistant-conversation-label">
+                      <span
+                        className="assistant-conversation-title"
+                        title={conversation.title}
+                      >
+                        {conversation.title}
+                      </span>
+                      <time dateTime={conversation.createdAt}>
+                        {new Intl.DateTimeFormat('pt-BR', {
+                          dateStyle: 'short',
+                          timeStyle: 'short',
+                        }).format(new Date(conversation.createdAt))}
+                      </time>
                     </span>
                   </Button>
                 </li>
@@ -415,7 +440,7 @@ export function AssistantPage({
             )}
             <ol className="assistant-messages" aria-label="Mensagens">
               {[...messages.items].reverse().map((message) => (
-                <li key={message.id}>
+                <li key={message.id} data-author={message.role}>
                   <strong>
                     {message.role === 'user' ? 'Você' : 'Assistente IA'}
                   </strong>

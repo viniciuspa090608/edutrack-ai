@@ -149,7 +149,10 @@ export class ClassroomGoogleClient {
     }
   }
   async courses(userId: string, version: number, pageToken?: string) {
-    const query = new URLSearchParams({ pageSize: '100' });
+    const query = new URLSearchParams({
+      pageSize: '100',
+      courseStates: 'ACTIVE',
+    });
     if (pageToken) query.set('pageToken', pageToken);
     const result = z
       .object({
@@ -172,15 +175,17 @@ export class ClassroomGoogleClient {
         ]),
       );
     return {
-      items: (result.courses ?? []).map((course) =>
-        classroomCourseSchema.parse({
-          id: course.id,
-          name: course.name,
-          section: course.section ?? null,
-          link: safeLink(course.alternateLink),
-          state: course.courseState,
-        }),
-      ),
+      items: (result.courses ?? [])
+        .filter((course) => course.courseState === 'ACTIVE')
+        .map((course) =>
+          classroomCourseSchema.parse({
+            id: course.id,
+            name: course.name,
+            section: course.section ?? null,
+            link: safeLink(course.alternateLink),
+            state: course.courseState,
+          }),
+        ),
       nextPageToken: result.nextPageToken ?? null,
     };
   }
@@ -204,6 +209,12 @@ export class ClassroomGoogleClient {
           `courses/${encodeURIComponent(id)}`,
           [classroomScopes.courses],
         ),
+      );
+    if (course.courseState !== 'ACTIVE')
+      throw new HttpError(
+        409,
+        'CLASSROOM_COURSE_INACTIVE',
+        'Esta turma não está ativa no Google Classroom. Atualize a seleção de matérias para continuar.',
       );
     return classroomCourseSchema.parse({
       id: course.id,

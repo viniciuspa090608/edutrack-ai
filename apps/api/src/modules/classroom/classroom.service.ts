@@ -40,7 +40,7 @@ const reason = (error: unknown) => {
             ? 'Nome'
             : 'Conteúdo';
     if (issue?.code === 'too_big')
-      return `${label} excede o limite de ${String(issue.maximum)} ${issue.origin === 'string' ? 'caracteres' : 'itens'}. Nenhum dado foi truncado.`;
+      return `${label} excede o limite de ${String(issue.maximum)} ${issue.origin === 'string' ? 'caracteres' : 'itens'}. Nenhum dado foi truncado. Revise o conteúdo da atividade no Google Classroom e tente novamente os itens pendentes.`;
     return 'Conteúdo externo incompatível com os campos do Edutrack. Revise a origem antes de tentar novamente.';
   }
   return 'Não foi possível processar este conteúdo. Verifique os dados e tente novamente.';

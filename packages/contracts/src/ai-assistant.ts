@@ -53,7 +53,14 @@ const cursorSchema = z
   .object({ at: z.iso.datetime(), id: z.uuid() })
   .nullable();
 export const assistantConversationsSchema = z.object({
-  items: z.array(z.object({ id: z.uuid(), updatedAt: z.iso.datetime() })),
+  items: z.array(
+    z.object({
+      id: z.uuid(),
+      title: z.string(),
+      createdAt: z.iso.datetime(),
+      updatedAt: z.iso.datetime(),
+    }),
+  ),
   cursor: cursorSchema,
 });
 export const assistantMessagesSchema = z.object({

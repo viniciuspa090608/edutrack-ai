@@ -68,11 +68,17 @@ const result = {
   totalItems: 1,
 };
 let latest: typeof result | null = null;
+let pages = false,
+  pageFailure = false,
+  repeatToken = false;
 beforeEach(() => {
   calls.length = 0;
   disconnected = false;
   offline = false;
   latest = null;
+  pages = false;
+  pageFailure = false;
+  repeatToken = false;
   window.history.replaceState({}, '', '/conta');
   vi.stubEnv('VITE_API_BASE_URL', 'http://localhost:3001');
   vi.stubGlobal(
@@ -92,6 +98,24 @@ beforeEach(() => {
         });
       if (path.endsWith('/selection'))
         return Response.json(method === 'PUT' ? body : { courses: [] });
+      if (
+        path.endsWith('/courses') &&
+        new URL(url).searchParams.has('pageToken')
+      ) {
+        if (pageFailure) throw new Error('Falha ao buscar matérias.');
+        return Response.json({
+          items: [
+            {
+              id: 'course2',
+              name: 'Física',
+              section: null,
+              link: null,
+              state: 'ACTIVE',
+            },
+          ],
+          nextPageToken: repeatToken ? 'next' : null,
+        });
+      }
       if (path.endsWith('/courses'))
         return Response.json({
           items: [
@@ -103,7 +127,7 @@ beforeEach(() => {
               state: 'ACTIVE',
             },
           ],
-          nextPageToken: null,
+          nextPageToken: pages ? 'next' : null,
         });
       if (path.endsWith('/operations')) return Response.json(latest);
       if (path === '/subjects')
@@ -174,16 +198,25 @@ it('selects a course by keyboard and imports independent tasks explicitly', asyn
   expect(calls.some((call) => call.path.endsWith('/note-generations'))).toBe(
     false,
   );
-  expect(
-    await screen.findByText('Importação: Parcialmente concluída'),
-  ).toBeTruthy();
+  expect(await screen.findByText('Parcialmente concluída')).toBeTruthy();
 });
 it('shows partial results and retries without hiding the failed content', async () => {
   latest = result;
   const user = userEvent.setup();
   render(<ClassroomSection prefs={prefs} />);
+  await screen.findByRole('button', { name: 'Mais detalhes' });
+  expect(screen.queryByText('Atividade inacessível')).toBeNull();
+  expect(screen.queryByText('Turmas selecionadas')).toBeNull();
+  await user.click(
+    screen.getByRole('button', { name: 'Alterar seleção de matérias' }),
+  );
+  expect(screen.getByText('Turmas selecionadas')).toBeTruthy();
+  await user.click(
+    await screen.findByRole('button', { name: 'Mais detalhes' }),
+  );
   expect(await screen.findByText('Atividade inacessível')).toBeTruthy();
   expect(screen.getByText(/Acesso negado pelo Google/)).toBeTruthy();
+  await user.click(screen.getByRole('button', { name: 'Fechar' }));
   await user.click(
     screen.getByRole('button', { name: 'Tentar novamente os itens pendentes' }),
   );
@@ -212,4 +245,94 @@ it('continues onboarding after an integration error without calling AI', async (
   expect(calls.some((call) => call.path.endsWith('/note-generations'))).toBe(
     false,
   );
+});
+
+it('seleciona todas as páginas sem importar e permite desmarcar individualmente', async () => {
+  pages = true;
+  const user = userEvent.setup();
+  render(<ClassroomSection prefs={prefs} />);
+  await user.click(
+    await screen.findByRole('button', { name: 'Selecionar todas as matérias' }),
+  );
+  await screen.findByText(
+    'Todas as matérias ativas foram selecionadas. Revise os destinos antes de importar.',
+  );
+  expect(
+    screen
+      .getByRole('checkbox', { name: 'Matemática' })
+      .getAttribute('aria-checked'),
+  ).toBe('true');
+  expect(
+    screen
+      .getByRole('checkbox', { name: 'Física' })
+      .getAttribute('aria-checked'),
+  ).toBe('true');
+  await user.click(screen.getByRole('checkbox', { name: 'Física' }));
+  expect(
+    screen
+      .getByRole('checkbox', { name: 'Física' })
+      .getAttribute('aria-checked'),
+  ).toBe('false');
+  expect(calls.some((call) => call.method !== 'GET')).toBe(false);
+});
+
+it.each(['failure', 'repeat'])(
+  'preserva seleção anterior em falha de paginação: %s',
+  async (mode) => {
+    pages = true;
+    pageFailure = mode === 'failure';
+    repeatToken = mode === 'repeat';
+    const user = userEvent.setup();
+    render(<ClassroomSection prefs={prefs} />);
+    await user.click(
+      await screen.findByRole('checkbox', { name: 'Matemática' }),
+    );
+    await user.click(
+      screen.getByRole('button', { name: 'Selecionar todas as matérias' }),
+    );
+    await screen.findByRole('alert');
+    expect(
+      screen
+        .getByRole('checkbox', { name: 'Matemática' })
+        .getAttribute('aria-checked'),
+    ).toBe('true');
+    expect(screen.queryByRole('checkbox', { name: 'Física' })).toBeNull();
+    expect(
+      screen.queryByText(
+        'Todas as matérias ativas foram selecionadas. Revise os destinos antes de importar.',
+      ),
+    ).toBeNull();
+  },
+);
+
+it('exige destino ou confirmação explícita de somente tarefas', async () => {
+  const user = userEvent.setup();
+  render(<ClassroomSection prefs={{ ...prefs, subjects: true }} />);
+  await user.click(await screen.findByRole('checkbox', { name: 'Matemática' }));
+  await user.click(screen.getByRole('button', { name: 'Importar seleção' }));
+  await screen.findByRole('alert');
+  expect(calls.some((call) => call.path.endsWith('/imports'))).toBe(false);
+  await user.click(
+    screen.getByRole('checkbox', {
+      name: 'Importar somente tarefas de Matemática',
+    }),
+  );
+  await user.click(screen.getByRole('button', { name: 'Importar seleção' }));
+  await screen.findByText('Parcialmente concluída');
+  expect(calls.some((call) => call.path.endsWith('/imports'))).toBe(true);
+});
+
+it('mantém foco no modal, fecha com Escape e retorna ao acionador', async () => {
+  latest = result;
+  const user = userEvent.setup();
+  render(<ClassroomSection prefs={prefs} />);
+  const trigger = await screen.findByRole('button', { name: 'Mais detalhes' });
+  await user.click(trigger);
+  const dialog = screen.getByRole('dialog');
+  expect(dialog.contains(document.activeElement)).toBe(true);
+  await user.keyboard('{Shift>}{Tab}{/Shift}');
+  expect(dialog.contains(document.activeElement)).toBe(true);
+  await user.keyboard('{Escape}');
+  expect(screen.queryByRole('dialog')).toBeNull();
+  expect(document.activeElement).toBe(trigger);
 });
