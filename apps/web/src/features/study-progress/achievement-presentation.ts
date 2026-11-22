@@ -1,6 +1,8 @@
 import '../../styles/achievement-colors.css';
 import {
   Flag,
+  Award,
+  BookCheck,
   Flame,
   Trophy,
   CheckCheck,
@@ -10,6 +12,8 @@ import {
 } from 'lucide-react';
 import type { AchievementCode } from '@study-platform/contracts';
 export const achievementIcons = {
+  FOURTEEN_DAY_STREAK: Award,
+  HUNDRED_REVIEWS: BookCheck,
   FIRST_DAY: Flag,
   THREE_DAY_STREAK: Flame,
   SEVEN_DAY_STREAK: Trophy,

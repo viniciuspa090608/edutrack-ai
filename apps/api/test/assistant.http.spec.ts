@@ -719,3 +719,64 @@ it('preenche data legada e reverte somente a coluna adicional', async () => {
     await runner.release();
   }
 });
+
+it('organiza tarefas fora da semana e ensina apenas recursos habilitados sem criar', async () => {
+  const owner = await account(),
+    other = await account();
+  await post(owner.cookie, '/tasks', {
+    title: 'FUTURA_PROPRIA',
+    dueDate: '2100-01-01',
+    priority: 'HIGH',
+  }).expect(201);
+  await post(other.cookie, '/tasks', {
+    title: 'OUTRA_CONTA_NAO_ENVIAR',
+  }).expect(201);
+  output = { text: 'Consulte suas tarefas.', action: null };
+  provider.mockClear();
+  await post(
+    owner.cookie,
+    '/assistant/messages',
+    submission('Quais tarefas devo fazer?'),
+  ).expect(200);
+  const payload = String(provider.mock.calls[0]?.[1]?.body);
+  expect(payload).toContain('FUTURA_PROPRIA');
+  expect(payload).toContain('HIGH');
+  expect(payload).not.toContain('OUTRA_CONTA_NAO_ENVIAR');
+  await new PreferencesService(source).update(owner.id, {
+    tasks: false,
+    subjects: false,
+    flashcards: true,
+  });
+  provider.mockClear();
+  await post(
+    owner.cookie,
+    '/assistant/messages',
+    submission('Me ensine a usar o aplicativo'),
+  ).expect(200);
+  const guide = String(provider.mock.calls[0]?.[1]?.body);
+  expect(guide).toContain('applicationGuide');
+  expect(guide).toContain('/app/flashcards');
+  expect(guide).not.toContain('/app/tarefas');
+  expect(guide).not.toContain('/app/materias');
+  const [count] = await source.query<Array<{ total: string }>>(
+    'SELECT COUNT(*) AS total FROM study_tasks WHERE user_id=?',
+    [owner.id],
+  );
+  expect(Number(count!.total)).toBe(1);
+  provider.mockClear();
+  await post(
+    owner.cookie,
+    '/assistant/messages',
+    submission('Quais tarefas devo fazer?'),
+  ).expect(200);
+  expect(provider).not.toHaveBeenCalled();
+  await new PreferencesService(source).update(other.id, { tasks: true });
+  await source.query('DELETE FROM study_tasks WHERE user_id=?', [other.id]);
+  provider.mockClear();
+  await post(
+    other.cookie,
+    '/assistant/messages',
+    submission('Quais tarefas devo fazer?'),
+  ).expect(200);
+  expect(String(provider.mock.calls[0]?.[1]?.body)).toContain('tasks');
+});

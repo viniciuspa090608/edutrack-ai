@@ -42,7 +42,7 @@ it('preenche uma sugestão com o teclado e espera a confirmação do envio', asy
   const user = userEvent.setup();
   render(<AssistantPage prefs={prefs} messageLimit={2000} />);
   const suggestion = screen.getByRole('button', {
-    name: 'Quais tarefas vencem nesta semana?',
+    name: 'Quais tarefas devo fazer?',
   });
   expect(screen.queryByText('Quais são as minhas matérias?')).toBeNull();
   suggestion.focus();
@@ -50,14 +50,14 @@ it('preenche uma sugestão com o teclado e espera a confirmação do envio', asy
   const input = screen.getByRole('textbox', { name: 'Mensagem' });
   expect(document.activeElement).toBe(input);
   expect((input as HTMLTextAreaElement).value).toBe(
-    'Quais tarefas vencem nesta semana?',
+    'Quais tarefas devo fazer?',
   );
   expect(api.assistantPost).not.toHaveBeenCalled();
   await user.tab();
   await user.keyboard('{Enter}');
   expect(api.assistantPost).toHaveBeenCalledWith(
     '/messages',
-    expect.objectContaining({ text: 'Quais tarefas vencem nesta semana?' }),
+    expect.objectContaining({ text: 'Quais tarefas devo fazer?' }),
   );
 });
 
@@ -245,4 +245,23 @@ it('mostra título real, data secundária e autoria sem depender de cor', async 
   expect(
     container.querySelector('[data-author="user"]')?.textContent,
   ).toContain('Você');
+});
+
+it('oferece ajuda mesmo sem tarefas e preenche sem enviar', async () => {
+  vi.mocked(api.assistantConversations).mockResolvedValue(empty);
+  render(
+    <AssistantPage prefs={{ ...prefs, tasks: false }} messageLimit={2000} />,
+  );
+  expect(screen.queryByText('Quais tarefas devo fazer?')).toBeNull();
+  await userEvent.click(
+    screen.getByRole('button', { name: 'Me ensine a usar o aplicativo' }),
+  );
+  expect(
+    (screen.getByRole('textbox', { name: 'Mensagem' }) as HTMLTextAreaElement)
+      .value,
+  ).toBe('Me ensine a usar o aplicativo');
+  expect(document.activeElement).toBe(
+    screen.getByRole('textbox', { name: 'Mensagem' }),
+  );
+  expect(api.assistantPost).not.toHaveBeenCalled();
 });

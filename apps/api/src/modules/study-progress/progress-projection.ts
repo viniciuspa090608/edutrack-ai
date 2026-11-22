@@ -24,6 +24,8 @@ export function projectProgress(events: ProgressEvent[], today: string) {
     milestones = 0;
   const earned = new Map<AchievementCode, ProgressEvent>();
   let progress: Record<AchievementCode, number> = {
+    FOURTEEN_DAY_STREAK: 0,
+    HUNDRED_REVIEWS: 0,
     FIRST_DAY: 0,
     THREE_DAY_STREAK: 0,
     SEVEN_DAY_STREAK: 0,
@@ -52,6 +54,8 @@ export function projectProgress(events: ProgressEvent[], today: string) {
     )
       milestones++;
     progress = {
+      FOURTEEN_DAY_STREAK: longestStreak,
+      HUNDRED_REVIEWS: reviews,
       FIRST_DAY: days.size,
       THREE_DAY_STREAK: longestStreak,
       SEVEN_DAY_STREAK: longestStreak,

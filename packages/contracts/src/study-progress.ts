@@ -29,6 +29,8 @@ export const achievementCodeSchema = z.enum([
   'FIVE_POMODORO_BLOCKS',
   'TWENTY_REVIEWS',
   'FIVE_SUBJECT_MILESTONES',
+  'FOURTEEN_DAY_STREAK',
+  'HUNDRED_REVIEWS',
 ]);
 export const studyAchievementCatalog = [
   {
@@ -73,6 +75,18 @@ export const studyAchievementCatalog = [
     criterion: 'Concluir 5 itens manuais ou blocos de roadmap, somados.',
     target: 5,
   },
+  {
+    code: 'FOURTEEN_DAY_STREAK',
+    name: 'Quatorze dias seguidos',
+    criterion: 'Estudar em 14 datas consecutivas.',
+    target: 14,
+  },
+  {
+    code: 'HUNDRED_REVIEWS',
+    name: 'Revisão dedicada',
+    criterion: 'Registrar 100 avaliações de flashcards.',
+    target: 100,
+  },
 ] as const;
 export const studyProgressSchema = studyTimeZoneSettingsSchema
   .extend({
@@ -93,7 +107,7 @@ export const studyProgressSchema = studyTimeZoneSettingsSchema
           })
           .strict(),
       )
-      .length(7),
+      .length(studyAchievementCatalog.length),
   })
   .strict();
 export type AchievementCode = z.infer<typeof achievementCodeSchema>;

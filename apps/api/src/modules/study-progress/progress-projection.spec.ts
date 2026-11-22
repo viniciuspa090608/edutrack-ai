@@ -57,3 +57,34 @@ it('awards all seven criteria at their first chronological threshold even with s
     FIVE_SUBJECT_MILESTONES: 5,
   });
 });
+
+it('reconhece os dois novos limiares na primeira data elegível do histórico', () => {
+  const days = Array.from({ length: 14 }, (_, index) =>
+    event('2026-10-' + String(index + 1).padStart(2, '0')),
+  );
+  const reviews = Array.from({ length: 100 }, (_, index) =>
+    event(
+      '2026-10-14',
+      'FLASHCARD_REVIEWED',
+      '2026-10-14T15:00:00Z',
+      'review-' + String(index).padStart(3, '0'),
+    ),
+  );
+  const before = projectProgress(
+    [
+      ...days.slice(0, 13),
+      ...reviews
+        .slice(0, 99)
+        .map((item) => ({ ...item, local_date: '2026-10-13' })),
+    ],
+    '2026-10-14',
+  );
+  expect(before.earned.has('FOURTEEN_DAY_STREAK')).toBe(false);
+  expect(before.earned.has('HUNDRED_REVIEWS')).toBe(false);
+  const result = projectProgress([...days, ...reviews].reverse(), '2026-10-15');
+  expect(result.progress.FOURTEEN_DAY_STREAK).toBe(14);
+  expect(result.progress.HUNDRED_REVIEWS).toBe(100);
+  expect(result.earned.get('FOURTEEN_DAY_STREAK')?.id).toBe(days[13]!.id);
+  expect(result.earned.get('HUNDRED_REVIEWS')?.id).toBe('review-099');
+  expect(projectProgress([], '2026-10-15').progress.HUNDRED_REVIEWS).toBe(0);
+});

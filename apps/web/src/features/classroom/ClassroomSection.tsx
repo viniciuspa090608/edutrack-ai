@@ -362,9 +362,11 @@ function ConflictReview({
 export function ClassroomSection({
   prefs,
   embedded = false,
+  origin = 'account',
 }: {
   prefs: ModulePreferences | null;
   embedded?: boolean;
+  origin?: 'account' | 'onboarding';
 }) {
   const [connection, setConnection] = useState<ClassroomConnection | null>(
       null,
@@ -384,6 +386,15 @@ export function ClassroomSection({
   const [showSelection, setShowSelection] = useState(false);
   const [tasksOnly, setTasksOnly] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [notification, setNotification] = useState<{
+    id: string;
+    state: string;
+    text: string;
+  } | null>(null);
+  const observedOperation = useRef<{ id: string; active: boolean } | null>(
+    null,
+  );
+  const notified = useRef(new Set<string>());
   const generation = useRef(0);
   const connectButton = useRef<HTMLButtonElement>(null);
   const load = useCallback(async () => {
@@ -397,6 +408,8 @@ export function ClassroomSection({
       setConnection(status);
       if (status.state !== 'connected') {
         setResult(null);
+        setNotification(null);
+        observedOperation.current = null;
         setCourses([]);
         setSubjects([]);
         setSelection({ courses: [] });
@@ -443,6 +456,37 @@ export function ClassroomSection({
     result?.operation.state === 'queued' ||
     result?.operation.state === 'running';
   useEffect(() => {
+    if (!result || connection?.state !== 'connected') return;
+    const { id, state } = result.operation;
+    const previous = observedOperation.current;
+    if (active) setNotification(null);
+    if (
+      !active &&
+      previous?.id === id &&
+      previous.active &&
+      !notified.current.has(id)
+    ) {
+      notified.current.add(id);
+      const text =
+        state === 'completed'
+          ? result.operation.processed === 0
+            ? 'Importação concluída sem adições.'
+            : 'Importação concluída.'
+          : state === 'partial'
+            ? 'Importação parcialmente concluída. Consulte as pendências no resumo.'
+            : state === 'cancelled'
+              ? 'Importação interrompida.'
+              : 'A importação falhou. Consulte o resumo e tente novamente.';
+      setNotification({ id, state, text });
+    }
+    observedOperation.current = { id, active };
+  }, [result, active, connection?.state]);
+  useEffect(() => {
+    if (!notification) return;
+    const timer = window.setTimeout(() => setNotification(null), 10000);
+    return () => window.clearTimeout(timer);
+  }, [notification]);
+  useEffect(() => {
     if (result && !active) setShowSelection(false);
   }, [result?.operation.id, result?.operation.state, active]);
   useEffect(() => {
@@ -488,7 +532,7 @@ export function ClassroomSection({
   function connect(purpose: 'import' | 'teacher') {
     void act(async () => {
       const value = classroomAuthorizationSchema.parse(
-        await request(`${base}/connect`, 'POST', { purpose }),
+        await request(`${base}/connect`, 'POST', { purpose, origin }),
       );
       window.location.assign(value.url);
     });
@@ -656,6 +700,30 @@ export function ClassroomSection({
           </p>
         )}
         {message && <p role="status">{message}</p>}
+        {new URLSearchParams(window.location.search).get('classroom') ===
+          'failed' && (
+          <p role="alert">
+            Não foi possível autorizar o Classroom. Tente conectar novamente ou
+            continue sem importar.
+          </p>
+        )}
+        {notification && connection?.state === 'connected' && (
+          <div
+            className="classroom-toast"
+            data-state={notification.state}
+            role="status"
+            aria-live="polite"
+          >
+            <span>{notification.text}</span>
+            <Button
+              variant="outline"
+              onClick={() => setNotification(null)}
+              aria-label="Fechar notificação da importação"
+            >
+              Fechar
+            </Button>
+          </div>
+        )}
         {!connection && !error && <p role="status">Carregando integração…</p>}
         {connection && !connection.available && (
           <p>
@@ -679,6 +747,8 @@ export function ClassroomSection({
                       );
                       ++generation.current;
                       setResult(null);
+                      setNotification(null);
+                      observedOperation.current = null;
                       setCourses([]);
                       setSubjects([]);
                       setSelection({ courses: [] });
@@ -979,6 +1049,29 @@ export function ClassroomSection({
                 ? ''
                 : ` de ${result.operation.total}`}
             </p>
+            <progress
+              className="classroom-progress"
+              aria-label="Progresso da importação"
+              max={
+                result.operation.total && result.operation.total > 0
+                  ? result.operation.total
+                  : undefined
+              }
+              value={
+                result.operation.total && result.operation.total > 0
+                  ? Math.min(result.operation.processed, result.operation.total)
+                  : active
+                    ? undefined
+                    : 1
+              }
+              aria-valuetext={
+                result.operation.total && result.operation.total > 0
+                  ? undefined
+                  : active
+                    ? 'Total ainda não conhecido'
+                    : 'Processamento finalizado'
+              }
+            />
             {result.operation.message && <p>{result.operation.message}</p>}
             <dl>
               {Object.entries(result.operation.counts).map(

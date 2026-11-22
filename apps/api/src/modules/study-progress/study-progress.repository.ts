@@ -11,6 +11,23 @@ export class StudyProgressRepository {
   transaction<T>(work: (manager: EntityManager) => Promise<T>) {
     return this.source.transaction(work);
   }
+  async reconcileNewGrants(
+    manager: EntityManager,
+    userId: string,
+    earned: Map<AchievementCode, ProgressEvent>,
+  ) {
+    for (const code of ['FOURTEEN_DAY_STREAK', 'HUNDRED_REVIEWS'] as const) {
+      const event = earned.get(code);
+      if (event)
+        await manager.query(
+          'INSERT IGNORE INTO study_achievement_grants (user_id,achievement_code,earned_at_utc,triggering_event_id) VALUES (?,?,?,?)',
+          [userId, code, event.occurred_at, event.id],
+        );
+    }
+  }
+  async lock(manager: EntityManager, userId: string) {
+    return lockStudyProgress(manager, userId);
+  }
   async tracking(manager: EntityManager, userId: string) {
     const rows = await manager.query<TrackingRow[]>(
       'SELECT study_timezone,tracking_started_at_utc FROM study_progress_tracking WHERE user_id=?',

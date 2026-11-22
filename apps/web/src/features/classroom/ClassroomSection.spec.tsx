@@ -1,4 +1,4 @@
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { ClassroomSection } from './ClassroomSection.js';
@@ -190,6 +190,7 @@ beforeEach(() => {
 });
 afterEach(() => {
   cleanup();
+  vi.restoreAllMocks();
   vi.unstubAllGlobals();
   vi.unstubAllEnvs();
 });
@@ -487,4 +488,124 @@ it('ignores an import response arriving after disconnect', async () => {
   );
   expect(screen.queryByRole('button', { name: 'Mais detalhes' })).toBeNull();
   expect(screen.queryByText('student@example.test')).toBeNull();
+});
+
+it.each([
+  ['completed', 2, 'Importação concluída.'],
+  ['completed', 0, 'Importação concluída sem adições.'],
+  [
+    'partial',
+    2,
+    'Importação parcialmente concluída. Consulte as pendências no resumo.',
+  ],
+  ['failed', 0, 'A importação falhou. Consulte o resumo e tente novamente.'],
+])(
+  'anuncia uma vez a transição terminal %s com %i itens',
+  async (state, processed, text) => {
+    latest = {
+      ...result,
+      operation: {
+        ...result.operation,
+        state: 'running',
+        phase: 'importing',
+        processed: 1,
+      },
+    };
+    const interval = vi.spyOn(globalThis, 'setInterval');
+    render(<ClassroomSection prefs={prefs} />);
+    const bar = await screen.findByRole('progressbar', {
+      name: 'Progresso da importação',
+    });
+    expect(bar.getAttribute('value')).toBe('1');
+    expect(bar.getAttribute('max')).toBe('2');
+    const tick = interval.mock.calls.find(
+      (call) => call[1] === 2000,
+    )![0] as () => void;
+    const original = fetch;
+    latest = {
+      ...result,
+      operation: { ...result.operation, state, processed, total: processed },
+    };
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((url: string, options?: RequestInit) =>
+        new URL(url).pathname.includes('/operations/')
+          ? Promise.resolve(Response.json(latest))
+          : original(url, options),
+      ),
+    );
+    await act(async () => {
+      tick();
+    });
+    expect(await screen.findByText(text)).toBeTruthy();
+    await act(async () => {
+      tick();
+    });
+    expect(screen.getAllByText(text)).toHaveLength(1);
+    expect(screen.getByRole('button', { name: 'Mais detalhes' })).toBeTruthy();
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Fechar notificação da importação' }),
+    );
+    expect(screen.queryByText(text)).toBeNull();
+  },
+);
+it('recupera resultado terminal sem toast e mantém barra indeterminada quando falta total', async () => {
+  latest = result;
+  const view = render(<ClassroomSection prefs={prefs} />);
+  await screen.findByText('Parcialmente concluída');
+  expect(
+    screen.queryByRole('button', { name: 'Fechar notificação da importação' }),
+  ).toBeNull();
+  view.unmount();
+  const original = fetch;
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((url: string, options?: RequestInit) =>
+      new URL(url).pathname.endsWith('/operations')
+        ? Promise.resolve(
+            Response.json({
+              ...result,
+              operation: {
+                ...result.operation,
+                state: 'queued',
+                phase: 'queued',
+                total: null,
+                processed: 0,
+              },
+            }),
+          )
+        : original(url, options),
+    ),
+  );
+  render(<ClassroomSection prefs={prefs} />);
+  const bar = await screen.findByRole('progressbar', {
+    name: 'Progresso da importação',
+  });
+  expect(bar.hasAttribute('value')).toBe(false);
+  expect(bar.getAttribute('aria-valuetext')).toBe('Total ainda não conhecido');
+});
+it('retoma uma conta nova no onboarding e importa sem abrir Conta', async () => {
+  const user = userEvent.setup();
+  render(
+    <OnboardingGate
+      initialStep="classroom"
+      prefs={prefs}
+      onPreferences={() => {}}
+    >
+      <p>Pronto para estudar</p>
+    </OnboardingGate>,
+  );
+  await user.click(await screen.findByRole('checkbox', { name: 'Matemática' }));
+  await user.click(screen.getByRole('button', { name: 'Importar seleção' }));
+  await screen.findByText('Parcialmente concluída');
+  expect(calls.filter((call) => call.path.endsWith('/imports'))).toHaveLength(
+    1,
+  );
+  await user.click(
+    screen.getByRole('button', { name: 'Continuar para o Edutrack' }),
+  );
+  expect(await screen.findByText('Pronto para estudar')).toBeTruthy();
+  expect(calls.filter((call) => call.path.endsWith('/imports'))).toHaveLength(
+    1,
+  );
 });

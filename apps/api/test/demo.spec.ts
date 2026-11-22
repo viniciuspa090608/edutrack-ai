@@ -232,7 +232,14 @@ describe.sequential('local demo using isolated real MySQL', () => {
       if (profile === 'ativo') {
         expect(progress.currentStreak).toBeGreaterThanOrEqual(7);
         expect(
-          progress.achievements.every((achievement) => achievement.earnedAt),
+          progress.achievements
+            .filter(
+              (achievement) =>
+                !['FOURTEEN_DAY_STREAK', 'HUNDRED_REVIEWS'].includes(
+                  achievement.code,
+                ),
+            )
+            .every((achievement) => achievement.earnedAt),
         ).toBe(true);
         const subject = demoId('ativo:subject:0');
         const roadmap = demoId('ativo:roadmap:0');

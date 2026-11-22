@@ -151,6 +151,9 @@ it('backfills existing onboarding while new local/Google preferences start at mo
     await migration.down(runner);
     const old = await account(false);
     await migration.up(runner);
+    await runner.query(
+      "ALTER TABLE classroom_oauth_attempts ADD origin varchar(16) NOT NULL DEFAULT 'account'",
+    );
     expect((await prefs.onboarding(old.id)).step).toBe('completed');
     const fresh = await account(false);
     expect((await prefs.onboarding(fresh.id)).step).toBe('modules');
@@ -943,3 +946,116 @@ it('imports minimal new subject defaults once and reuses the confirmed destinati
     knownTopics: [],
   });
 });
+
+it('retoma a autorização da conta nova no onboarding antes de importar', async () => {
+  const user = await account(false);
+  await prefs.update(user.id, { tasks: true, subjects: true });
+  await prefs.updateOnboarding(user.id, 'classroom');
+  const session = { userId: user.id, id: randomUUID() };
+  const fixture = classroomOIDCFixture();
+  const oauth = new ClassroomOAuthService(
+    runtime.service.repository,
+    env,
+    fixture.transport,
+  );
+  const started = await oauth.start(session, 'import', 'onboarding');
+  const authorization = new URL(started.url);
+  fixture.state.nonce = authorization.searchParams.get('nonce')!;
+  const callback = new URL(
+    env.API_PUBLIC_ORIGIN + '/integrations/google-classroom/callback',
+  );
+  callback.searchParams.set('code', 'synthetic-code');
+  callback.searchParams.set('state', authorization.searchParams.get('state')!);
+  expect(await oauth.callback(session, callback, started.browserSecret)).toBe(
+    'onboarding',
+  );
+  expect((await prefs.onboarding(user.id)).step).toBe('classroom');
+  expect((await subjects.list(user.id, {})).total).toBe(0);
+  await runtime.service.select(user.id, {
+    courses: [
+      {
+        courseId: course.id,
+        destination: { kind: 'new', subject: subjectInput },
+      },
+    ],
+  });
+  const operation = await runtime.service.start(user.id, 'import', {
+    requestId: randomUUID(),
+    courseIds: [course.id],
+  });
+  await prefs.updateOnboarding(user.id, 'completed');
+  const recovered = await request(app)
+    .get('/integrations/google-classroom/operations')
+    .set('Cookie', user.cookie)
+    .expect(200);
+  expect(recovered.body.operation.id).toBe(operation.operation.id);
+  expect(recovered.body.operation.state).toBe('queued');
+  await runtime.service.runOnce();
+  expect(
+    (
+      await runtime.service.operations.result(
+        user.id,
+        operation.operation.id,
+        1,
+        20,
+      )
+    ).operation.state,
+  ).toBe('completed');
+  expect((await subjects.list(user.id, {})).total).toBe(1);
+  expect((await tasks.list(user.id, {})).total).toBe(1);
+});
+
+it.each(['account', 'onboarding'] as const)(
+  'preserva origem OAuth %s em sucesso e recusa e rejeita URL livre',
+  async (origin) => {
+    const user = await account(false),
+      fixture = classroomOIDCFixture();
+    const oauthApp = createApp({
+      logger: pino({ level: 'silent' }),
+      webOrigin: env.WEB_ORIGIN,
+      source,
+      env,
+      oidcFetch: fixture.transport,
+    });
+    for (const denied of [false, true]) {
+      const start = await request(oauthApp)
+        .post('/integrations/google-classroom/connect')
+        .set('Cookie', user.cookie)
+        .set('Origin', env.WEB_ORIGIN)
+        .send({ purpose: 'import', origin })
+        .expect(200);
+      const auth = new URL(start.body.url);
+      fixture.state.nonce = auth.searchParams.get('nonce')!;
+      const cookies = start.headers['set-cookie'] as unknown as string[];
+      const browserCookie = cookies[0]!.split(';')[0];
+      const query = new URLSearchParams({
+        state: auth.searchParams.get('state')!,
+        ...(denied ? { error: 'access_denied' } : { code: 'synthetic-code' }),
+      });
+      const callback = await request(oauthApp)
+        .get('/integrations/google-classroom/callback?' + query)
+        .set('Cookie', user.cookie + '; ' + browserCookie)
+        .expect(302);
+      const outcome = denied ? 'failed' : 'connected';
+      expect(callback.headers.location).toBe(
+        env.WEB_ORIGIN +
+          (origin === 'onboarding'
+            ? '/app?classroom=' + outcome
+            : '/conta?classroom=' + outcome + '#account-integrations'),
+      );
+    }
+    await request(oauthApp)
+      .post('/integrations/google-classroom/connect')
+      .set('Cookie', user.cookie)
+      .set('Origin', env.WEB_ORIGIN)
+      .send({ purpose: 'import', origin: 'https://external.example' })
+      .expect(400);
+    const fallback = await request(oauthApp)
+      .get('/integrations/google-classroom/callback?state=invalid')
+      .set('Cookie', user.cookie)
+      .expect(302);
+    expect(fallback.headers.location).toBe(
+      env.WEB_ORIGIN + '/conta?classroom=failed#account-integrations',
+    );
+  },
+);

@@ -176,7 +176,8 @@ export function StudyProgressContent({ data }: { data: StudyProgress }) {
             </h2>
             <p className="report-print-only">
               {earned}{' '}
-              {earned === 1 ? 'conquista registrada' : 'conquistas registradas'}
+              {earned === 1 ? 'conquista registrada' : 'conquistas registradas'}{' '}
+              de {data.achievements.length}
             </p>
           </div>
           <span className="evolution-icon">

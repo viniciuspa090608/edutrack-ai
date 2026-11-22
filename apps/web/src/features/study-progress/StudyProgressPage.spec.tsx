@@ -92,9 +92,9 @@ it('keeps all criteria visible when no grants exist even with partial activity',
   expect(
     await screen.findByText('Nenhuma conquista obtida ainda'),
   ).toBeTruthy();
-  expect(screen.getAllByRole('progressbar')).toHaveLength(7);
+  expect(screen.getAllByRole('progressbar')).toHaveLength(9);
   expect(screen.getByText('Em progresso')).toBeTruthy();
-  expect(screen.getAllByText('Bloqueada')).toHaveLength(6);
+  expect(screen.getAllByText('Bloqueada')).toHaveLength(8);
 });
 
 it('shows timezone load retry, explicit suggestion, busy, save error and successful retry', async () => {
@@ -157,7 +157,7 @@ const data = {
     earnedAt: null,
   })),
 };
-it('shows loading, failure with keyboard retry, empty history and all seven criteria', async () => {
+it('shows loading, failure with keyboard retry, empty history and all nine criteria', async () => {
   vi.mocked(studyProgress).mockImplementationOnce(() => new Promise(() => {}));
   const first = render(<StudyProgressPage />);
   expect(screen.getByText('Carregando progresso…')).toBeTruthy();
@@ -171,7 +171,7 @@ it('shows loading, failure with keyboard retry, empty history and all seven crit
   screen.getByRole('button', { name: 'Tentar novamente' }).focus();
   await user.keyboard('{Enter}');
   expect(await screen.findByText(/Seu primeiro dia ativo/)).toBeTruthy();
-  expect(screen.getAllByRole('progressbar')).toHaveLength(7);
+  expect(screen.getAllByRole('progressbar')).toHaveLength(9);
   expect(screen.getByText(/Atividades anteriores não contam/)).toBeTruthy();
 });
 it('keeps earned achievements visible with dates and accessible progress', async () => {

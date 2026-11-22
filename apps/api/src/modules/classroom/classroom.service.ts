@@ -46,8 +46,12 @@ const reason = (error: unknown) => {
   return 'Não foi possível processar este conteúdo. Verifique os dados e tente novamente.';
 };
 export class ClassroomService {
-  async connect(session: ActiveSession, purpose: 'import' | 'teacher') {
-    return this.oauth.start(session, purpose);
+  async connect(
+    session: ActiveSession,
+    purpose: 'import' | 'teacher',
+    origin: 'account' | 'onboarding' = 'account',
+  ) {
+    return this.oauth.start(session, purpose, origin);
   }
   onboarding(userId: string) {
     return this.prefs.onboarding(userId);

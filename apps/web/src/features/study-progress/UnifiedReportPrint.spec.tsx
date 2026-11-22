@@ -203,3 +203,27 @@ it('removes the print portal when unmounted, and a second entry point prints the
   fireEvent(window, new Event('afterprint'));
   print.mockRestore();
 });
+
+it('imprime as nove conquistas obtidas com total e novos critérios', async () => {
+  vi.mocked(studyProgress).mockResolvedValue({
+    ...progress,
+    achievements: studyAchievementCatalog.map((item) => ({
+      ...item,
+      progress: item.target,
+      earnedAt: '2026-10-03T12:00:00.000Z',
+    })),
+  });
+  const { container } = render(<UnifiedReportPrint />);
+  const button = await ready(container);
+  const print = vi.spyOn(window, 'print').mockImplementation(() => {});
+  await userEvent.click(button);
+  const report = document.querySelector('.unified-study-report')!;
+  expect(report.querySelectorAll('.achievement-earned')).toHaveLength(9);
+  expect(report.textContent).toContain('9 conquistas registradas de 9');
+  expect(report.textContent).toContain('Quatorze dias seguidos');
+  expect(report.textContent).toContain(
+    'Registrar 100 avaliações de flashcards.',
+  );
+  fireEvent(window, new Event('afterprint'));
+  print.mockRestore();
+});

@@ -95,3 +95,16 @@
 .evolution-card.achievement-card [data-slot='progress-indicator'] {
   background: var(--achievement-color);
 }
+
+.achievement-code-FOURTEEN_DAY_STREAK {
+  --achievement-color: #c2410c;
+}
+.dark .achievement-code-FOURTEEN_DAY_STREAK {
+  --achievement-color: #fdba74;
+}
+.achievement-code-HUNDRED_REVIEWS {
+  --achievement-color: #047857;
+}
+.dark .achievement-code-HUNDRED_REVIEWS {
+  --achievement-color: #6ee7b7;
+}

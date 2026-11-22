@@ -114,6 +114,7 @@ export class ClassroomRepository {
     verifier: string,
     nonce: string,
     purpose: string,
+    origin: 'account' | 'onboarding' = 'account',
   ) {
     const row = await this.connection(userId);
     await this.source.query(
@@ -121,7 +122,7 @@ export class ClassroomRepository {
       [],
     );
     await this.source.query(
-      `INSERT INTO classroom_oauth_attempts (id,user_id,session_id,state_hash,browser_hash,verifier,nonce,purpose,connection_version,expires_at) VALUES (?,?,?,?,?,?,?,?,?,DATE_ADD(UTC_TIMESTAMP(3),INTERVAL 10 MINUTE))`,
+      `INSERT INTO classroom_oauth_attempts (id,user_id,session_id,state_hash,browser_hash,verifier,nonce,purpose,origin,connection_version,expires_at) VALUES (?,?,?,?,?,?,?,?,?,?,DATE_ADD(UTC_TIMESTAMP(3),INTERVAL 10 MINUTE))`,
       [
         randomUUID(),
         userId,
@@ -131,6 +132,7 @@ export class ClassroomRepository {
         verifier,
         nonce,
         purpose,
+        origin,
         row?.version ?? 0,
       ],
     );
@@ -143,6 +145,7 @@ export class ClassroomRepository {
           verifier: string;
           nonce: string;
           purpose: string;
+          origin: string;
           connection_version: number;
         }>
       >(

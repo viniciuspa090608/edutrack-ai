@@ -172,10 +172,17 @@ export function AssistantPage({
   }, []);
   const suggestions = [
     {
+      enabled: true,
+      text: 'Me ensine a usar o aplicativo',
+      category: 'Guia do aplicativo',
+      description: 'Conheça os recursos e aprenda a organizar seus estudos.',
+      icon: Info,
+    },
+    {
       enabled: prefs.tasks,
-      text: 'Quais tarefas vencem nesta semana?',
-      category: 'Prazos',
-      description: 'Consulte suas próximas entregas e organize a semana.',
+      text: 'Quais tarefas devo fazer?',
+      category: 'Tarefas',
+      description: 'Organize suas tarefas e escolha o que fazer a seguir.',
       icon: CalendarDays,
     },
     {

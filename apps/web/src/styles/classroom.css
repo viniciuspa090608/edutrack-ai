@@ -230,3 +230,64 @@
   width: auto;
   flex: 0 1 auto;
 }
+
+.classroom-progress {
+  display: block;
+  width: 100%;
+  height: 12px;
+  margin-block: 16px;
+  accent-color: var(--primary);
+}
+.classroom-toast {
+  position: fixed;
+  bottom: 100px;
+  right: 16px;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: min(440px, calc(100vw - 32px));
+  padding: 16px;
+  border: 1px solid var(--primary);
+  border-radius: 12px;
+  background: var(--card);
+  color: var(--card-foreground);
+  box-shadow: 0 4px 18px #0003;
+  overflow-wrap: anywhere;
+}
+.classroom-toast[data-state='partial'] {
+  border-color: #b45309;
+}
+.classroom-toast[data-state='failed'] {
+  border-color: var(--destructive);
+}
+.classroom-toast button {
+  flex-shrink: 0;
+}
+
+.authenticated-shell .private-content:has(> .classroom-onboarding) {
+  padding: 0;
+}
+.classroom-onboarding {
+  padding: 0;
+}
+.classroom-onboarding > .classroom-section {
+  padding: 16px;
+}
+.classroom-onboarding
+  > .classroom-section
+  > :is([data-slot='card-header'], [data-slot='card-content']) {
+  padding-inline: 0;
+}
+.classroom-progress::-webkit-progress-bar {
+  background: var(--muted);
+  border-radius: 6px;
+}
+.classroom-progress::-webkit-progress-value {
+  background: var(--primary);
+  border-radius: 6px;
+}
+.classroom-progress::-moz-progress-bar {
+  background: var(--primary);
+  border-radius: 6px;
+}

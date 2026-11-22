@@ -38,6 +38,7 @@ export function classroomRoutes(auth: AuthService, service: ClassroomService) {
     const result = await service.connect(
       authenticatedSession(res),
       input.purpose,
+      input.origin,
     );
     res.cookie(cookieName, result.browserSecret, {
       httpOnly: true,
@@ -50,11 +51,15 @@ export function classroomRoutes(auth: AuthService, service: ClassroomService) {
   });
   router.get('/callback', async (req, res) => {
     let outcome = 'connected';
+    const context: { origin: 'account' | 'onboarding' } = { origin: 'account' };
     try {
       await service.oauth.callback(
         authenticatedSession(res),
         new URL(`${env.API_PUBLIC_ORIGIN}${req.originalUrl}`),
         readCookie(req, cookieName),
+        (value) => {
+          context.origin = value;
+        },
       );
     } catch {
       outcome = 'failed';
@@ -66,7 +71,9 @@ export function classroomRoutes(auth: AuthService, service: ClassroomService) {
       path: '/',
     });
     res.redirect(
-      `${env.WEB_ORIGIN}/conta?classroom=${outcome}#account-integrations`,
+      context.origin === 'onboarding'
+        ? `${env.WEB_ORIGIN}/app?classroom=${outcome}`
+        : `${env.WEB_ORIGIN}/conta?classroom=${outcome}#account-integrations`,
     );
   });
   router.delete('/connection', write, async (_req, res) => {

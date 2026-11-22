@@ -474,7 +474,7 @@ it('materializes full Pomodoro blocks at exact boundaries with historical timezo
     3,
   );
 });
-it('grants all seven achievements once under concurrency, corrects first earned dates for late events and never revokes', async () => {
+it('grants the original seven achievements once under concurrency, corrects first earned dates for late events and never revokes', async () => {
   const a = await account();
   now = new Date('2026-11-01T00:00:00Z');
   const jobs: Array<Promise<void>> = [];
@@ -496,9 +496,14 @@ it('grants all seven achievements once under concurrency, corrects first earned 
       jobs.push(record(a.id, kind, '2026-10-11T15:00:00Z'));
   await Promise.all(jobs);
   let result = await progress(a.cookie);
-  expect(result.achievements.every((item) => item.earnedAt !== null)).toBe(
-    true,
-  );
+  expect(
+    result.achievements
+      .filter(
+        (item) =>
+          !['FOURTEEN_DAY_STREAK', 'HUNDRED_REVIEWS'].includes(item.code),
+      )
+      .every((item) => item.earnedAt !== null),
+  ).toBe(true);
   expect(
     result.achievements.find((item) => item.code === 'TEN_TASKS')!.earnedAt,
   ).toBe('2026-10-11T12:00:00.000Z');
@@ -594,4 +599,49 @@ it('credits only entire roadmap blocks and actual manual item transitions withou
   expect((await events(a.id)).filter((item) => item.local_date)).toHaveLength(
     4,
   );
+});
+
+it('reconcilia novos marcos do histórico com data original e isolamento, sem duplicar concessões', async () => {
+  now = new Date('2026-10-20T12:00:00Z');
+  const owner = await account(),
+    other = await account();
+  for (let day = 1; day <= 14; day++)
+    await record(
+      owner.id,
+      'TASK_COMPLETED',
+      '2026-10-' + String(day).padStart(2, '0') + 'T12:00:00Z',
+    );
+  for (let index = 0; index < 100; index++)
+    await record(owner.id, 'FLASHCARD_REVIEWED', '2026-10-14T15:00:00Z');
+  await source.query(
+    "DELETE FROM study_achievement_grants WHERE user_id=? AND achievement_code IN ('FOURTEEN_DAY_STREAK','HUNDRED_REVIEWS')",
+    [owner.id],
+  );
+  const before = await source.query(
+    'SELECT achievement_code,earned_at_utc FROM study_achievement_grants WHERE user_id=? ORDER BY achievement_code',
+    [owner.id],
+  );
+  const [first, second] = await Promise.all([
+    progress(owner.cookie),
+    progress(owner.cookie),
+  ]);
+  expect(first.achievements).toHaveLength(9);
+  for (const item of [first, second]) {
+    expect(
+      item.achievements.find((a) => a.code === 'FOURTEEN_DAY_STREAK')?.earnedAt,
+    ).toBe('2026-10-14T12:00:00.000Z');
+    expect(
+      item.achievements.find((a) => a.code === 'HUNDRED_REVIEWS')?.earnedAt,
+    ).toBe('2026-10-14T15:00:00.000Z');
+  }
+  const after = await source.query(
+    "SELECT achievement_code,earned_at_utc FROM study_achievement_grants WHERE user_id=? AND achievement_code NOT IN ('FOURTEEN_DAY_STREAK','HUNDRED_REVIEWS') ORDER BY achievement_code",
+    [owner.id],
+  );
+  expect(after).toEqual(before);
+  expect(
+    (await progress(other.cookie)).achievements.every(
+      (a) => a.progress === 0 && a.earnedAt === null,
+    ),
+  ).toBe(true);
 });

@@ -52,6 +52,7 @@ export const classroomConnectionSchema = z
 export const classroomConsentSchema = z
   .object({
     purpose: z.enum(['import', 'teacher']),
+    origin: z.enum(['account', 'onboarding']).default('account'),
   })
   .strict();
 export const classroomAuthorizationSchema = z

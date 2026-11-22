@@ -18,7 +18,7 @@ it('validates IANA zones and rejects foreign identifiers in account settings', (
       .success,
   ).toBe(false);
 });
-it('shares all seven criteria with the web and API without persistence details', () => {
+it('shares all nine criteria with the web and API without persistence details', () => {
   const result = studyProgressSchema.parse({
     timeZone: 'UTC',
     trackingStartedAt: '2026-09-27T00:00:00.000Z',
@@ -32,7 +32,7 @@ it('shares all seven criteria with the web and API without persistence details',
       earnedAt: null,
     })),
   });
-  expect(result.achievements).toHaveLength(7);
+  expect(result.achievements).toHaveLength(9);
   expect(
     studyProgressSchema.safeParse({ ...result, userId: 'internal' }).success,
   ).toBe(false);

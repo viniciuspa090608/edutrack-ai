@@ -42,6 +42,7 @@ export class StudyProgressService {
   }
   read(userId: string) {
     return this.repository.transaction(async (manager) => {
+      await this.repository.lock(manager, userId);
       const row = await this.repository.tracking(manager, userId),
         now = this.clock();
       const today = Temporal.Instant.fromEpochMilliseconds(now.getTime())
@@ -51,6 +52,11 @@ export class StudyProgressService {
       const projection = projectProgress(
         await this.repository.events(manager, userId, now),
         today,
+      );
+      await this.repository.reconcileNewGrants(
+        manager,
+        userId,
+        projection.earned,
       );
       const grants = new Map(
         (await this.repository.grants(manager, userId)).map((grant) => [

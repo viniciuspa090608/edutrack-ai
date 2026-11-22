@@ -63,7 +63,10 @@ export function OnboardingGate({
   }
   if (step === 'completed') return children;
   return (
-    <section className="classroom-section" aria-labelledby="onboarding-title">
+    <section
+      className="classroom-section classroom-onboarding"
+      aria-labelledby="onboarding-title"
+    >
       <h1 id="onboarding-title" ref={heading} tabIndex={-1}>
         {step === 'modules'
           ? 'Escolha seus módulos'
@@ -109,7 +112,7 @@ export function OnboardingGate({
         </>
       ) : (
         <>
-          <ClassroomSection prefs={prefs} />
+          <ClassroomSection prefs={prefs} origin="onboarding" />
           <p>
             Você pode continuar mesmo se a integração falhar. Operações já
             solicitadas continuam e ficam disponíveis no perfil.

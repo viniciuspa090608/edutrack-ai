@@ -54,7 +54,11 @@ export class ClassroomOAuthService {
   private get redirectUri() {
     return `${this.env.API_PUBLIC_ORIGIN}/integrations/google-classroom/callback`;
   }
-  async start(session: ActiveSession, purpose: 'import' | 'teacher') {
+  async start(
+    session: ActiveSession,
+    purpose: 'import' | 'teacher',
+    origin: 'account' | 'onboarding' = 'account',
+  ) {
     const config = await this.config();
     const state = oidc.randomState(),
       nonce = oidc.randomNonce(),
@@ -68,6 +72,7 @@ export class ClassroomOAuthService {
       verifier,
       nonce,
       purpose,
+      origin,
     );
     const row = await this.repository.connection(session.userId);
     const existing =
@@ -103,6 +108,7 @@ export class ClassroomOAuthService {
     session: ActiveSession,
     url: URL,
     browserSecret: string | undefined,
+    onOrigin?: (origin: 'account' | 'onboarding') => void,
   ) {
     const state = url.searchParams.get('state');
     if (!state || !browserSecret)
@@ -117,6 +123,8 @@ export class ClassroomOAuthService {
       secretHash(state),
       secretHash(browserSecret),
     );
+    const origin = attempt.origin === 'onboarding' ? 'onboarding' : 'account';
+    onOrigin?.(origin);
     if (url.searchParams.has('error'))
       throw new HttpError(
         400,
@@ -197,6 +205,7 @@ export class ClassroomOAuthService {
         scopes,
         encrypted,
       );
+      return origin;
     } catch (error) {
       const code =
         error instanceof Error &&
