@@ -47,6 +47,7 @@ export const demoTables = [
   'study_tasks',
   'study_timezone_history',
   'subject_known_topics',
+  'subject_goals',
   'subject_classroom_receipts',
   'subject_classroom_sources',
   'subject_plan_items',

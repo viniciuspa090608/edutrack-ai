@@ -41,6 +41,7 @@ import { RoutinesRepository } from './modules/routines/routines.repository.js';
 
 import { SubjectsRepository } from './modules/subjects/subjects.repository.js';
 import { SubjectsService } from './modules/subjects/subjects.service.js';
+import { SubjectGoalsService } from './modules/subjects/subject-goals.service.js';
 import { subjectsRoutes } from './modules/subjects/subjects.routes.js';
 import { FlashcardsRepository } from './modules/flashcards/flashcards.repository.js';
 import { FlashcardsService } from './modules/flashcards/flashcards.service.js';
@@ -92,6 +93,7 @@ export interface AppOptions {
   reviewClock?: ReviewClock;
   progressClock?: () => Date;
   dashboardClock?: () => Date;
+  subjectGoalsClock?: () => Date;
 }
 
 export function createApp({
@@ -106,6 +108,7 @@ export function createApp({
   reviewClock,
   progressClock,
   dashboardClock,
+  subjectGoalsClock,
 }: AppOptions) {
   const app = express();
 
@@ -306,7 +309,16 @@ export function createApp({
       ),
     );
     app.use('/subjects', roadmapAIRoutes(service, roadmapAI, prefs, env));
-    app.use('/subjects', subjectsRoutes(service, subjects, prefs, env));
+    app.use(
+      '/subjects',
+      subjectsRoutes(
+        service,
+        subjects,
+        prefs,
+        env,
+        new SubjectGoalsService(source, subjects, prefs, subjectGoalsClock),
+      ),
+    );
     app.use(
       '/routines',
       routinesRoutes(

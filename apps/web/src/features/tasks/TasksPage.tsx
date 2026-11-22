@@ -1,4 +1,5 @@
 import { useTransientMessage } from '../../components/useTransientMessage.js';
+import { linkedSubject } from '../subjects/subject-link.js';
 import { useCreateIntent } from '../../app/useCreateIntent.js';
 import {
   Select,
@@ -475,7 +476,10 @@ export function TasksPage({
   subjectsEnabled?: boolean;
 }) {
   const [subjectName, setSubjectName] = useState('');
-  const [filters, setFilters] = useState<TaskFilters>(initialFilters);
+  const [filters, setFilters] = useState<TaskFilters>(() => {
+    const subjectId = linkedSubject(subjectsEnabled);
+    return { ...initialFilters, ...(subjectId ? { subjectId } : {}) };
+  });
   const [draft, setDraft] = useState({
     title: '',
     status: '',
@@ -552,7 +556,8 @@ export function TasksPage({
     filters.status ||
     filters.priority ||
     filters.dueFrom ||
-    filters.dueTo
+    filters.dueTo ||
+    filters.subjectId
   );
   const refresh = () => setRevision((value) => value + 1);
   useCreateIntent(!!result && !loading, () => {
@@ -655,6 +660,12 @@ export function TasksPage({
           destructive={false}
         />
       )}
+      {!detail && filters.subjectId && (
+        <p role="status">
+          Exibindo tarefas da disciplina selecionada. Use Limpar filtros para
+          ver todas.
+        </p>
+      )}
       {!detail && (
         <Card asChild>
           <details className="task-card task-filters">
@@ -667,6 +678,9 @@ export function TasksPage({
                   Object.fromEntries(
                     Object.entries({
                       ...draft,
+                      ...(filters.subjectId
+                        ? { subjectId: filters.subjectId }
+                        : {}),
                       page: 1,
                       pageSize: filters.pageSize,
                     }).filter(([, value]) => value !== ''),

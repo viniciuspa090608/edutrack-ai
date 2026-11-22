@@ -58,6 +58,19 @@ O journal e os snapshots ficam em `.openspec-local/`, ignorado pelo Git. Se houv
 
 Commit salva o histórico local; archive organiza a documentação e as specs; push publica no servidor. Integre a branch concluída em `master` por fast-forward quando possível, preservando seu commit, e publique somente mediante solicitação explícita. Nunca use force-push para resolver divergência. Consulte o inventário da mudança `organize-git-and-openspec-lifecycle` (ativo ou em archive) para o diagnóstico das mudanças históricas e pendências mantidas.
 
+## Metas e insights por disciplina
+
+No detalhe de uma disciplina, **Meta e insights** permite definir ou editar uma única meta com indicador, valor e prazo. Os indicadores disponíveis acompanham os módulos habilitados: tarefas concluídas, horas de foco (Pomodoro) e acertos nas revisões de flashcards. Funciona sem IA e não envia esses registros a provedores.
+
+- **Tarefas:** quantidade atual de tarefas concluídas vinculadas, incluindo histórico anterior à meta; subtarefas não são contadas novamente. Reabrir, excluir ou desvincular tarefas altera o progresso. Esse indicador mede execução e organização.
+- **Horas:** soma da interseção de intervalos ativos reais com a janela entre início da meta e consulta, dividida por 3.600.000. Somente sessões encerradas (concluídas ou canceladas) contam; pausas, tempo planejado e sessões em andamento não contam.
+- **Acertos:** `100 × GOOD/EASY ÷ total de revisões` desde o início da meta, considerando os cartões atualmente vinculados à disciplina. São autoavaliações de recordação; HARD/AGAIN não contam como acerto. Ausência de revisões produz medida indisponível, não 0% de acertos. Não representa nota nem previsão de aprovação.
+- **Progresso:** `min(100, 100 × valor atual ÷ valor desejado)`; restante é `max(0, desejado − atual)`. Editar valor ou prazo preserva o início; trocar indicador reinicia a janela. A meta exibe o valor atual mesmo depois do prazo, sem afirmar que foi alcançado dentro dele.
+- **Ritmo:** avanço registrado nos últimos até sete dias dividido pelos dias de 24 h observados nessa janela, comparado a restante dividido pelos dias de 24 h até o fim do prazo inclusivo no fuso salvo. Tarefas usam eventos distintos de conclusão de tarefas ainda concluídas e vinculadas; horas usam os intervalos reais. Exige ao menos um dia observado e algum avanço recente; caso contrário, informa dados insuficientes. É estimativa, não garantia. Percentuais de acertos não recebem projeção linear.
+- **Tendência:** compara GOOD/EASY nas duas janelas adjacentes de sete dias anteriores à consulta, exigindo ao menos cinco revisões em cada. Com menos registros, informa insuficiência. Alertas de prazo consideram tarefas pendentes com vencimento de hoje até sete dias à frente, ou anterior a hoje.
+
+Cada insight mostra evidências, uma sugestão prática e atalho quando aplicável. A API usa sessão autenticada, filtra conta e disciplina e desconsidera módulos desabilitados; suas metas permanecem preservadas. O painel recalcula após salvar, ao abrir/retornar ao foco e a cada 30 segundos enquanto visível, oferecendo nova tentativa em falhas. Aplicar a migration `CreateSubjectGoals20261122100000` antes de disponibilizar a API atualizada. Reverter essa migration remove somente as configurações de metas.
+
 ## Pré-requisitos
 
 - Node.js 24 ou 25 e pnpm 11.25.0 (ver `packageManager` no `package.json`).

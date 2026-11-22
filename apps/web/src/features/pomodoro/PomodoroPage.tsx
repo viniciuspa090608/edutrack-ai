@@ -1,4 +1,5 @@
 import { useTransientMessage } from '../../components/useTransientMessage.js';
+import { linkedSubject } from '../subjects/subject-link.js';
 import { projectPomodoro } from './pomodoro-clock.js';
 import {
   Select,
@@ -66,7 +67,9 @@ export function PomodoroPage({
   tasksEnabled: boolean;
   subjectsEnabled?: boolean;
 }) {
-  const [subjectId, setSubjectId] = useState('');
+  const [subjectId, setSubjectId] = useState(() =>
+    linkedSubject(subjectsEnabled),
+  );
   const [historySubject, setHistorySubject] = useState('');
   const [session, setSession] = useState<PomodoroSession | null>(null);
   const [history, setHistory] = useState<Awaited<

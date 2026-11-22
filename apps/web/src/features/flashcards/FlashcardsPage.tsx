@@ -1,4 +1,5 @@
 import { useTransientMessage } from '../../components/useTransientMessage.js';
+import { linkedSubject } from '../subjects/subject-link.js';
 import {
   Dialog,
   DialogClose,
@@ -123,7 +124,9 @@ export function FlashcardsPage({
   const [viewing, setViewing] = useState<Flashcard | null>(null);
   const [importing, setImporting] = useState(false);
   const [reviewing, setReviewing] = useState(false);
-  const [subjectFilter, setSubjectFilter] = useState('');
+  const [subjectFilter, setSubjectFilter] = useState(() =>
+    linkedSubject(subjectsEnabled),
+  );
   const [subjectStudy, setSubjectStudy] = useState<{
     id: string;
     name: string;

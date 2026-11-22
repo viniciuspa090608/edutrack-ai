@@ -1,4 +1,5 @@
 import { Progress } from '@study-platform/ui/components/ui/progress';
+import { SubjectInsightsPanel } from './SubjectInsightsPanel.js';
 import { useTransientMessage } from '../../components/useTransientMessage.js';
 import { useCreateIntent } from '../../app/useCreateIntent.js';
 import {
@@ -914,6 +915,10 @@ export function SubjectsPage({
           </Card>
           {!editor && (
             <>
+              <SubjectInsightsPanel
+                key={`insights-${detail.id}`}
+                subjectId={detail.id}
+              />
               <RoadmapsSection
                 key={`roadmaps-${detail.id}`}
                 subject={detail}

@@ -12,11 +12,13 @@ import {
 import type { AuthService } from '../auth/auth.service.js';
 import type { PreferencesService } from '../preferences/preferences.service.js';
 import type { SubjectsService } from './subjects.service.js';
+import type { SubjectGoalsService } from './subject-goals.service.js';
 export function subjectsRoutes(
   auth: AuthService,
   service: SubjectsService,
   prefs: PreferencesService,
   env: ApiEnv,
+  goals: SubjectGoalsService,
 ) {
   const router = Router();
   router.use(requireSession(auth, env), prefs.guard('subjects'));
@@ -36,6 +38,12 @@ export function subjectsRoutes(
     return result.data;
   };
   const write = requireOrigin(webOrigins(env));
+  router.get('/:id/insights', async (req, res) => {
+    res.json(await goals.read(owner(res), id(req.params.id)));
+  });
+  router.put('/:id/goal', write, async (req, res) => {
+    res.json(await goals.save(owner(res), id(req.params.id), req.body));
+  });
   router.get('/dashboard', async (req, res) => {
     res.json(await service.dashboardSummary(owner(res), req.query));
   });
